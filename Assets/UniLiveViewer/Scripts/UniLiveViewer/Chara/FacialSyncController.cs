@@ -5,6 +5,7 @@ using VRM;
 
 namespace UniLiveViewer
 {
+    //CRSを流用、プリセットキャラだけ見直しが必要
     public class FacialSyncController : MonoBehaviour
     {
         //扱う表情の種類

@@ -16,8 +16,8 @@ namespace UniLiveViewer
         //[SerializeField] private OVRScreenFade screenFade;
 
         [Header("íÕÇ›")]
-        [SerializeField] private OVRGrabber_UniLiveViewer[] ovrGrabber = null;//ç∂âE
-                                                                              //óºéËÇ≈íÕÇﬁ
+        [SerializeField] private OVRGrabber_UniLiveViewer[] ovrGrabber = null;//ç∂âE                                                                      
+        //óºéËÇ≈íÕÇﬁ
         private OVRGrabbable_Custom bothHandsGrabObj;
         private Vector3 initBothHandsDistance;
         private Transform bothHandsCenterAnchor;

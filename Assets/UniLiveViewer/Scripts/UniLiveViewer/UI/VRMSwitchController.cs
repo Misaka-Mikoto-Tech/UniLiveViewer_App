@@ -93,7 +93,6 @@ namespace UniLiveViewer
         /// <returns></returns>
         private async UniTaskVoid CreateThumbnailButtons(CancellationToken token)
         {
-
             Vector2 btnPos;
             Button_Base btn;
 
@@ -426,7 +425,6 @@ namespace UniLiveViewer
 
         /// <summary>
         ///
-        /// ※vrmModel取得後に非同期にかかわらずwaitを挟むとモデルの揺れ物がおかしな状態になる原因不明
         /// </summary>
         /// <param name="btn"></param>
         /// <param name="token"></param>
@@ -458,10 +456,26 @@ namespace UniLiveViewer
                 vrmModel.layer = LayerMask.NameToLayer("GrabObject");
                 var characon = vrmModel.AddComponent<CharaController>();
 
+                //メッシュが消える対策
+                var meshs = characon.GetComponentsInChildren<SkinnedMeshRenderer>();
+                Debug.Log("mesh数:" + meshs.Length);
+
+                //Bounds bounds;
+                foreach (var mesh in meshs)
+                {
+                    //これで変更されない・・・
+                    //bounds = mesh.bounds;
+                    //bounds.Expand(Vector3.one);
+                    //mesh.bounds = bounds;
+
+                    //しょうがないのでこっち
+                    mesh.updateWhenOffscreen = true;
+                }
+                await UniTask.Yield(PlayerLoopTiming.Update,token);
+
                 //各種component追加
                 var attacher = Instantiate(attacherPrefab.gameObject).GetComponent<ComponentAttacher_VRM>();
-                await attacher.init(vrmModel.transform, touchCollider,token);
-
+                await attacher.Init(vrmModel.transform, touchCollider,token);
                 Destroy(attacher.gameObject);
 
                 //マテリアルコンバーターの追加
@@ -492,7 +506,7 @@ namespace UniLiveViewer
                         currentPage = 0;
 
                         //早すぎると揺れものが半端な位置で固まる(正常な位置に落ち着くまでインスタンス化も禁止)
-                        await UniTask.Delay(500, cancellationToken: token);
+                        await UniTask.Delay(1000, cancellationToken: token);
 
                         //VRM追加した
                         VRMAdded?.Invoke(characon);

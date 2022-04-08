@@ -19,8 +19,15 @@ namespace UniLiveViewer
         {
             if (!isInit) return;
 
+            if(!targetAnchor.parent.gameObject.activeSelf) targetAnchor.parent.gameObject.SetActive(true);
             //ターゲットの位置へ移動
             transform.position = targetAnchor.position;
+        }
+
+        private void OnDisable()
+        {
+            if (!isInit) return;
+            if (targetAnchor.parent.gameObject.activeSelf) targetAnchor.parent.gameObject.SetActive(false);
         }
 
         // Start is called before the first frame update

@@ -272,7 +272,7 @@ namespace UniLiveViewer
         /// <returns></returns>
         private float GetHorizontalAngle(Transform target, Transform origin)
         {
-            //主人公の方向(水平)
+            //プレイヤーの方向(水平)
             var playerDirection = (target.position - origin.position).GetHorizontalDirection();
             //角度
             return Vector3.Angle(origin.forward.GetHorizontalDirection(), playerDirection);

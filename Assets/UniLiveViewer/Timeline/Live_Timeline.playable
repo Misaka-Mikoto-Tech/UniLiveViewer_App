@@ -109,7 +109,7 @@ MonoBehaviour:
   m_Name: AnimationPlayableAsset of VMD_Dummy
   m_EditorClassIdentifier: 
   m_Clip: {fileID: 7400000, guid: 07c7fb95a700a654cbafe32829be3774, type: 2}
-  m_Position: {x: 0.27533314, y: -0.3, z: -0.086134434}
+  m_Position: {x: -0.8301793, y: -0.3, z: -0.40991735}
   m_EulerAngles: {x: -0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
   m_MatchTargetFields: 63
@@ -1248,7 +1248,7 @@ MonoBehaviour:
   m_Name: AnimationPlayableAsset of VMD_Dummy
   m_EditorClassIdentifier: 
   m_Clip: {fileID: 7400000, guid: 07c7fb95a700a654cbafe32829be3774, type: 2}
-  m_Position: {x: 0.82337266, y: -0.3, z: 0.5265627}
+  m_Position: {x: 0.24873304, y: -0.3, z: 0.4479518}
   m_EulerAngles: {x: -0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
   m_MatchTargetFields: 63
@@ -1977,7 +1977,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
-  m_Name: AnimationPlayableAsset of HandExpression
+  m_Name: AnimationPlayableAsset of CloseHand_Animation
   m_EditorClassIdentifier: 
   m_Clip: {fileID: 0}
   m_Position: {x: 0, y: 0, z: 0}
@@ -2634,7 +2634,7 @@ MonoBehaviour:
   m_Name: AnimationPlayableAsset of VMD_Dummy
   m_EditorClassIdentifier: 
   m_Clip: {fileID: 7400000, guid: 07c7fb95a700a654cbafe32829be3774, type: 2}
-  m_Position: {x: 0.02864039, y: 1.1745006, z: 4.556105}
+  m_Position: {x: 0.10861212, y: 1.3115296, z: 3.6192443}
   m_EulerAngles: {x: -0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
   m_MatchTargetFields: 63
@@ -3396,7 +3396,7 @@ MonoBehaviour:
     m_Start: 5
     m_ClipIn: 0
     m_Asset: {fileID: -157416645166502421}
-    m_Duration: 228.4510040283203
+    m_Duration: 197.1300048828125
     m_TimeScale: 1
     m_ParentTrack: {fileID: 3050745344211241543}
     m_EaseInDuration: 0
@@ -3594,7 +3594,7 @@ MonoBehaviour:
   m_Name: AnimationPlayableAsset of VMD_Dummy
   m_EditorClassIdentifier: 
   m_Clip: {fileID: 7400000, guid: 07c7fb95a700a654cbafe32829be3774, type: 2}
-  m_Position: {x: 0.68249786, y: -0.3, z: 0.6170652}
+  m_Position: {x: -0.586116, y: -0.3, z: -0.42569256}
   m_EulerAngles: {x: -0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
   m_MatchTargetFields: 63
@@ -3752,7 +3752,7 @@ MonoBehaviour:
   m_Name: AnimationPlayableAsset of VMD_Dummy
   m_EditorClassIdentifier: 
   m_Clip: {fileID: 7400000, guid: 07c7fb95a700a654cbafe32829be3774, type: 2}
-  m_Position: {x: 0.033034757, y: -0.3, z: 0.6432011}
+  m_Position: {x: 1.4594698, y: -0.3, z: -0.35968947}
   m_EulerAngles: {x: -0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
   m_MatchTargetFields: 63
@@ -4461,7 +4461,7 @@ MonoBehaviour:
   m_Name: AnimationPlayableAsset of VMD_Dummy
   m_EditorClassIdentifier: 
   m_Clip: {fileID: 7400000, guid: 07c7fb95a700a654cbafe32829be3774, type: 2}
-  m_Position: {x: 0.5940829, y: -0.3, z: 0.3645444}
+  m_Position: {x: -1.2309836, y: -0.3, z: -0.0988214}
   m_EulerAngles: {x: -0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
   m_MatchTargetFields: 63
