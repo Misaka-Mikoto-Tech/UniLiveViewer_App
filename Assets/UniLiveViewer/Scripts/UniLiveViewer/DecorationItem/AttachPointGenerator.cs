@@ -6,7 +6,6 @@ namespace UniLiveViewer
 {
     public class AttachPointGenerator : MonoBehaviour
     {
-        //ちびキャラとか人以外に対応できてない、頭大きいのも困る
         public AttachPoint anchorPointPrefab;
         public List<AttachPoint> anchorList = new List<AttachPoint>();
         private Animator anime;

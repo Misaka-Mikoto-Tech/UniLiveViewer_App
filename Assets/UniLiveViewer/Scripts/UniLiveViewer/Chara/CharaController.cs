@@ -78,6 +78,8 @@ namespace UniLiveViewer
         {
             Vector3 globalScale = Vector3.zero;
 
+            if (overrideTarget) Debug.Log(overrideTarget.name);
+
             overrideAnchor = overrideTarget;
             charaState = setState;
             switch (charaState)
@@ -89,7 +91,7 @@ namespace UniLiveViewer
                     globalScale = new Vector3(0.25f, 0.25f, 0.25f);
                     break;
                 case CHARASTATE.HOLD:
-                    globalScale = new Vector3(0.25f, 0.25f, 0.25f);
+                    globalScale = new Vector3(0.2f, 0.2f, 0.2f);
                     break;
                 case CHARASTATE.ON_CIRCLE:
                     globalScale = new Vector3(1.0f, 1.0f, 1.0f);

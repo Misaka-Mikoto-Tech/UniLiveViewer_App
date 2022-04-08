@@ -23,7 +23,7 @@ namespace UniLiveViewer
         private Animator animator;
         private CharaController charaCon;
 
-        public async UniTask Init(Transform _targetVRM, VRMTouchColliders touchCollider, CancellationToken token)
+        public async UniTask init(Transform _targetVRM, VRMTouchColliders touchCollider, CancellationToken token)
         {
             //VRM確認
             targetVRM = _targetVRM.gameObject;
@@ -43,6 +43,8 @@ namespace UniLiveViewer
         {
             try
             {
+                await UniTask.Yield(PlayerLoopTiming.Update, token);
+
                 //Animation関連の調整
                 animator.runtimeAnimatorController = aniConPrefab;
                 animator.updateMode = AnimatorUpdateMode.Normal;
@@ -66,8 +68,6 @@ namespace UniLiveViewer
                 rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
                 rb.isKinematic = true;
                 rb.useGravity = false;
-
-                await UniTask.Yield(PlayerLoopTiming.Update, token);
 
                 //掴み関連の追加
                 targetVRM.AddComponent<MeshRenderer>();
@@ -99,6 +99,8 @@ namespace UniLiveViewer
         {
             try
             {
+                await UniTask.Yield(PlayerLoopTiming.Update, token);
+
                 //不要なスクリプトを停止
                 targetVRM.GetComponent<HumanPoseTransfer>().enabled = false;
                 //vrmModel.GetComponent<Blinker>().enabled = false;
@@ -114,10 +116,8 @@ namespace UniLiveViewer
                 //VMDプレイヤー追加(各Sync系の後に追加する)
                 targetVRM.AddComponent<VMDPlayer>();
                 //ScriptableObject追加
-                charaCon.charaInfoData = Instantiate(charaInfoDataPrefab);
-                //charaCon.charaInfoData = charaInfoDataPrefab;
-
-                await UniTask.Yield(PlayerLoopTiming.Update, token);
+                //charaCon.charaInfoData = Instantiate(charaInfoDataPrefab);
+                charaCon.charaInfoData = charaInfoDataPrefab;
 
                 //注視関連の調整
                 var lookAtHead = targetVRM.GetComponent<VRMLookAtHead_Custom>();
@@ -152,8 +152,8 @@ namespace UniLiveViewer
                     if (SpringBone[i].ColliderGroups != null && SpringBone[i].ColliderGroups.Length > 0)
                     {
                         colliderList.AddRange(SpringBone[i].ColliderGroups);//既存コライダー
-                        colliderList.AddRange(touchCollider.colliders);//追加コライダー(PlayerHand)                                                                                                                                                                            
-                        //リストから配列に戻す
+                        colliderList.AddRange(touchCollider.colliders);//追加コライダー(PlayerHand)                                                                                                                               
+                                                                       //リストから配列に戻す
                         SpringBone[i].ColliderGroups = colliderList.ToArray();
                         colliderList.Clear();
                     }

@@ -206,7 +206,7 @@ namespace UniLiveViewer
                         break;
                     case JumpList.TARGET.ANIME:
                         moveIndex = jumpCurrent - generatorPortal.currentAnime;
-                        ChangeAnime(moveIndex).Forget();
+                        ChangeAnime(moveIndex);
                         break;
                     case JumpList.TARGET.VMD_LIPSYNC:
                         moveIndex = jumpCurrent - generatorPortal.currentVMDLipSync;
@@ -482,7 +482,7 @@ namespace UniLiveViewer
                 case 0:
                     //モデルページ
                     if (Input.GetKeyDown(KeyCode.I)) ChangeChara(1);
-                    if (Input.GetKeyDown(KeyCode.K)) ChangeAnime(1).Forget();
+                    if (Input.GetKeyDown(KeyCode.K)) ChangeAnime(1);
                     if (Input.GetKeyDown(KeyCode.L))
                     {
                         //ボタンを非表示にする
@@ -592,7 +592,7 @@ namespace UniLiveViewer
                     if (!timeline.isPortalChara())
                     {
                         ChangeChara(0);
-                        ChangeAnime(0).Forget();
+                        ChangeAnime(0);
                     }
 
                     var bindChara = timeline.trackBindChara[TimelineController.PORTAL_ELEMENT];
@@ -706,7 +706,7 @@ namespace UniLiveViewer
                     if (i == 0) moveIndex = -1;
                     else if (i == 1) moveIndex = 1;
                     //アニメーションを変更する
-                    ChangeAnime(moveIndex).Forget();
+                    ChangeAnime(moveIndex);
 
                     //クリック音
                     audioSource.PlayOneShot(Sound[0]);
@@ -780,9 +780,9 @@ namespace UniLiveViewer
         /// アニメーションを変更する
         /// </summary>
         /// <param name="moveIndex"></param>
-        private async UniTask ChangeAnime(int moveIndex)
+        private void ChangeAnime(int moveIndex)
         {
-            await generatorPortal.SetAnimation(moveIndex);
+            generatorPortal.SetAnimation(moveIndex);
             //表示更新
             textMesh_Page1[1].text = generatorPortal.GetNowAnimeInfo().viewName;
             textMesh_Page1[1].fontSize = textMesh_Page1[1].text.FontSizeMatch(600, 30, 50);
@@ -798,6 +798,7 @@ namespace UniLiveViewer
 
                 //offset更新
                 slider_Offset.Value = 0;
+                //textMesh_Page1[3].text = slider_Offset.Value.ToString("0");
                 textMesh_Page1[3].text = $"{slider_Offset.Value:0000}";
 
                 //LipSyncボタンを表示(今回は実装しない)
@@ -814,6 +815,7 @@ namespace UniLiveViewer
 
                 //offset更新
                 slider_Offset.Value = SaveData.dicVMD_offset[generatorPortal.GetNowAnimeInfo().viewName];
+                //textMesh_Page1[3].text = slider_Offset.Value.ToString("0");
                 textMesh_Page1[3].text = $"{slider_Offset.Value:0000}";
 
                 //LipSyncボタンを表示(今回は実装しない)
@@ -837,12 +839,12 @@ namespace UniLiveViewer
         private void ChangeVMDLipSync(int moveIndex)
         {
             //文字画像を差し替える
-            generatorPortal.SetAnimation(moveIndex).Forget();
+            generatorPortal.SetAnimation(moveIndex);
             textMesh_Page1[4].text = generatorPortal.GetNowLipSyncName();
             textMesh_Page1[4].fontSize = textMesh_Page1[4].text.FontSizeMatch(600, 25, 40);
 
             //反映のために必要
-            ChangeAnime(0).Forget();
+            ChangeAnime(0);
         }
 
         /// <summary>
@@ -1349,6 +1351,7 @@ namespace UniLiveViewer
         /// </summary>
         private void Update_InitCharaSize()
         {
+            //textMesh_Page3[0].text = slider_InitCharaSize.Value.ToString("0.00");
             textMesh_Page3[0].text = $"{slider_InitCharaSize.Value:0.00}";
         }
 
@@ -1361,6 +1364,7 @@ namespace UniLiveViewer
             //スライダーに反映
             slider_FixedFoveated.Value = Mathf.Clamp(slider_FixedFoveated.Value, 2, 4);
 #if UNITY_EDITOR
+            //textMesh_Page3[1].text = "noQuest:" + slider_FixedFoveated.Value;
             textMesh_Page3[1].text = $"noQuest:{slider_FixedFoveated.Value}";
 #elif UNITY_ANDROID
         //反映し直す
@@ -1397,7 +1401,6 @@ namespace UniLiveViewer
 
         /// <summary>
         /// アイテムを変更する
-        /// TODO:ちゃんと作り直す
         /// </summary>
         /// <param name="btn"></param>
         private void ChangeItem(int moveIndex)

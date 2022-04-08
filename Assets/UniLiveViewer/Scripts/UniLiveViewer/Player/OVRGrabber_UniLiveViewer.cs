@@ -271,7 +271,7 @@ namespace UniLiveViewer
                         break;
                 }
             }
-            //—£‚µ‚½
+            //’Í‚ñ‚¾
             OnGrabEnd?.Invoke(this);
         }
 

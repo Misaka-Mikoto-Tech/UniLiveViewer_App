@@ -225,10 +225,10 @@ namespace UniLiveViewer
         /// </summary>
         /// <param name="bindObject"></param>
         /// <returns></returns>
-        public bool NewAssetBinding_Portal(CharaController bindChara)
+        public bool NewAssetBinding_Portal(GameObject bindObject)
         {
-            if (!bindChara) return false;//失敗(nullバインドの必要なし)
-            //var chara = bindObject.GetComponent<CharaController>();
+            if (!bindObject) return false;//失敗(nullバインドの必要なし)
+            var chara = bindObject.GetComponent<CharaController>();
 
             IEnumerable<PlayableBinding> outputs = playableDirector.playableAsset.outputs;
             //ポータル用BaseAnimeのPlayableBindingを取得
@@ -237,11 +237,11 @@ namespace UniLiveViewer
             if (Asset_BaseAnime.streamName != "")
             {
                 //オブジェクトをバインドする
-                playableDirector.SetGenericBinding(Asset_BaseAnime.sourceObject, bindChara.gameObject);
+                playableDirector.SetGenericBinding(Asset_BaseAnime.sourceObject, bindObject);
                 //CharaListにセット
-                trackBindChara[PORTAL_ELEMENT] = bindChara;
+                trackBindChara[PORTAL_ELEMENT] = chara;
                 //バインド情報を付与
-                bindChara.bindTrackName = sPortalBaseAniTrack;
+                chara.bindTrackName = sPortalBaseAniTrack;
                 //chara.bindTrackName_LipSync = "LipSync Track_Portal";
             }
             else
@@ -625,10 +625,6 @@ namespace UniLiveViewer
             //設置座標設定後に解除しないと位置が反映されないので注意(またこの変更はアニメーターの再初期化が走る)
             transferChara.GetComponent<Animator>().applyRootMotion = false;
 
-            //ラグで崩れる場合があるので、表情系をすべて初期化しておく
-            transferChara.facialSync.AllClear_BlendShape();
-            transferChara.lipSync.AllClear_BlendShape();
-
             //フィールドカウンター
             FieldCharaCount++;
             FieldCharaUpdate?.Invoke();
@@ -823,14 +819,6 @@ namespace UniLiveViewer
         {
             playableDirector.time = 0;
             //TimelinePlay();
-
-            //表情系をリセットしておく
-            foreach (var chara in trackBindChara)
-            {
-                if (!chara) continue;
-                chara.facialSync.AllClear_BlendShape();
-                chara.lipSync.AllClear_BlendShape();
-            }
         }
 
         /// <summary>
@@ -890,8 +878,6 @@ namespace UniLiveViewer
         {
             //マニュアルモードでなければ処理しない
             if (playableDirector.timeUpdateMode != DirectorUpdateMode.Manual) yield break;
-
-            yield return null;//VRMのAwakeが間に合わないので?
 
             //TimeLineと競合っぽいのでAnimatorControllerを解除しておく 
             for (int i = 0; i < trackBindChara.Length; i++)
