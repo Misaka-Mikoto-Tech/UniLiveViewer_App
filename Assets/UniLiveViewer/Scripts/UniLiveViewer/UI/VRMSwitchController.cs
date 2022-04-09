@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+ï»¿using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,17 +16,17 @@ namespace UniLiveViewer
         [SerializeField] private Transform displayAnchor;
 
         [Space(1)]
-        [Header("ƒ1ƒy[ƒW„")]
+        [Header("ï¼œ1ãƒšãƒ¼ã‚¸ï¼")]
         [SerializeField] private TextMesh textDirectory;
-        [SerializeField] private VRMRuntimeLoader_Custom runtimeLoader;//ƒTƒ“ƒvƒ‹‚ğ‚»‚Ì‚Ü‚Ü—˜—p‚·‚é
+        [SerializeField] private VRMRuntimeLoader_Custom runtimeLoader;//ã‚µãƒ³ãƒ—ãƒ«ã‚’ãã®ã¾ã¾åˆ©ç”¨ã™ã‚‹
         [SerializeField] private Button_Base btnPrefab;
         private List<TextMesh> btnTexts = new List<TextMesh>();
         [SerializeField] private Transform btnParent;
         [SerializeField] private LoadAnimation anime_Loading;
 
         [Space(1)]
-        [Header("ƒ2ƒy[ƒW„")]
-        [SerializeField] private Transform vrmPresetAnchor;//ƒ}ƒeƒŠƒAƒ‹’²®—p‚ÌƒLƒƒƒ‰À•WƒAƒ“ƒJ[
+        [Header("ï¼œ2ãƒšãƒ¼ã‚¸ï¼")]
+        [SerializeField] private Transform vrmPresetAnchor;//ãƒãƒ†ãƒªã‚¢ãƒ«èª¿æ•´æ™‚ç”¨ã®ã‚­ãƒ£ãƒ©åº§æ¨™ã‚¢ãƒ³ã‚«ãƒ¼
         [SerializeField] private RollSelector rollSelector_Material;
         [SerializeField] private Button_Switch[] btn_SuefaceType = new Button_Switch[2];
         [SerializeField] private Button_Switch[] btn_RenderFace = new Button_Switch[3];
@@ -36,21 +36,21 @@ namespace UniLiveViewer
         private GameObject vrmModel;
         private MaterialConverter converter;
 
-        [Header("ƒƒAƒ^ƒbƒ`ƒƒ[„")]
+        [Header("ï¼œã‚¢ã‚¿ãƒƒãƒãƒ£ãƒ¼ï¼")]
         [SerializeField] private ComponentAttacher_VRM attacherPrefab;
 
-        [Header("ƒ‚»‚Ì‘¼„")]
-        //“Áê•\î—pƒTƒEƒ“ƒh
+        [Header("ï¼œãã®ä»–ï¼")]
+        //ç‰¹æ®Šè¡¨æƒ…ç”¨ã‚µã‚¦ãƒ³ãƒ‰
         [SerializeField] private AudioClip[] specialFaceAudioClip;
-        //ƒNƒŠƒbƒNSE
+        //ã‚¯ãƒªãƒƒã‚¯SE
         private AudioSource audioSource;
-        [SerializeField] private AudioClip[] Sound;//ƒ{ƒ^ƒ“‰¹,“Ç‚İ‚İ‰¹,ƒNƒŠƒbƒN‰¹                               
-        //VRM“Ç‚İ‚İƒCƒxƒ“ƒg
+        [SerializeField] private AudioClip[] Sound;//ãƒœã‚¿ãƒ³éŸ³,èª­ã¿è¾¼ã¿éŸ³,ã‚¯ãƒªãƒƒã‚¯éŸ³                               
+        //VRMèª­ã¿è¾¼ã¿æ™‚ã‚¤ãƒ™ãƒ³ãƒˆ
         public event Action<CharaController> VRMAdded;
-        //ƒtƒ@ƒCƒ‹ƒAƒNƒZƒX‚ÆƒTƒ€ƒl‚ÌŠÇ—
+        //ãƒ•ã‚¡ã‚¤ãƒ«ã‚¢ã‚¯ã‚»ã‚¹ã¨ã‚µãƒ ãƒã®ç®¡ç†
         private FileAccessManager fileManager;
         //private Dictionary<string, Sprite> dicVRMSprite = new Dictionary<string, Sprite>();
-        //“–‚½‚è”»’è
+        //å½“ãŸã‚Šåˆ¤å®š
         private VRMTouchColliders touchCollider = null;
 
         private int currentPage = 0;
@@ -66,7 +66,7 @@ namespace UniLiveViewer
             audioSource = GetComponent<AudioSource>();
             audioSource.volume = GlobalConfig.soundVolume_SE;
 
-            //ƒR[ƒ‹ƒoƒbƒN“o˜^EEE2ƒy[ƒW–Ú
+            //ã‚³ãƒ¼ãƒ«ãƒãƒƒã‚¯ç™»éŒ²ãƒ»ãƒ»ãƒ»2ãƒšãƒ¼ã‚¸ç›®
             foreach (var e in btn_SuefaceType)
             {
                 e.onTrigger += MaterialSetting_Change;
@@ -82,17 +82,18 @@ namespace UniLiveViewer
 
             cancellation_token = this.GetCancellationTokenOnDestroy();
 
-            //ƒTƒ€ƒl—pƒ{ƒ^ƒ“‚Ì¶¬
+            //ã‚µãƒ ãƒç”¨ãƒœã‚¿ãƒ³ã®ç”Ÿæˆ
             CreateThumbnailButtons(cancellation_token).Forget();
         }
 
         /// <summary>
-        /// ƒTƒ€ƒl—p‚Ì‹óƒ{ƒ^ƒ“¶¬
+        /// ã‚µãƒ ãƒç”¨ã®ç©ºãƒœã‚¿ãƒ³ç”Ÿæˆ
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
         private async UniTaskVoid CreateThumbnailButtons(CancellationToken token)
         {
+
             Vector2 btnPos;
             Button_Base btn;
 
@@ -100,22 +101,22 @@ namespace UniLiveViewer
             {
                 for (int j = 0; j < 5; j++)
                 {
-                    //À•W’²®
+                    //åº§æ¨™èª¿æ•´
                     btnPos.x = -0.3f + (j * 0.15f);
                     btnPos.y = 0 - (i * 0.15f);
 
-                    //¶¬
+                    //ç”Ÿæˆ
                     btn = Instantiate(btnPrefab);
 
-                    //eİ’è
+                    //è¦ªè¨­å®š
                     btn.transform.parent = btnParent;
                     btn.transform.localPosition = new Vector3(btnPos.x, btnPos.y, 0);
                     btn.transform.localRotation = Quaternion.identity;
 
-                    //ƒR[ƒ‹ƒoƒbƒN“o˜^
+                    //ã‚³ãƒ¼ãƒ«ãƒãƒƒã‚¯ç™»éŒ²
                     btn.onTrigger += (b) => LoadVRM(b).Forget();
 
-                    //ƒeƒLƒXƒgƒƒbƒVƒ…‚ğƒŠƒXƒg‚É‰Á‚¦‚é
+                    //ãƒ†ã‚­ã‚¹ãƒˆãƒ¡ãƒƒã‚·ãƒ¥ã‚’ãƒªã‚¹ãƒˆã«åŠ ãˆã‚‹
                     btnTexts.Add(btn.transform.GetChild(1).GetComponent<TextMesh>());
                     btn = null;
                 }
@@ -124,7 +125,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// UI‚Ì•\¦ó‘Ô‚ğ•ÏX
+        /// UIã®è¡¨ç¤ºçŠ¶æ…‹ã‚’å¤‰æ›´
         /// </summary>
         /// <param name="isHide"></param>
         public void SetUIView(bool isHide)
@@ -140,14 +141,14 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ƒJƒŒƒ“ƒgƒy[ƒW‚ÅŠJ‚«’¼‚·i‰Šú‰»j
+        /// ã‚«ãƒ¬ãƒ³ãƒˆãƒšãƒ¼ã‚¸ã§é–‹ãç›´ã™ï¼ˆåˆæœŸåŒ–ï¼‰
         /// </summary>
         public void initPage()
         {
-            //UI‚ğ•\¦
+            //UIã‚’è¡¨ç¤º
             SetUIView(false);
 
-            //ƒy[ƒWƒXƒCƒbƒ`
+            //ãƒšãƒ¼ã‚¸ã‚¹ã‚¤ãƒƒãƒ
             for (int i = 0; i < pageTransform.Length; i++)
             {
                 if (currentPage == i)
@@ -160,30 +161,30 @@ namespace UniLiveViewer
                 }
             }
 
-            //Še‰Šú‰»ˆ—
+            //å„åˆæœŸåŒ–å‡¦ç†
             switch (currentPage)
             {
                 case 0:
                     if (fileManager.isSuccess)
                     {
-                        //ƒtƒHƒ‹ƒ_ƒpƒX‚Ì•\¦‚ğXV
+                        //ãƒ•ã‚©ãƒ«ãƒ€ãƒ‘ã‚¹ã®è¡¨ç¤ºã‚’æ›´æ–°
                         textDirectory.text = "(" + FileAccessManager.folderPath_Custom + ")";
 
-                        //ƒ[ƒfƒBƒ“ƒOƒAƒjƒ[ƒVƒ‡ƒ“‚ğ–³Œøó‘Ô
+                        //ãƒ­ãƒ¼ãƒ‡ã‚£ãƒ³ã‚°ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’ç„¡åŠ¹çŠ¶æ…‹
                         anime_Loading.gameObject.SetActive(false);
 
-                        //ƒTƒ€ƒlƒ{ƒ^ƒ“ƒAƒ“ƒJ[‚ğ—LŒøó‘Ô
+                        //ã‚µãƒ ãƒãƒœã‚¿ãƒ³ã‚¢ãƒ³ã‚«ãƒ¼ã‚’æœ‰åŠ¹çŠ¶æ…‹
                         btnParent.gameObject.SetActive(true);
 
-                        //VRM‘I‘ğƒ{ƒ^ƒ“‚ğ¶¬‚·‚é
+                        //VRMé¸æŠãƒœã‚¿ãƒ³ã‚’ç”Ÿæˆã™ã‚‹
                         SetThumbnail(cancellation_token).Forget();
                     }
                     break;
                 case 1:
-                    //VRM‚ª‘¶İ‚µ‚Ä‚¢‚ê‚ÎUI‚ğXV
+                    //VRMãŒå­˜åœ¨ã—ã¦ã„ã‚Œã°UIã‚’æ›´æ–°
                     if (vrmPresetAnchor.GetChild(0))
                     {
-                        //‰ñ“]ƒZƒŒƒNƒ^[‚Éƒ}ƒeƒŠƒAƒ‹–¼‚ÌƒŠƒXƒg‚ğ“n‚·
+                        //å›è»¢ã‚»ãƒ¬ã‚¯ã‚¿ãƒ¼ã«ãƒãƒ†ãƒªã‚¢ãƒ«åã®ãƒªã‚¹ãƒˆã‚’æ¸¡ã™
                         List<string> strList = new List<string>();
                         foreach (var e in converter.materials)
                         {
@@ -191,7 +192,7 @@ namespace UniLiveViewer
                         }
                         rollSelector_Material.init(strList);
 
-                        //•\¦‚ğXV
+                        //è¡¨ç¤ºã‚’æ›´æ–°
                         MaterialInfoUpdate();
                     }
                     break;
@@ -201,11 +202,11 @@ namespace UniLiveViewer
 
 
         /// <summary>
-        /// VRM‚Ì”‚¾‚¯ƒTƒ€ƒlƒ{ƒ^ƒ“‚ğ¶¬‚·‚é
+        /// VRMã®æ•°ã ã‘ã‚µãƒ ãƒãƒœã‚¿ãƒ³ã‚’ç”Ÿæˆã™ã‚‹
         /// </summary>
         private async UniTaskVoid SetThumbnail(CancellationToken token)
         {
-            //ˆê’U‘S•””ñ•\¦
+            //ä¸€æ—¦å…¨éƒ¨éè¡¨ç¤º
             for (int i = 0; i < btnTexts.Count; i++)
             {
                 if (btnTexts[i].transform.parent.gameObject.activeSelf)
@@ -216,9 +217,9 @@ namespace UniLiveViewer
 
             if (randomBox == null)
             {
-                //‘SVRMƒtƒ@ƒCƒ‹–¼‚ğæ“¾
+                //å…¨VRMãƒ•ã‚¡ã‚¤ãƒ«åã‚’å–å¾—
                 var array = fileManager.GetAllVRMNames();
-                //Å‘å15Œ‚ÉŠÛ‚ß‚é
+                //æœ€å¤§15ä»¶ã«ä¸¸ã‚ã‚‹
                 if (array.Length > 15)
                 {
                     vrmNames = array.Take(15).ToArray();
@@ -227,7 +228,7 @@ namespace UniLiveViewer
                 {
                     vrmNames = array;
                 }
-                //ƒ‰ƒ“ƒ_ƒ€”z—ñ‚ğİ’è
+                //ãƒ©ãƒ³ãƒ€ãƒ é…åˆ—ã‚’è¨­å®š
                 randomBox = new int[vrmNames.Length];
                 for (int i = 0; i < randomBox.Length; i++) randomBox[i] = i;
                 randomBox = Shuffle(randomBox);
@@ -239,10 +240,10 @@ namespace UniLiveViewer
             //Texture2D texture = null;
             int index = 0;
 
-            //•K—v‚Èƒ{ƒ^ƒ“‚Ì‚İ—LŒø‰»‚µ‚Äİ’è‚·‚é
+            //å¿…è¦ãªãƒœã‚¿ãƒ³ã®ã¿æœ‰åŠ¹åŒ–ã—ã¦è¨­å®šã™ã‚‹
             for (int i = 0; i < vrmNames.Length; i++)
             {
-                //ƒ‰ƒ“ƒ_ƒ€‚Èƒ{ƒ^ƒ“‡
+                //ãƒ©ãƒ³ãƒ€ãƒ ãªãƒœã‚¿ãƒ³é †
                 index = randomBox[i];
 
                 UniTask.Void(async () =>
@@ -253,47 +254,47 @@ namespace UniLiveViewer
                     {
                         baseButton.gameObject.SetActive(true);
                     }
-                    //ƒIƒuƒWƒFƒNƒg–¼‚ğ•ÏX
+                    //ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆåã‚’å¤‰æ›´
                     baseButton.name = vrmNames[index];
-                    //ƒ{ƒ^ƒ“‚Ì•\¦–¼‚ğ•ÏX
+                    //ãƒœã‚¿ãƒ³ã®è¡¨ç¤ºåã‚’å¤‰æ›´
                     btnTexts[index].text = vrmNames[index];
-                    //•¶šƒTƒCƒY‚ğ’²®‚·‚é
+                    //æ–‡å­—ã‚µã‚¤ã‚ºã‚’èª¿æ•´ã™ã‚‹
                     btnTexts[index].fontSize = btnTexts[index].text.FontSizeMatch(500, 25, 40);
 
-                    //ƒTƒ€ƒlƒCƒ‹‚ğæ“¾
+                    //ã‚µãƒ ãƒã‚¤ãƒ«ã‚’å–å¾—
                     try
                     {
                         spr = FileAccessManager.cacheThumbnails[vrmNames[index]];
 
                         if (spr)
                         {
-                            //ƒTƒ€ƒl‚Ì—e—Ê‚Å—L–³‚ğ”»’è
+                            //ã‚µãƒ ãƒã®å®¹é‡ã§æœ‰ç„¡ã‚’åˆ¤å®š
                             //float size = texture.GetRawTextureData().LongLength;
-                            //ƒTƒ€ƒlƒCƒ‹–³‚µ”»’è
+                            //ã‚µãƒ ãƒã‚¤ãƒ«ç„¡ã—åˆ¤å®š
                             //if (size < 10)
                             //    {
-                            //        //default‚Ì‚Ü‚Ü
+                            //        //defaultã®ã¾ã¾
                             //    }
-                            //    //ƒTƒ€ƒlƒCƒ‹—L‚è”»’è
+                            //    //ã‚µãƒ ãƒã‚¤ãƒ«æœ‰ã‚Šåˆ¤å®š
                             //    else
                             //    {
                             //    }
 
-                            //ƒXƒvƒ‰ƒCƒg‚ğƒZƒbƒg
+                            //ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã‚’ã‚»ãƒƒãƒˆ
                             baseButton.transform.GetChild(0).GetChild(0).GetComponent<SpriteRenderer>().sprite = spr;
                             //baseButton.transform.GetChild(0).GetChild(0).GetComponent<MeshRenderer>().materials[0].SetTexture("_MainTex", texture);
                         }
                         else
                         {
-                            //default‚Ì‚Ü‚Ü
+                            //defaultã®ã¾ã¾
                         }
                     }
                     catch
                     {
                         if (!spr)
                         {
-                            //Debug.Log("ƒƒWƒbƒNƒGƒ‰[BƒAƒvƒŠ‚ğ—§‚¿ã‚°Œã‚ÉƒLƒƒƒbƒVƒ…‰æ‘œ‚ğíœ‚µ‚½H");
-                            //‘Îô‚Æ‚µ‚Äƒ{ƒ^ƒ“‚ğ”ñ•\¦
+                            //Debug.Log("ãƒ­ã‚¸ãƒƒã‚¯ã‚¨ãƒ©ãƒ¼ã€‚ã‚¢ãƒ—ãƒªã‚’ç«‹ã¡ä¸Šã’å¾Œã«ã‚­ãƒ£ãƒƒã‚·ãƒ¥ç”»åƒã‚’å‰Šé™¤ã—ãŸï¼Ÿ");
+                            //å¯¾ç­–ã¨ã—ã¦ãƒœã‚¿ãƒ³ã‚’éè¡¨ç¤º
                             if (btnTexts[index].transform.parent.gameObject.activeSelf)
                             {
                                 btnTexts[index].transform.parent.gameObject.SetActive(false);
@@ -306,7 +307,7 @@ namespace UniLiveViewer
 
                         if (i % 2 == 0)
                         {
-                            //ŠÔ·‚Å“Ç‚İ‚İ‰¹‚ğ–Â‚ç‚·
+                            //æ™‚é–“å·®ã§èª­ã¿è¾¼ã¿éŸ³ã‚’é³´ã‚‰ã™
                             await UniTask.Delay(500, cancellationToken: token);
                             //yield return new WaitForSeconds(0.5f);
                             audioSource.PlayOneShot(Sound[1]);
@@ -315,14 +316,14 @@ namespace UniLiveViewer
                     }
                 });
 
-                //ŠÔ·‚Å“Ç‚İ‚Ü‚¹‚é
+                //æ™‚é–“å·®ã§èª­ã¿è¾¼ã¾ã›ã‚‹
                 //await Task.Delay(200);
                 if (i % 2 == 0) await UniTask.Delay(250, cancellationToken: token);
             }
         }
 
         /// <summary>
-        /// ƒ‰ƒ“ƒ_ƒ€ƒVƒƒƒbƒtƒ‹iƒ‰ƒ“ƒ_ƒ€‚È2—v‘f‚ğŒğŠ·¨ƒVƒƒƒbƒtƒ‹‚³‚ê‚È‚¢—v‘f‚à‚ ‚è‚¦‚éj
+        /// ãƒ©ãƒ³ãƒ€ãƒ ã‚·ãƒ£ãƒƒãƒ•ãƒ«ï¼ˆãƒ©ãƒ³ãƒ€ãƒ ãª2è¦ç´ ã‚’äº¤æ›â†’ã‚·ãƒ£ãƒƒãƒ•ãƒ«ã•ã‚Œãªã„è¦ç´ ã‚‚ã‚ã‚Šãˆã‚‹ï¼‰
         /// </summary>
         /// <param name="num"></param>
         int[] Shuffle(int[] inputArray)
@@ -340,16 +341,16 @@ namespace UniLiveViewer
         //private void UniTask_Test(Vector2 setPos,string fileName)
         //{
 
-        //    //–¼‘OÆ‡‚Å“o˜^Ï‚İ‚ÌƒXƒvƒ‰ƒCƒg‚ª‚ ‚ê‚Îæ“¾
+        //    //åå‰ç…§åˆã§ç™»éŒ²æ¸ˆã¿ã®ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆãŒã‚ã‚Œã°å–å¾—
         //    Sprite spr = dicVRMSprite.FirstOrDefault(x => x.Key == fileName).Value;
         //    if (spr)
         //    {
-        //        //ƒ{ƒ^ƒ“‚ÌSpriteRender‚ÉƒZƒbƒg
+        //        //ãƒœã‚¿ãƒ³ã®SpriteRenderã«ã‚»ãƒƒãƒˆ
         //        btn.transform.GetChild(0).GetChild(0).GetComponent<SpriteRenderer>().sprite = spr;
         //    }
         //    else
         //    {
-        //        //VRMƒtƒ@ƒCƒ‹‚©‚çƒTƒ€ƒl‚ÌƒeƒNƒXƒ`ƒƒ‚ğæ“¾
+        //        //VRMãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰ã‚µãƒ ãƒã®ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’å–å¾—
         //        //string fullPath = FileAccessManager.GetFullPath(FileAccessManager.FOLDERTYPE.CHARA) + vrmNames[i];
         //        //string fullPath = FileAccessManager.GetFullPath_ThumbnailCash() +  + ".png";
         //        var texture = FileAccessManager.GetCacheThumbnail(fileName);
@@ -359,72 +360,73 @@ namespace UniLiveViewer
         //        {
         //            float size = texture.GetRawTextureData().LongLength;
 
-        //            //ƒTƒ€ƒlƒCƒ‹–³‚µ”»’è
+        //            //ã‚µãƒ ãƒã‚¤ãƒ«ç„¡ã—åˆ¤å®š
         //            if (size < 10)
         //            {
-        //                //default‚ÌƒXƒvƒ‰ƒCƒg‚ğæ“¾
+        //                //defaultã®ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã‚’å–å¾—
         //                spr = btn.transform.GetChild(0).GetChild(0).GetComponent<SpriteRenderer>().sprite;
         //            }
-        //            //ƒTƒ€ƒlƒCƒ‹—L‚è”»’è
+        //            //ã‚µãƒ ãƒã‚¤ãƒ«æœ‰ã‚Šåˆ¤å®š
         //            else
         //            {
-        //                //ƒeƒNƒXƒ`ƒƒ¨ƒXƒvƒ‰ƒCƒg‚É•ÏŠ·
+        //                //ãƒ†ã‚¯ã‚¹ãƒãƒ£â†’ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã«å¤‰æ›
         //                spr = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-        //                //ƒ{ƒ^ƒ“‚ÌSpriteRender‚ÉƒZƒbƒg
+        //                //ãƒœã‚¿ãƒ³ã®SpriteRenderã«ã‚»ãƒƒãƒˆ
         //                btn.transform.GetChild(0).GetChild(0).GetComponent<SpriteRenderer>().sprite = spr;
         //            }
         //        }
         //        else
         //        {
-        //            Debug.Log("ƒvƒƒOƒ‰ƒ€ƒGƒ‰[BƒLƒƒƒbƒVƒ…–³‚µ");
+        //            Debug.Log("ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã‚¨ãƒ©ãƒ¼ã€‚ã‚­ãƒ£ãƒƒã‚·ãƒ¥ç„¡ã—");
 
-        //            //default‚ÌƒXƒvƒ‰ƒCƒg‚ğæ“¾
+        //            //defaultã®ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã‚’å–å¾—
         //            //spr = btn.transform.GetChild(0).GetChild(0).GetComponent<SpriteRenderer>().sprite;
         //        }
-        //        //–¼‘O‚ÆƒTƒ€ƒl‚ğ“o˜^‚·‚é
+        //        //åå‰ã¨ã‚µãƒ ãƒã‚’ç™»éŒ²ã™ã‚‹
         //        dicVRMSprite.Add(fileName, spr);
         //    }
-        //    //ƒR[ƒ‹ƒoƒbƒN“o˜^
+        //    //ã‚³ãƒ¼ãƒ«ãƒãƒƒã‚¯ç™»éŒ²
         //    btn.GetComponent<Button_Base>().onTrigger += OpenVRM;
         //}
 
         /// <summary>
-        /// VRM‚ğ“Ç‚İ‚Ş
+        /// VRMã‚’èª­ã¿è¾¼ã‚€
         /// </summary>
-        /// <param name="btn">ŠY“–ƒTƒ€ƒlƒ{ƒ^ƒ“</param>
+        /// <param name="btn">è©²å½“ã‚µãƒ ãƒãƒœã‚¿ãƒ³</param>
         private async UniTaskVoid LoadVRM(Button_Base btn)
         {
-            //d•¡ƒNƒŠƒbƒN‚Å‚«‚È‚¢‚æ‚¤‚Éƒ{ƒ^ƒ“‚ğ–³Œø‰»
+            //é‡è¤‡ã‚¯ãƒªãƒƒã‚¯ã§ããªã„ã‚ˆã†ã«ãƒœã‚¿ãƒ³ã‚’ç„¡åŠ¹åŒ–
             btnParent.gameObject.SetActive(false);
 
-            //ƒNƒŠƒbƒN‰¹
+            //ã‚¯ãƒªãƒƒã‚¯éŸ³
             audioSource.PlayOneShot(Sound[0]);
 
-            //ƒ[ƒfƒBƒ“ƒOƒAƒjƒ[ƒVƒ‡ƒ“‚ğˆê’U”ñ•\¦
+            //ãƒ­ãƒ¼ãƒ‡ã‚£ãƒ³ã‚°ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’ä¸€æ—¦éè¡¨ç¤º
             //if (anime_Loading.gameObject.activeSelf) anime_Loading.gameObject.SetActive(false);
             await UniTask.Yield(PlayerLoopTiming.Update, cancellation_token);
 
-            //ƒ[ƒfƒBƒ“ƒOƒAƒjƒ[ƒVƒ‡ƒ“ŠJn
+            //ãƒ­ãƒ¼ãƒ‡ã‚£ãƒ³ã‚°ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³é–‹å§‹
             anime_Loading.gameObject.SetActive(true);
 
             try
             {
-                //VRMİ’è
+                //VRMè¨­å®š
                 await SetVRM(btn, cancellation_token);
             }
             catch (Exception e)
             {
-                Debug.Log("ƒ[ƒh¸”s:" + e);
+                Debug.Log("ãƒ­ãƒ¼ãƒ‰å¤±æ•—:" + e);
             }
             finally
             {
-                //ƒ[ƒfƒBƒ“ƒOƒAƒjƒ[ƒVƒ‡ƒ“I—¹
+                //ãƒ­ãƒ¼ãƒ‡ã‚£ãƒ³ã‚°ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³çµ‚äº†
                 anime_Loading.gameObject.SetActive(false);
             }
         }
 
         /// <summary>
         ///
+        /// â€»vrmModelå–å¾—å¾Œã«éåŒæœŸã«ã‹ã‹ã‚ã‚‰ãšwaitã‚’æŒŸã‚€ã¨ãƒ¢ãƒ‡ãƒ«ã®æºã‚Œç‰©ãŒãŠã‹ã—ãªçŠ¶æ…‹ã«ãªã‚‹åŸå› ä¸æ˜
         /// </summary>
         /// <param name="btn"></param>
         /// <param name="token"></param>
@@ -433,13 +435,13 @@ namespace UniLiveViewer
         {
             try
             {
-                //SampleUI‚ğ—LŒø‰»
+                //SampleUIã‚’æœ‰åŠ¹åŒ–
                 runtimeLoader.gameObject.SetActive(true);
 
                 //await Task.Delay(10);
                 await UniTask.Delay(10, cancellationToken: token);
 
-                //w’èƒpƒX‚ÌVRM‚Ì‚İ“Ç‚İ‚Ş
+                //æŒ‡å®šãƒ‘ã‚¹ã®VRMã®ã¿èª­ã¿è¾¼ã‚€
                 //string fileName = btn.transform.GetChild(1).GetComponent<TextMesh>().text;
                 string fileName = btn.transform.name;
                 string fullPath = FileAccessManager.GetFullPath(FileAccessManager.FOLDERTYPE.CHARA) + fileName;
@@ -447,76 +449,75 @@ namespace UniLiveViewer
                 //if (vrmModel) vrmModel = null;
                 vrmModel = await runtimeLoader.OnOpenClicked_VRM(fullPath, token);
 
-                //ƒLƒƒƒ“ƒZƒ‹Šm”F
+                //ã‚­ãƒ£ãƒ³ã‚»ãƒ«ç¢ºèª
                 token.ThrowIfCancellationRequested();
 
-                //Å’áŒÀ‚Ìİ’è
+                //æœ€ä½é™ã®è¨­å®š
                 vrmModel.name = fileName;
                 vrmModel.tag = "Grab_Chara";
                 vrmModel.layer = LayerMask.NameToLayer("GrabObject");
                 var characon = vrmModel.AddComponent<CharaController>();
 
-                //ƒƒbƒVƒ…‚ªÁ‚¦‚é‘Îô
+                //MeshãŒæ¶ˆãˆã‚‹å¯¾ç­–
                 var meshs = characon.GetComponentsInChildren<SkinnedMeshRenderer>();
-                Debug.Log("mesh”:" + meshs.Length);
-
                 //Bounds bounds;
                 foreach (var mesh in meshs)
                 {
-                    //‚±‚ê‚Å•ÏX‚³‚ê‚È‚¢EEE
+                    //ä¸Šæ‰‹ãã„ã‹ãªã„
                     //bounds = mesh.bounds;
                     //bounds.Expand(Vector3.one);
                     //mesh.bounds = bounds;
 
-                    //‚µ‚å‚¤‚ª‚È‚¢‚Ì‚Å‚±‚Á‚¿
+                    //è‰¯ããªã„ãŒã“ã‚Œã§
                     mesh.updateWhenOffscreen = true;
                 }
-                await UniTask.Yield(PlayerLoopTiming.Update,token);
+                await UniTask.Yield(PlayerLoopTiming.Update, token);
 
-                //Šeícomponent’Ç‰Á
+
+                //å„ç¨®componentè¿½åŠ 
                 var attacher = Instantiate(attacherPrefab.gameObject).GetComponent<ComponentAttacher_VRM>();
                 await attacher.Init(vrmModel.transform, touchCollider,token);
                 Destroy(attacher.gameObject);
 
-                //ƒ}ƒeƒŠƒAƒ‹ƒRƒ“ƒo[ƒ^[‚Ì’Ç‰Á
+                //ãƒãƒ†ãƒªã‚¢ãƒ«ã‚³ãƒ³ãƒãƒ¼ã‚¿ãƒ¼ã®è¿½åŠ 
                 if (converter) converter = null;
                 converter = vrmModel.AddComponent<MaterialConverter>();
                 converter.InitMaterials();
 
-                //“Ç‚İ‚ñ‚¾VRM
+                //èª­ã¿è¾¼ã‚“ã VRM
                 if (characon)
                 {
-                    // TODO:ƒVƒF[ƒ_[‚Ç‚¤‚·‚é‚©
+                    // TODO:ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã©ã†ã™ã‚‹ã‹
 
-                    //’²®‚ª•K—v‚Èƒ}ƒeƒŠƒAƒ‹‚ª‚ ‚é‚©
+                    //èª¿æ•´ãŒå¿…è¦ãªãƒãƒ†ãƒªã‚¢ãƒ«ãŒã‚ã‚‹ã‹
                     if (converter.materials != null && converter.materials.Count > 0)
                     {
-                        //VRM‚ğƒvƒŠƒZƒbƒgƒAƒ“ƒJ[‚ÉˆÚ“®
+                        //VRMã‚’ãƒ—ãƒªã‚»ãƒƒãƒˆã‚¢ãƒ³ã‚«ãƒ¼ã«ç§»å‹•
                         vrmModel.transform.parent = vrmPresetAnchor;
                         vrmModel.transform.localPosition = Vector3.zero;
                         vrmModel.transform.localRotation = Quaternion.identity;
 
-                        //ƒ}ƒeƒŠƒAƒ‹İ’èƒy[ƒW‚Ö
+                        //ãƒãƒ†ãƒªã‚¢ãƒ«è¨­å®šãƒšãƒ¼ã‚¸ã¸
                         currentPage = 1;
                         initPage();
                     }
                     else
                     {
-                        //ƒy[ƒW‚ğÅ‰‚Ö
+                        //ãƒšãƒ¼ã‚¸ã‚’æœ€åˆã¸
                         currentPage = 0;
 
-                        //‘‚·‚¬‚é‚Æ—h‚ê‚à‚Ì‚ª”¼’[‚ÈˆÊ’u‚ÅŒÅ‚Ü‚é(³í‚ÈˆÊ’u‚É—‚¿’…‚­‚Ü‚ÅƒCƒ“ƒXƒ^ƒ“ƒX‰»‚à‹Ö~)
-                        await UniTask.Delay(1000, cancellationToken: token);
+                        //æ—©ã™ãã‚‹ã¨æºã‚Œã‚‚ã®ãŒåŠç«¯ãªä½ç½®ã§å›ºã¾ã‚‹(æ­£å¸¸ãªä½ç½®ã«è½ã¡ç€ãã¾ã§ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹åŒ–ã‚‚ç¦æ­¢)
+                        await UniTask.Delay(700, cancellationToken: token);
 
-                        //VRM’Ç‰Á‚µ‚½
+                        //VRMè¿½åŠ ã—ãŸ
                         VRMAdded?.Invoke(characon);
 
-                        vrmModel.gameObject.SetActive(false);//–³Œø‰»‚µ‚Ä‚¨‚­
+                        vrmModel.gameObject.SetActive(false);//ç„¡åŠ¹åŒ–ã—ã¦ãŠã
 
-                        //UI‚ğ”ñ•\¦‚É‚·‚é
+                        //UIã‚’éè¡¨ç¤ºã«ã™ã‚‹
                         SetUIView(true);
 
-                        vrmModel = null;//ŠÇ—‚ğ‰ğœ
+                        vrmModel = null;//ç®¡ç†ã‚’è§£é™¤
                     }
 
                 }
@@ -526,16 +527,16 @@ namespace UniLiveViewer
                 if (vrmModel) Destroy(vrmModel);
                 vrmModel = null;
 
-                //ƒy[ƒW‚ğÅ‰‚Ö
+                //ãƒšãƒ¼ã‚¸ã‚’æœ€åˆã¸
                 currentPage = 0;
 
-                //ƒTƒ“ƒvƒ‹UI‚ğ–³Œøó‘Ô‚É(e‚ªDisable‚¾‚ÆVRM‚ÌŠeAwake‚ª‘–‚ç‚È‚¢)
+                //ã‚µãƒ³ãƒ—ãƒ«UIã‚’ç„¡åŠ¹çŠ¶æ…‹ã«(è¦ªãŒDisableã ã¨VRMã®å„AwakeãŒèµ°ã‚‰ãªã„)
                 runtimeLoader.gameObject.SetActive(false);
 
-                //UI‚ğ”ñ•\¦‚É‚·‚é
+                //UIã‚’éè¡¨ç¤ºã«ã™ã‚‹
                 SetUIView(true);
 
-                Debug.Log("VRM“Ç‚İ‚İƒGƒ‰[");
+                Debug.Log("VRMèª­ã¿è¾¼ã¿ã‚¨ãƒ©ãƒ¼");
                 throw;
             }
             finally
@@ -545,11 +546,11 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ƒ}ƒeƒŠƒAƒ‹‚Ì•\¦î•ñ‚ğXV‚·‚é
+        /// ãƒãƒ†ãƒªã‚¢ãƒ«ã®è¡¨ç¤ºæƒ…å ±ã‚’æ›´æ–°ã™ã‚‹
         /// </summary>
         private void MaterialInfoUpdate()
         {
-            //ƒNƒŠƒbƒN‰¹
+            //ã‚¯ãƒªãƒƒã‚¯éŸ³
             audioSource.PlayOneShot(Sound[0]);
 
             int current = rollSelector_Material.current;
@@ -557,23 +558,23 @@ namespace UniLiveViewer
             var face = (MaterialConverter.RenderFace)converter.materials[current].GetFloat("_Cull");
             var color = converter.materials[current].GetColor("_BaseColor");
 
-            //button‚É”½‰f
+            //buttonã«åæ˜ 
             if (type == MaterialConverter.SurfaceType.Opaque)
             {
                 btn_SuefaceType[0].isEnable = true;
                 btn_SuefaceType[1].isEnable = false;
-                //ƒXƒ‰ƒCƒ_[–³Œø‰»
+                //ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼ç„¡åŠ¹åŒ–
                 slider_Transparent.gameObject.SetActive(false);
             }
             else if (type == MaterialConverter.SurfaceType.Transparent)
             {
                 btn_SuefaceType[0].isEnable = false;
                 btn_SuefaceType[1].isEnable = true;
-                //ƒXƒ‰ƒCƒ_[—LŒø‰»
+                //ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼æœ‰åŠ¹åŒ–
                 slider_Transparent.gameObject.SetActive(true);
                 slider_Transparent.Value = color.a;
             }
-            //button‚É”½‰f
+            //buttonã«åæ˜ 
             if (face == MaterialConverter.RenderFace.Front)
             {
                 btn_RenderFace[0].isEnable = true;
@@ -595,7 +596,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ƒ}ƒeƒŠƒAƒ‹İ’è‚ğ•ÏX
+        /// ãƒãƒ†ãƒªã‚¢ãƒ«è¨­å®šã‚’å¤‰æ›´
         /// </summary>
         /// <param name="btn"></param>
         private void MaterialSetting_Change(Button_Base btn)
@@ -623,60 +624,60 @@ namespace UniLiveViewer
                 converter.SetRenderFace(current, MaterialConverter.RenderFace.Both);
             }
 
-            //UI•\¦‚ğXV
+            //UIè¡¨ç¤ºã‚’æ›´æ–°
             MaterialInfoUpdate();
         }
 
         /// <summary>
-        /// ƒ}ƒeƒŠƒAƒ‹‚Ì“§–¾F‚ğİ’è
+        /// ãƒãƒ†ãƒªã‚¢ãƒ«ã®é€æ˜è‰²ã‚’è¨­å®š
         /// </summary>
         private void MaterialSetting_TransparentColor()
         {
-            //“§–¾‚ğXV
+            //é€æ˜ã‚’æ›´æ–°
             converter.SetColor_Transparent(rollSelector_Material.current, slider_Transparent.Value);
         }
 
         /// <summary>
-        /// ƒ}ƒeƒŠƒAƒ‹İ’è‚ğƒŠƒZƒbƒg
+        /// ãƒãƒ†ãƒªã‚¢ãƒ«è¨­å®šã‚’ãƒªã‚»ãƒƒãƒˆ
         /// </summary>
         /// <param name="btn"></param>
         private void MaterialSetting_AllReset(Button_Base btn)
         {
-            //ƒNƒŠƒbƒN‰¹
+            //ã‚¯ãƒªãƒƒã‚¯éŸ³
             audioSource.PlayOneShot(Sound[0]);
 
-            //ƒ}ƒeƒŠƒAƒ‹‚ğƒŠƒZƒbƒg
+            //ãƒãƒ†ãƒªã‚¢ãƒ«ã‚’ãƒªã‚»ãƒƒãƒˆ
             converter.ResetMaterials();
 
-            //UI•\¦‚ğXV
+            //UIè¡¨ç¤ºã‚’æ›´æ–°
             MaterialInfoUpdate();
         }
 
         /// <summary>
-        /// ƒ}ƒeƒŠƒAƒ‹İ’è‚ÌŠm’è
+        /// ãƒãƒ†ãƒªã‚¢ãƒ«è¨­å®šã®ç¢ºå®š
         /// </summary>
         /// <param name="btn"></param>
         private void MaterialSetting_SetOK(Button_Base btn)
         {
-            //ƒy[ƒW‚ğÅ‰‚Ö
+            //ãƒšãƒ¼ã‚¸ã‚’æœ€åˆã¸
             currentPage = 0;
 
-            //ƒNƒŠƒbƒN‰¹
+            //ã‚¯ãƒªãƒƒã‚¯éŸ³
             audioSource.PlayOneShot(Sound[0]);
 
             vrmModel.transform.parent = runtimeLoader.transform;
             vrmModel.transform.localPosition = Vector3.zero;
             vrmModel.transform.localRotation = Quaternion.identity;
 
-            vrmModel.gameObject.SetActive(false);//–³Œø‰»‚µ‚Ä‚¨‚­
+            vrmModel.gameObject.SetActive(false);//ç„¡åŠ¹åŒ–ã—ã¦ãŠã
 
-            //UI‚ğ”ñ•\¦‚É‚·‚é
+            //UIã‚’éè¡¨ç¤ºã«ã™ã‚‹
             SetUIView(true);
 
-            //VRM’Ç‰Á‚µ‚½
+            //VRMè¿½åŠ ã—ãŸ
             VRMAdded?.Invoke(vrmModel.GetComponent<CharaController>());
 
-            vrmModel = null;//ŠÇ—‚ğ‰ğœ
+            vrmModel = null;//ç®¡ç†ã‚’è§£é™¤
         }
     }
 }

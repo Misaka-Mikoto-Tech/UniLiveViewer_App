@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 using VRM;
 using UniHumanoid;
@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace UniLiveViewer 
 {
-    //TODO:ƒGƒ‰[ƒƒO‚­‚ç‚¢o‚¹
+    //TODO:ã‚¨ãƒ©ãƒ¼ãƒ­ã‚°ãã‚‰ã„å‡ºã™
     public class ComponentAttacher_VRM : MonoBehaviour
     {
         [SerializeField] private RuntimeAnimatorController aniConPrefab = null;
@@ -25,7 +25,7 @@ namespace UniLiveViewer
 
         public async UniTask Init(Transform _targetVRM, VRMTouchColliders touchCollider, CancellationToken token)
         {
-            //VRMŠm”F
+            //VRMç¢ºèª
             targetVRM = _targetVRM.gameObject;
             transform.parent = targetVRM.transform;
             meta = targetVRM.GetComponent<VRMMeta>();
@@ -43,25 +43,25 @@ namespace UniLiveViewer
         {
             try
             {
-                //AnimationŠÖ˜A‚Ì’²®
+                //Animationé–¢é€£ã®èª¿æ•´
                 animator.runtimeAnimatorController = aniConPrefab;
                 animator.updateMode = AnimatorUpdateMode.Normal;
                 animator.cullingMode = AnimatorCullingMode.CullUpdateTransforms;
                 animator.applyRootMotion = true;
 
-                //‰eƒIƒuƒWƒF‚Ì’Ç‰Á
+                //å½±ã‚ªãƒ–ã‚¸ã‚§ã®è¿½åŠ 
                 var lowShadow = Instantiate(lowShadowPrefab);
                 lowShadow.transform.parent = animator.GetBoneTransform(HumanBodyBones.Hips);
                 lowShadow.transform.localPosition = Vector3.zero;
                 lowShadow = null;
 
-                //ƒRƒ‰ƒCƒ_[‚Ì’Ç‰Á
+                //ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã®è¿½åŠ 
                 var capcol = targetVRM.gameObject.AddComponent<CapsuleCollider>();
                 capcol.center = new Vector3(0, 0.8f, 0);
                 capcol.radius = 0.25f;
                 capcol.height = 1.5f;
 
-                //ƒŠƒWƒbƒgƒ{ƒfƒB‚Ì’Ç‰Á
+                //ãƒªã‚¸ãƒƒãƒˆãƒœãƒ‡ã‚£ã®è¿½åŠ 
                 var rb = targetVRM.AddComponent<Rigidbody>();
                 rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
                 rb.isKinematic = true;
@@ -69,21 +69,21 @@ namespace UniLiveViewer
 
                 await UniTask.Yield(PlayerLoopTiming.Update, token);
 
-                //’Í‚İŠÖ˜A‚Ì’Ç‰Á
+                //æ´ã¿é–¢é€£ã®è¿½åŠ 
                 targetVRM.AddComponent<MeshRenderer>();
                 targetVRM.AddComponent<OVRGrabbable_Custom>();
 
-                //ƒKƒCƒh‚Ì’Ç‰Á
+                //ã‚¬ã‚¤ãƒ‰ã®è¿½åŠ 
                 targetVRM.AddComponent<MeshGuide>().guidePrefab = guidePrefab;
 
-                //ƒAƒ^ƒbƒ`ƒ|ƒCƒ“ƒg‚Ì’Ç‰Á
+                //ã‚¢ã‚¿ãƒƒãƒãƒã‚¤ãƒ³ãƒˆã®è¿½åŠ 
                 targetVRM.AddComponent<AttachPointGenerator>().anchorPointPrefab = attachPointPrefab;
 
-                //“Áê•\î‚Ì’Ç‰Á
+                //ç‰¹æ®Šè¡¨æƒ…ã®è¿½åŠ 
                 //var specialFacial = vrmModel.AddComponent<SpecialFacial>();
                 //specialFacial.SetAudioClip_VRM(specialFaceAudioClip);
 
-                //ƒLƒƒƒ“ƒZƒ‹Šm”F
+                //ã‚­ãƒ£ãƒ³ã‚»ãƒ«ç¢ºèª
                 token.ThrowIfCancellationRequested();
             }
             catch
@@ -93,33 +93,32 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// VRM‚ÌƒRƒ“ƒ|[ƒlƒ“ƒg‚ğƒJƒXƒ^ƒ}ƒCƒY‚·‚é
+        /// VRMã®ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã‚’ã‚«ã‚¹ã‚¿ãƒã‚¤ã‚ºã™ã‚‹
         /// </summary>
         private async UniTask CustomizeComponent_VRM(VRMTouchColliders touchCollider, CancellationToken token)
         {
             try
             {
-                //•s—v‚ÈƒXƒNƒŠƒvƒg‚ğ’â~
+                //ä¸è¦ãªã‚¹ã‚¯ãƒªãƒ—ãƒˆã‚’åœæ­¢
                 targetVRM.GetComponent<HumanPoseTransfer>().enabled = false;
                 //vrmModel.GetComponent<Blinker>().enabled = false;
 
                 var blendShapeProxy = targetVRM.GetComponent<VRMBlendShapeProxy>();
 
-                //ƒŠƒbƒvƒVƒ“ƒN‚Ì’Ç‰Á
+                //ãƒªãƒƒãƒ—ã‚·ãƒ³ã‚¯ã®è¿½åŠ 
                 LipSyncController.Instantiate(LipSyncPrefab, charaCon, blendShapeProxy);
 
-                //ƒtƒFƒCƒXƒVƒ“ƒN‚Ì’Ç‰Á
+                //ãƒ•ã‚§ã‚¤ã‚¹ã‚·ãƒ³ã‚¯ã®è¿½åŠ 
                 FacialSyncController.Instantiate(FaceSyncPrefab, charaCon, blendShapeProxy);
 
-                //VMDƒvƒŒƒCƒ„[’Ç‰Á(ŠeSyncŒn‚ÌŒã‚É’Ç‰Á‚·‚é)
+                //VMDãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼è¿½åŠ (å„Syncç³»ã®å¾Œã«è¿½åŠ ã™ã‚‹)
                 targetVRM.AddComponent<VMDPlayer>();
-                //ScriptableObject’Ç‰Á
+                //ScriptableObjectè¿½åŠ 
                 charaCon.charaInfoData = Instantiate(charaInfoDataPrefab);
-                //charaCon.charaInfoData = charaInfoDataPrefab;
 
                 await UniTask.Yield(PlayerLoopTiming.Update, token);
 
-                //’‹ŠÖ˜A‚Ì’²®
+                //æ³¨è¦–é–¢é€£ã®èª¿æ•´
                 var lookAtHead = targetVRM.GetComponent<VRMLookAtHead_Custom>();
                 var lookAtCon = targetVRM.AddComponent<LookAtController>();
                 lookAtHead.Target = GameObject.FindGameObjectWithTag("MainCamera").transform;
@@ -140,40 +139,40 @@ namespace UniLiveViewer
                 if (name != "") charaCon.charaInfoData.viewName = name;
                 else charaCon.charaInfoData.viewName = targetVRM.name;
 
-                //“ª‚©‚ç‹¹ƒ{[ƒ“‚ğ“Á’è
+                //é ­ã‹ã‚‰èƒ¸ãƒœãƒ¼ãƒ³ã‚’ç‰¹å®š
                 Transform headAnchor = targetVRM.GetComponent<VRMLookAtHead_Custom>().Head.transform;
 
-                //—h‚êƒ‚ƒm’²®
-                List<VRMSpringBoneColliderGroup> colliderList = new List<VRMSpringBoneColliderGroup>();//“‡—p
+                //æºã‚Œãƒ¢ãƒèª¿æ•´
+                List<VRMSpringBoneColliderGroup> colliderList = new List<VRMSpringBoneColliderGroup>();//çµ±åˆç”¨
                 var SpringBone = targetVRM.transform.Find("secondary").GetComponents<VRMSpringBone>();
                 for (int i = 0; i < SpringBone.Length; i++)
                 {
-                    //Še”z—ñ‚ğƒŠƒXƒg‚É“‡
+                    //å„é…åˆ—ã‚’ãƒªã‚¹ãƒˆã«çµ±åˆ
                     if (SpringBone[i].ColliderGroups != null && SpringBone[i].ColliderGroups.Length > 0)
                     {
-                        colliderList.AddRange(SpringBone[i].ColliderGroups);//Šù‘¶ƒRƒ‰ƒCƒ_[
-                        colliderList.AddRange(touchCollider.colliders);//’Ç‰ÁƒRƒ‰ƒCƒ_[(PlayerHand)                                                                                                                                                                            
-                        //ƒŠƒXƒg‚©‚ç”z—ñ‚É–ß‚·
+                        colliderList.AddRange(SpringBone[i].ColliderGroups);//æ—¢å­˜ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼
+                        colliderList.AddRange(touchCollider.colliders);//è¿½åŠ ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼(PlayerHand)                                                                                                                                                                              
+                        //ãƒªã‚¹ãƒˆã‹ã‚‰é…åˆ—ã«æˆ»ã™
                         SpringBone[i].ColliderGroups = colliderList.ToArray();
                         colliderList.Clear();
                     }
                     else
                     {
-                        //–³‚¯‚ê‚Î‚»‚Ì‚Ü‚ÜƒZƒbƒg
+                        //ç„¡ã‘ã‚Œã°ãã®ã¾ã¾ã‚»ãƒƒãƒˆ
                         SpringBone[i].ColliderGroups = touchCollider.colliders;
                     }
-                    //ƒLƒƒƒ‰ƒRƒ“‚É“o˜^
+                    //ã‚­ãƒ£ãƒ©ã‚³ãƒ³ã«ç™»éŒ²
                     charaCon.springBoneList.Add(SpringBone[i]);
 
                     SpringBone[i].enabled = true;
                 }
 
-                //ƒLƒƒƒ“ƒZƒ‹Šm”F
+                //ã‚­ãƒ£ãƒ³ã‚»ãƒ«ç¢ºèª
                 token.ThrowIfCancellationRequested();
             }
             catch
             {
-                Debug.Log("CustomƒGƒ‰[");
+                Debug.Log("Customã‚¨ãƒ©ãƒ¼");
                 throw;
             }
         }
