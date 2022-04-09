@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using UnityEngine;
 
 namespace UniLiveViewer
@@ -18,9 +18,8 @@ namespace UniLiveViewer
         private void OnEnable()
         {
             if (!isInit) return;
-
-            if(!targetAnchor.parent.gameObject.activeSelf) targetAnchor.parent.gameObject.SetActive(true);
-            //ƒ^[ƒQƒbƒg‚ÌˆÊ’u‚ÖˆÚ“®
+            if (!targetAnchor.parent.gameObject.activeSelf) targetAnchor.parent.gameObject.SetActive(true);
+            //ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã®ä½ç½®ã¸ç§»å‹•
             transform.position = targetAnchor.position;
         }
 
@@ -41,24 +40,24 @@ namespace UniLiveViewer
         {
             //if (!isViewerMode) return;
 
-            //ƒ|[ƒY’†‚È‚çˆÈ‰ºˆ—‚µ‚È‚¢
+            //ãƒãƒ¼ã‚ºä¸­ãªã‚‰ä»¥ä¸‹å‡¦ç†ã—ãªã„
             if (Time.timeScale == 0) return;
 
-            //‚¿è‚Ì³–Ê‚É‡‚í‚¹‚é
+            //æŒã¡æ‰‹ã®æ­£é¢ã«åˆã‚ã›ã‚‹
             transform.position = targetAnchor.position;
             transform.rotation = targetAnchor.rotation;
         }
 
         private IEnumerator init()
         {
-            //Å‰‚É‚Æ‚ß‚Ä‚¨‚­(ƒ}ƒjƒ…ƒAƒ‹ƒ‚[ƒh)
+            //æœ€åˆã«ã¨ã‚ã¦ãŠã(ãƒãƒ‹ãƒ¥ã‚¢ãƒ«ãƒ¢ãƒ¼ãƒ‰)
             yield return new WaitForSeconds(0.1f);
 
-            //ƒLƒƒƒ‰‚ğ¶¬‚·‚é
+            //ã‚­ãƒ£ãƒ©ã‚’ç”Ÿæˆã™ã‚‹
             switchController.initPage();
             yield return new WaitForSeconds(0.1f);
 
-            //”ñ•\¦‚É‚·‚é
+            //éè¡¨ç¤ºã«ã™ã‚‹
             gameObject.SetActive(false);
             isInit = true;
             yield return null;

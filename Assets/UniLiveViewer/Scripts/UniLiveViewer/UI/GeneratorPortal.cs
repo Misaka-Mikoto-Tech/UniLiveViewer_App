@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+ï»¿using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +10,7 @@ namespace UniLiveViewer
 {
     public class GeneratorPortal : MonoBehaviour
     {
-        //ƒLƒƒƒ‰
+        //ã‚­ãƒ£ãƒ©
         [SerializeField] private List<CharaController> listChara = new List<CharaController>();
         public int currentChara { get; private set; } = 0;
 
@@ -20,44 +20,41 @@ namespace UniLiveViewer
         private const string LIPSYNC_NONAME = "No-LipSyncData";
         private const string LIPSYNC_VIEWNAME = "+ LipSyncData";
 
-        //Šî–{ƒ_ƒ“ƒXƒNƒŠƒbƒv‚Éã‘‚«‚·‚éƒNƒŠƒbƒv(èEŠçEŒûƒpƒNj
+        //åŸºæœ¬ãƒ€ãƒ³ã‚¹ã‚¯ãƒªãƒƒãƒ—ã«ä¸Šæ›¸ãã™ã‚‹ã‚¯ãƒªãƒƒãƒ—(æ‰‹ãƒ»é¡”ãƒ»å£ãƒ‘ã‚¯ï¼‰
         private Dictionary<string, int> dicAniType = new Dictionary<string, int>() { { "HAND_L", 0 }, { "HAND_R", 1 }, { "FACE", 2 }, { "LIP", 3 } };
 
         [SerializeField] private DanceInfoData[] danceAniClipInfo;
         [SerializeField] private string[] vmdLipSync;
         public DanceInfoData[] GetDanceInfoData() { return danceAniClipInfo; }
         public string[] GetVmdLipSync() { return vmdLipSync; }
-        [SerializeField] private DanceInfoData DanceInfoData_VMDPrefab;//VMD—p‚Ìƒeƒ“ƒvƒŒ
+        [SerializeField] private DanceInfoData DanceInfoData_VMDPrefab;//VMDç”¨ã®ãƒ†ãƒ³ãƒ—ãƒ¬
         private DanceInfoData[] vmdDanceClipInfo;
 
 
-        //”Ä—p
+        //æ±ç”¨
         private TimelineController timeline = null;
         private FileAccessManager fileManager = null;
+
         private VMDPlayer vmdPlayer;
         private bool isGenerateComplete = true;
         private bool retryVMD = false;
-        
-
-        //“Ç‚İ‚İÏ‚İVMDî•ñ
-        private static Dictionary<string, VMD> dic_VMDReader = new Dictionary<string, VMD>();
-
         private CancellationTokenSource cts;
+
+        //èª­ã¿è¾¼ã¿æ¸ˆã¿VMDæƒ…å ±
+        private static Dictionary<string, VMD> dic_VMDReader = new Dictionary<string, VMD>();
 
         void Awake()
         {
             if (!timeline) timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
             fileManager = GameObject.FindGameObjectWithTag("AppConfig").GetComponent<FileAccessManager>();
 
-            //ƒLƒƒƒ‰ƒŠƒXƒg‚É‹ó˜g‚ğ’Ç‰Á(‹ó‚ğVRM“Ç‚İ‚İ˜g‚Æ‚µ‚Äˆµ‚¤AGd—l)
+            //ã‚­ãƒ£ãƒ©ãƒªã‚¹ãƒˆã«ç©ºæ ã‚’è¿½åŠ (ç©ºã‚’VRMèª­ã¿è¾¼ã¿æ ã¨ã—ã¦æ‰±ã†ã€é›‘ä»•æ§˜)
             listChara.Add(null);
-
-            
         }
 
         private void Start()
         {
-            //VMD˜g‚Íƒ_ƒ~[ƒAƒjƒ[ƒVƒ‡ƒ“‚ğ’Ç‰Á‚µ‚Ä‚¨‚­
+            //VMDæ ã¯ãƒ€ãƒŸãƒ¼ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’è¿½åŠ ã—ã¦ãŠã
             if (fileManager.vmdList.Count > 0)
             {
                 vmdDanceClipInfo = new DanceInfoData[fileManager.vmdList.Count];
@@ -72,7 +69,7 @@ namespace UniLiveViewer
                 }
                 danceAniClipInfo = danceAniClipInfo.Concat(vmdDanceClipInfo).ToArray();
             }
-            //ŒûƒpƒNVMD
+            //å£ãƒ‘ã‚¯VMD
             if (fileManager.vmdLipSyncList.Count > 0)
             {
                 string[] lipSyncs = new string[fileManager.vmdLipSyncList.Count];
@@ -84,18 +81,18 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ƒLƒƒƒ‰ƒŠƒXƒg‚ÉVRM‚ğ’Ç‰Á‚·‚é
+        /// ã‚­ãƒ£ãƒ©ãƒªã‚¹ãƒˆã«VRMã‚’è¿½åŠ ã™ã‚‹
         /// </summary>
         public void AddVRMPrefab(CharaController charaCon_vrm)
         {
-            //VRM‚ğ’Ç‰Á
+            //VRMã‚’è¿½åŠ 
             listChara[listChara.Count - 1] = charaCon_vrm;
-            //ƒŠƒXƒg‚É‹ó˜g‚ğ’Ç‰Á(‹ó‚ğVRM“Ç‚İ‚İ˜g‚Æ‚µ‚Äˆµ‚¤)
+            //ãƒªã‚¹ãƒˆã«ç©ºæ ã‚’è¿½åŠ (ç©ºã‚’VRMèª­ã¿è¾¼ã¿æ ã¨ã—ã¦æ‰±ã†)
             listChara.Add(null);
         }
 
         /// <summary>
-        /// ƒJƒŒƒ“ƒg‚ÌVRMPrefab‚ğíœ‚·‚é
+        /// ã‚«ãƒ¬ãƒ³ãƒˆã®VRMPrefabã‚’å‰Šé™¤ã™ã‚‹
         /// </summary>
         public void DeleteCurrenVRM()
         {
@@ -104,118 +101,111 @@ namespace UniLiveViewer
 
             string viewName = listChara[currentChara].charaInfoData.viewName;
 
-            //Prefab‚©‚çíœ
+            //Prefabã‹ã‚‰å‰Šé™¤
             Destroy(listChara[currentChara].gameObject);
             listChara.RemoveAt(currentChara);
 
             currentChara--;
 
-            //ƒtƒB[ƒ‹ƒhã‚É‘¶İ‚·‚ê‚Îíœ
+            //ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ä¸Šã«å­˜åœ¨ã™ã‚Œã°å‰Šé™¤
             timeline.DeletebindAsset_CleanUp(viewName);
 
-            //–¢g—pƒAƒZƒbƒgƒT[ƒ`‚ª‘–‚èA•s—v‚È‚à‚Ì‚ğíœ
+            //æœªä½¿ç”¨ã‚¢ã‚»ãƒƒãƒˆã‚µãƒ¼ãƒãŒèµ°ã‚Šã€ä¸è¦ãªã‚‚ã®ã‚’å‰Šé™¤
             Resources.UnloadUnusedAssets();
         }
 
         /// <summary>
-        /// w’èCurrent‚ÌƒLƒƒƒ‰‚ğƒZƒbƒg‚·‚é
+        /// æŒ‡å®šCurrentã®ã‚­ãƒ£ãƒ©ã‚’ã‚»ãƒƒãƒˆã™ã‚‹
         /// </summary>
-        /// <param Current‚ğ“®‚©‚·="moveCurrent">“®‚©‚·•K—v‚ª‚È‚¯‚ê‚Î0</param>
+        /// <param Currentã‚’å‹•ã‹ã™="moveCurrent">å‹•ã‹ã™å¿…è¦ãŒãªã‘ã‚Œã°0</param>
         public void SetChara(int moveCurrent)
         {
             isGenerateComplete = false;
 
             currentChara += moveCurrent;
 
-            //CurrentˆÚ“®§ŒÀ
+            //Currentç§»å‹•åˆ¶é™
             if (currentChara < 0) currentChara = listChara.Count - 1;
             else if (currentChara >= listChara.Count) currentChara = 0;
 
             if (!timeline) timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
 
-            //Šù‘¶‚Ìƒ|[ƒ^ƒ‹ƒLƒƒƒ‰‚ğíœ
+            //æ—¢å­˜ã®ãƒãƒ¼ã‚¿ãƒ«ã‚­ãƒ£ãƒ©ã‚’å‰Šé™¤
             timeline.DestoryPortalChara();
 
-            //ƒtƒB[ƒ‹ƒhãŒÀƒI[ƒo[‚È‚ç¶¬‚µ‚È‚¢
+            //ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ä¸Šé™ã‚ªãƒ¼ãƒãƒ¼ãªã‚‰ç”Ÿæˆã—ãªã„
             if (timeline.FieldCharaCount >= timeline.maxFieldChara) return;
 
-            //null˜g‚Ìê‡‚àˆ—‚µ‚È‚¢
+            //nullæ ã®å ´åˆã‚‚å‡¦ç†ã—ãªã„
             if (!listChara[currentChara]) return;
 
-            //ƒLƒƒƒ‰‚ğ¶¬
+            //ã‚­ãƒ£ãƒ©ã‚’ç”Ÿæˆ
             var charaCon = Instantiate(listChara[currentChara]);
-            //var charaCon = charaObj.GetComponent<CharaController>(true);
-            //VRMloader‚ÉƒXƒgƒbƒN‚µ‚Ä‚¢‚éVRMPrefab‚ª–³Œøó‘Ô‚È‚Ì‚Å—LŒø‰»
-            if (!charaCon.gameObject.activeSelf) charaCon.gameObject.SetActive(true);
-            //if (charaCon.gameObject.activeSelf) charaCon.gameObject.SetActive(false);
-            //ƒpƒ‰ƒ[ƒ^[İ’è
-            charaCon.SetState(CharaController.CHARASTATE.MINIATURE, transform);//ƒ~ƒjƒ`ƒ…ƒAó‘Ô
 
-            //Timeline‚Ìƒ|[ƒ^ƒ‹˜g‚ÖƒoƒCƒ“ƒh‚·‚é
+            //VRMloaderã«ã‚¹ãƒˆãƒƒã‚¯ã—ã¦ã„ã‚‹VRMPrefabãŒç„¡åŠ¹çŠ¶æ…‹ãªã®ã§æœ‰åŠ¹åŒ–
+            if (!charaCon.gameObject.activeSelf) charaCon.gameObject.SetActive(true);
+
+            //ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼è¨­å®š
+            charaCon.SetState(CharaController.CHARASTATE.MINIATURE, transform);//ãƒŸãƒ‹ãƒãƒ¥ã‚¢çŠ¶æ…‹
+
+            //Timelineã®ãƒãƒ¼ã‚¿ãƒ«æ ã¸ãƒã‚¤ãƒ³ãƒ‰ã™ã‚‹
             bool isSuccess = timeline.NewAssetBinding_Portal(charaCon);
 
-            if (isSuccess) SetAnimation(0).Forget();//ƒLƒƒƒ‰‚ÉƒAƒjƒ[ƒVƒ‡ƒ“î•ñ‚ğƒZƒbƒg‚·‚é
+            if (isSuccess) SetAnimation(0).Forget();//ã‚­ãƒ£ãƒ©ã«ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³æƒ…å ±ã‚’ã‚»ãƒƒãƒˆã™ã‚‹
             else if (!isSuccess && charaCon) Destroy(charaCon.gameObject);
 
             isGenerateComplete = true;
         }
 
         /// <summary>
-        /// w’èCurrent‚ÌƒAƒjƒ[ƒVƒ‡ƒ“‚ğƒZƒbƒg‚·‚é
+        /// æŒ‡å®šCurrentã®ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’ã‚»ãƒƒãƒˆã™ã‚‹
         /// </summary>
-        /// <param Current‚ğ“®‚©‚·="moveCurrent">“®‚©‚·•K—v‚ª‚È‚¯‚ê‚Î0</param>
+        /// <param Currentã‚’å‹•ã‹ã™="moveCurrent">å‹•ã‹ã™å¿…è¦ãŒãªã‘ã‚Œã°0</param>
         public async UniTask SetAnimation(int moveCurrent)
         {
             try
             {
                 cts = new CancellationTokenSource();
 
-                //CurrentˆÚ“®§ŒÀ
+                //Currentç§»å‹•åˆ¶é™
                 currentAnime += moveCurrent;
                 if (currentAnime < 0) currentAnime = danceAniClipInfo.Length - 1;
                 else if (currentAnime >= danceAniClipInfo.Length) currentAnime = 0;
 
-                //ƒ|[ƒ^ƒ‹ƒLƒƒƒ‰‚ğŠm”F
+                //ãƒãƒ¼ã‚¿ãƒ«ã‚­ãƒ£ãƒ©ã‚’ç¢ºèª
                 var portalChara = timeline.trackBindChara[TimelineController.PORTAL_ELEMENT];
                 if (!portalChara) return;
-                //”ñ•\¦
-                //if (portalChara.gameObject.activeSelf) portalChara.gameObject.SetActive(false);
-
                 vmdPlayer = portalChara.GetComponent<VMDPlayer>();
+
 
                 //VMD
                 if (GetNowAnimeInfo().formatType == DanceInfoData.FORMATTYPE.VMD)
                 {
-                    //ƒ|[ƒ^ƒ‹ã‚ÌƒLƒƒƒ‰‚ÉƒAƒjƒ[ƒVƒ‡ƒ“İ’è
+                    //ãƒãƒ¼ã‚¿ãƒ«ä¸Šã®ã‚­ãƒ£ãƒ©ã«ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³è¨­å®š
                     timeline.SetAnimationClip(timeline.sPortalBaseAniTrack, danceAniClipInfo[currentAnime], transform.position, Vector3.zero);
+
                     await UniTask.Yield(PlayerLoopTiming.Update, cts.Token);
 
-                    //ÅŒã‚É•\¦
-                    //if (!portalChara.gameObject.activeSelf) portalChara.gameObject.SetActive(true);
-
-                    //animator‚ğ’â~AVMD‚ğÄ¶
-                    string folderPath = FileAccessManager.GetFullPath(FileAccessManager.FOLDERTYPE.MOTION);//VMD‚ÌƒpƒX‚ğæ“¾
-                    portalChara.GetComponent<Animator>().enabled = false;//Animator‚ª‹£‡‚·‚é‚Ì‚Å–³Œø
+                    //animatorã‚’åœæ­¢ã€VMDã‚’å†ç”Ÿ
+                    string folderPath = FileAccessManager.GetFullPath(FileAccessManager.FOLDERTYPE.MOTION);//VMDã®ãƒ‘ã‚¹ã‚’å–å¾—
+                    portalChara.GetComponent<Animator>().enabled = false;//AnimatorãŒç«¶åˆã™ã‚‹ã®ã§ç„¡åŠ¹
                     portalChara.animationMode = CharaController.ANIMATIONMODE.VMD;
                     await VMDPlay(vmdPlayer, folderPath, GetNowAnimeInfo().viewName, cts.Token);
                 }
-                //ƒvƒŠƒZƒbƒgƒAƒjƒ[ƒVƒ‡ƒ“
+                //ãƒ—ãƒªã‚»ãƒƒãƒˆã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³
                 else
                 {
-                    //”½“]İ’è
+                    //åè»¢è¨­å®š
                     danceAniClipInfo[currentAnime].isReverse = isAnimationReverse;
 
-                    //VMD‚ğ’â~AanimatorÄŠJ
+                    //VMDã‚’åœæ­¢ã€animatorå†é–‹
                     vmdPlayer.Clear();
                     portalChara.GetComponent<Animator>().enabled = true;
                     portalChara.animationMode = CharaController.ANIMATIONMODE.CLIP;
 
-                    //ƒ|[ƒ^ƒ‹ã‚ÌƒLƒƒƒ‰‚ÉƒAƒjƒ[ƒVƒ‡ƒ“İ’è
+                    //ãƒãƒ¼ã‚¿ãƒ«ä¸Šã®ã‚­ãƒ£ãƒ©ã«ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³è¨­å®š
                     timeline.SetAnimationClip(timeline.sPortalBaseAniTrack, danceAniClipInfo[currentAnime], transform.position, Vector3.zero);
                     await UniTask.Yield(PlayerLoopTiming.Update, cts.Token);
-
-                    //ÅŒã‚É•\¦
-                    //if (!portalChara.gameObject.activeSelf) portalChara.gameObject.SetActive(true);
                 }
             }
             catch (OperationCanceledException)
@@ -226,30 +216,30 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// VMD‚ğÄ¶‚·‚é
+        /// VMDã‚’å†ç”Ÿã™ã‚‹
         /// </summary>
         /// <param name="vmpPlayer"></param>
         /// <param name="folderPath"></param>
         /// <param name="fileName"></param>
-        public async UniTask VMDPlay(VMDPlayer vmdPlayer, string folderPath, string fileName,CancellationToken token)
+        public async UniTask VMDPlay(VMDPlayer vmdPlayer, string folderPath, string fileName, CancellationToken token)
         {
-            //Šù‘¶‚Ì“Ç‚İ‚İÏ‚İƒŠƒXƒg‚ÆÆ‡
+            //æ—¢å­˜ã®èª­ã¿è¾¼ã¿æ¸ˆã¿ãƒªã‚¹ãƒˆã¨ç…§åˆ
             if (dic_VMDReader.ContainsKey(fileName))
             {
-                //g‚¢‚Ü‚í‚µ‚ÄVMDƒvƒŒƒCƒ„[ƒXƒ^[ƒg
+                //ä½¿ã„ã¾ã‚ã—ã¦VMDãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚¹ã‚¿ãƒ¼ãƒˆ
                 await vmdPlayer.Starter(dic_VMDReader[fileName], folderPath, fileName, token);
             }
             else
             {
-                //V‹K‚È‚ç“Ç‚İ‚ñ‚ÅVMDƒvƒŒƒCƒ„[ƒXƒ^[ƒg
+                //æ–°è¦ãªã‚‰èª­ã¿è¾¼ã‚“ã§VMDãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚¹ã‚¿ãƒ¼ãƒˆ
                 var newVMD = await vmdPlayer.Starter(null, folderPath, fileName, token);
-                //V‹KVMD‚ğ“o˜^
+                //æ–°è¦VMDã‚’ç™»éŒ²
                 dic_VMDReader.Add(fileName, newVMD);
             }
         }
 
         /// <summary>
-        /// ƒLƒƒƒ‰î•ñ‚ğ‘Sæ“¾
+        /// ã‚­ãƒ£ãƒ©æƒ…å ±ã‚’å…¨å–å¾—
         /// </summary>
         /// <returns></returns>
         public CharaInfoData[] GetCharasInfo()
@@ -265,7 +255,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// Œ»İ‚ÌƒLƒƒƒ‰–¼‚ğæ“¾
+        /// ç¾åœ¨ã®ã‚­ãƒ£ãƒ©åã‚’å–å¾—
         /// </summary>
         /// <returns></returns>
         public bool GetNowCharaName(out string name)
@@ -283,7 +273,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// Œ»İ‚ÌƒAƒjƒ[ƒVƒ‡ƒ“ƒNƒŠƒbƒv–¼‚ğæ“¾
+        /// ç¾åœ¨ã®ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚¯ãƒªãƒƒãƒ—åã‚’å–å¾—
         /// </summary>
         /// <returns></returns>
         public DanceInfoData GetNowAnimeInfo()
@@ -292,7 +282,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// Œ»İ‚ÌƒŠƒbƒvƒVƒ“ƒN–¼‚ğæ“¾
+        /// ç¾åœ¨ã®ãƒªãƒƒãƒ—ã‚·ãƒ³ã‚¯åã‚’å–å¾—
         /// </summary>
         /// <returns></returns>
         public string GetNowLipSyncName()
@@ -309,7 +299,7 @@ namespace UniLiveViewer
 
         private void OnEnable()
         {
-            //retryˆ—
+            //ãƒªãƒˆãƒ©ã‚¤å‡¦ç†
             if (!isGenerateComplete)
             {
                 isGenerateComplete = true;
