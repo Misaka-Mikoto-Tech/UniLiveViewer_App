@@ -1,4 +1,4 @@
-using System.Collections;
+Ôªøusing System.Collections;
 using UnityEngine;
 
 namespace UniLiveViewer
@@ -7,6 +7,8 @@ namespace UniLiveViewer
     {
         PlayerStateManager playerStateManager;
         private Vector3 EndPoint = new Vector3(0, 0.7f, 5);
+        private bool isInit = false;
+        private Vector3 keepDistance;
 
         private void Awake()
         {
@@ -34,10 +36,10 @@ namespace UniLiveViewer
                     EndPoint = new Vector3(0, 1.2f, 4);
                     break;
             }
-            StartCoroutine(init());
+            StartCoroutine(Init());
         }
 
-        IEnumerator init()
+        IEnumerator Init()
         {
             yield return new WaitForSeconds(0.5f);
 
@@ -52,9 +54,22 @@ namespace UniLiveViewer
 
             yield return new WaitForSeconds(0.5f);
 
-            //UIÇï\é¶Ç∑ÇÈ
+            //UI„ÇíË°®Á§∫„Åô„Çã
             playerStateManager.SwitchUI();
+
+            isInit = true;
         }
+
+        private void OnEnable()
+        {
+            if (isInit) transform.position = (playerStateManager.transform.position - keepDistance);
+        }
+
+        private void OnDisable()
+        {
+            if (isInit) keepDistance = playerStateManager.transform.position - transform.position;
+        }
+
     }
 
 }
