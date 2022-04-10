@@ -234,13 +234,11 @@ namespace UniLiveViewer
             {
                 float sec = slider_Playback.Value;
                 timeline.AudioClip_PlaybackTime = sec;//timelineに時間を反映
-                                                      //textMesh_Page2[1].text = ((int)sec / 60).ToString() + ":" + ((int)sec % 60).ToString("00");//テキストに反映
                 textMesh_Page2[1].text = $"{((int)sec / 60):00}:{((int)sec % 60):00}";//テキストに反映
             };
             slider_Speed.ValueUpdate += () =>
             {
                 timeline.timelineSpeed = slider_Speed.Value;//スライダーの値を反映
-                                                            //textMesh_Page2[3].text = slider_Speed.Value.ToString("0.00");//テキストに反映
                 textMesh_Page2[3].text = $"{slider_Speed.Value:0.00}";//テキストに反映
             };
             btnS_Play.onTrigger += Click_AudioPlayer;
@@ -969,7 +967,7 @@ namespace UniLiveViewer
             if (currentPage == 0)
             {
                 //負荷が高いので削除処理とフレームをずらす
-                await UniTask.Delay(500, cancellationToken: cancellation_token);
+                await UniTask.Delay(250, cancellationToken: cancellation_token);
 
                 //ポータルにキャラが存在していなければ生成しておく
                 if (!timeline.isPortalChara()) ChangeChara(0);

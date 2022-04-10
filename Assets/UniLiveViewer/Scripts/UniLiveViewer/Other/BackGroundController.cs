@@ -1,4 +1,4 @@
-using TunnelEffect;
+ï»¿using TunnelEffect;
 using UnityEngine;
 
 namespace UniLiveViewer
@@ -10,16 +10,16 @@ namespace UniLiveViewer
         [SerializeField] private int currntHole = 0;
         [SerializeField] private int currntParticle = 0;
 
-        [Header("ƒƒLƒ…[ƒuƒ}ƒbƒv„")]
+        [Header("ï¼œã‚­ãƒ¥ãƒ¼ãƒ–ãƒãƒƒãƒ—ï¼")]
         [SerializeField] private Material cubemap_Mat = null;
         public Material GetCubemapMat() { return cubemap_Mat; }
         [SerializeField] private Cubemap[] cubemapList = null;
 
-        [Header("ƒƒgƒ“ƒlƒ‹„")]
+        [Header("ï¼œãƒˆãƒ³ãƒãƒ«ï¼")]
         [SerializeField] private TunnelFX2 tunnelAnchor;
         [SerializeField] private int[] tunnelList = new int[0];
 
-        [Header("ƒƒp[ƒeƒBƒNƒ‹„")]
+        [Header("ï¼œãƒ‘ãƒ¼ãƒ†ã‚£ã‚¯ãƒ«ï¼")]
         [SerializeField] private Transform[] particleAnchors = new Transform[0];
 
         // Start is called before the first frame update
@@ -38,30 +38,30 @@ namespace UniLiveViewer
             currntHole = 0;
             currntParticle = 0;
 
-            //ƒLƒ…[ƒuƒ}ƒbƒv‚ğ‰Šú‰»
+            //ã‚­ãƒ¥ãƒ¼ãƒ–ãƒãƒƒãƒ—ã‚’åˆæœŸåŒ–
             cubemap_Mat.SetTexture("_Tex", cubemapList[currntCubemap]);
 
-            //ƒgƒ“ƒlƒ‹‚Í–³Œø‰»
+            //ãƒˆãƒ³ãƒãƒ«ã¯ç„¡åŠ¹åŒ–
             if (tunnelAnchor.gameObject.activeSelf) tunnelAnchor.gameObject.SetActive(false);
 
-            //ƒp[ƒeƒBƒNƒ‹–³Œø‰»
+            //ãƒ‘ãƒ¼ãƒ†ã‚£ã‚¯ãƒ«ç„¡åŠ¹åŒ–
 
         }
 
         /// <summary>
-        /// passthrough—p
+        /// passthroughç”¨
         /// </summary>
         public void Clear_CubemapTex()
         {
             string str;
             cubemap_Mat.SetTexture("_Tex", null);
-            //ƒ[ƒ€ƒz[ƒ‹‚ğ–³Œø‰»‚µ‚Ä‚¨‚­
+            //ãƒ¯ãƒ¼ãƒ ãƒ›ãƒ¼ãƒ«ã‚’ç„¡åŠ¹åŒ–ã—ã¦ãŠã
             currntHole = 0;
             SetWormHole(0, out str);
         }
 
         /// <summary>
-        /// ƒLƒ…[ƒuƒ}ƒbƒv‚ğ•ÏX
+        /// ã‚­ãƒ¥ãƒ¼ãƒ–ãƒãƒƒãƒ—ã‚’å¤‰æ›´
         /// </summary>
         /// <param name="moveIndex"></param>
         public void SetCubemap(int moveIndex, out string resultCurrent)
@@ -75,7 +75,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ƒ[ƒ€ƒz[ƒ‹‚ğ•ÏX
+        /// ãƒ¯ãƒ¼ãƒ ãƒ›ãƒ¼ãƒ«ã‚’å¤‰æ›´
         /// </summary>
         /// <param name="moveIndex"></param>
         public void SetWormHole(int moveIndex, out string resultCurrent)
@@ -99,7 +99,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ƒp[ƒeƒBƒNƒ‹‚ğ•ÏX
+        /// ãƒ‘ãƒ¼ãƒ†ã‚£ã‚¯ãƒ«ã‚’å¤‰æ›´
         /// </summary>
         /// <param name="moveIndex"></param>
         public void SetParticle(int moveIndex, out string resultCurrent)

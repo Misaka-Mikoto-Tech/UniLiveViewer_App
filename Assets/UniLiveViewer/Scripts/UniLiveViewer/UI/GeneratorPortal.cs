@@ -35,7 +35,7 @@ namespace UniLiveViewer
         private TimelineController timeline = null;
         private FileAccessManager fileManager = null;
 
-        private VMDPlayer vmdPlayer;
+        private VMDPlayer_Custom vmdPlayer;
         private bool isGenerateComplete = true;
         private bool retryVMD = false;
         private CancellationTokenSource cts;
@@ -175,7 +175,7 @@ namespace UniLiveViewer
                 //ポータルキャラを確認
                 var portalChara = timeline.trackBindChara[TimelineController.PORTAL_ELEMENT];
                 if (!portalChara) return;
-                vmdPlayer = portalChara.GetComponent<VMDPlayer>();
+                vmdPlayer = portalChara.GetComponent<VMDPlayer_Custom>();
 
 
                 //VMD
@@ -221,7 +221,7 @@ namespace UniLiveViewer
         /// <param name="vmpPlayer"></param>
         /// <param name="folderPath"></param>
         /// <param name="fileName"></param>
-        public async UniTask VMDPlay(VMDPlayer vmdPlayer, string folderPath, string fileName, CancellationToken token)
+        public async UniTask VMDPlay(VMDPlayer_Custom vmdPlayer, string folderPath, string fileName, CancellationToken token)
         {
             //既存の読み込み済みリストと照合
             if (dic_VMDReader.ContainsKey(fileName))

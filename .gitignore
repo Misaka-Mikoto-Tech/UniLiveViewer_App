@@ -10,6 +10,8 @@
 # Push prohibited
 UniLiveViewer_BackUpThisFolder_ButDontShipItWithYourGame/
 UniLiveViewer_BurstDebugInformation_DoNotShip/
+UniLiveViewer_0.6.8_BackUpThisFolder_ButDontShipItWithYourGame
+UniLiveViewer_0.6.8_BurstDebugInformation_DoNotShip
 
 # Never ignore Asset meta data
 ![Aa]ssets/**/*.meta

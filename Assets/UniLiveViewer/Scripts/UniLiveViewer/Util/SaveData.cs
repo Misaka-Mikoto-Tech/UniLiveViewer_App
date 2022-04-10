@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -6,20 +6,20 @@ namespace UniLiveViewer
 {
     public class SaveData : Object
     {
-        public static string folderPath_Persistent;//ƒVƒXƒeƒ€İ’è’l‚È‚Ç
+        public static string folderPath_Persistent;//ã‚·ã‚¹ãƒ†ãƒ è¨­å®šå€¤ãªã©
 
         public enum USE_LANGUAGE
         {
             NULL,
             JP,
             EN,
-            KO//–¢g—p
+            KO//æœªä½¿ç”¨
         }
 
         public static Dictionary<string, int> dicVMD_offset = new Dictionary<string, int>();
 
         /// <summary>
-        /// Jsonƒtƒ@ƒCƒ‹‚ğ“Ç‚İ‚ñ‚ÅƒNƒ‰ƒX‚É•ÏŠ·
+        /// Jsonãƒ•ã‚¡ã‚¤ãƒ«ã‚’èª­ã¿è¾¼ã‚“ã§ã‚¯ãƒ©ã‚¹ã«å¤‰æ›
         /// </summary>
         /// <returns></returns>
         public static SystemData GetJson_SystemData()
@@ -39,12 +39,12 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// Jsonƒtƒ@ƒCƒ‹‚É‘‚«‚Ş
+        /// Jsonãƒ•ã‚¡ã‚¤ãƒ«ã«æ›¸ãè¾¼ã‚€
         /// </summary>
         /// <param name="lang"></param>
         public static void SetJson_SystemData(SystemData systemData)
         {
-            //JsonŒ`®‚É•ÏŠ·
+            //Jsonå½¢å¼ã«å¤‰æ›
             string jsonstr = JsonUtility.ToJson(systemData);
 
             StreamWriter writer = new StreamWriter(Application.persistentDataPath + "/System.json", false);
@@ -53,11 +53,11 @@ namespace UniLiveViewer
             writer.Close();
         }
         /// <summary>
-        /// ƒ_ƒ“ƒXƒ‚[ƒVƒ‡ƒ“‚ÌÄ¶ˆÊ’u‘‚«‚İ
+        /// ãƒ€ãƒ³ã‚¹ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®å†ç”Ÿä½ç½®æ›¸ãè¾¼ã¿
         /// </summary>
         public static void SaveOffset()
         {
-            //‘‚«‚İ
+            //æ›¸ãè¾¼ã¿
             string path = FileAccessManager.GetFullPath(FileAccessManager.FOLDERTYPE.SETTING);
             using (StreamWriter writer = new StreamWriter(path + "MotionOffset.txt", false, System.Text.Encoding.UTF8))
             {

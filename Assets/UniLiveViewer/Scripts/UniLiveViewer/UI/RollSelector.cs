@@ -1,11 +1,11 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace UniLiveViewer
 {
-    //ì‚Á‚Ä‚İ‚½‚ª”p~‚µ‚»‚¤
+    //ä½œã£ã¦ã¿ãŸãŒå»ƒæ­¢ã—ãã†
     public class RollSelector : MonoBehaviour
     {
         [SerializeField] private TouchCollision[] touchCol = new TouchCollision[2];
@@ -34,22 +34,22 @@ namespace UniLiveViewer
 
         public void init(List<string> _list)
         {
-            //‘O‰ñƒf[ƒ^‚ğíœ
+            //å‰å›ãƒ‡ãƒ¼ã‚¿ã‚’å‰Šé™¤
             current = 0;
             if (listUp.Count > 0) listUp.Clear();
             if (baseList.Count > 0) baseList.Clear();
 
-            //ƒRƒs[
+            //ã‚³ãƒ”ãƒ¼
             baseList = _list;
 
-            //‰Šú‚ÌƒŠƒXƒgƒAƒbƒv‚·‚é•ª‚ğİ’è
+            //åˆæœŸã®ãƒªã‚¹ãƒˆã‚¢ãƒƒãƒ—ã™ã‚‹åˆ†ã‚’è¨­å®š
             listUp.Add(baseList.Count - 2 - current);
             listUp.Add(baseList.Count - 1 - current);
             listUp.Add(current);
             listUp.Add(current + 1);
             listUp.Add(current + 2);
 
-            //ƒeƒLƒXƒg‚É”½‰f
+            //ãƒ†ã‚­ã‚¹ãƒˆã«åæ˜ 
             TextUpdate(" (Instance)", "");
         }
 
@@ -57,16 +57,16 @@ namespace UniLiveViewer
         {
             int stateDefault = Animator.StringToHash("Default");
 
-            //ƒy[ƒW‚ªŠJ‚©‚ê‚Ä‚¢‚éŠÔ
+            //ãƒšãƒ¼ã‚¸ãŒé–‹ã‹ã‚Œã¦ã„ã‚‹é–“
             while (transform)
             {
-                //G‚ê‚½ƒRƒ‰ƒCƒ_[‘¤‚É‰ñ“]ƒAƒjƒ[ƒVƒ‡ƒ“
+                //è§¦ã‚ŒãŸã‚³ãƒ©ã‚¤ãƒ€ãƒ¼å´ã«å›è»¢ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³
                 if (touchCol[0].isTouch)
                 {
                     current--;
                     if (current < 0) current = baseList.Count - 1;
 
-                    //ƒCƒxƒ“ƒg
+                    //ã‚¤ãƒ™ãƒ³ãƒˆ
                     if (onTouch != null) onTouch();
 
                     anime.SetBool("Roll_Up", true);
@@ -74,23 +74,23 @@ namespace UniLiveViewer
                     yield return null;
                     anime.SetBool("Roll_Up", false);
 
-                    listUp.RemoveAt(listUp.Count - 1);//––”ö‚ğíœ
+                    listUp.RemoveAt(listUp.Count - 1);//æœ«å°¾ã‚’å‰Šé™¤
 
                     if (current - 2 < 0)
                     {
-                        listUp.Insert(0, baseList.Count - (2 - current));//æ“ª‚É’Ç‰Á
+                        listUp.Insert(0, baseList.Count - (2 - current));//å…ˆé ­ã«è¿½åŠ 
                     }
                     else
                     {
-                        listUp.Insert(0, current - 2);//æ“ª‚É’Ç‰Á
+                        listUp.Insert(0, current - 2);//å…ˆé ­ã«è¿½åŠ 
                     }
 
-                    yield return new WaitForSeconds(0.01f);//AnimatorState‚ªŠmÀ‚ÉØ‚è‘Ö‚í‚é‚Ü‚Å­‚µ‘Ò‚Â
+                    yield return new WaitForSeconds(0.01f);//AnimatorStateãŒç¢ºå®Ÿã«åˆ‡ã‚Šæ›¿ã‚ã‚‹ã¾ã§å°‘ã—å¾…ã¤
                     while (anime.GetCurrentAnimatorStateInfo(0).shortNameHash != stateDefault)
                     {
                         yield return null;
                     }
-                    //ƒeƒLƒXƒg‚É”½‰f
+                    //ãƒ†ã‚­ã‚¹ãƒˆã«åæ˜ 
                     TextUpdate(" (Instance)", "");
 
                     touchCol[0].isTouch = false;
@@ -100,7 +100,7 @@ namespace UniLiveViewer
                     current++;
                     if (current >= baseList.Count) current = 0;
 
-                    //ƒCƒxƒ“ƒg
+                    //ã‚¤ãƒ™ãƒ³ãƒˆ
                     if (onTouch != null) onTouch();
 
                     anime.SetBool("Roll_Down", true);
@@ -108,23 +108,23 @@ namespace UniLiveViewer
                     yield return null;
                     anime.SetBool("Roll_Down", false);
 
-                    listUp.RemoveAt(0);//æ“ª‚ğíœ
+                    listUp.RemoveAt(0);//å…ˆé ­ã‚’å‰Šé™¤
                     if (current + 2 >= baseList.Count)
                     {
-                        listUp.Add(current + 2 - baseList.Count);//––”ö‚É’Ç‰Á
+                        listUp.Add(current + 2 - baseList.Count);//æœ«å°¾ã«è¿½åŠ 
                     }
                     else
                     {
-                        listUp.Add(current + 2);//––”ö‚É’Ç‰Á
+                        listUp.Add(current + 2);//æœ«å°¾ã«è¿½åŠ 
                     }
 
-                    yield return new WaitForSeconds(0.01f);//AnimatorState‚ªŠmÀ‚ÉØ‚è‘Ö‚í‚é‚Ü‚Å­‚µ‘Ò‚Â
+                    yield return new WaitForSeconds(0.01f);//AnimatorStateãŒç¢ºå®Ÿã«åˆ‡ã‚Šæ›¿ã‚ã‚‹ã¾ã§å°‘ã—å¾…ã¤
                     while (anime.GetCurrentAnimatorStateInfo(0).shortNameHash != stateDefault)
                     {
                         yield return null;
                     }
 
-                    //ƒeƒLƒXƒg‚É”½‰f
+                    //ãƒ†ã‚­ã‚¹ãƒˆã«åæ˜ 
                     TextUpdate(" (Instance)", "");
 
                     touchCol[1].isTouch = false;
@@ -140,8 +140,8 @@ namespace UniLiveViewer
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="oldChar">Replace‚Ì‹@”\</param>
-        /// <param name="newChar">Replace‚Ì‹@”\</param>
+        /// <param name="oldChar">Replaceã®æ©Ÿèƒ½</param>
+        /// <param name="newChar">Replaceã®æ©Ÿèƒ½</param>
         private void TextUpdate(string oldChar, string newChar)
         {
             if (oldChar != "")

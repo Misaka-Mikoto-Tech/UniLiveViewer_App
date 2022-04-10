@@ -1,28 +1,26 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 
 namespace UniLiveViewer 
 {
-    //TODO:Œ©’¼‚·A®—‚·‚é
+    //TODO:è¦‹ç›´ã™ã€æ•´ç†ã™ã‚‹
     public class PlayerStateManager : MonoBehaviour
     {
-        [Header("Šî–{")]
+        [Header("åŸºæœ¬")]
         [SerializeField] private SimpleCapsuleWithStickMovement simpleCapsuleWithStickMovement = null;
-        //public bool isOperation = false;//ŠJ–‹‘€ì‹Ö~—pƒtƒ‰ƒO
         private static bool isSummonCircle = false;
         public static bool isGrabbedChara_OnCircle = false;
         private TimelineController timeline;
-        //[SerializeField] private OVRScreenFade screenFade;
 
-        [Header("’Í‚İ")]
-        [SerializeField] private OVRGrabber_UniLiveViewer[] ovrGrabber = null;//¶‰E                                                                      
-        //—¼è‚Å’Í‚Ş
+        [Header("æ´ã¿")]
+        [SerializeField] private OVRGrabber_UniLiveViewer[] ovrGrabber = null;//å·¦å³                                                                      
+        //ä¸¡æ‰‹ã§æ´ã‚€
         private OVRGrabbable_Custom bothHandsGrabObj;
         private Vector3 initBothHandsDistance;
         private Transform bothHandsCenterAnchor;
 
-        [Header("UIŠÖŒW")]
+        [Header("UIé–¢ä¿‚")]
         [SerializeField] private MoveUI moveUI;
         [SerializeField] private Transform handUI;
         private bool isMoveUI = false;
@@ -31,11 +29,11 @@ namespace UniLiveViewer
         private CharacterCameraConstraint_Custom charaCam;
         [SerializeField] private Transform[] crossUI = new Transform[2];
         private TextMesh[] textMesh_cross = new TextMesh[2];
-        [Header("g—pƒL[")]
+        [Header("ä½¿ç”¨ã‚­ãƒ¼")]
         //UI
         [SerializeField] private KeyCode uiKey_win = KeyCode.U;
         [SerializeField] private OVRInput.RawButton[] uiKey_quest = { OVRInput.RawButton.Y, OVRInput.RawButton.B };
-        //‰ñ“]‚Ég—p‚·‚éƒL[
+        //å›è»¢ã«ä½¿ç”¨ã™ã‚‹ã‚­ãƒ¼
         [SerializeField]
         private OVRInput.RawButton[] roteKey_LCon = {
             OVRInput.RawButton.LThumbstickLeft,OVRInput.RawButton.LThumbstickRight
@@ -44,7 +42,7 @@ namespace UniLiveViewer
         private OVRInput.RawButton[] roteKey_Rcon = {
             OVRInput.RawButton.RThumbstickLeft,OVRInput.RawButton.RThumbstickRight
         };
-        //ƒTƒCƒY•ÏX‚Ég—p‚·‚éƒL[
+        //ã‚µã‚¤ã‚ºå¤‰æ›´ã«ä½¿ç”¨ã™ã‚‹ã‚­ãƒ¼
         [SerializeField]
         private OVRInput.RawButton[] resizeKey_LCon = {
             OVRInput.RawButton.LThumbstickDown,OVRInput.RawButton.LThumbstickUp
@@ -54,20 +52,20 @@ namespace UniLiveViewer
         private OVRInput.RawButton[] resizeKey_RCon = {
             OVRInput.RawButton.RThumbstickDown,OVRInput.RawButton.RThumbstickUp
         };
-        //ƒ‰ƒCƒ“ƒZƒŒƒNƒ^[•\¦Ø‘ÖƒL[
+        //ãƒ©ã‚¤ãƒ³ã‚»ãƒ¬ã‚¯ã‚¿ãƒ¼è¡¨ç¤ºåˆ‡æ›¿ã‚­ãƒ¼
         [SerializeField]
         private OVRInput.RawButton[] lineOnKey = {
             OVRInput.RawButton.X, OVRInput.RawButton.A
         };
-        //ƒAƒ^ƒbƒ`‚Ég—p
+        //ã‚¢ã‚¿ãƒƒãƒã«ä½¿ç”¨
         [SerializeField]
         private OVRInput.RawButton[] actionKey = {
             OVRInput.RawButton.LIndexTrigger, OVRInput.RawButton.RIndexTrigger
         };
 
-        [Header("ƒTƒEƒ“ƒh")]
+        [Header("ã‚µã‚¦ãƒ³ãƒ‰")]
         private AudioSource audioSource;
-        [SerializeField] private AudioClip[] Sound;//UIŠJ‚­,UI•Â‚¶‚é
+        [SerializeField] private AudioClip[] Sound;//UIé–‹ã,UIé–‰ã˜ã‚‹
 
         public OVRGrabbable_Custom[] bothHandsCandidate = new OVRGrabbable_Custom[2];
 
@@ -88,7 +86,7 @@ namespace UniLiveViewer
                 textMesh_cross[i] = crossUI[i].GetChild(0).GetComponent<TextMesh>();
             }
 
-            //—¼è’Í‚İ—p
+            //ä¸¡æ‰‹æ´ã¿ç”¨
             foreach (var hand in ovrGrabber)
             {
                 hand.OnSummon += ChangeSummonCircle;
@@ -104,7 +102,7 @@ namespace UniLiveViewer
         // Start is called before the first frame update
         void Start()
         {
-            //”ñ•\‚ğ‰Šú‰»
+            //éè¡¨ã‚’åˆæœŸåŒ–
             handUI.gameObject.SetActive(isHandUI);
 
             for (int i = 0; i < crossUI.Length; i++)
@@ -118,39 +116,36 @@ namespace UniLiveViewer
         // Update is called once per frame
         void Update()
         {
-            //‰Šú‰»Ï‚İ‚Å‚È‚¯‚ê‚Îˆ—‚µ‚È‚¢
-            //if (!isOperation) return;
-
             isGrabbedChara_OnCircle = false;
             isSummonCircle = false;
 
-            //¶è§Œä
+            //å·¦æ‰‹åˆ¶å¾¡
             if (ovrGrabber[0].handState == OVRGrabber_UniLiveViewer.HandState.CHARA_ONCIRCLE)
             {
                 isGrabbedChara_OnCircle = true;
                 crossUI[0].gameObject.SetActive(true);
 
-                //¶è¶‰ñ“]
+                //å·¦æ‰‹å·¦å›è»¢
                 if (OVRInput.GetDown(roteKey_LCon[0]))
                 {
                     ovrGrabber[0].lineSelector.GroundPointer_AddEulerAngles(new Vector3(0, +15, 0));
-                    //‰ñ“]‰¹
+                    //å›è»¢éŸ³
                     audioSource.PlayOneShot(Sound[2]);
                 }
-                //¶è‰E‰ñ“]
+                //å·¦æ‰‹å³å›è»¢
                 else if (OVRInput.GetDown(roteKey_LCon[1]))
                 {
                     ovrGrabber[0].lineSelector.GroundPointer_AddEulerAngles(new Vector3(0, -15, 0));
-                    //‰ñ“]‰¹
+                    //å›è»¢éŸ³
                     audioSource.PlayOneShot(Sound[2]);
                 }
 
-                //¶èk¬
+                //å·¦æ‰‹ç¸®å°
                 if (OVRInput.Get(resizeKey_LCon[0]))
                 {
                     timeline.trackBindChara[TimelineController.PORTAL_ELEMENT].CustomScalar += -0.005f;
                 }
-                //¶èŠg‘å
+                //å·¦æ‰‹æ‹¡å¤§
                 else if (OVRInput.Get(resizeKey_LCon[1]))
                 {
                     timeline.trackBindChara[TimelineController.PORTAL_ELEMENT].CustomScalar += 0.005f;
@@ -168,27 +163,27 @@ namespace UniLiveViewer
                 isGrabbedChara_OnCircle = true;
                 crossUI[1].gameObject.SetActive(true);
 
-                //‰Eè¶‰ñ“]
+                //å³æ‰‹å·¦å›è»¢
                 if (OVRInput.GetDown(roteKey_Rcon[0]))
                 {
                     ovrGrabber[1].lineSelector.GroundPointer_AddEulerAngles(new Vector3(0, +15, 0));
-                    //‰ñ“]‰¹
+                    //å›è»¢éŸ³
                     audioSource.PlayOneShot(Sound[2]);
                 }
-                //‰Eè‰E‰ñ“]
+                //å³æ‰‹å³å›è»¢
                 else if (OVRInput.GetDown(roteKey_Rcon[1]))
                 {
                     ovrGrabber[1].lineSelector.GroundPointer_AddEulerAngles(new Vector3(0, -15, 0));
-                    //‰ñ“]‰¹
+                    //å›è»¢éŸ³
                     audioSource.PlayOneShot(Sound[2]);
                 }
 
-                //‰Eèk¬
+                //å³æ‰‹ç¸®å°
                 if (OVRInput.Get(resizeKey_RCon[0]))
                 {
                     timeline.trackBindChara[TimelineController.PORTAL_ELEMENT].CustomScalar += -0.01f;
                 }
-                //‰EèŠg‘å
+                //å³æ‰‹æ‹¡å¤§
                 else if (OVRInput.Get(resizeKey_RCon[1]))
                 {
                     timeline.trackBindChara[TimelineController.PORTAL_ELEMENT].CustomScalar += 0.01f;
@@ -201,23 +196,23 @@ namespace UniLiveViewer
                 crossUI[1].gameObject.SetActive(false);
             }
 
-            //ƒLƒƒƒ‰‚ª¢Š«w‚ÉƒZƒbƒg‚³‚ê‚Ä‚¢‚ê‚Î
+            //ã‚­ãƒ£ãƒ©ãŒå¬å–šé™£ã«ã‚»ãƒƒãƒˆã•ã‚Œã¦ã„ã‚Œã°
             if (isGrabbedChara_OnCircle)
             {
-                //ˆÚ“®‚Æ•ûŒü“]Š·‚ğ–³Œø‰»
+                //ç§»å‹•ã¨æ–¹å‘è»¢æ›ã‚’ç„¡åŠ¹åŒ–
                 simpleCapsuleWithStickMovement.EnableLinearMovement = false;
                 simpleCapsuleWithStickMovement.EnableRotation = false;
             }
-            //‰Šú‰»Œn
+            //åˆæœŸåŒ–ç³»
             else
             {
                 simpleCapsuleWithStickMovement.EnableRotation = true;
                 if (!isHandUI) simpleCapsuleWithStickMovement.EnableLinearMovement = true;
 
-                //ƒnƒ“ƒhUIoŒ»’†
+                //ãƒãƒ³ãƒ‰UIå‡ºç¾ä¸­
                 if (isHandUI)
                 {
-                    //ƒAƒiƒƒOƒXƒeƒBƒbƒN‚ÅƒJƒƒ‰ˆÊ’u’²®
+                    //ã‚¢ãƒŠãƒ­ã‚°ã‚¹ãƒ†ã‚£ãƒƒã‚¯ã§ã‚«ãƒ¡ãƒ©ä½ç½®èª¿æ•´
                     if (OVRInput.GetDown(OVRInput.RawButton.LThumbstickUp))
                     {
                         charaCam.HeightOffset = Mathf.Clamp(charaCam.HeightOffset + 0.05f, 0f, 1.5f);
@@ -231,7 +226,7 @@ namespace UniLiveViewer
                 }
             }
 
-            //ƒ‰ƒCƒ“ƒZƒŒƒNƒ^[Ø‚è‘Ö‚¦
+            //ãƒ©ã‚¤ãƒ³ã‚»ãƒ¬ã‚¯ã‚¿ãƒ¼åˆ‡ã‚Šæ›¿ãˆ
             for (int i = 0; i < lineOnKey.Length; i++)
             {
                 if (OVRInput.GetDown(lineOnKey[i]))
@@ -241,7 +236,7 @@ namespace UniLiveViewer
                 }
             }
 
-            //UI•\¦
+            //UIè¡¨ç¤º
             if (OVRInput.GetDown(uiKey_quest[1]) || Input.GetKeyDown(uiKey_win))
             {
                 SwitchUI();
@@ -251,7 +246,7 @@ namespace UniLiveViewer
                 SwitchHandUI();
             }
 
-            //ƒAƒCƒeƒ€‚ğƒAƒ^ƒbƒ`‚·‚é
+            //ã‚¢ã‚¤ãƒ†ãƒ ã‚’ã‚¢ã‚¿ãƒƒãƒã™ã‚‹
             for (int i = 0; i < actionKey.Length; i++)
             {
                 if (OVRInput.GetDown(actionKey[i]))
@@ -261,21 +256,21 @@ namespace UniLiveViewer
                     {
                         ovrGrabber[i].FoeceGrabEnd();
 
-                        //ƒAƒ^ƒbƒ`‘ÎÛ‚ ‚è‚©‚Âƒ}ƒjƒ…ƒAƒ‹ƒ‚[ƒh
+                        //ã‚¢ã‚¿ãƒƒãƒå¯¾è±¡ã‚ã‚Šã‹ã¤ãƒãƒ‹ãƒ¥ã‚¢ãƒ«ãƒ¢ãƒ¼ãƒ‰
                         if (grabObj.hitCollider && timeline.isManualMode())
                         {
-                            //è‚È‚çˆ¬‚ç‚¹‚é
+                            //æ‰‹ãªã‚‰æ¡ã‚‰ã›ã‚‹
                             if (grabObj.hitCollider.name.Contains("Hand"))
                             {
                                 var targetChara = grabObj.hitCollider.GetComponent<AttachPoint>().myCharaCon;
                                 timeline.SwitchHandType(targetChara, true, grabObj.hitCollider.name.Contains("Left"));
                             }
 
-                            //ƒAƒ^ƒbƒ`‚·‚é
+                            //ã‚¢ã‚¿ãƒƒãƒã™ã‚‹
                             grabObj.AttachToHitCollider();
                             audioSource.PlayOneShot(Sound[3]);
                         }
-                        //ƒAƒ^ƒbƒ`æ‚ª‚È‚¯‚ê‚Îíœ
+                        //ã‚¢ã‚¿ãƒƒãƒå…ˆãŒãªã‘ã‚Œã°å‰Šé™¤
                         else
                         {
                             Destroy(grabObj.gameObject);
@@ -283,10 +278,10 @@ namespace UniLiveViewer
                         }
 
 
-                        //—¼è‚ªƒtƒŠ[‚©
+                        //ä¸¡æ‰‹ãŒãƒ•ãƒªãƒ¼ã‹
                         if (!ovrGrabber[0].grabbedObject && !ovrGrabber[1].grabbedObject)
                         {
-                            //ƒAƒ^ƒbƒ`ƒ|ƒCƒ“ƒg‚ğ–³Œø‰»
+                            //ã‚¢ã‚¿ãƒƒãƒãƒã‚¤ãƒ³ãƒˆã‚’ç„¡åŠ¹åŒ–
                             timeline.SetActive_AttachPoint(false);
                         }
                     }
@@ -296,10 +291,10 @@ namespace UniLiveViewer
 
         private void LateUpdate()
         {
-            //—¼è‚Å’Í‚ŞƒIƒuƒWƒFƒNƒg‚ª‚ ‚ê‚ÎÀ•W‚ğã‘‚«‚·‚é
+            //ä¸¡æ‰‹ã§æ´ã‚€ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆãŒã‚ã‚Œã°åº§æ¨™ã‚’ä¸Šæ›¸ãã™ã‚‹
             if (bothHandsGrabObj)
             {
-                //—¼è‚Ì’†ŠÔÀ•W
+                //ä¸¡æ‰‹ã®ä¸­é–“åº§æ¨™
                 Vector3 bothHandsDistance = (ovrGrabber[1].GetGripPoint - ovrGrabber[0].GetGripPoint);
                 bothHandsCenterAnchor.localScale = Vector3.one * bothHandsDistance.sqrMagnitude / initBothHandsDistance.sqrMagnitude;
                 bothHandsCenterAnchor.position = bothHandsDistance * 0.5f + ovrGrabber[0].GetGripPoint;
@@ -308,12 +303,12 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ¢Š«w‚Ìó‘Ô‚ğƒXƒCƒbƒ`
+        /// å¬å–šé™£ã®çŠ¶æ…‹ã‚’ã‚¹ã‚¤ãƒƒãƒ
         /// </summary>
         /// <param name="target"></param>
         public void ChangeSummonCircle(OVRGrabber_UniLiveViewer target)
         {
-            //ƒ‰ƒCƒ“ƒZƒŒƒNƒ^[Ø‚è‘Ö‚¦
+            //ãƒ©ã‚¤ãƒ³ã‚»ãƒ¬ã‚¯ã‚¿ãƒ¼åˆ‡ã‚Šæ›¿ãˆ
             for (int i = 0; i < lineOnKey.Length; i++)
             {
                 if (ovrGrabber[i] == target)
@@ -326,7 +321,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// —¼è’Í‚İŒó•â‚Æ‚µ‚Ä“o˜^
+        /// ä¸¡æ‰‹æ´ã¿å€™è£œã¨ã—ã¦ç™»éŒ²
         /// </summary>
         /// <param name="newHand"></param>
         private void BothHandsCandidate(OVRGrabber_UniLiveViewer newHand)
@@ -335,13 +330,13 @@ namespace UniLiveViewer
             {
                 bothHandsCandidate[0] = ovrGrabber[0].grabbedObject;
 
-                //’¼‘O‚Ü‚Å”½‘Î‚Ìè‚Å’Í‚ñ‚Å‚¢‚½ƒIƒuƒWƒFƒNƒg‚È‚ç
+                //ç›´å‰ã¾ã§åå¯¾ã®æ‰‹ã§æ´ã‚“ã§ã„ãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆãªã‚‰
                 if (bothHandsCandidate[1] == bothHandsCandidate[0])
                 {
 
-                    //—¼è—pƒIƒuƒWƒFƒNƒg‚Æ‚µ‚ÄƒZƒbƒg
+                    //ä¸¡æ‰‹ç”¨ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã¨ã—ã¦ã‚»ãƒƒãƒˆ
                     bothHandsGrabObj = bothHandsCandidate[0];
-                    //‰Šú’l‚ğ‹L˜^
+                    //åˆæœŸå€¤ã‚’è¨˜éŒ²
                     initBothHandsDistance = (ovrGrabber[1].GetGripPoint - ovrGrabber[0].GetGripPoint);
                     bothHandsCenterAnchor.position = initBothHandsDistance * 0.5f + ovrGrabber[0].GetGripPoint;
                     bothHandsCenterAnchor.forward = (ovrGrabber[0].transform.forward + ovrGrabber[1].transform.forward) * 0.5f;
@@ -352,12 +347,12 @@ namespace UniLiveViewer
             {
                 bothHandsCandidate[1] = ovrGrabber[1].grabbedObject;
 
-                //’¼‘O‚Ü‚Å”½‘Î‚Ìè‚Å’Í‚ñ‚Å‚¢‚½ƒIƒuƒWƒFƒNƒg‚È‚ç
+                //ç›´å‰ã¾ã§åå¯¾ã®æ‰‹ã§æ´ã‚“ã§ã„ãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆãªã‚‰
                 if (bothHandsCandidate[0] == bothHandsCandidate[1])
                 {
-                    //—¼è—pƒIƒuƒWƒFƒNƒg‚Æ‚µ‚ÄƒZƒbƒg
+                    //ä¸¡æ‰‹ç”¨ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã¨ã—ã¦ã‚»ãƒƒãƒˆ
                     bothHandsGrabObj = bothHandsCandidate[1];
-                    //‰Šú’l‚ğ‹L˜^
+                    //åˆæœŸå€¤ã‚’è¨˜éŒ²
                     initBothHandsDistance = (ovrGrabber[1].GetGripPoint - ovrGrabber[0].GetGripPoint);
                     bothHandsCenterAnchor.position = initBothHandsDistance * 0.5f + ovrGrabber[0].GetGripPoint;
                     bothHandsCenterAnchor.forward = (ovrGrabber[0].transform.forward + ovrGrabber[1].transform.forward) * 0.5f;
@@ -367,20 +362,20 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ”½‘Î‚Ìè‚Å‚¿’¼‚·
+        /// åå¯¾ã®æ‰‹ã§æŒã¡ç›´ã™
         /// </summary>
         /// <param name="releasedHand"></param>
         private void BothHandsGrabEnd(OVRGrabber_UniLiveViewer releasedHand)
         {
-            //—¼è‚É‰½‚à‚È‚¯‚ê‚Îˆ—‚µ‚È‚¢
+            //ä¸¡æ‰‹ã«ä½•ã‚‚ãªã‘ã‚Œã°å‡¦ç†ã—ãªã„
             if (!bothHandsCandidate[0] && !bothHandsCandidate[1]) return;
 
-            //‰Šú‰»
+            //åˆæœŸåŒ–
             if (releasedHand == ovrGrabber[0])
             {
                 if (bothHandsCandidate[0] == bothHandsCandidate[1])
                 {
-                    //‹­§“I‚É‚½‚¹‚é
+                    //å¼·åˆ¶çš„ã«æŒãŸã›ã‚‹
                     ovrGrabber[1].ForceGrabBegin(bothHandsGrabObj);
                 }
                 bothHandsCandidate[0] = null;
@@ -389,12 +384,12 @@ namespace UniLiveViewer
             {
                 if (bothHandsCandidate[0] == bothHandsCandidate[1])
                 {
-                    //‹­§“I‚É‚½‚¹‚é
+                    //å¼·åˆ¶çš„ã«æŒãŸã›ã‚‹
                     ovrGrabber[0].ForceGrabBegin(bothHandsGrabObj);
                 }
                 bothHandsCandidate[1] = null;
             }
-            //—¼è‚ÍI—¹
+            //ä¸¡æ‰‹ã¯çµ‚äº†
             if (bothHandsGrabObj)
             {
                 bothHandsGrabObj.transform.parent = null;
@@ -402,56 +397,55 @@ namespace UniLiveViewer
                 bothHandsGrabObj = null;
             }
 
-            //—¼è‚ªƒtƒŠ[‚©
+            //ä¸¡æ‰‹ãŒãƒ•ãƒªãƒ¼ã‹
             if (!bothHandsCandidate[0] && !bothHandsCandidate[1])
             {
-                //ƒAƒ^ƒbƒ`ƒ|ƒCƒ“ƒg‚ğ–³Œø‰»
+                //ã‚¢ã‚¿ãƒƒãƒãƒã‚¤ãƒ³ãƒˆã‚’ç„¡åŠ¹åŒ–
                 timeline.SetActive_AttachPoint(false);
             }
         }
 
         public void SwitchUI()
         {
-            //UI•\¦‚ÌØ‚è‘Ö‚¦
+            //UIè¡¨ç¤ºã®åˆ‡ã‚Šæ›¿ãˆ
             isMoveUI = !moveUI.gameObject.activeSelf;
             moveUI.gameObject.SetActive(isMoveUI);
 
-            //•\¦‰¹
+            //è¡¨ç¤ºéŸ³
             if (isMoveUI) audioSource.PlayOneShot(Sound[0]);
-            //”ñ•\¦‰¹
+            //éè¡¨ç¤ºéŸ³
             else audioSource.PlayOneShot(Sound[1]);
         }
 
         /// <summary>
-        /// ƒJƒƒ‰‚Ì‚‚³UI
+        /// ã‚«ãƒ¡ãƒ©ã®é«˜ã•UI
         /// </summary>
         public void SwitchHandUI()
         {
-            //UI•\¦‚ÌØ‚è‘Ö‚¦
+            //UIè¡¨ç¤ºã®åˆ‡ã‚Šæ›¿ãˆ
             isHandUI = !isHandUI;
             handUI.gameObject.SetActive(isHandUI);
 
             if (isHandUI)
             {
-                //textMesh_CamHei.text = charaCam.HeightOffset.ToString("0.00");
                 textMesh_CamHei.text = $"{charaCam.HeightOffset:0.00}";
-                //ˆÚ“®‚ğ–³Œø‰»
+                //ç§»å‹•ã‚’ç„¡åŠ¹åŒ–
                 simpleCapsuleWithStickMovement.EnableLinearMovement = false;
             }
             else
             {
-                //ˆÚ“®‚ğ–³Œø‰»
+                //ç§»å‹•ã‚’ç„¡åŠ¹åŒ–
                 simpleCapsuleWithStickMovement.EnableLinearMovement = true;
             }
 
-            //•\¦‰¹
+            //è¡¨ç¤ºéŸ³
             if (isHandUI) audioSource.PlayOneShot(Sound[0]);
-            //”ñ•\¦‰¹
+            //éè¡¨ç¤ºéŸ³
             else audioSource.PlayOneShot(Sound[1]);
         }
 
         /// <summary>
-        /// ‚Ç‚¿‚ç‚©‚Ìè‚Å‘ÎÛƒ^ƒO‚ÌƒIƒuƒWƒFƒNƒg‚ğ’Í‚ñ‚Å‚¢‚é‚©
+        /// ã©ã¡ã‚‰ã‹ã®æ‰‹ã§å¯¾è±¡ã‚¿ã‚°ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’æ´ã‚“ã§ã„ã‚‹ã‹
         /// </summary>
         public bool CheckGrabbing()
         {
@@ -468,7 +462,7 @@ namespace UniLiveViewer
 
         private void Click_SummonCircle()
         {
-            //‚¢‚¸‚ê‚©‚Ì¢Š«w‚ªoŒ»‚µ‚Ä‚¢‚é‚©H
+            //ã„ãšã‚Œã‹ã®å¬å–šé™£ãŒå‡ºç¾ã—ã¦ã„ã‚‹ã‹ï¼Ÿ
             isSummonCircle = false;
             foreach (var e in ovrGrabber)
             {
@@ -478,18 +472,18 @@ namespace UniLiveViewer
                     break;
                 }
             }
-            //ƒKƒCƒh‚Ì•\¦‚ğØ‚è‘Ö‚¦‚é
+            //ã‚¬ã‚¤ãƒ‰ã®è¡¨ç¤ºã‚’åˆ‡ã‚Šæ›¿ãˆã‚‹
             timeline.SetCharaMeshGuide(isSummonCircle);
         }
 
 
         /// <summary>
-        /// PlayerƒCƒ“ƒXƒ^ƒ“ƒX‚ÉƒRƒ“ƒgƒ[ƒ‰[U“®‚ğw¦
+        /// Playerã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã«ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼æŒ¯å‹•ã‚’æŒ‡ç¤º
         /// </summary>
         /// <param name="touch">RTouch or LTouch</param>
-        /// <param name="frequency">ü”g”0~1(1‚Ì•û‚ª‘@×‚È‹C‚ª‚·‚é)</param>
-        /// <param name="amplitude">U‚ê•0~1(0‚Å’â~)</param>
-        /// <param name="time">U“®ŠÔAãŒÀ2•b‚ç‚µ‚¢</param>
+        /// <param name="frequency">å‘¨æ³¢æ•°0~1(1ã®æ–¹ãŒç¹Šç´°ãªæ°—ãŒã™ã‚‹)</param>
+        /// <param name="amplitude">æŒ¯ã‚Œå¹…0~1(0ã§åœæ­¢)</param>
+        /// <param name="time">æŒ¯å‹•æ™‚é–“ã€ä¸Šé™2ç§’ã‚‰ã—ã„</param>
         public static void ControllerVibration(OVRInput.Controller touch, float frequency, float amplitude, float time)
         {
             if (!GlobalConfig.isControllerVibration) return;
@@ -498,22 +492,22 @@ namespace UniLiveViewer
 
             //Task.Run(async () =>
             //{
-            //    //U“®ŠJn
+            //    //æŒ¯å‹•é–‹å§‹
             //    OVRInput.SetControllerVibration(frequency, amplitude, touch);
-            //    //w’èŠÔ‘Ò‹@
+            //    //æŒ‡å®šæ™‚é–“å¾…æ©Ÿ
             //    await Task.Delay(milliseconds);
-            //    //U“®’â~
+            //    //æŒ¯å‹•åœæ­¢
             //    OVRInput.SetControllerVibration(frequency, 0, touch);
             //});
         }
 
         /// <summary>
-        /// U“®ŠJn‚©‚çI—¹‚Ü‚Å‚Ìƒ^ƒXƒN‚ğÀs‚·‚é
+        /// æŒ¯å‹•é–‹å§‹ã‹ã‚‰çµ‚äº†ã¾ã§ã®ã‚¿ã‚¹ã‚¯ã‚’å®Ÿè¡Œã™ã‚‹
         /// </summary>
         /// <param name="touch">RTouch or LTouch</param>
-        /// <param name="frequency">ü”g”0~1(1‚Ì•û‚ª‘@×‚È‹C‚ª‚·‚é)</param>
-        /// <param name="amplitude">U‚ê•0~1(0‚Å’â~)</param>
-        /// <param name="time">U“®ŠÔAãŒÀ2•b‚ç‚µ‚¢</param>
+        /// <param name="frequency">å‘¨æ³¢æ•°0~1(1ã®æ–¹ãŒç¹Šç´°ãªæ°—ãŒã™ã‚‹)</param>
+        /// <param name="amplitude">æŒ¯ã‚Œå¹…0~1(0ã§åœæ­¢)</param>
+        /// <param name="time">æŒ¯å‹•æ™‚é–“ã€ä¸Šé™2ç§’ã‚‰ã—ã„</param>
         private void UniTask_ControllerVibration(OVRInput.Controller touch, float frequency, float amplitude, float time)
         {
             int milliseconds = (int)(Mathf.Clamp(time, 0, 2) * 1000);
@@ -522,17 +516,17 @@ namespace UniLiveViewer
             {
                 try
                 {
-                    //U“®ŠJn
+                    //æŒ¯å‹•é–‹å§‹
                     OVRInput.SetControllerVibration(frequency, amplitude, touch);
                     await UniTask.Delay(milliseconds, cancellationToken: cancellation_token);
                 }
                 catch (System.OperationCanceledException)
                 {
-                    Debug.Log("U“®’†‚ÉPlayer‚ªíœ");
+                    Debug.Log("æŒ¯å‹•ä¸­ã«PlayerãŒå‰Šé™¤");
                 }
                 finally
                 {
-                    //U“®’â~
+                    //æŒ¯å‹•åœæ­¢
                     OVRInput.SetControllerVibration(frequency, 0, touch);
                 }
             });

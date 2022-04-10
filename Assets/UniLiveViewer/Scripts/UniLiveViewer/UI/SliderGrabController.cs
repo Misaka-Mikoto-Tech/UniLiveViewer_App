@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System;
 
 namespace UniLiveViewer 
@@ -10,16 +10,16 @@ namespace UniLiveViewer
         [SerializeField] private Transform endAnchor;
         [SerializeField] private Transform[] handMesh = new Transform[2];
 
-        [Header("VisibleHandle‚ÌqƒIƒuƒWƒFƒNƒg‚ğw’è")]
+        [Header("VisibleHandleã®å­ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’æŒ‡å®š")]
         [SerializeField]
         private OVRGrabbable_Custom unVisibleHandler = null;
         private Vector3 nextHandllocalPos;
         private float handleMaxRangeX = 0;
         private float _value = 0;
-        public float maxValuel = 1.0f;//ƒXƒ‰ƒCƒ_[‚ÌÅ‘å’l
-        public float minStepValuel = 0.1f;//ƒXƒ‰ƒCƒ_[‚ğ“®‚©‚·ŠÔŠu
+        public float maxValuel = 1.0f;//ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼ã®æœ€å¤§å€¤
+        public float minStepValuel = 0.1f;//ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’å‹•ã‹ã™é–“éš”
                                           //private float StepValue = 0.0f;
-        [HideInInspector] public bool isControl = false;//‘€ì’†ƒtƒ‰ƒO
+        [HideInInspector] public bool isControl = false;//æ“ä½œä¸­ãƒ•ãƒ©ã‚°
         private Vector3 axis = Vector3.zero;
 
         [SerializeField] private bool SkipMoveMode = false;
@@ -31,7 +31,7 @@ namespace UniLiveViewer
         public event Action ValueUpdate;
 
         /// <summary>
-        /// ƒnƒ“ƒhƒ‹‚Éw’è‚µ‚½ƒIƒuƒWƒFƒNƒg‚ğ”ÍˆÍ“à‚Å§Œä‚·‚é(0`1)
+        /// ãƒãƒ³ãƒ‰ãƒ«ã«æŒ‡å®šã—ãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’ç¯„å›²å†…ã§åˆ¶å¾¡ã™ã‚‹(0ï½1)
         /// </summary>
         public float Value
         {
@@ -47,20 +47,20 @@ namespace UniLiveViewer
         private void Awake()
         {
             handleMaxRangeX = endAnchor.localPosition.x - startAnchor.localPosition.x;
-            //0‚ÅƒXƒ‰ƒCƒ_[‚ÌˆÊ’u‚ğ‰Šú‰»‚·‚é
+            //0ã§ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼ã®ä½ç½®ã‚’åˆæœŸåŒ–ã™ã‚‹
             Value = 0;
         }
 
         private void Start()
         {
-            //ƒnƒ“ƒhƒ‹‚Ì‰Šú‰»
+            //ãƒãƒ³ãƒ‰ãƒ«ã®åˆæœŸåŒ–
             initGrabHand();
-            //ŒW”Œˆ’è
+            //ä¿‚æ•°æ±ºå®š
             coefficient = maxValuel / minStepValuel / 2;
         }
 
         /// <summary>
-        /// ƒnƒ“ƒhƒ‹‚ğ’Í‚ñ‚Å‚¢‚È‚¢ó‘Ô‚É–ß‚·
+        /// ãƒãƒ³ãƒ‰ãƒ«ã‚’æ´ã‚“ã§ã„ãªã„çŠ¶æ…‹ã«æˆ»ã™
         /// </summary>
         private void initGrabHand()
         {
@@ -69,27 +69,27 @@ namespace UniLiveViewer
 
             handMesh[0].parent.transform.localRotation = Quaternion.identity;
 
-            //UI—phand‚ğ”ñ•\¦‚É
+            //UIç”¨handã‚’éè¡¨ç¤ºã«
             if (handMesh[0].gameObject.activeSelf) handMesh[0].gameObject.SetActive(false);
             if (handMesh[1].gameObject.activeSelf) handMesh[1].gameObject.SetActive(false);
         }
 
         void Update()
         {
-            //ƒXƒ‰ƒCƒ_[”ñ§Œä’†
+            //ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼éåˆ¶å¾¡ä¸­
             if (!isControl)
             {
-                //ƒnƒ“ƒhƒ‹‚ª’Í‚Ü‚ê‚½‚ç§Œä’†‚ÖˆÚs
+                //ãƒãƒ³ãƒ‰ãƒ«ãŒæ´ã¾ã‚ŒãŸã‚‰åˆ¶å¾¡ä¸­ã¸ç§»è¡Œ
                 if (unVisibleHandler.isGrabbed)
                 {
-                    unVisibleHandler.transform.parent = null;//•K{
+                    unVisibleHandler.transform.parent = null;//å¿…é ˆ
                     isControl = true;
 
-                    //ÀÛ‚Ìè‚ğ”ñ•\¦
+                    //å®Ÿéš›ã®æ‰‹ã‚’éè¡¨ç¤º
                     var realHand = (OVRGrabber_UniLiveViewer)unVisibleHandler.grabbedBy;
                     realHand.handMeshRoot.gameObject.SetActive(false);
 
-                    //UI—p‚Ìè‚ğ•\¦
+                    //UIç”¨ã®æ‰‹ã‚’è¡¨ç¤º
                     if (unVisibleHandler.grabbedBy.name.Contains("HandL"))
                     {
                         if ((realHand.transform.right).y <= 0)
@@ -112,43 +112,43 @@ namespace UniLiveViewer
                         handMesh[1].gameObject.SetActive(true);
                     }
 
-                    //‘€ìŠJn
+                    //æ“ä½œé–‹å§‹
                     Controled?.Invoke();
                 }
             }
-            //ƒXƒ‰ƒCƒ_[§Œä’†
+            //ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼åˆ¶å¾¡ä¸­
             else
             {
-                //‹——£‚ğZo
+                //è·é›¢ã‚’ç®—å‡º
                 Vector3 dt = unVisibleHandler.transform.position - visibleHandler.position;
-                //ŠOÏ
+                //å¤–ç©
                 axis = Vector3.Cross(visibleHandler.forward, dt);
                 var abs = Mathf.Abs(axis.y);
-                //ŠŠ‚ç‚©‚É“®‚­
+                //æ»‘ã‚‰ã‹ã«å‹•ã
                 if (SkipMoveMode && abs >= 0.08f)
                 {
                     Value = _value + (coefficient * axis.y * Time.deltaTime);
                     ValueUpdate?.Invoke();
-                    //ƒRƒ“ƒgƒ[ƒ‰[‚ÌU“®
+                    //ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ã®æŒ¯å‹•
                     if (isLHandGrabbed) PlayerStateManager.ControllerVibration(OVRInput.Controller.LTouch, 1, 0.2f, 0.05f);
                     else PlayerStateManager.ControllerVibration(OVRInput.Controller.RTouch, 1, 0.2f, 0.05f);
                 }
-                //min‚Ìİ’è’l‚Å‚Ş
+                //minã®è¨­å®šå€¤ã§åˆ»ã‚€
                 else if (abs >= 0.02f)
                 {
                     Value = _value + (Mathf.Sign(axis.y) * minStepValuel);
                     ValueUpdate?.Invoke();
-                    //ƒRƒ“ƒgƒ[ƒ‰[‚ÌU“®
+                    //ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ã®æŒ¯å‹•
                     if (isLHandGrabbed) PlayerStateManager.ControllerVibration(OVRInput.Controller.LTouch, 1, 0.4f, 0.05f);
                     else PlayerStateManager.ControllerVibration(OVRInput.Controller.RTouch, 1, 0.4f, 0.05f);
                 }
 
-                //handle‚ğ—£‚µ‚½‚ç
+                //handleã‚’é›¢ã—ãŸã‚‰
                 if (!unVisibleHandler.isGrabbed)
                 {
                     initGrabHand();
                     isControl = false;
-                    //‘€ìI—¹
+                    //æ“ä½œçµ‚äº†
                     UnControled?.Invoke();
                 }
             }
@@ -162,7 +162,7 @@ namespace UniLiveViewer
 
         private void OnDisable()
         {
-            //’Í‚Ü‚ê‚Ä‚¢‚½‚ç‰ğ•ú‚·‚é
+            //æ´ã¾ã‚Œã¦ã„ãŸã‚‰è§£æ”¾ã™ã‚‹
             if (unVisibleHandler.isGrabbed)
             {
                 unVisibleHandler.grabbedBy.ForceRelease(unVisibleHandler);

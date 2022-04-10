@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
@@ -19,15 +19,15 @@ namespace UniLiveViewer
                 _isEnable = value;
                 if (collisionChecker)
                 {
-                    //‹­§“I‚Ée‚Ìó‘Ô‚É‘µ‚¦‚é
+                    //å¼·åˆ¶çš„ã«è¦ªã®çŠ¶æ…‹ã«æƒãˆã‚‹
                     if (_isEnable) collisionChecker.myState = SWITCHSTATE.ON;
                     else collisionChecker.myState = SWITCHSTATE.OFF;
                 }
             }
         }
-        //D‚«‚È•ûg‚¤
+        //å¥½ããªæ–¹ä½¿ã†
         public event Action<Button_Base> onTrigger;
-        public UnityEvent onTrigger_Event;//GUI”Å(ƒpƒtƒH[ƒ}ƒ“ƒX‚ÆƒgƒŒ[ƒhƒIƒt)
+        public UnityEvent onTrigger_Event;//GUIç‰ˆ(ãƒ‘ãƒ•ã‚©ãƒ¼ãƒãƒ³ã‚¹ã¨ãƒˆãƒ¬ãƒ¼ãƒ‰ã‚ªãƒ•)
 
         //public bool isTrigger { get;  protected set; }
         [SerializeField] protected float delayTime = 1.0f;
@@ -48,7 +48,7 @@ namespace UniLiveViewer
 
         private void FixedUpdate()
         {
-            //ƒoƒl‰^“®ˆ—
+            //ãƒãƒé‹å‹•å‡¦ç†
             AddSpringForce(1500);
             AddSpringForceExtra();
         }
@@ -56,10 +56,10 @@ namespace UniLiveViewer
         private void LateUpdate()
         {
             if (myRb.isKinematic) return;
-            //ƒ{ƒ^ƒ“‚ÌˆÚ“®”ÍˆÍ§ŒÀ
+            //ãƒœã‚¿ãƒ³ã®ç§»å‹•ç¯„å›²åˆ¶é™
             if (collisionChecker.transform.localPosition.z >= 0.0f)
             {
-                //ƒ{ƒ^ƒ“‚ÉG‚ê‚Ä‚¢‚ê‚Î
+                //ãƒœã‚¿ãƒ³ã«è§¦ã‚Œã¦ã„ã‚Œã°
                 if (collisionChecker.Touching())
                 {
                     ClickAction();
@@ -68,7 +68,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ƒNƒŠƒbƒNˆ—
+        /// ã‚¯ãƒªãƒƒã‚¯å‡¦ç†
         /// </summary>
         public void ClickAction()
         {
@@ -76,43 +76,43 @@ namespace UniLiveViewer
             if (!gameObject.activeSelf) return;
 
             StartCoroutine(ClickDirecting());
-            //‰Ÿ‚µ‚½‚Æ”»’è‚·‚é
+            //æŠ¼ã—ãŸã¨åˆ¤å®šã™ã‚‹
             onTrigger?.Invoke(this);
             onTrigger_Event?.Invoke();
         }
 
         /// <summary>
-        /// ƒNƒŠƒbƒN‰‰o
+        /// ã‚¯ãƒªãƒƒã‚¯æ¼”å‡º
         /// </summary>
         protected virtual IEnumerator ClickDirecting()
         {
-            //‰½“x‚à‰Ÿ‚¹‚È‚¢‚æ‚¤‚É•¨—”»’è‚ğÁ‚·
+            //ä½•åº¦ã‚‚æŠ¼ã›ãªã„ã‚ˆã†ã«ç‰©ç†åˆ¤å®šã‚’æ¶ˆã™
             myRb.isKinematic = true;
             myCol.enabled = false;
 
-            //ƒtƒ‰ƒO‰Šú‰»‚·‚é
+            //ãƒ•ãƒ©ã‚°åˆæœŸåŒ–ã™ã‚‹
             isEnable = true;
 
-            //À•W‰Šú‰»
+            //åº§æ¨™åˆæœŸåŒ–
             collisionChecker.transform.localPosition = Vector3.zero;
 
-            //U“®ˆ—
+            //æŒ¯å‹•å‡¦ç†
             if (collisionChecker.isTouchL) PlayerStateManager.ControllerVibration(OVRInput.Controller.LTouch, 1, 1, 0.1f);
             else PlayerStateManager.ControllerVibration(OVRInput.Controller.RTouch, 1, 1f, 0.1f);
 
-            //‰Ÿ‚µ‚½Œã‚ÌƒCƒ“ƒ^[ƒoƒ‹
+            //æŠ¼ã—ãŸå¾Œã®ã‚¤ãƒ³ã‚¿ãƒ¼ãƒãƒ«
             yield return new WaitForSeconds(delayTime);
 
-            //’£‚è•t‚©‚È‚¢‚æ‚¤‚É­‚µ‘Oi
+            //å¼µã‚Šä»˜ã‹ãªã„ã‚ˆã†ã«å°‘ã—å‰é€²
             collisionChecker.transform.position -= collisionChecker.transform.forward * 0.001f;
 
-            //•¨—‰‰Z‚ğÄŠJ‚µAG‚ê‚ç‚ê‚é‚æ‚¤‚É–ß‚· 
+            //ç‰©ç†æ¼”ç®—ã‚’å†é–‹ã—ã€è§¦ã‚Œã‚‰ã‚Œã‚‹ã‚ˆã†ã«æˆ»ã™ 
             myRb.isKinematic = false;
             myCol.enabled = true;
         }
 
         /// <summary>
-        /// ƒeƒLƒXƒgƒƒbƒVƒ…‚Éw’è•¶š—ñ‚ğİ’è
+        /// ãƒ†ã‚­ã‚¹ãƒˆãƒ¡ãƒƒã‚·ãƒ¥ã«æŒ‡å®šæ–‡å­—åˆ—ã‚’è¨­å®š
         /// </summary>
         /// <param name="str"></param>
         public void SetTextMesh(string str)
@@ -122,23 +122,23 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ƒoƒl‚Ì—Í‚ğ‰Á‚¦‚é
+        /// ãƒãƒã®åŠ›ã‚’åŠ ãˆã‚‹
         /// </summary>
-        /// <param ƒoƒlŒW”="r"></param>
+        /// <param ãƒãƒä¿‚æ•°="r"></param>
         private void AddSpringForce(float r)
         {
-            var diff = neutralAnchor.position - collisionChecker.transform.position; //ƒoƒl‚ÌL‚Ñ
+            var diff = neutralAnchor.position - collisionChecker.transform.position; //ãƒãƒã®ä¼¸ã³
             var force = diff * r;
             myRb.AddForce(force);
         }
 
         /// <summary>
-        /// ƒI[ƒo[ƒVƒ…[ƒg‚µ‚È‚¢ƒoƒl‚Ì—Í‚ğ‰Á‚¦‚é
+        /// ã‚ªãƒ¼ãƒãƒ¼ã‚·ãƒ¥ãƒ¼ãƒˆã—ãªã„ãƒãƒã®åŠ›ã‚’åŠ ãˆã‚‹
         /// </summary>
         private void AddSpringForceExtra()
         {
-            var r = myRb.mass * myRb.drag * myRb.drag / 4f;//ƒoƒlŒW”
-            var diff = neutralAnchor.position - collisionChecker.transform.position; //ƒoƒl‚ÌL‚Ñ
+            var r = myRb.mass * myRb.drag * myRb.drag / 4f;//ãƒãƒä¿‚æ•°
+            var diff = neutralAnchor.position - collisionChecker.transform.position; //ãƒãƒã®ä¼¸ã³
             var force = diff * r;
             myRb.AddForce(force);
         }
@@ -150,20 +150,20 @@ namespace UniLiveViewer
 
         private IEnumerator InitDirecting()
         {
-            //‰Ÿ‚¹‚È‚¢‚æ‚¤‚É•¨—”»’è‚ğÁ‚·
+            //æŠ¼ã›ãªã„ã‚ˆã†ã«ç‰©ç†åˆ¤å®šã‚’æ¶ˆã™
             myRb.isKinematic = true;
             myCol.enabled = false;
 
-            //À•W‰Šú‰»
+            //åº§æ¨™åˆæœŸåŒ–
             collisionChecker.transform.localPosition = Vector3.zero;
 
-            //ƒCƒ“ƒ^[ƒoƒ‹
+            //ã‚¤ãƒ³ã‚¿ãƒ¼ãƒãƒ«
             yield return new WaitForSeconds(delayTime);
 
-            //’£‚è•t‚©‚È‚¢‚æ‚¤‚É­‚µ‘Oi
+            //å¼µã‚Šä»˜ã‹ãªã„ã‚ˆã†ã«å°‘ã—å‰é€²
             collisionChecker.transform.position -= collisionChecker.transform.forward * 0.001f;
 
-            //•¨—‰‰Z‚ğÄŠJ‚µAG‚ê‚ç‚ê‚é‚æ‚¤‚É–ß‚· 
+            //ç‰©ç†æ¼”ç®—ã‚’å†é–‹ã—ã€è§¦ã‚Œã‚‰ã‚Œã‚‹ã‚ˆã†ã«æˆ»ã™ 
             myRb.isKinematic = false;
             myCol.enabled = true;
         }

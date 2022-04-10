@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using VRM;
 namespace UniLiveViewer
 {
-    //CRSを流用、プリセットキャラだけ見直しが必要
+    //CRSを流用、プリセットキャラは改善の余地あり
     public class LipSyncController : MonoBehaviour
     {
         public enum LIPTYPE

@@ -1,8 +1,8 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 namespace UniLiveViewer 
 {
-    //RollSelector‚ÌUI—p
+    //RollSelectorã®UIç”¨
     public class TouchCollision : MonoBehaviour
     {
         public bool isTouch = false;
@@ -13,7 +13,7 @@ namespace UniLiveViewer
 
             isTouch = true;
 
-            //U“®ˆ—
+            //æŒ¯å‹•å‡¦ç†
             if (other.transform.name.Contains("_l_"))
             {
                 PlayerStateManager.ControllerVibration(OVRInput.Controller.LTouch, 1, 1, 0.1f);

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 using VRM;
 
@@ -25,18 +25,18 @@ namespace UniLiveViewer
         public ANIMATIONMODE animationMode = ANIMATIONMODE.CLIP;
         public LipSyncController lipSync;
         public FacialSyncController facialSync;
-        [SerializeField] private GameObject lowShadowPrefab;//ŠÈˆÕ‰e
-        public List<VRMSpringBone> springBoneList = new List<VRMSpringBone>();//—h‚ê‚à‚ÌÚG”»’è—p
+        [SerializeField] private GameObject lowShadowPrefab;//ç°¡æ˜“å½±
+        public List<VRMSpringBone> springBoneList = new List<VRMSpringBone>();//æºã‚Œã‚‚ã®æ¥è§¦åˆ¤å®šç”¨
         [HideInInspector]public LookAtController lookAtCon;
         public CharaInfoData charaInfoData;
         private float reScalar = 0;
 
-        [Header("ƒTimeLine©“®ŠÇ—„")]
+        [Header("ï¼œTimeLineè‡ªå‹•ç®¡ç†ï¼")]
         public string bindTrackName = "";
-        public RuntimeAnimatorController keepRunAnime;//ƒAƒjƒ[ƒVƒ‡ƒ“–³Œø‰»‚ÌÛ‚É’¼‘Oó‘Ô‚ğƒL[ƒv
-        public AnimationClip keepHandL_Anime;//èƒAƒjƒ[ƒVƒ‡ƒ“(ˆ¬‚è‚©‚ç–ß‚·Û‚É•K—v)
-        public AnimationClip keepHandR_Anime;//èƒAƒjƒ[ƒVƒ‡ƒ“(ˆ¬‚è‚©‚ç–ß‚·Û‚É•K—v)
-        [SerializeField] private Transform overrideAnchor = null;//À•W‚Ìã‘‚«—p
+        public RuntimeAnimatorController keepRunAnime;//ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ç„¡åŠ¹åŒ–ã®éš›ã«ç›´å‰çŠ¶æ…‹ã‚’ã‚­ãƒ¼ãƒ—
+        public AnimationClip keepHandL_Anime;//æ‰‹ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³(æ¡ã‚Šã‹ã‚‰æˆ»ã™éš›ã«å¿…è¦)
+        public AnimationClip keepHandR_Anime;//æ‰‹ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³(æ¡ã‚Šã‹ã‚‰æˆ»ã™éš›ã«å¿…è¦)
+        [SerializeField] private Transform overrideAnchor = null;//åº§æ¨™ã®ä¸Šæ›¸ãç”¨
         private Animator animator;
 
         public float CustomScalar
@@ -57,7 +57,7 @@ namespace UniLiveViewer
         void Awake()
         {
             animator = transform.GetComponent<Animator>();
-            //PresetƒLƒƒƒ‰‚Ì‚İ
+            //Presetã‚­ãƒ£ãƒ©ã®ã¿
             if (charaInfoData && charaInfoData.formatType == CharaInfoData.FORMATTYPE.FBX)
             {
                 var shadowObj = Instantiate(lowShadowPrefab, transform.position, Quaternion.identity);
@@ -70,13 +70,15 @@ namespace UniLiveViewer
 
 
         /// <summary>
-        /// ó‘Ôİ’è
+        /// çŠ¶æ…‹è¨­å®š
         /// </summary>
         /// <param name="setState"></param>
-        /// <param name="overrideTarget">‘ÎÛˆÊ’u‚ÉÀ•W‚ğ‡‚í‚¹‚é</param>
+        /// <param name="overrideTarget">å¯¾è±¡ä½ç½®ã«åº§æ¨™ã‚’åˆã‚ã›ã‚‹</param>
         public void SetState(CHARASTATE setState, Transform overrideTarget)
         {
             Vector3 globalScale = Vector3.zero;
+
+            if (overrideTarget) Debug.Log(overrideTarget.name);
 
             overrideAnchor = overrideTarget;
             charaState = setState;
@@ -97,7 +99,7 @@ namespace UniLiveViewer
                 case CHARASTATE.FIELD:
                     globalScale = new Vector3(1.0f, 1.0f, 1.0f);
 
-                    ////‘«‚ÌŠp“x‚ğ’¼‚·
+                    ////è¶³ã®è§’åº¦ã‚’ç›´ã™
                     //if (animationMode == ANIMATIONMODE.VMD)
                     //{
                     //    //transform.GetComponent<VMDPlayer>().ToeIKReset_Full().Forget();
@@ -106,12 +108,12 @@ namespace UniLiveViewer
                     break;
             }
 
-            //À•W‚Ìã‘‚«İ’è
+            //åº§æ¨™ã®ä¸Šæ›¸ãè¨­å®š
             if (overrideAnchor)
             {
                 transform.parent = overrideAnchor;
 
-                //eScale‚Ì‰e‹¿‚ğ–³‹‚·‚éˆ×‚ÉZo
+                //è¦ªScaleã®å½±éŸ¿ã‚’ç„¡è¦–ã™ã‚‹ç‚ºã«ç®—å‡º
                 Vector3 scr = overrideAnchor.lossyScale;
                 scr.x = 1 / scr.x;
                 scr.y = 1 / scr.y;
@@ -129,14 +131,14 @@ namespace UniLiveViewer
         // Update is called once per frame
         void Update()
         {
-            //À•W‚Ìã‘‚«
+            //åº§æ¨™ã®ä¸Šæ›¸ã
             if (overrideAnchor)
             {
                 transform.position = overrideAnchor.position;
                 transform.localRotation = Quaternion.Euler(Vector3.zero);
             }
 
-            //—h‚ê‚à‚ÌÚGU“®
+            //æºã‚Œã‚‚ã®æ¥è§¦æŒ¯å‹•
             if (charaInfoData.formatType == CharaInfoData.FORMATTYPE.VRM)
             {
                 foreach (var springBone in springBoneList)
@@ -152,7 +154,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ƒAƒjƒ[ƒVƒ‡ƒ“ƒRƒ“ƒgƒ[ƒ‰[‚ğKeep‚µA‰ğœ‚·‚é
+        /// ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ã‚’Keepã—ã€è§£é™¤ã™ã‚‹
         /// </summary>
         public void RemoveRunAnime()
         {
@@ -162,7 +164,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ‰ğœ‚µ‚½ƒAƒjƒ[ƒVƒ‡ƒ“ƒRƒ“ƒgƒ[ƒ‰[‚ğŒ³‚É–ß‚·
+        /// è§£é™¤ã—ãŸã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ã‚’å…ƒã«æˆ»ã™
         /// </summary>
         public void ReturnRunAnime()
         {

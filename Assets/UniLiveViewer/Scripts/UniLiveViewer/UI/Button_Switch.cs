@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using UnityEngine;
 
 namespace UniLiveViewer
@@ -6,35 +6,35 @@ namespace UniLiveViewer
     public class Button_Switch : Button_Base
     {
         /// <summary>
-        /// ƒNƒŠƒbƒN‰‰o
+        /// ã‚¯ãƒªãƒƒã‚¯æ¼”å‡º
         /// </summary>
         protected override IEnumerator ClickDirecting()
         {
-            //‰½“x‚à‰Ÿ‚¹‚È‚¢‚æ‚¤‚É•¨—”»’è‚ğÁ‚·
+            //ä½•åº¦ã‚‚æŠ¼ã›ãªã„ã‚ˆã†ã«ç‰©ç†åˆ¤å®šã‚’æ¶ˆã™
             myRb.isKinematic = true;
             myCol.enabled = false;
 
-            //”½“]
+            //åè»¢
             isEnable = !isEnable;
 
-            //À•W‰Šú‰»
+            //åº§æ¨™åˆæœŸåŒ–
             collisionChecker.transform.localPosition = Vector3.zero;
 
-            //U“®ˆ—
+            //æŒ¯å‹•å‡¦ç†
             if (collisionChecker.isTouchL) PlayerStateManager.ControllerVibration(OVRInput.Controller.LTouch, 1, 1, 0.1f);
             else PlayerStateManager.ControllerVibration(OVRInput.Controller.RTouch, 1, 1f, 0.1f);
 
             yield return new WaitForSeconds(delayTime);
 
-            //’£‚è•t‚©‚È‚¢‚æ‚¤‚É­‚µ‘Oi
+            //å¼µã‚Šä»˜ã‹ãªã„ã‚ˆã†ã«å°‘ã—å‰é€²
             collisionChecker.transform.position -= collisionChecker.transform.forward * 0.001f;
-            //•¨—‰‰Z‚ğÄŠJ
+            //ç‰©ç†æ¼”ç®—ã‚’å†é–‹
             myRb.isKinematic = false;
 
-            //ó‘ÔƒŠƒZƒbƒg
+            //çŠ¶æ…‹ãƒªã‚»ãƒƒãƒˆ
             //collisionChecker.StateReset();
 
-            //˜A‘±‚ÅG‚ê‚È‚¢‚æ‚¤‚Éˆê’èŠÔŒã‚ÉG‚ê‚ç‚ê‚é‚æ‚¤‚É‚·‚é
+            //é€£ç¶šã§è§¦ã‚Œãªã„ã‚ˆã†ã«ä¸€å®šæ™‚é–“å¾Œã«è§¦ã‚Œã‚‰ã‚Œã‚‹ã‚ˆã†ã«ã™ã‚‹
             yield return new WaitForSeconds(0.25f);
             myCol.enabled = true;
         }

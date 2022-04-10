@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -35,8 +35,8 @@ namespace UniLiveViewer
 
             baseColor = _rendererFade.material.GetColor("_BaseColor");
 
-            //ˆÃ“]‚·‚é
-            baseColor.a = 1;//•s“§–¾‚É
+            //æš—è»¢ã™ã‚‹
+            baseColor.a = 1;//ä¸é€æ˜ã«
             materialPropertyBlock.SetColor("_BaseColor", baseColor);
             _rendererFade.SetPropertyBlock(materialPropertyBlock);
 
@@ -58,14 +58,14 @@ namespace UniLiveViewer
         {
             yield return null;
 
-            //‚Ü‚¸loadingƒAƒjƒ[ƒVƒ‡ƒ“‚ğÁ‚·
+            //ã¾ãšloadingã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’æ¶ˆã™
             anime_Loading.gameObject.SetActive(false);
 
             yield return null;
 
-            //ˆÃ“]‚·‚é
+            //æš—è»¢ã™ã‚‹
             baseColor = materialPropertyBlock.GetColor("_BaseColor");
-            baseColor.a = 1;//•s“§–¾‚É
+            baseColor.a = 1;//ä¸é€æ˜ã«
 
             while (baseColor.a >= 0.0f)
             {
@@ -77,7 +77,7 @@ namespace UniLiveViewer
             }
 
             overlayCamera.enabled = false;
-            player.enabled = true;//‘€ì‰Â”\‚É
+            player.enabled = true;//æ“ä½œå¯èƒ½ã«
         }
 
         private void SceneEnd(string sceneName)
@@ -88,10 +88,10 @@ namespace UniLiveViewer
         IEnumerator SceneEndUpdate(string sceneName)
         {
             overlayCamera.enabled = true;
-            player.enabled = false;//‘€ì•s‰Â‚É
+            player.enabled = false;//æ“ä½œä¸å¯ã«
             yield return null;
 
-            //•Â–‹‰‰o
+            //é–‰å¹•æ¼”å‡º
             _rendererClosing.enabled = true;
             float t = 0;
 
@@ -109,12 +109,12 @@ namespace UniLiveViewer
                 yield return null;
             }
 
-            //skybox‚Ì‰Šú‰»
+            //skyboxã®åˆæœŸåŒ–
             if (backGroundCon) backGroundCon.SetInit();
 
             anime_Loading.gameObject.SetActive(true);
 
-            //ƒ[ƒh‚ª‘‚·‚¬‚Ä‚àÅ’á‰‰o•ª‚Í‘Ò‹@‚·‚é
+            //ãƒ­ãƒ¼ãƒ‰ãŒæ—©ã™ãã¦ã‚‚æœ€ä½æ¼”å‡ºåˆ†ã¯å¾…æ©Ÿã™ã‚‹
             var async = SceneManager.LoadSceneAsync(sceneName);
             async.allowSceneActivation = false;
             yield return new WaitForSeconds(1.0f);

@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,31 +24,32 @@ namespace UniLiveViewer
         private const string SUBTRACK2 = "Override 2";
         private const string SUBTRACK3 = "Override 3";
 
+        private const string MAINCLIP = "DanceBase";
         private const string SUBCLIP0 = "HandExpression";
         private const string SUBCLIP1 = "HandExpression";
         private const string SUBCLIP2 = "FaceClip";
         private const string SUBCLIP3 = "LipClip";
 
-        //ƒ|[ƒ^ƒ‹ƒLƒƒƒ‰‚ÌŠm”F
+        //ãƒãƒ¼ã‚¿ãƒ«ã‚­ãƒ£ãƒ©ã®ç¢ºèª
         public static int PORTAL_ELEMENT = 0;
 
-        //ƒ^ƒCƒ€ƒ‰ƒCƒ“
-        public PlayableDirector playableDirector; //ƒfƒBƒŒƒNƒ^
-        private TimelineAsset timeLineAsset;//ƒ^ƒCƒ€ƒ‰ƒCƒ“ƒAƒZƒbƒg‚ÉƒAƒNƒZƒX—p
+        //ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³
+        public PlayableDirector playableDirector; //ãƒ‡ã‚£ãƒ¬ã‚¯ã‚¿
+        private TimelineAsset timeLineAsset;//ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã‚¢ã‚»ãƒƒãƒˆã«ã‚¢ã‚¯ã‚»ã‚¹ç”¨
 
-        //ƒoƒCƒ“ƒhƒLƒƒƒ‰‚ğŠÇ—‚·‚éƒNƒ‰ƒX
+        //ãƒã‚¤ãƒ³ãƒ‰ã‚­ãƒ£ãƒ©ã‚’ç®¡ç†ã™ã‚‹ã‚¯ãƒ©ã‚¹
         public CharaController[] trackBindChara = new CharaController[6];
 
-        public int FieldCharaCount { get; private set; } = 0;//ƒtƒB[ƒ‹ƒh‚ÌƒLƒƒƒ‰ƒJƒEƒ“ƒg
-        public event Action FieldCharaUpdate;//İ’uƒLƒƒƒ‰”‚ÌXV
-        public int maxFieldChara = 1;//Å‘å¢Š«”
+        public int FieldCharaCount { get; private set; } = 0;//ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã®ã‚­ãƒ£ãƒ©ã‚«ã‚¦ãƒ³ãƒˆ
+        public event Action FieldCharaUpdate;//è¨­ç½®ã‚­ãƒ£ãƒ©æ•°ã®æ›´æ–°æ™‚
+        public int maxFieldChara = 1;//æœ€å¤§å¬å–šæ•°
 
         public bool isPortalChara() { return trackBindChara[PORTAL_ELEMENT]; }
         public FileAccessManager fileManager = null;
         [SerializeField] private AnimationClip grabHandAnime;
         
-        public double AudioClip_StartTime = 0;//ƒZƒbƒg‚³‚ê‚½audioƒNƒŠƒbƒv‚ÌŠJnÄ¶ˆÊ’u
-        private double motionClip_StartTime = 3;//ƒ‚[ƒVƒ‡ƒ“ƒNƒŠƒbƒv‚ÌŠJnÄ¶ˆÊ’u(ƒfƒtƒHƒ‹ƒg)
+        public double AudioClip_StartTime = 0;//ã‚»ãƒƒãƒˆã•ã‚ŒãŸaudioã‚¯ãƒªãƒƒãƒ—ã®é–‹å§‹å†ç”Ÿä½ç½®
+        private double motionClip_StartTime = 3;//ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‚¯ãƒªãƒƒãƒ—ã®é–‹å§‹å†ç”Ÿä½ç½®(ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆ)
         private float _timelineSpeed = 1.0f;
         public float timelineSpeed
         {
@@ -67,14 +68,14 @@ namespace UniLiveViewer
         {
             get
             {
-                //‰¹ŠyƒNƒŠƒbƒv“à‚Å‚ÌÄ¶ŠÔ‚ğZo
+                //éŸ³æ¥½ã‚¯ãƒªãƒƒãƒ—å†…ã§ã®å†ç”Ÿæ™‚é–“ã‚’ç®—å‡º
                 return playableDirector.time - AudioClip_StartTime;
             }
             set
             {
-                //ãŒÀˆÈã‚È‚çMaX’l‚ÉŠÛ‚ß‚é
+                //ä¸Šé™ä»¥ä¸Šãªã‚‰MaXå€¤ã«ä¸¸ã‚ã‚‹
                 if (value > playableDirector.duration) value = playableDirector.duration;
-                //ƒ^ƒCƒ€ƒ‰ƒCƒ“‚É”½‰f
+                //ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã«åæ˜ 
                 playableDirector.time = AudioClip_StartTime + value;
             }
         }
@@ -87,25 +88,25 @@ namespace UniLiveViewer
 
         private void Start()
         {
-            // ƒ^ƒCƒ€ƒ‰ƒCƒ““à‚Ìƒgƒ‰ƒbƒNˆê——‚ğæ“¾
+            // ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³å†…ã®ãƒˆãƒ©ãƒƒã‚¯ä¸€è¦§ã‚’å–å¾—
             IEnumerable<TrackAsset> tracks = timeLineAsset.GetOutputTracks();
 
-            //ƒƒCƒ“ƒI[ƒfƒBƒI‚ÌTrackAsset‚ğæ“¾
+            //ãƒ¡ã‚¤ãƒ³ã‚ªãƒ¼ãƒ‡ã‚£ã‚ªã®TrackAssetã‚’å–å¾—
             TrackAsset track = tracks.FirstOrDefault(x => x.name == assetName_MainAudio);
 
             if (track)
             {
-                //ƒgƒ‰ƒbƒN“à‚ÌƒNƒŠƒbƒv‚ğ‘Sæ“¾
+                //ãƒˆãƒ©ãƒƒã‚¯å†…ã®ã‚¯ãƒªãƒƒãƒ—ã‚’å…¨å–å¾—
                 IEnumerable<TimelineClip> clips = track.GetClips();
-                // w’è–¼Ì‚ÌƒNƒŠƒbƒv‚ğ”²‚«o‚·
+                // æŒ‡å®šåç§°ã®ã‚¯ãƒªãƒƒãƒ—ã‚’æŠœãå‡ºã™
                 TimelineClip danceClip = clips.FirstOrDefault(x => x.displayName == "Main Audio Clip");
-                //ŠJnˆÊ’u‚ğæ“¾
+                //é–‹å§‹ä½ç½®ã‚’å–å¾—
                 danceClip.start = motionClip_StartTime + 2;
                 AudioClip_StartTime = danceClip.start;
             }
             else
             {
-                Debug.Log("ƒƒCƒ“ƒI[ƒfƒBƒI‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ");
+                Debug.Log("ãƒ¡ã‚¤ãƒ³ã‚ªãƒ¼ãƒ‡ã‚£ã‚ªãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“");
 
             }
             if (GlobalConfig.sceneMode_static == GlobalConfig.SceneMode.CANDY_LIVE)
@@ -113,7 +114,7 @@ namespace UniLiveViewer
 #if UNITY_EDITOR
                 maxFieldChara = 5;
 #elif UNITY_ANDROID
-            if (SystemInfo.deviceName == "Oculus Quest 2") maxFieldChara = 2;
+            if (SystemInfo.deviceName == "Oculus Quest 2") maxFieldChara = 3;
             else if (SystemInfo.deviceName == "Oculus Quest") maxFieldChara = 2;
 #endif
             }
@@ -139,23 +140,23 @@ namespace UniLiveViewer
 
         private void Update()
         {
-            //‰ŠúˆÊ’u
+            //åˆæœŸä½ç½®
             if (AudioClip_PlaybackTime < 0)
             {
-                //ƒ}ƒjƒ…ƒAƒ‹ƒ‚[ƒh
+                //ãƒãƒ‹ãƒ¥ã‚¢ãƒ«ãƒ¢ãƒ¼ãƒ‰
                 TimelineManualMode();
 
-                //’â~ó‘Ô‚É‚·‚é(UI‚ÉƒgƒŠƒK[‚ğ‘—‚éˆ×)
+                //åœæ­¢çŠ¶æ…‹ã«ã™ã‚‹(UIã«ãƒˆãƒªã‚¬ãƒ¼ã‚’é€ã‚‹ç‚º)
                 playableDirector.Stop();
 
-                //ƒNƒŠƒbƒvŠJnˆÊ’u‚Ü‚Åi‚ß‚é(d•¡—\–h)
+                //ã‚¯ãƒªãƒƒãƒ—é–‹å§‹ä½ç½®ã¾ã§é€²ã‚ã‚‹(é‡è¤‡äºˆé˜²)
                 AudioClip_PlaybackTime = 0;
             }
         }
 
         public void DestoryPortalChara()
         {
-            //Šù‘¶ƒLƒƒƒ‰‚ª‚¢‚ê‚Îíœ‚µ‚Ä‚¨‚­
+            //æ—¢å­˜ã‚­ãƒ£ãƒ©ãŒã„ã‚Œã°å‰Šé™¤ã—ã¦ãŠã
             if (trackBindChara[PORTAL_ELEMENT])
             {
                 Destroy(trackBindChara[PORTAL_ELEMENT].gameObject);
@@ -164,9 +165,9 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// Šçƒ‚[ƒt‚Ì—LŒø–³Œø‚ğØ‚è‘Ö‚¦‚é
+        /// é¡”ãƒ¢ãƒ¼ãƒ•ã®æœ‰åŠ¹ç„¡åŠ¹ã‚’åˆ‡ã‚Šæ›¿ãˆã‚‹
         /// </summary>
-        /// <param name="isFace">•\î‚©ŒûƒpƒN‚©</param>
+        /// <param name="isFace">è¡¨æƒ…ã‹å£ãƒ‘ã‚¯ã‹</param>
         /// <param name="isEnable"></param>
         public void SetMouthUpdate_Portal(bool isFace, bool isEnable)
         {
@@ -174,44 +175,44 @@ namespace UniLiveViewer
 
             if (bindChara)
             {
-                var vmdPlayer = trackBindChara[PORTAL_ELEMENT].GetComponent<VMDPlayer>();
+                var vmdPlayer = trackBindChara[PORTAL_ELEMENT].GetComponent<VMDPlayer_Custom>();
 
                 if (bindChara.charaInfoData.formatType == CharaInfoData.FORMATTYPE.VRM)
                 {
-                    //VMDÄ¶’†
+                    //VMDå†ç”Ÿä¸­
                     if (vmdPlayer.morphPlayer_vrm != null)
                     {
-                        //•\î
+                        //è¡¨æƒ…
                         if (isFace)
                         {
                             vmdPlayer.morphPlayer_vrm.isUpdateFace = isEnable;
 
-                            //’â~‚Ìê‡‚ÍŒû‚Ìó‘Ô‚ğ‰Šú‰»‚µ‚Ä‚¨‚­
+                            //åœæ­¢ã®å ´åˆã¯è¡¨æƒ…ã‚’åˆæœŸåŒ–ã—ã¦ãŠã
                             if (!isEnable) bindChara.facialSync.AllClear_BlendShape();
                         }
-                        //ŒûƒpƒN
+                        //å£ãƒ‘ã‚¯
                         else
                         {
                             vmdPlayer.morphPlayer_vrm.isUpdateMouth = isEnable;
 
-                            //’â~‚Ìê‡‚ÍŒû‚Ìó‘Ô‚ğ‰Šú‰»‚µ‚Ä‚¨‚­
+                            //åœæ­¢ã®å ´åˆã¯å£ã‚’åˆæœŸåŒ–ã—ã¦ãŠã
                             if (!isEnable) bindChara.lipSync.AllClear_BlendShape();
                         }
                     }
-                    //ƒvƒŠƒZƒbƒg’†
+                    //ãƒ—ãƒªã‚»ãƒƒãƒˆä¸­
                     else
                     {
-                        //•\î
+                        //è¡¨æƒ…
                         if (isFace)
                         {
-                            //’â~‚Ìê‡‚ÍŒû‚Ìó‘Ô‚ğ‰Šú‰»‚µ‚Ä‚¨‚­
+                            //åœæ­¢ã®å ´åˆã¯è¡¨æƒ…ã‚’åˆæœŸåŒ–ã—ã¦ãŠã
                             if (!isEnable) bindChara.facialSync.AllClear_BlendShape();
                             bindChara.facialSync.enabled = isEnable;
                         }
-                        //ŒûƒpƒN
+                        //å£ãƒ‘ã‚¯
                         else
                         {
-                            //’â~‚Ìê‡‚ÍŒû‚Ìó‘Ô‚ğ‰Šú‰»‚µ‚Ä‚¨‚­
+                            //åœæ­¢ã®å ´åˆã¯å£ã‚’åˆæœŸåŒ–ã—ã¦ãŠã
                             if (!isEnable) bindChara.lipSync.AllClear_BlendShape();
                             bindChara.lipSync.enabled = isEnable;
                         }
@@ -221,47 +222,46 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// V‹KƒLƒƒƒ‰‚ğƒ|[ƒ^ƒ‹˜g‚ÉƒoƒCƒ“ƒh‚·‚é
+        /// æ–°è¦ã‚­ãƒ£ãƒ©ã‚’ãƒãƒ¼ã‚¿ãƒ«æ ã«ãƒã‚¤ãƒ³ãƒ‰ã™ã‚‹
         /// </summary>
         /// <param name="bindObject"></param>
         /// <returns></returns>
         public bool NewAssetBinding_Portal(CharaController bindChara)
         {
-            if (!bindChara) return false;//¸”s(nullƒoƒCƒ“ƒh‚Ì•K—v‚È‚µ)
-            //var chara = bindObject.GetComponent<CharaController>();
+            if (!bindChara) return false;//å¤±æ•—(nullãƒã‚¤ãƒ³ãƒ‰ã®å¿…è¦ãªã—)
 
             IEnumerable<PlayableBinding> outputs = playableDirector.playableAsset.outputs;
-            //ƒ|[ƒ^ƒ‹—pBaseAnime‚ÌPlayableBinding‚ğæ“¾
+            //ãƒãƒ¼ã‚¿ãƒ«ç”¨BaseAnimeã®PlayableBindingã‚’å–å¾—
             PlayableBinding Asset_BaseAnime = outputs.FirstOrDefault(x => x.streamName == sPortalBaseAniTrack);
 
             if (Asset_BaseAnime.streamName != "")
             {
-                //ƒIƒuƒWƒFƒNƒg‚ğƒoƒCƒ“ƒh‚·‚é
+                //ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’ãƒã‚¤ãƒ³ãƒ‰ã™ã‚‹
                 playableDirector.SetGenericBinding(Asset_BaseAnime.sourceObject, bindChara.gameObject);
-                //CharaList‚ÉƒZƒbƒg
+                //CharaListã«ã‚»ãƒƒãƒˆ
                 trackBindChara[PORTAL_ELEMENT] = bindChara;
-                //ƒoƒCƒ“ƒhî•ñ‚ğ•t—^
+                //ãƒã‚¤ãƒ³ãƒ‰æƒ…å ±ã‚’ä»˜ä¸
                 bindChara.bindTrackName = sPortalBaseAniTrack;
                 //chara.bindTrackName_LipSync = "LipSync Track_Portal";
             }
             else
             {
-                Debug.Log("ƒVƒXƒeƒ€İ’èƒGƒ‰[AƒLƒƒƒ‰“o˜^˜g‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñBPlayableBinding–¼‚ğŒ©’¼‚µ‚Ä‚­‚¾‚³‚¢");
+                Debug.Log("ã‚·ã‚¹ãƒ†ãƒ è¨­å®šã‚¨ãƒ©ãƒ¼ã€ã‚­ãƒ£ãƒ©ç™»éŒ²æ ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“ã€‚PlayableBindingåã‚’è¦‹ç›´ã—ã¦ãã ã•ã„");
                 return false;
             }
 
-            //ƒ}ƒjƒ…ƒAƒ‹ó‘Ô‚È‚ç
+            //ãƒãƒ‹ãƒ¥ã‚¢ãƒ«çŠ¶æ…‹ãªã‚‰
             if (playableDirector.timeUpdateMode == DirectorUpdateMode.Manual)
             {
-                //ƒAƒjƒ[ƒ^[ƒRƒ“ƒgƒ[ƒ‰[‚ğ‰ğœ‚µ‚Ä‚¨‚­
+                //ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚¿ãƒ¼ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ãƒ¼ã‚’è§£é™¤ã—ã¦ãŠã
                 StartCoroutine(RemoveCharasAniCon());
             }
 
-            return true;//¬Œ÷
+            return true;//æˆåŠŸ
         }
 
         /// <summary>
-        /// V‹KƒAƒjƒ[ƒVƒ‡ƒ“‚ğƒ|[ƒ^ƒ‹˜g‚ÉƒoƒCƒ“ƒh‚·‚é
+        /// æ–°è¦ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’ãƒãƒ¼ã‚¿ãƒ«æ ã«ãƒã‚¤ãƒ³ãƒ‰ã™ã‚‹
         /// </summary>
         /// <param name="baseAniTrackName"></param>
         /// <param name="baseAniClip"></param>
@@ -270,23 +270,23 @@ namespace UniLiveViewer
         /// <param name="initEulerAngles"></param>
         public void SetAnimationClip(string baseAniTrackName, DanceInfoData danceInfoData, Vector3 initPos, Vector3 initEulerAngles)
         {
-            // ƒ^ƒCƒ€ƒ‰ƒCƒ““à‚Ìƒgƒ‰ƒbƒNˆê——‚ğæ“¾
+            // ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³å†…ã®ãƒˆãƒ©ãƒƒã‚¯ä¸€è¦§ã‚’å–å¾—
             if (timeLineAsset == null) timeLineAsset = playableDirector.playableAsset as TimelineAsset;
             IEnumerable<TrackAsset> tracks = timeLineAsset.GetOutputTracks();
 
-            //BaseAnime‚ÌTrackAsset‚ğæ“¾
+            //BaseAnimeã®TrackAssetã‚’å–å¾—
             TrackAsset track = tracks.FirstOrDefault(x => x.name == baseAniTrackName);
 
             if (track)
             {
-                //ƒgƒ‰ƒbƒN“à‚ÌƒNƒŠƒbƒv‚ğ‘Sæ“¾
+                //ãƒˆãƒ©ãƒƒã‚¯å†…ã®ã‚¯ãƒªãƒƒãƒ—ã‚’å…¨å–å¾—
                 IEnumerable<TimelineClip> clips = track.GetClips();
-                // w’è–¼Ì‚ÌƒNƒŠƒbƒv‚ğ”²‚«o‚·
-                TimelineClip danceClip = clips.FirstOrDefault(x => x.displayName == "DanceBase");
+                // æŒ‡å®šåç§°ã®ã‚¯ãƒªãƒƒãƒ—ã‚’æŠœãå‡ºã™
+                TimelineClip danceClip = clips.FirstOrDefault(x => x.displayName == MAINCLIP);
                 danceClip.start = motionClip_StartTime + danceInfoData.motionOffsetTime;
 
-                //“o˜^‚·‚é
-                //danceClip.asset = baseAniClip; ‚±‚êƒ_ƒ
+                //ç™»éŒ²ã™ã‚‹
+                //danceClip.asset = baseAniClip; ã“ã‚Œãƒ€ãƒ¡
                 AnimationPlayableAsset animationPlayableAsset = danceClip.asset as AnimationPlayableAsset;
                 if (!danceInfoData.isReverse) animationPlayableAsset.clip = danceInfoData.baseDanceClip;
                 else animationPlayableAsset.clip = danceInfoData.baseDanceClip_reverse;
@@ -294,43 +294,43 @@ namespace UniLiveViewer
                 animationPlayableAsset.rotation = Quaternion.Euler(initEulerAngles);
                 //(danceClip.asset as AnimationPlayableAsset).clip = animationClip;
 
-                //ƒI[ƒo[ƒ‰ƒCƒhƒAƒjƒ[ƒVƒ‡ƒ“‚ğ“o˜^‚·‚é
+                //ã‚ªãƒ¼ãƒãƒ¼ãƒ©ã‚¤ãƒ‰ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’ç™»éŒ²ã™ã‚‹
                 SetAnimationClip_Override(track, danceInfoData);
                 
-                //”½‰f‚Ìˆ×‚ÉƒfƒBƒŒƒNƒ^[‚ğƒŠƒXƒ^[ƒg‚·‚é
+                //åæ˜ ã®ç‚ºã«ãƒ‡ã‚£ãƒ¬ã‚¯ã‚¿ãƒ¼ã‚’ãƒªã‚¹ã‚¿ãƒ¼ãƒˆã™ã‚‹
                 TimeLineReStart();
             }
         }
 
         /// <summary>
-        /// ã‘‚«‚·‚éƒAƒjƒ[ƒVƒ‡ƒ“‚ğ‡”Ô‚É“o˜^‚·‚é
+        /// ä¸Šæ›¸ãã™ã‚‹ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’é †ç•ªã«ç™»éŒ²ã™ã‚‹
         /// </summary>
-        /// <param name="parentTrack">ƒx[ƒX‚É‚È‚éTrack</param>
-        /// <param name="overrideAniClips">ã‘‚«‚µ‚½‚¢ƒAƒjƒ[ƒVƒ‡ƒ“</param>
+        /// <param name="parentTrack">ãƒ™ãƒ¼ã‚¹ã«ãªã‚‹Track</param>
+        /// <param name="overrideAniClips">ä¸Šæ›¸ãã—ãŸã„ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³</param>
         private void SetAnimationClip_Override(TrackAsset parentTrack, DanceInfoData danceClipInfo)
         {
             TimelineClip handClip;
 
-            //ã‘‚«‚·‚éƒgƒ‰ƒbƒN‚ğˆ—‚·‚é
+            //ä¸Šæ›¸ãã™ã‚‹ãƒˆãƒ©ãƒƒã‚¯ã‚’å‡¦ç†ã™ã‚‹
             foreach (var subTrack in parentTrack.GetChildTracks())
             {
-                // ƒgƒ‰ƒbƒN“à‚ÌƒNƒŠƒbƒvˆê——‚ğæ“¾
+                // ãƒˆãƒ©ãƒƒã‚¯å†…ã®ã‚¯ãƒªãƒƒãƒ—ä¸€è¦§ã‚’å–å¾—
                 IEnumerable<TimelineClip> clips = subTrack.GetClips();
 
                 switch (subTrack.name)
                 {
                     case SUBTRACK0:
-                        // w’è–¼Ì‚ÌƒNƒŠƒbƒv‚ğ”²‚«o‚·
+                        // æŒ‡å®šåç§°ã®ã‚¯ãƒªãƒƒãƒ—ã‚’æŠœãå‡ºã™
                         handClip = clips.FirstOrDefault(x => x.displayName == SUBCLIP0);
 
-                        //ƒLƒƒƒ‰‚ªŠù‚Éˆ¬‚è‚È‚ç
+                        //ã‚­ãƒ£ãƒ©ãŒæ—¢ã«æ¡ã‚Šãªã‚‰
                         if (trackBindChara[PORTAL_ELEMENT] && trackBindChara[PORTAL_ELEMENT].keepHandL_Anime)
                         {
 
                         }
                         else
                         {
-                            //“o˜^‚·‚é
+                            //ç™»éŒ²ã™ã‚‹
                             if (!danceClipInfo.isReverse) (handClip.asset as AnimationPlayableAsset).clip = danceClipInfo.overrideClip_hand;
                             else (handClip.asset as AnimationPlayableAsset).clip = danceClipInfo.overrideClip_reverseHand;
                             handClip.start = motionClip_StartTime + danceClipInfo.motionOffsetTime;
@@ -338,17 +338,17 @@ namespace UniLiveViewer
 
                         break;
                     case SUBTRACK1:
-                        // w’è–¼Ì‚ÌƒNƒŠƒbƒv‚ğ”²‚«o‚·
+                        // æŒ‡å®šåç§°ã®ã‚¯ãƒªãƒƒãƒ—ã‚’æŠœãå‡ºã™
                         handClip = clips.FirstOrDefault(x => x.displayName == SUBCLIP1);
 
-                        //ƒLƒƒƒ‰‚ªŠù‚Éˆ¬‚è‚È‚ç
+                        //ã‚­ãƒ£ãƒ©ãŒæ—¢ã«æ¡ã‚Šãªã‚‰
                         if (trackBindChara[PORTAL_ELEMENT] && trackBindChara[PORTAL_ELEMENT].keepHandR_Anime)
                         {
 
                         }
                         else
                         {
-                            //“o˜^‚·‚é
+                            //ç™»éŒ²ã™ã‚‹
                             if (!danceClipInfo.isReverse) (handClip.asset as AnimationPlayableAsset).clip = danceClipInfo.overrideClip_hand;
                             else (handClip.asset as AnimationPlayableAsset).clip = danceClipInfo.overrideClip_reverseHand;
                             handClip.start = motionClip_StartTime + danceClipInfo.motionOffsetTime;
@@ -356,18 +356,18 @@ namespace UniLiveViewer
 
                         break;
                     case SUBTRACK2:
-                        // w’è–¼Ì‚ÌƒNƒŠƒbƒv‚ğ”²‚«o‚·
+                        // æŒ‡å®šåç§°ã®ã‚¯ãƒªãƒƒãƒ—ã‚’æŠœãå‡ºã™
                         TimelineClip faceClip = clips.FirstOrDefault(x => x.displayName == SUBCLIP2);
 
-                        //“o˜^‚·‚é
+                        //ç™»éŒ²ã™ã‚‹
                         (faceClip.asset as AnimationPlayableAsset).clip = danceClipInfo.overrideClip_face;
                         faceClip.start = motionClip_StartTime + danceClipInfo.motionOffsetTime;
                         break;
                     case SUBTRACK3:
-                        // w’è–¼Ì‚ÌƒNƒŠƒbƒv‚ğ”²‚«o‚·
+                        // æŒ‡å®šåç§°ã®ã‚¯ãƒªãƒƒãƒ—ã‚’æŠœãå‡ºã™
                         TimelineClip lipClip = clips.FirstOrDefault(x => x.displayName == SUBCLIP3);
 
-                        //“o˜^‚·‚é
+                        //ç™»éŒ²ã™ã‚‹
                         (lipClip.asset as AnimationPlayableAsset).clip = danceClipInfo.overrideClip_lip;
                         lipClip.start = motionClip_StartTime + danceClipInfo.motionOffsetTime;
                         break;
@@ -376,44 +376,44 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// w’èCurrent‚ÌBGM‚ğƒZƒbƒg‚·‚é
+        /// æŒ‡å®šCurrentã®BGMã‚’ã‚»ãƒƒãƒˆã™ã‚‹
         /// </summary>
         public string NextAudioClip(int moveCurrent)
         {
             fileManager.CurrentAudio += moveCurrent;
 
-            //CurrentˆÚ“®§ŒÀ
+            //Currentç§»å‹•åˆ¶é™
             if (fileManager.CurrentAudio < 0) fileManager.CurrentAudio = fileManager.audioList.Count - 1;
             else if (fileManager.CurrentAudio >= fileManager.audioList.Count) fileManager.CurrentAudio = 0;
-            //ƒNƒŠƒbƒvŒˆ’è
+            //ã‚¯ãƒªãƒƒãƒ—æ±ºå®š
             AudioClip newAudioClip = fileManager.audioList[fileManager.CurrentAudio];
 
-            // ƒ^ƒCƒ€ƒ‰ƒCƒ““à‚Ìƒgƒ‰ƒbƒNˆê——‚ğæ“¾
+            // ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³å†…ã®ãƒˆãƒ©ãƒƒã‚¯ä¸€è¦§ã‚’å–å¾—
             if (timeLineAsset == null) timeLineAsset = playableDirector.playableAsset as TimelineAsset;
             IEnumerable<TrackAsset> tracks = timeLineAsset.GetOutputTracks();
 
-            //audio‚ÌTrackAsset‚ğæ“¾
+            //audioã®TrackAssetã‚’å–å¾—
             TrackAsset track = tracks.FirstOrDefault(x => x.name == assetName_MainAudio);
 
             if (track)
             {
-                //ƒgƒ‰ƒbƒN“à‚ÌƒNƒŠƒbƒv‚ğ‘Sæ“¾
+                //ãƒˆãƒ©ãƒƒã‚¯å†…ã®ã‚¯ãƒªãƒƒãƒ—ã‚’å…¨å–å¾—
                 IEnumerable<TimelineClip> clips = track.GetClips();
 
-                // w’è–¼Ì‚ÌƒNƒŠƒbƒv‚ğ”²‚«o‚·
+                // æŒ‡å®šåç§°ã®ã‚¯ãƒªãƒƒãƒ—ã‚’æŠœãå‡ºã™
                 TimelineClip oldAudioClip = clips.FirstOrDefault(x => x.displayName != "");
-                oldAudioClip.duration = AudioClip_StartTime + fileManager.audioList[fileManager.CurrentAudio].length;//•b
+                oldAudioClip.duration = AudioClip_StartTime + fileManager.audioList[fileManager.CurrentAudio].length;//ç§’
 
-                //ˆÊ’u‚ğ’²®
+                //ä½ç½®ã‚’èª¿æ•´
                 //oldAudioClip.start = dlayTime;
 
-                //XV
+                //æ›´æ–°
                 //AudioClip_StartTime = oldAudioClip.start;
 
-                //“o˜^‚·‚é
+                //ç™»éŒ²ã™ã‚‹
                 (oldAudioClip.asset as AudioPlayableAsset).clip = newAudioClip;
 
-                //”½‰f‚Ìˆ×‚ÉƒfƒBƒŒƒNƒ^[‚ğƒŠƒXƒ^[ƒg‚·‚é
+                //åæ˜ ã®ç‚ºã«ãƒ‡ã‚£ãƒ¬ã‚¯ã‚¿ãƒ¼ã‚’ãƒªã‚¹ã‚¿ãƒ¼ãƒˆã™ã‚‹
                 TimeLineReStart();
             }
 
@@ -434,13 +434,13 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// w’èƒLƒƒƒ‰‚Ìè‚Ìó‘Ô‚ğØ‚è‘Ö‚¦‚é
+        /// æŒ‡å®šã‚­ãƒ£ãƒ©ã®æ‰‹ã®çŠ¶æ…‹ã‚’åˆ‡ã‚Šæ›¿ãˆã‚‹
         /// </summary>
         /// <param name="charaCon"></param>
-        /// <param name="isGrabHand">ˆ¬‚èó‘Ô‚É‚·‚é‚©</param>
+        /// <param name="isGrabHand">æ¡ã‚ŠçŠ¶æ…‹ã«ã™ã‚‹ã‹</param>
         public void SwitchHandType(CharaController charaCon, bool isGrabHand, bool isLeft)
         {
-            //d•¡”rœ
+            //é‡è¤‡æ’é™¤
             if (isLeft)
             {
                 if (!isGrabHand && !charaCon.keepHandL_Anime) return;
@@ -452,27 +452,27 @@ namespace UniLiveViewer
                 else if (isGrabHand && charaCon.keepHandR_Anime) return;
             }
 
-            // ƒ^ƒCƒ€ƒ‰ƒCƒ““à‚Ìƒgƒ‰ƒbƒNˆê——‚ğæ“¾
+            // ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³å†…ã®ãƒˆãƒ©ãƒƒã‚¯ä¸€è¦§ã‚’å–å¾—
             IEnumerable<TrackAsset> tracks = timeLineAsset.GetOutputTracks();
 
-            //‘ÎÛ‚ÌƒLƒƒƒ‰TrackAsset‚ğæ“¾
+            //å¯¾è±¡ã®ã‚­ãƒ£ãƒ©TrackAssetã‚’å–å¾—
             TrackAsset track = tracks.FirstOrDefault(x => x.name == charaCon.bindTrackName);
             if (!track) return;
 
 
             if (isLeft)
             {
-                //ƒTƒuƒgƒ‰ƒbƒN
+                //ã‚µãƒ–ãƒˆãƒ©ãƒƒã‚¯
                 var subTrack = track.GetChildTracks().FirstOrDefault(x => x.name == SUBTRACK0);
-                //w’èƒNƒŠƒbƒv
+                //æŒ‡å®šã‚¯ãƒªãƒƒãƒ—
                 TimelineClip handClip = subTrack.GetClips().FirstOrDefault(x => x.displayName == SUBCLIP0);
-                //ˆ¬‚é
+                //æ¡ã‚‹
                 if (isGrabHand)
                 {
                     charaCon.keepHandL_Anime = (handClip.asset as AnimationPlayableAsset).clip;
                     (handClip.asset as AnimationPlayableAsset).clip = grabHandAnime;
                 }
-                //‰ğœ‚·‚é
+                //è§£é™¤ã™ã‚‹
                 else
                 {
                     (handClip.asset as AnimationPlayableAsset).clip = charaCon.keepHandL_Anime;
@@ -481,17 +481,17 @@ namespace UniLiveViewer
             }
             else
             {
-                //ƒTƒuƒgƒ‰ƒbƒN
+                //ã‚µãƒ–ãƒˆãƒ©ãƒƒã‚¯
                 var subTrack = track.GetChildTracks().FirstOrDefault(x => x.name == SUBTRACK1);
-                //w’èƒNƒŠƒbƒv
+                //æŒ‡å®šã‚¯ãƒªãƒƒãƒ—
                 TimelineClip handClip = subTrack.GetClips().FirstOrDefault(x => x.displayName == SUBCLIP1);
-                //ˆ¬‚é
+                //æ¡ã‚‹
                 if (isGrabHand)
                 {
                     charaCon.keepHandR_Anime = (handClip.asset as AnimationPlayableAsset).clip;
                     (handClip.asset as AnimationPlayableAsset).clip = grabHandAnime;
                 }
-                //‰ğœ‚·‚é
+                //è§£é™¤ã™ã‚‹
                 else
                 {
                     (handClip.asset as AnimationPlayableAsset).clip = charaCon.keepHandR_Anime;
@@ -499,12 +499,12 @@ namespace UniLiveViewer
                 }
             }
 
-            //”½‰f‚Ìˆ×‚ÉƒfƒBƒŒƒNƒ^[‚ğƒŠƒXƒ^[ƒg‚·‚é
+            //åæ˜ ã®ç‚ºã«ãƒ‡ã‚£ãƒ¬ã‚¯ã‚¿ãƒ¼ã‚’ãƒªã‚¹ã‚¿ãƒ¼ãƒˆã™ã‚‹
             TimeLineReStart();
         }
 
         /// <summary>
-        /// ƒoƒCƒ“ƒhƒLƒƒƒ‰‚ğw’èˆÚsæ‚ÉƒoƒCƒ“ƒh‚·‚é
+        /// ãƒã‚¤ãƒ³ãƒ‰ã‚­ãƒ£ãƒ©ã‚’æŒ‡å®šç§»è¡Œå…ˆã«ãƒã‚¤ãƒ³ãƒ‰ã™ã‚‹
         /// </summary>
         /// <param name="transferChara"></param>
         /// <param name="toTrackName"></param>
@@ -515,85 +515,85 @@ namespace UniLiveViewer
         {
             DanceInfoData danceInfoData = new DanceInfoData();
 
-            // ƒ^ƒCƒ€ƒ‰ƒCƒ““à‚Ìƒgƒ‰ƒbƒNˆê——‚ğæ“¾
+            // ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³å†…ã®ãƒˆãƒ©ãƒƒã‚¯ä¸€è¦§ã‚’å–å¾—
             IEnumerable<TrackAsset> tracks = timeLineAsset.GetOutputTracks();
 
-            //“]‘—‚·‚éƒLƒƒƒ‰‚ÌTrackAsset‚ğæ“¾
+            //è»¢é€ã™ã‚‹ã‚­ãƒ£ãƒ©ã®TrackAssetã‚’å–å¾—
             TrackAsset track = tracks.FirstOrDefault(x => x.name == transferChara.bindTrackName);
             if (!track) return false;
 
-            //ƒgƒ‰ƒbƒN“à‚ÌƒNƒŠƒbƒv‚ğ‘Sæ“¾
+            //ãƒˆãƒ©ãƒƒã‚¯å†…ã®ã‚¯ãƒªãƒƒãƒ—ã‚’å…¨å–å¾—
             IEnumerable<TimelineClip> clips = track.GetClips();
-            // w’è–¼Ì‚ÌƒNƒŠƒbƒv‚ğ”²‚«o‚·
-            TimelineClip danceClip = clips.FirstOrDefault(x => x.displayName == "DanceBase");
+            // æŒ‡å®šåç§°ã®ã‚¯ãƒªãƒƒãƒ—ã‚’æŠœãå‡ºã™
+            TimelineClip danceClip = clips.FirstOrDefault(x => x.displayName == MAINCLIP);
             danceInfoData.motionOffsetTime = (float)(danceClip.start - motionClip_StartTime);
 
-            //DanceBase‚ÌƒAƒjƒ[ƒVƒ‡ƒ“‚ğæ“¾
+            //DanceBaseã®ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’å–å¾—
             danceInfoData.baseDanceClip = (danceClip.asset as AnimationPlayableAsset).clip;
 
             TimelineClip handClip;
 
-            //ƒI[ƒo[ƒ‰ƒCƒhƒAƒjƒ[ƒVƒ‡ƒ“‚ğæ“¾
+            //ã‚ªãƒ¼ãƒãƒ¼ãƒ©ã‚¤ãƒ‰ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’å–å¾—
             foreach (var subTrack in track.GetChildTracks())
             {
-                // ƒgƒ‰ƒbƒN“à‚ÌƒNƒŠƒbƒvˆê——‚ğæ“¾
+                // ãƒˆãƒ©ãƒƒã‚¯å†…ã®ã‚¯ãƒªãƒƒãƒ—ä¸€è¦§ã‚’å–å¾—
                 clips = subTrack.GetClips();
 
                 switch (subTrack.name)
                 {
                     case SUBTRACK0:
-                        // w’è–¼Ì‚ÌƒNƒŠƒbƒv‚ğ”²‚«o‚·
+                        // æŒ‡å®šåç§°ã®ã‚¯ãƒªãƒƒãƒ—ã‚’æŠœãå‡ºã™
                         handClip = clips.FirstOrDefault(x => x.displayName == SUBCLIP0);
                         danceInfoData.overrideClip_hand = (handClip.asset as AnimationPlayableAsset).clip;
                         break;
                     case SUBTRACK1:
-                        // w’è–¼Ì‚ÌƒNƒŠƒbƒv‚ğ”²‚«o‚·
+                        // æŒ‡å®šåç§°ã®ã‚¯ãƒªãƒƒãƒ—ã‚’æŠœãå‡ºã™
                         handClip = clips.FirstOrDefault(x => x.displayName == SUBCLIP1);
                         danceInfoData.overrideClip_hand = (handClip.asset as AnimationPlayableAsset).clip;
                         break;
                     case SUBTRACK2:
-                        // w’è–¼Ì‚ÌƒNƒŠƒbƒv‚ğ”²‚«o‚·
+                        // æŒ‡å®šåç§°ã®ã‚¯ãƒªãƒƒãƒ—ã‚’æŠœãå‡ºã™
                         TimelineClip FaceClip = clips.FirstOrDefault(x => x.displayName == SUBCLIP2);
                         danceInfoData.overrideClip_face = (FaceClip.asset as AnimationPlayableAsset).clip;
                         break;
                     case SUBTRACK3:
-                        // w’è–¼Ì‚ÌƒNƒŠƒbƒv‚ğ”²‚«o‚·
+                        // æŒ‡å®šåç§°ã®ã‚¯ãƒªãƒƒãƒ—ã‚’æŠœãå‡ºã™
                         TimelineClip lipClip = clips.FirstOrDefault(x => x.displayName == SUBCLIP3);
                         danceInfoData.overrideClip_lip = (lipClip.asset as AnimationPlayableAsset).clip;
                         break;
                 }
             }
 
-            //##### ‚±‚±‚©‚ç“]‘—æˆ— #####
+            //##### ã“ã“ã‹ã‚‰è»¢é€å…ˆå‡¦ç† #####
             IEnumerable<PlayableBinding> outputs = playableDirector.playableAsset.outputs;
-            //ˆÚsŒ³‚ÌPlayableBinding‚ğnullƒoƒCƒ“ƒh‚Å‰ğœ‚µ‚Ä‚¨‚­
+            //ç§»è¡Œå…ƒã®PlayableBindingã‚’nullãƒã‚¤ãƒ³ãƒ‰ã§è§£é™¤ã—ã¦ãŠã
             PlayableBinding fromBaseAnime = outputs.FirstOrDefault(x => x.streamName == transferChara.bindTrackName);
             playableDirector.SetGenericBinding(fromBaseAnime.sourceObject, null);
 
-            //ˆÚsæ‚ÌŠù‘¶ƒLƒƒƒ‰Šm”F
+            //ç§»è¡Œå…ˆã®æ—¢å­˜ã‚­ãƒ£ãƒ©ç¢ºèª
             for (int i = 0; i < trackBindChara.Length; i++)
             {
                 if (trackBindChara[i])
                 {
                     if (trackBindChara[i].bindTrackName == transferChara.bindTrackName)
                     {
-                        //“]‘—Œ³‚ÌƒŠƒ“ƒN‚ğ‰ğœ
+                        //è»¢é€å…ƒã®ãƒªãƒ³ã‚¯ã‚’è§£é™¤
                         trackBindChara[i] = null;
                         break;
                     }
                 }
             }
 
-            //ˆÚsæ‚ÌPlayableBinding‚ğæ“¾
+            //ç§»è¡Œå…ˆã®PlayableBindingã‚’å–å¾—
             PlayableBinding toBaseAnime = outputs.FirstOrDefault(x => x.streamName == toTrackName);
             if (toBaseAnime.streamName == "") return false;
 
-            //ƒIƒuƒWƒFƒNƒg‚ğˆÚsæ‚ÉƒoƒCƒ“ƒh‚·‚é
+            //ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’ç§»è¡Œå…ˆã«ãƒã‚¤ãƒ³ãƒ‰ã™ã‚‹
             playableDirector.SetGenericBinding(toBaseAnime.sourceObject, transferChara.gameObject);
 
-            //ƒoƒCƒ“ƒhî•ñ‚ğ•t—^
+            //ãƒã‚¤ãƒ³ãƒ‰æƒ…å ±ã‚’ä»˜ä¸
             transferChara.bindTrackName = toTrackName;
-            //ƒŠƒXƒg‚É“o˜^
+            //ãƒªã‚¹ãƒˆã«ç™»éŒ²
             switch (toTrackName)
             {
                 case "Animation Track_Portal":
@@ -617,19 +617,19 @@ namespace UniLiveViewer
             }
 
 
-            //ƒAƒjƒ[ƒVƒ‡ƒ“‚ğˆÚs(æ“¾‚µ‚½“]‘—Œ³ƒAƒjƒ[ƒVƒ‡ƒ“‚ÅV‹K“o˜^)
+            //ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’ç§»è¡Œ(å–å¾—ã—ãŸè»¢é€å…ƒã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã§æ–°è¦ç™»éŒ²)
             SetAnimationClip(toTrackName, danceInfoData, initPos, initEulerAngles);
 
-            //RootMotion‚Ì‰ğœ
-            //’Í‚ñ‚Å©—R‚ÉˆÚ“®‚³‚¹‚éˆ×‚É•K—v‚¾‚Á‚½‚ªAİ’uŒã‚ÍˆÚ“®ƒ‚[ƒVƒ‡ƒ“‚ÉƒJƒNƒcƒL‚ª¶‚¶‚Ä‚µ‚Ü‚¤‚½‚ß‰ğœ
-            //İ’uÀ•Wİ’èŒã‚É‰ğœ‚µ‚È‚¢‚ÆˆÊ’u‚ª”½‰f‚³‚ê‚È‚¢‚Ì‚Å’ˆÓ(‚Ü‚½‚±‚Ì•ÏX‚ÍƒAƒjƒ[ƒ^[‚ÌÄ‰Šú‰»‚ª‘–‚é)
+            //RootMotionã®è§£é™¤
+            //æ´ã‚“ã§è‡ªç”±ã«ç§»å‹•ã•ã›ã‚‹ç‚ºã«å¿…è¦ã ã£ãŸãŒã€è¨­ç½®å¾Œã¯ç§»å‹•ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã«ã‚«ã‚¯ãƒ„ã‚­ãŒç”Ÿã˜ã¦ã—ã¾ã†ãŸã‚è§£é™¤
+            //è¨­ç½®åº§æ¨™è¨­å®šå¾Œã«è§£é™¤ã—ãªã„ã¨ä½ç½®ãŒåæ˜ ã•ã‚Œãªã„ã®ã§æ³¨æ„(ã¾ãŸã“ã®å¤‰æ›´ã¯ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚¿ãƒ¼ã®å†åˆæœŸåŒ–ãŒèµ°ã‚‹)
             transferChara.GetComponent<Animator>().applyRootMotion = false;
 
-            //ƒ‰ƒO‚Å•ö‚ê‚éê‡‚ª‚ ‚é‚Ì‚ÅA•\îŒn‚ğ‚·‚×‚Ä‰Šú‰»‚µ‚Ä‚¨‚­
+            //è¡¨æƒ…ç³»ã‚’ãƒªã‚»ãƒƒãƒˆã—ã¦ãŠã
             transferChara.facialSync.AllClear_BlendShape();
             transferChara.lipSync.AllClear_BlendShape();
 
-            //ƒtƒB[ƒ‹ƒhƒJƒEƒ“ƒ^[
+            //ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã‚«ã‚¦ãƒ³ã‚¿ãƒ¼
             FieldCharaCount++;
             FieldCharaUpdate?.Invoke();
 
@@ -637,7 +637,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ƒgƒ‰ƒbƒNƒoƒCƒ“ƒhƒLƒƒƒ‰‚ğíœ‚·‚é
+        /// ãƒˆãƒ©ãƒƒã‚¯ãƒã‚¤ãƒ³ãƒ‰ã‚­ãƒ£ãƒ©ã‚’å‰Šé™¤ã™ã‚‹
         /// </summary>
         /// <param name="chara"></param>
         public void DeletebindAsset(CharaController chara)
@@ -652,13 +652,13 @@ namespace UniLiveViewer
             }
             Destroy(chara.gameObject);
 
-            //ƒtƒB[ƒ‹ƒhƒJƒEƒ“ƒ^[
+            //ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã‚«ã‚¦ãƒ³ã‚¿ãƒ¼
             FieldCharaCount--;
             FieldCharaUpdate?.Invoke();
         }
 
         /// <summary>
-        /// –¼‘Oˆê’v‚Åƒgƒ‰ƒbƒNƒoƒCƒ“ƒhƒLƒƒƒ‰‚ğíœ‚·‚é
+        /// åå‰ä¸€è‡´ã§ãƒˆãƒ©ãƒƒã‚¯ãƒã‚¤ãƒ³ãƒ‰ã‚­ãƒ£ãƒ©ã‚’å‰Šé™¤ã™ã‚‹
         /// </summary>
         /// <param name="chara"></param>
         public void DeletebindAsset_CleanUp(string hViewName)
@@ -670,7 +670,7 @@ namespace UniLiveViewer
                     Destroy(trackBindChara[i].gameObject);
                     trackBindChara[i] = null;
 
-                    //ƒtƒB[ƒ‹ƒhƒJƒEƒ“ƒ^[
+                    //ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã‚«ã‚¦ãƒ³ã‚¿ãƒ¼
                     if (i != PORTAL_ELEMENT) FieldCharaCount--;
                 }
             }
@@ -678,7 +678,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// Fieldã‚Ìƒ‰ƒbƒNƒoƒCƒ“ƒhƒLƒƒƒ‰‚ğíœ‚·‚é
+        /// Fieldä¸Šã®ãƒ©ãƒƒã‚¯ãƒã‚¤ãƒ³ãƒ‰ã‚­ãƒ£ãƒ©ã‚’å‰Šé™¤ã™ã‚‹
         /// </summary>
         public void DeletebindAsset_FieldAll()
         {
@@ -691,13 +691,13 @@ namespace UniLiveViewer
                     trackBindChara[i] = null;
                 }
             }
-            //ƒtƒB[ƒ‹ƒhƒJƒEƒ“ƒ^[
+            //ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã‚«ã‚¦ãƒ³ã‚¿ãƒ¼
             FieldCharaCount = 0;
             FieldCharaUpdate?.Invoke();
         }
 
         /// <summary>
-        /// ‹ó‚¢‚Ä‚¢‚éƒgƒ‰ƒbƒN‚ğ’T‚·
+        /// ç©ºã„ã¦ã„ã‚‹ãƒˆãƒ©ãƒƒã‚¯ã‚’æ¢ã™
         /// </summary>
         /// <returns></returns>
         public bool isFreeTrack(out string freeTrack)
@@ -736,75 +736,75 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ƒ^ƒCƒ€ƒ‰ƒCƒ“‚Ì•ÏX“à—e‚ğ‹­§“I?‚É”½‰f‚³‚¹‚é
-        /// AnimationClip•ÏX‚¾‚¯”½‰f‚³‚ê‚È‚¢‚½‚ßƒŠƒXƒ^[ƒg‚ª•K—v
-        /// EEEƒ‰ƒ“ƒ^ƒCƒ€‚Í–³—?‚Á‚ÄŒ©‚©‚¯‚½‚¯‚Ç‚µ‚Ä‚İ‚½‚ç‚¢‚¯‚½‚Á‚Ä‚¢‚¤
+        /// ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã®å¤‰æ›´å†…å®¹ã‚’å¼·åˆ¶çš„?ã«åæ˜ ã•ã›ã‚‹
+        /// AnimationClipå¤‰æ›´ã ã‘åæ˜ ã•ã‚Œãªã„ãŸã‚ãƒªã‚¹ã‚¿ãƒ¼ãƒˆãŒå¿…è¦
+        /// ãƒ»ãƒ»ãƒ»ãƒ©ãƒ³ã‚¿ã‚¤ãƒ ã¯ç„¡ç†?ã£ã¦è¦‹ã‹ã‘ãŸã‘ã©è©¦ã—ã¦ã¿ãŸã‚‰ã„ã‘ãŸã£ã¦ã„ã†
         /// </summary>
         public void TimeLineReStart()
         {
-            //Ä¶ŠÔ‚Ì‹L˜^
+            //å†ç”Ÿæ™‚é–“ã®è¨˜éŒ²
             double keepTime = playableDirector.time;
-            //‰Šú‰»‚µ‚Ä“ü‚ê’¼‚µ(‚±‚ê‚Å‚¢‚¯‚¿‚á‚¤“ä)
+            //åˆæœŸåŒ–ã—ã¦å…¥ã‚Œç›´ã—(ã“ã‚Œã§ã„ã‘ã¡ã‚ƒã†è¬)
             playableDirector.playableAsset = null;
             playableDirector.playableAsset = timeLineAsset;
 
-            //‘O‰ñ‚Ì‘±‚«‚ğw’è
+            //å‰å›ã®ç¶šãã‚’æŒ‡å®š
             playableDirector.time = keepTime;
 
-            ////Trackî•ñ‚ğXV‚·‚é
+            ////Trackæƒ…å ±ã‚’æ›´æ–°ã™ã‚‹
             //TrackList_Update();
 
             if (playableDirector.timeUpdateMode == DirectorUpdateMode.GameTime)
             {
-                //Ä¶
+                //å†ç”Ÿ
                 playableDirector.Play();
 
-                //‘¬“xXV(PlayŒã‚ÍÄ“xŒÄ‚Ño‚³‚È‚¢‚Æƒ_ƒ‚İ‚½‚¢)
+                //é€Ÿåº¦æ›´æ–°(Playå¾Œã¯å†åº¦å‘¼ã³å‡ºã•ãªã„ã¨ãƒ€ãƒ¡ã¿ãŸã„)
                 playableDirector.playableGraph.GetRootPlayable(0).SetSpeed(_timelineSpeed);
 
-                //‘¬“xXV
+                //é€Ÿåº¦æ›´æ–°
                 //TimelineSpeedUpdate();
             }
             if (playableDirector.timeUpdateMode == DirectorUpdateMode.Manual)
             {
-                //XV
+                //æ›´æ–°
                 playableDirector.Evaluate();
             }
         }
 
         /// <summary>
-        /// Ä¶ó‘Ô‚É‚·‚é
+        /// å†ç”ŸçŠ¶æ…‹ã«ã™ã‚‹
         /// </summary>
         public void TimelinePlay()
         {
-            //ƒ‚[ƒh‚ğƒ}ƒjƒ…ƒAƒ‹‚©‚çƒQ[ƒ€ƒ^ƒCƒ}[‚Ö
+            //ãƒ¢ãƒ¼ãƒ‰ã‚’ãƒãƒ‹ãƒ¥ã‚¢ãƒ«ã‹ã‚‰ã‚²ãƒ¼ãƒ ã‚¿ã‚¤ãƒãƒ¼ã¸
             if (playableDirector.timeUpdateMode == DirectorUpdateMode.Manual)
             {
                 playableDirector.timeUpdateMode = DirectorUpdateMode.GameTime;
             }
 
-            //ÄŠJ‚³‚¹‚é
+            //å†é–‹ã•ã›ã‚‹
             playableDirector.Play();
 
-            //‘¬“xXV(PlayŒã‚ÍÄ“xŒÄ‚Ño‚³‚È‚¢‚Æƒ_ƒ‚İ‚½‚¢)
+            //é€Ÿåº¦æ›´æ–°(Playå¾Œã¯å†åº¦å‘¼ã³å‡ºã•ãªã„ã¨ãƒ€ãƒ¡ã¿ãŸã„)
             playableDirector.playableGraph.GetRootPlayable(0).SetSpeed(_timelineSpeed);
 
-            //‘¬“xXV
+            //é€Ÿåº¦æ›´æ–°
             //TimelineSpeedUpdate();
         }
 
         /// <summary>
-        /// ƒ}ƒjƒ…ƒAƒ‹ó‘Ô‚É‚·‚é
+        /// ãƒãƒ‹ãƒ¥ã‚¢ãƒ«çŠ¶æ…‹ã«ã™ã‚‹
         /// </summary>
         public void TimelineManualMode()
         {
-            //ƒ}ƒjƒ…ƒAƒ‹ƒ‚[ƒh‚É
+            //ãƒãƒ‹ãƒ¥ã‚¢ãƒ«ãƒ¢ãƒ¼ãƒ‰ã«
             playableDirector.timeUpdateMode = DirectorUpdateMode.Manual;
 
-            //AnimatorController‚ğ‰ğœ‚µ‚Ä‚¨‚­
+            //AnimatorControllerã‚’è§£é™¤ã—ã¦ãŠã
             StartCoroutine(RemoveCharasAniCon());
 
-            //ƒ}ƒjƒ…ƒAƒ‹ƒ‚[ƒh‚Å‚ÌXV‚ğŠJn
+            //ãƒãƒ‹ãƒ¥ã‚¢ãƒ«ãƒ¢ãƒ¼ãƒ‰ã§ã®æ›´æ–°ã‚’é–‹å§‹
             StartCoroutine(ManualUpdate());
 
             //playableDirector.Pause();
@@ -817,14 +817,14 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// Ä¶ˆÊ’u‚ğ‰Šú‰»‚·‚é
+        /// å†ç”Ÿä½ç½®ã‚’åˆæœŸåŒ–ã™ã‚‹
         /// </summary>
         public void TimelineBaseReturn()
         {
             playableDirector.time = 0;
             //TimelinePlay();
 
-            //•\îŒn‚ğƒŠƒZƒbƒg‚µ‚Ä‚¨‚­
+            //è¡¨æƒ…ç³»ã‚’ãƒªã‚»ãƒƒãƒˆã—ã¦ãŠã
             foreach (var chara in trackBindChara)
             {
                 if (!chara) continue;
@@ -834,32 +834,32 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ˆê’èŠÔŠu‚Åƒ}ƒjƒ…ƒAƒ‹ƒ‚[ƒh‚ÅXV‚ğs‚¤
+        /// ä¸€å®šé–“éš”ã§ãƒãƒ‹ãƒ¥ã‚¢ãƒ«ãƒ¢ãƒ¼ãƒ‰ã§æ›´æ–°ã‚’è¡Œã†
         /// </summary>
         /// <returns></returns>
         private IEnumerator ManualUpdate()
         {
             double keepVal = AudioClip_PlaybackTime;
-            //1‰ñó‘Ô‚ğ”½‰f‚³‚¹‚é
+            //1å›çŠ¶æ…‹ã‚’åæ˜ ã•ã›ã‚‹
             playableDirector.Evaluate();
             yield return null;
 
             while (playableDirector.timeUpdateMode == DirectorUpdateMode.Manual)
             {
-                //XV‚³‚ê‚Ä‚¢‚é‚©
+                //æ›´æ–°ã•ã‚Œã¦ã„ã‚‹ã‹
                 if (keepVal != AudioClip_PlaybackTime)
                 {
-                    //ó‘Ô‚ğ”½‰f‚³‚¹‚é
+                    //çŠ¶æ…‹ã‚’åæ˜ ã•ã›ã‚‹
                     playableDirector.Evaluate();
 
-                    //ƒL[ƒv‚ÌXV
+                    //ã‚­ãƒ¼ãƒ—ã®æ›´æ–°
                     keepVal = AudioClip_PlaybackTime;
                 }
                 yield return new WaitForSeconds(0.1f);
             }
 
-            //AnimatorController‚ğ–ß‚·
-            //Manualó‘Ô‚Å–ß‚·‚Æˆêu‰ŠúÀ•W‚ÉˆÚ“®‚µ‚Äƒ`ƒ‰‚Â‚¢‚Ä‚µ‚Ü‚¤ˆ×A‚±‚Ìƒ^ƒCƒ~ƒ“ƒO‚ÅÀs
+            //AnimatorControllerã‚’æˆ»ã™
+            //ManualçŠ¶æ…‹ã§æˆ»ã™ã¨ä¸€ç¬åˆæœŸåº§æ¨™ã«ç§»å‹•ã—ã¦ãƒãƒ©ã¤ã„ã¦ã—ã¾ã†ç‚ºã€ã“ã®ã‚¿ã‚¤ãƒŸãƒ³ã‚°ã§å®Ÿè¡Œ
             for (int i = 0; i < trackBindChara.Length; i++)
             {
                 if (!trackBindChara[i]) continue;
@@ -868,12 +868,12 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ƒLƒƒƒ‰‘¤ƒAƒ^ƒbƒ`ƒ|ƒCƒ“ƒg‚Ì—LŒøó‘Ô‚ğØ‚è‘Ö‚¦‚é
+        /// ã‚­ãƒ£ãƒ©å´ã‚¢ã‚¿ãƒƒãƒãƒã‚¤ãƒ³ãƒˆã®æœ‰åŠ¹çŠ¶æ…‹ã‚’åˆ‡ã‚Šæ›¿ãˆã‚‹
         /// </summary>
         /// <param name="isActive"></param>
         public void SetActive_AttachPoint(bool isActive)
         {
-            //ƒ}ƒjƒ…ƒAƒ‹ó‘Ô‚Ì‚İ
+            //ãƒãƒ‹ãƒ¥ã‚¢ãƒ«çŠ¶æ…‹ã®ã¿
             if (playableDirector.timeUpdateMode != DirectorUpdateMode.Manual) return;
 
             foreach (var chara in trackBindChara)
@@ -884,29 +884,29 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ƒLƒƒƒ‰‚ÌAnimatorControllerİ’è‚ğíœ‚·‚é(timeline‚Ìanimator‚Æ‹£‡‚·‚é‚½‚ß)
+        /// ã‚­ãƒ£ãƒ©ã®AnimatorControllerã‚’è§£é™¤ã™ã‚‹(timelineã®animatorã¨ç«¶åˆã™ã‚‹ãŸã‚)
         /// </summary>
         private IEnumerator RemoveCharasAniCon()
         {
-            //ƒ}ƒjƒ…ƒAƒ‹ƒ‚[ƒh‚Å‚È‚¯‚ê‚Îˆ—‚µ‚È‚¢
+            //ãƒãƒ‹ãƒ¥ã‚¢ãƒ«ãƒ¢ãƒ¼ãƒ‰ã§ãªã‘ã‚Œã°å‡¦ç†ã—ãªã„
             if (playableDirector.timeUpdateMode != DirectorUpdateMode.Manual) yield break;
 
-            yield return null;//VRM‚ÌAwake‚ªŠÔ‚É‡‚í‚È‚¢‚Ì‚Å?
+            yield return null;//å¿…è¦ã€VRMã®AwakeãŒé–“ã«åˆã‚ãªã„
 
-            //TimeLine‚Æ‹£‡‚Á‚Û‚¢‚Ì‚ÅAnimatorController‚ğ‰ğœ‚µ‚Ä‚¨‚­ 
+            //TimeLineã¨ç«¶åˆã£ã½ã„ã®ã§AnimatorControllerã‚’è§£é™¤ã—ã¦ãŠã 
             for (int i = 0; i < trackBindChara.Length; i++)
             {
                 if (!trackBindChara[i]) continue;
                 trackBindChara[i].RemoveRunAnime();
             }
 
-            //ƒƒ“ƒtƒŒ[ƒ€Œã‚ÉƒAƒjƒ[ƒVƒ‡ƒ“‚Ìó‘Ô‚ğ1‰ñ‚¾‚¯XV
+            //ãƒ¯ãƒ³ãƒ•ãƒ¬ãƒ¼ãƒ å¾Œã«ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®çŠ¶æ…‹ã‚’1å›ã ã‘æ›´æ–°
             yield return null;
             playableDirector.Evaluate();
         }
 
         /// <summary>
-        /// ƒoƒCƒ“ƒhƒLƒƒƒ‰‚ÌƒKƒCƒh‚ğˆêŠ‡‚ÅØ‚è‘Ö‚¦‚é
+        /// ãƒã‚¤ãƒ³ãƒ‰ã‚­ãƒ£ãƒ©ã®ã‚¬ã‚¤ãƒ‰ã‚’ä¸€æ‹¬ã§åˆ‡ã‚Šæ›¿ãˆã‚‹
         /// </summary>
         /// <param name="isEnable"></param>
         public void SetCharaMeshGuide(bool isEnable)

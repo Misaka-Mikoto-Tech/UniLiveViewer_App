@@ -1,13 +1,12 @@
-using System.Collections;
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 
 namespace UniLiveViewer
 {
     public class DecorationItemInfo : MonoBehaviour
     {
-        public string[] itemName = new string[2] { "ItemName", "ƒAƒCƒeƒ€–¼" };
-        public string[] flavorText = new string[2] { "Unremarkable item", "‰½‚Ì•Ï“N‚à‚È‚¢ƒAƒCƒeƒ€" };
+        public string[] itemName = new string[2] { "ItemName", "ã‚¢ã‚¤ãƒ†ãƒ å" };
+        public string[] flavorText = new string[2] { "Unremarkable item", "ä½•ã®å¤‰å“²ã‚‚ãªã„ã‚¢ã‚¤ãƒ†ãƒ " };
         public Texture2D[] texs = new Texture2D[0];
         public RenderInfo[] renderInfo = new RenderInfo[1];
 
@@ -22,20 +21,20 @@ namespace UniLiveViewer
                     {
                         try
                         {
-                            //ƒŒƒ“ƒ_[‚Æ‚»‚Ìƒ}ƒeƒŠƒAƒ‹ƒvƒƒpƒeƒB‚ğæ“¾
+                            //ãƒ¬ãƒ³ãƒ€ãƒ¼ã¨ãã®ãƒãƒ†ãƒªã‚¢ãƒ«ãƒ—ãƒ­ãƒ‘ãƒ†ã‚£ã‚’å–å¾—
                             info.materialPropertyBlock.Add(new MaterialPropertyBlock());
                             info._renderer.GetPropertyBlock(info.materialPropertyBlock[i]);
-                            //‰ŠúƒJƒ‰[‚ğæ“¾‚µ‚Ä‚¨‚­
-                            //TODO:‚±‚±ƒ‰ƒCƒgƒ}ƒbƒv‚ÌƒAƒCƒeƒ€‚¾‚ÆƒGƒ‰[A‚¢‚¸‚ê’¼‚·
+                            //åˆæœŸã‚«ãƒ©ãƒ¼ã‚’å–å¾—ã—ã¦ãŠã
+                            //TODO:ã“ã“ãƒ©ã‚¤ãƒˆãƒãƒƒãƒ—ã®ã‚¢ã‚¤ãƒ†ãƒ ã ã¨ã‚¨ãƒ©ãƒ¼ã€ã„ãšã‚Œç›´ã™
                             info.initColor.Add(info._renderer.materials[i].GetColor("_BaseColor"));
                         }
                         catch
                         {
-                            Debug.Log("_BaseColor‚ª‚ ‚è‚Ü‚¹‚ñBƒ‰ƒCƒgƒ}ƒbƒv‚µ‚©‚È‚¢“z");
+                            Debug.Log("_BaseColorãŒã‚ã‚Šã¾ã›ã‚“ã€‚ãƒ©ã‚¤ãƒˆãƒãƒƒãƒ—ã—ã‹ãªã„å¥´");
                         }
                     }
 
-                    //ƒ}ƒeƒŠƒAƒ‹ƒIƒuƒWƒF‚ÌÕ“ËƒCƒxƒ“ƒg
+                    //ãƒãƒ†ãƒªã‚¢ãƒ«ã‚ªãƒ–ã‚¸ã‚§ã®è¡çªã‚¤ãƒ™ãƒ³ãƒˆ
                     if (info.itemCollisionChecker) info.itemCollisionChecker.OnTrigger += SetTexture;
                 }
             }
@@ -46,7 +45,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// w’èƒeƒNƒXƒ`ƒƒ‚É•ÏX
+        /// æŒ‡å®šãƒ†ã‚¯ã‚¹ãƒãƒ£ã«å¤‰æ›´
         /// </summary>
         public void SetTexture(ItemCollisionChecker parts, Collider other)
         {
@@ -54,10 +53,10 @@ namespace UniLiveViewer
 
             foreach (var info in renderInfo)
             {
-                //•”ˆÊ‚Ì“Á’è
+                //éƒ¨ä½ã®ç‰¹å®š
                 if (info.itemCollisionChecker == parts)
                 {
-                    //‘ÎÛƒƒbƒVƒ…‚Ì‘Sƒ}ƒeƒŠƒAƒ‹‚ÌTex‚ğ’uŠ·
+                    //å¯¾è±¡ãƒ¡ãƒƒã‚·ãƒ¥ã®å…¨ãƒãƒ†ãƒªã‚¢ãƒ«ã®Texã‚’ç½®æ›
                     for (int i = 0; i < info.materialPropertyBlock.Count; i++)
                     {
                         info.materialPropertyBlock[i].SetTexture("_BaseMap", newTextur);
@@ -69,7 +68,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ‰ŠúƒJƒ‰[‚É–ß‚·
+        /// åˆæœŸã‚«ãƒ©ãƒ¼ã«æˆ»ã™
         /// </summary>
         /// <param name="renderIndex"></param>
         /// <param name="materialIndex"></param>
@@ -84,7 +83,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// w’èƒJƒ‰[‚É•ÏX
+        /// æŒ‡å®šã‚«ãƒ©ãƒ¼ã«å¤‰æ›´
         /// </summary>
         /// <param name="renderIndex"></param>
         /// <param name="materialIndex"></param>
@@ -116,8 +115,8 @@ namespace UniLiveViewer
     public class RenderInfo
     {
         public Renderer _renderer;
-        public ItemCollisionChecker itemCollisionChecker;//ƒ}ƒeƒŠƒAƒ‹ƒIƒuƒWƒF‚Æ‚ÌÚG‚ÅF‚ğ•Ï‚¦‚éê‡‚Íw’è‚·‚é
-        public string[] partsName = new string[2] { "partsName", "•”ˆÊ‚Ì–¼‘O" };//¡‚Ì‚Æ‚±–¢g—p
+        public ItemCollisionChecker itemCollisionChecker;//ãƒãƒ†ãƒªã‚¢ãƒ«ã‚ªãƒ–ã‚¸ã‚§ã¨ã®æ¥è§¦ã§è‰²ã‚’å¤‰ãˆã‚‹å ´åˆã¯æŒ‡å®šã™ã‚‹
+        public string[] partsName = new string[2] { "partsName", "éƒ¨ä½ã®åå‰" };//ä»Šã®ã¨ã“æœªä½¿ç”¨
         public List<MaterialPropertyBlock> materialPropertyBlock = new List<MaterialPropertyBlock>();
         public List<Color> initColor = new List<Color>();
     }

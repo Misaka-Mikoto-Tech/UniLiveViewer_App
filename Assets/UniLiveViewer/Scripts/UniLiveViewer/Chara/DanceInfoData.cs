@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 namespace UniLiveViewer
 {
@@ -14,7 +14,7 @@ namespace UniLiveViewer
         public bool isReverse = false;
         public string strBeforeName;
         public string viewName;
-        public float motionOffsetTime = 0;//Œ»óFBX‚¾‚¯AVMD‚Ítext‚ğQÆ‚µ‚Ä‚¢‚é
+        public float motionOffsetTime = 0;//ç¾çŠ¶FBXã ã‘ã€VMDã¯txtã‚’å‚ç…§ã—ã¦ã„ã‚‹
         public FORMATTYPE formatType = FORMATTYPE.FBX;
         public AnimationClip baseDanceClip;
         public AnimationClip baseDanceClip_reverse;

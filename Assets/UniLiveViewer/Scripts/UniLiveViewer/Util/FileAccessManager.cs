@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+ï»¿using Cysharp.Threading.Tasks;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -22,8 +22,8 @@ namespace UniLiveViewer
             SETTING
         }
 
-        public static string folderPath_Custom;//VMD‚âmp3‚È‚Ç
-        public string sMssage;//ƒfƒoƒbƒO—p
+        public static string folderPath_Custom;//VMDã‚„mp3ãªã©
+        public string sMssage;//ãƒ‡ãƒãƒƒã‚°ç”¨
 
         public static string[] folderName = { "Chara/", "Motion/", "BGM/", "Setting/" };
         public static string cachePath = "Cache/";
@@ -47,7 +47,7 @@ namespace UniLiveViewer
 
         private CancellationToken cancellation_token;
 
-        //ƒTƒ€ƒlƒCƒ‹ƒLƒƒƒbƒVƒ…—p
+        //ã‚µãƒ ãƒã‚¤ãƒ«ã‚­ãƒ£ãƒƒã‚·ãƒ¥ç”¨
         //public static Dictionary<string,Texture2D> cacheThumbnails = new Dictionary<string, Texture2D>();
         public static Dictionary<string, Sprite> cacheThumbnails = new Dictionary<string, Sprite>();
         [SerializeField] private Texture2D texDummy;
@@ -56,7 +56,7 @@ namespace UniLiveViewer
 #if UNITY_EDITOR
         private const int MAX_AUDIOCOUNT = 30;
 #elif UNITY_ANDROID
-    private const int MAX_AUDIOCOUNT = 10;
+        private const int MAX_AUDIOCOUNT = 10;
 #endif
 
         public event Action onFolderCheckCompleted;
@@ -68,13 +68,13 @@ namespace UniLiveViewer
 
         private void Awake()
         {
-            //Link‚¾‚Æ—¼•û”½‰‚·‚é‚Ì‚Åelif•K{¨PLATFORM_OCULUS‚Á‚Ä‚Ì‚ª‚ ‚é‚İ‚½‚¢
+            //Linkã ã¨ä¸¡æ–¹åå¿œã™ã‚‹ã®ã§elifå¿…é ˆâ†’PLATFORM_OCULUSã£ã¦ã®ãŒã‚ã‚‹ã¿ãŸã„
 #if UNITY_EDITOR
             folderPath_Custom = "D:/User/UniLiveViewer/";
-            sMssage = "windows‚Æ‚µ‚Ä”F¯‚µ‚Ä‚¢‚Ü‚·";
+            sMssage = "windowsã¨ã—ã¦èªè­˜ã—ã¦ã„ã¾ã™";
 #elif UNITY_ANDROID
-        folderPath_Custom = "/storage/emulated/0/" + "UniLiveViewer/";
-        sMssage = "Quest‚Æ‚µ‚Ä”F¯‚µ‚Ä‚¢‚Ü‚·";
+            folderPath_Custom = "/storage/emulated/0/" + "UniLiveViewer/";
+            sMssage = "Questã¨ã—ã¦èªè­˜ã—ã¦ã„ã¾ã™";
 #endif
             //folderPath_Custom = Application.persistentDataPath + "/";
             //folderPath_Custom = Application.temporaryCachePath + "/";
@@ -92,7 +92,7 @@ namespace UniLiveViewer
 
             cancellation_token = this.GetCancellationTokenOnDestroy();
 
-            //ƒAƒvƒŠƒtƒHƒ‹ƒ_‚Ìì¬
+            //ã‚¢ãƒ—ãƒªãƒ•ã‚©ãƒ«ãƒ€ã®ä½œæˆ
             StartCoroutine(CreateFolder());
 
         }
@@ -113,7 +113,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ƒAƒvƒŠƒtƒHƒ‹ƒ_‚Æreadme.txt‚ğì¬‚·‚é
+        /// ã‚¢ãƒ—ãƒªãƒ•ã‚©ãƒ«ãƒ€ã¨readme.txtã‚’ä½œæˆã™ã‚‹
         /// </summary>
         private IEnumerator CreateFolder()
         {
@@ -121,22 +121,22 @@ namespace UniLiveViewer
 
             try
             {
-                //ƒx[ƒXƒtƒHƒ‹ƒ_ƒ`ƒFƒbƒN
+                //ãƒ™ãƒ¼ã‚¹ãƒ•ã‚©ãƒ«ãƒ€ãƒã‚§ãƒƒã‚¯
                 for (int i = 0; i < folderName.Length; i++)
                 {
                     sFullPath = folderPath_Custom + folderName[i];
                     CreateFolder(sFullPath);
                 }
 
-                //ƒLƒƒƒbƒVƒ…ƒtƒHƒ‹ƒ_
+                //ã‚­ãƒ£ãƒƒã‚·ãƒ¥ãƒ•ã‚©ãƒ«ãƒ€
                 //sFullPath = folderPath_Custom + folderName[(int)FOLDERTYPE.CHARA] + cachePath;
                 //CreateFolder(sFullPath);
 
-                //ƒŠƒbƒvƒVƒ“ƒNƒtƒHƒ‹ƒ_
+                //ãƒªãƒƒãƒ—ã‚·ãƒ³ã‚¯ãƒ•ã‚©ãƒ«ãƒ€
                 //sFullPath = folderPath_Custom + folderName[(int)FOLDERTYPE.MOTION] + lipSyncPath;
                 //CreateFolder(sFullPath);
 
-                //VMD‚Ìƒtƒ@ƒCƒ‹–¼‚ğæ“¾
+                //VMDã®ãƒ•ã‚¡ã‚¤ãƒ«åã‚’å–å¾—
                 GetAllVMDNames();
                 //GetAllVMDLipSyncNames();
 
@@ -156,41 +156,39 @@ namespace UniLiveViewer
                 sFullPath = folderPath_Custom + "readme_en.txt";
                 yield return StartCoroutine(ResourcesLoadText("readme_en", sFullPath));
 
-                sFullPath = folderPath_Custom + "•s‹ï‡EDefect.txt";
-                yield return StartCoroutine(ResourcesLoadText("•s‹ï‡EDefect", sFullPath));
+                sFullPath = folderPath_Custom + "ä¸å…·åˆãƒ»Defect.txt";
+                DeleteFile(sFullPath);
 
-                //Š®—¹‚µ‚½
+                //å®Œäº†ã—ãŸ
                 onFolderCheckCompleted?.Invoke();
 
                 yield return new WaitForSeconds(0.5f);
 
-                //VRM‚ÌƒTƒ€ƒlƒCƒ‹‰æ‘œ‚ğƒLƒƒƒbƒVƒ…‚·‚é
+                //VRMã®ã‚µãƒ ãƒã‚¤ãƒ«ç”»åƒã‚’ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã™ã‚‹
                 CacheThumbnail().Forget();
             }
         }
 
         private void CreateFolder(string fullPath)
         {
-            //ƒLƒƒƒbƒVƒ…ƒtƒHƒ‹ƒ_
+            //ã‚­ãƒ£ãƒƒã‚·ãƒ¥ãƒ•ã‚©ãƒ«ãƒ€
             try
             {
                 var b = Directory.Exists(fullPath);
-                if (b) sMssage = "ƒtƒHƒ‹ƒ_‚ªŠù‚É‚ ‚è‚Ü‚·";
+                if (b) sMssage = "ãƒ•ã‚©ãƒ«ãƒ€ãŒæ—¢ã«ã‚ã‚Šã¾ã™";
                 else
                 {
-                    sMssage = "ƒtƒHƒ‹ƒ_‚ª‚È‚¢‚Ì‚Åì‚è‚Ü‚·";
+                    sMssage = "ãƒ•ã‚©ãƒ«ãƒ€ãŒãªã„ã®ã§ä½œã‚Šã¾ã™";
                     Directory.CreateDirectory(fullPath);
-                    sMssage += "EEE¬Œ÷‚Å‚·";
+                    sMssage += "ãƒ»ãƒ»ãƒ»æˆåŠŸã§ã™";
                 }
             }
             catch
             {
-                sMssage += "EEE¸”s‚Å‚·";
+                sMssage += "ãƒ»ãƒ»ãƒ»å¤±æ•—ã§ã™";
                 throw;
             }
         }
-
-
         public IEnumerator ResourcesLoadText(string fileName, string path)
         {
             var resourceFile = Resources.Load<TextAsset>(fileName);
@@ -201,8 +199,13 @@ namespace UniLiveViewer
             yield return null;
         }
 
+        public void DeleteFile(string path)
+        {
+            if (File.Exists(path)) File.Delete(path);
+        }
+
         /// <summary>
-        /// ƒAƒvƒŠƒtƒHƒ‹ƒ_“à‚ÌVRMƒtƒ@ƒCƒ‹–¼‚ğæ“¾
+        /// ã‚¢ãƒ—ãƒªãƒ•ã‚©ãƒ«ãƒ€å†…ã®VRMãƒ•ã‚¡ã‚¤ãƒ«åã‚’å–å¾—
         /// </summary>
         /// <returns></returns>
         public string[] GetAllVRMNames()
@@ -212,13 +215,13 @@ namespace UniLiveViewer
             string[] sResult = null;
             try
             {
-                //VRMƒtƒ@ƒCƒ‹‚Ì‚İŒŸõ
+                //VRMãƒ•ã‚¡ã‚¤ãƒ«ã®ã¿æ¤œç´¢
                 sResult = Directory.GetFiles(sFolderPath, "*.vrm", SearchOption.TopDirectoryOnly);
 
-                //ƒtƒ@ƒCƒ‹ƒpƒX‚©‚çƒtƒ@ƒCƒ‹–¼‚Ì’Šo
+                //ãƒ•ã‚¡ã‚¤ãƒ«ãƒ‘ã‚¹ã‹ã‚‰ãƒ•ã‚¡ã‚¤ãƒ«åã®æŠ½å‡º
                 for (int i = 0; i < sResult.Length; i++)
                 {
-                    int j = sResult[i].LastIndexOf("/");//––”ö‚©‚ç•¶šƒT[ƒ`Aæ“ª‚©‚ç‰½”Ô–Ú‚©
+                    int j = sResult[i].LastIndexOf("/");//æœ«å°¾ã‹ã‚‰æ–‡å­—ã‚µãƒ¼ãƒã€å…ˆé ­ã‹ã‚‰ä½•ç•ªç›®ã‹
                     int maxStr = sResult[i].Length;
 
                     sResult[i] = sResult[i].Substring(j, maxStr - j);
@@ -227,25 +230,25 @@ namespace UniLiveViewer
             }
             catch
             {
-                sMssage = "VRMƒtƒ@ƒCƒ‹“Ç‚İ‚İ‚É¸”s‚µ‚Ü‚µ‚½";
+                sMssage = "VRMãƒ•ã‚¡ã‚¤ãƒ«èª­ã¿è¾¼ã¿ã«å¤±æ•—ã—ã¾ã—ãŸ";
             }
 
             return sResult;
         }
 
         /// <summary>
-        /// ƒAƒvƒŠƒtƒHƒ‹ƒ_“à‚ÌVMDƒtƒ@ƒCƒ‹–¼‚ğæ“¾
+        /// ã‚¢ãƒ—ãƒªãƒ•ã‚©ãƒ«ãƒ€å†…ã®VMDãƒ•ã‚¡ã‚¤ãƒ«åã‚’å–å¾—
         /// </summary>
         /// <returns></returns>
         private void GetAllVMDNames()
         {
-            //‰Šú‰»
+            //åˆæœŸåŒ–
             if (SaveData.dicVMD_offset.Count != 0)
             {
                 SaveData.dicVMD_offset.Clear();
             }
 
-            //offsetî•ñƒtƒ@ƒCƒ‹‚ª‚ ‚ê‚Î“Ç‚İ‚Ş
+            //offsetæƒ…å ±ãƒ•ã‚¡ã‚¤ãƒ«ãŒã‚ã‚Œã°èª­ã¿è¾¼ã‚€
             string path = GetFullPath(FOLDERTYPE.SETTING);
             if (File.Exists(path + "MotionOffset.txt"))
             {
@@ -253,53 +256,52 @@ namespace UniLiveViewer
                 {
                     string[] spl = line.Split(',');
                     SaveData.dicVMD_offset.Add(spl[0], int.Parse(spl[1]));
-                    //Debug.Log(spl[0] + spl[1]);
                 }
             }
 
-            //VMDƒtƒ@ƒCƒ‹–¼‚ğæ“¾
+            //VMDãƒ•ã‚¡ã‚¤ãƒ«åã‚’å–å¾—
             string sFolderPath = GetFullPath(FOLDERTYPE.MOTION);
             try
             {
-                //VRMƒtƒ@ƒCƒ‹‚Ì‚İŒŸõ
+                //VRMãƒ•ã‚¡ã‚¤ãƒ«ã®ã¿æ¤œç´¢
                 var names = Directory.GetFiles(sFolderPath, "*.vmd", SearchOption.TopDirectoryOnly);
 
-                //ƒtƒ@ƒCƒ‹ƒpƒX‚©‚çƒtƒ@ƒCƒ‹–¼‚Ì’Šo
+                //ãƒ•ã‚¡ã‚¤ãƒ«ãƒ‘ã‚¹ã‹ã‚‰ãƒ•ã‚¡ã‚¤ãƒ«åã®æŠ½å‡º
                 for (int i = 0; i < names.Length; i++)
                 {
                     names[i] = names[i].Replace(sFolderPath, "");
                     vmdList.Add(names[i]);
 
-                    //Šù‘¶offsetî•ñ‚ª‚È‚¯‚ê‚Î’Ç‰Á
+                    //æ—¢å­˜offsetæƒ…å ±ãŒãªã‘ã‚Œã°è¿½åŠ 
                     if (!SaveData.dicVMD_offset.ContainsKey(names[i]))
                     {
                         SaveData.dicVMD_offset.Add(names[i], 0);
                     }
                 }
 
-                //ˆê’U•Û‘¶
+                //ä¸€æ—¦ä¿å­˜
                 SaveData.SaveOffset();
             }
             catch
             {
-                sMssage = "VMDƒtƒ@ƒCƒ‹“Ç‚İ‚İ‚É¸”s‚µ‚Ü‚µ‚½";
+                sMssage = "VMDãƒ•ã‚¡ã‚¤ãƒ«èª­ã¿è¾¼ã¿ã«å¤±æ•—ã—ã¾ã—ãŸ";
             }
         }
 
         /// <summary>
-        /// ƒAƒvƒŠƒtƒHƒ‹ƒ_“à‚ÌVMDƒtƒ@ƒCƒ‹–¼‚ğæ“¾
+        /// ã‚¢ãƒ—ãƒªãƒ•ã‚©ãƒ«ãƒ€å†…ã®VMDãƒ•ã‚¡ã‚¤ãƒ«åã‚’å–å¾—
         /// </summary>
         /// <returns></returns>
         private void GetAllVMDLipSyncNames()
         {
-            //VMDƒtƒ@ƒCƒ‹–¼‚ğæ“¾
+            //VMDãƒ•ã‚¡ã‚¤ãƒ«åã‚’å–å¾—
             string sFolderPath = GetFullPath(FOLDERTYPE.MOTION) + lipSyncPath;
             try
             {
-                //VRMƒtƒ@ƒCƒ‹‚Ì‚İŒŸõ
+                //VRMãƒ•ã‚¡ã‚¤ãƒ«ã®ã¿æ¤œç´¢
                 var names = Directory.GetFiles(sFolderPath, "*.vmd", SearchOption.TopDirectoryOnly);
 
-                //ƒtƒ@ƒCƒ‹ƒpƒX‚©‚çƒtƒ@ƒCƒ‹–¼‚Ì’Šo
+                //ãƒ•ã‚¡ã‚¤ãƒ«ãƒ‘ã‚¹ã‹ã‚‰ãƒ•ã‚¡ã‚¤ãƒ«åã®æŠ½å‡º
                 for (int i = 0; i < names.Length; i++)
                 {
                     names[i] = names[i].Replace(sFolderPath, "");
@@ -308,48 +310,48 @@ namespace UniLiveViewer
             }
             catch
             {
-                sMssage = "VMDLipSyncƒtƒ@ƒCƒ‹“Ç‚İ‚İ‚É¸”s‚µ‚Ü‚µ‚½";
+                sMssage = "VMDLipSyncãƒ•ã‚¡ã‚¤ãƒ«èª­ã¿è¾¼ã¿ã«å¤±æ•—ã—ã¾ã—ãŸ";
             }
         }
 
         /// <summary>
-        /// BGMƒtƒHƒ‹ƒ_‚Ìƒtƒ@ƒCƒ‹”‚ğæ“¾
+        /// BGMãƒ•ã‚©ãƒ«ãƒ€ã®ãƒ•ã‚¡ã‚¤ãƒ«æ•°ã‚’å–å¾—
         /// </summary>
         /// <returns></returns>
         public int GetAudioFileCount()
         {
             string sFolderPath = folderPath_Custom + folderName[(int)FOLDERTYPE.BGM];
 
-            //‰Šú‰»
+            //åˆæœŸåŒ–
             if (mp3_path.Count > 0) mp3_path.Clear();
             if (wav_path.Count > 0) wav_path.Clear();
 
-            //.mp3ƒtƒ@ƒCƒ‹‚ğŒŸõAƒŠƒXƒg‚É’Ç‰Á
+            //.mp3ãƒ•ã‚¡ã‚¤ãƒ«ã‚’æ¤œç´¢ã€ãƒªã‚¹ãƒˆã«è¿½åŠ 
             mp3_path.AddRange(Directory.GetFiles(sFolderPath, "*.mp3", SearchOption.TopDirectoryOnly));
-            //"*.wav"ƒtƒ@ƒCƒ‹‚ğŒŸõAƒŠƒXƒg‚É’Ç‰Á
+            //"*.wav"ãƒ•ã‚¡ã‚¤ãƒ«ã‚’æ¤œç´¢ã€ãƒªã‚¹ãƒˆã«è¿½åŠ 
             wav_path.AddRange(Directory.GetFiles(sFolderPath, "*.wav", SearchOption.TopDirectoryOnly));
 
             return mp3_path.Count + wav_path.Count;
         }
 
         /// <summary>
-        /// AudioƒtƒHƒ‹ƒ_‚Ìƒf[ƒ^‚ğƒ[ƒhAClip‚Å•Û‚·‚é
-        /// GetAudioFileCount()‚ğ–‘O‚ÉŒÄ‚Ô•K—v‚ª‚ ‚é‚Ì‰ü‘P‚µ‚½‚¢
+        /// Audioãƒ•ã‚©ãƒ«ãƒ€ã®ãƒ‡ãƒ¼ã‚¿ã‚’ãƒ­ãƒ¼ãƒ‰ã€Clipã§ä¿æŒã™ã‚‹
+        /// GetAudioFileCount()ã‚’äº‹å‰ã«å‘¼ã¶å¿…è¦ãŒã‚ã‚‹ã®æ”¹å–„ã—ãŸã„
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
         public IEnumerator AudioLoad()
         {
-            //‘S‚­ŒÄ‚Î‚ê‚Ä‚¢‚È‚¯‚ê‚ÎŒÄ‚Ô
+            //å…¨ãå‘¼ã°ã‚Œã¦ã„ãªã‘ã‚Œã°å‘¼ã¶
             if (mp3_path.Count == 0 && wav_path.Count == 0)
             {
                 GetAudioFileCount();
             }
 
-            //ƒŠƒXƒg‰Šú‰»
+            //ãƒªã‚¹ãƒˆåˆæœŸåŒ–
             if (audioList.Count > presetCount)
             {
-                //Clip‚ÍƒŠƒXƒgClear‚¾‚¯‚¾‚ÆÁ‚¦‚È‚¢‚Ì‚ÅŒÂ•Ê‚ÉÁ‚·
+                //Clipã¯ãƒªã‚¹ãƒˆClearã ã‘ã ã¨æ¶ˆãˆãªã„ã®ã§å€‹åˆ¥ã«æ¶ˆã™
                 for (int i = 0; i < audioList.Count; i++)
                 {
                     Destroy(audioList[i]);
@@ -392,9 +394,9 @@ namespace UniLiveViewer
                         //Debug.Log(clip.loadType);
                         //Debug.Log(clip.preloadAudioData);
 
-                        //Debug.Log(clip.samples);//ƒTƒ“ƒvƒ‹
-                        //Debug.Log(clip.channels);//ƒ`ƒƒƒ“ƒlƒ‹
-                        //Debug.Log(clip.frequency);//ü”g”
+                        //Debug.Log(clip.samples);//ã‚µãƒ³ãƒ—ãƒ«
+                        //Debug.Log(clip.channels);//ãƒãƒ£ãƒ³ãƒãƒ«
+                        //Debug.Log(clip.frequency);//å‘¨æ³¢æ•°
 
                     }
                     yield return null;
@@ -426,12 +428,12 @@ namespace UniLiveViewer
                 }
             }
 
-            //Š®—¹‚µ‚½
+            //å®Œäº†ã—ãŸ
             onAudioCompleted?.Invoke();
         }
 
         /// <summary>
-        /// b’è
+        /// æš«å®š
         /// </summary>
         private async UniTaskVoid CacheThumbnail()
         {
@@ -440,13 +442,13 @@ namespace UniLiveViewer
             Sprite spr = null;
             await UniTask.Yield(PlayerLoopTiming.Update, cancellation_token);
 
-            //‘Sƒtƒ@ƒCƒ‹–¼‚ğæ“¾
+            //å…¨ãƒ•ã‚¡ã‚¤ãƒ«åã‚’å–å¾—
             var vrmNames = GetAllVRMNames();
             for (int i = 0; i < vrmNames.Length; i++)
             {
                 if (spr) spr = null;
                 if (texture) texture = null;
-                //ƒLƒƒƒbƒVƒ…‰æ‘œŠm”F
+                //ã‚­ãƒ£ãƒƒã‚·ãƒ¥ç”»åƒç¢ºèª
                 //texture = cacheThumbnails.FirstOrDefault(x => x.Key == vrmNames[i]).Value;
                 spr = cacheThumbnails.FirstOrDefault(x => x.Key == vrmNames[i]).Value;
 
@@ -454,31 +456,31 @@ namespace UniLiveViewer
                 {
                     try
                     {
-                        //VRMƒtƒ@ƒCƒ‹‚©‚çƒTƒ€ƒlƒCƒ‹‚ğ’Šo‚·‚é
+                        //VRMãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰ã‚µãƒ ãƒã‚¤ãƒ«ã‚’æŠ½å‡ºã™ã‚‹
                         texture = await vrmRuntimeLoader.GetThumbnail(folderPath_Chara + vrmNames[i], cancellation_token);
 
                         if (texture)
                         {
-                            //ƒeƒNƒXƒ`ƒƒ¨ƒXƒvƒ‰ƒCƒg‚É•ÏŠ·
+                            //ãƒ†ã‚¯ã‚¹ãƒãƒ£â†’ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã«å¤‰æ›
                             spr = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-                            //ƒŠƒXƒg‚É’Ç‰Á
+                            //ãƒªã‚¹ãƒˆã«è¿½åŠ 
                             cacheThumbnails.Add(vrmNames[i], spr);
                         }
                         else
                         {
-                            //ƒ_ƒ~[‰æ‘œ¶¬
+                            //ãƒ€ãƒŸãƒ¼ç”»åƒç”Ÿæˆ
                             //texture = new Texture2D(1, 1, TextureFormat.RGB24, false);
                             texture = Instantiate(texDummy);
-                            //ƒeƒNƒXƒ`ƒƒ¨ƒXƒvƒ‰ƒCƒg‚É•ÏŠ·
+                            //ãƒ†ã‚¯ã‚¹ãƒãƒ£â†’ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã«å¤‰æ›
                             spr = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-                            //ƒŠƒXƒg‚É’Ç‰Á
+                            //ãƒªã‚¹ãƒˆã«è¿½åŠ 
                             cacheThumbnails.Add(vrmNames[i], spr);
 
                         }
                     }
                     catch (System.OperationCanceledException)
                     {
-                        Debug.Log("ƒTƒ€ƒlƒCƒ‹ƒLƒƒƒbƒVƒ…’†‚É’†’f");
+                        Debug.Log("ã‚µãƒ ãƒã‚¤ãƒ«ã‚­ãƒ£ãƒƒã‚·ãƒ¥ä¸­ã«ä¸­æ–­");
                         throw;
                     }
                 }
@@ -489,12 +491,12 @@ namespace UniLiveViewer
                 await UniTask.Yield(PlayerLoopTiming.Update, cancellation_token);
             }
 
-            //Š®—¹‚µ‚½
+            //å®Œäº†ã—ãŸ
             onThumbnailCompleted?.Invoke();
         }
 
         /// <summary>
-        /// À‹@‚É‚Ä•s‹ï‡‚ ‚é‚Ì‚ÅŸ‰ñ
+        /// å®Ÿæ©Ÿã«ã¦ä¸å…·åˆã‚ã‚‹ã®ã§æ¬¡å›
         /// </summary>
         //private async UniTaskVoid CacheThumbnail_test()
         //{
@@ -511,64 +513,64 @@ namespace UniLiveViewer
 
         //    await UniTask.Yield(PlayerLoopTiming.Update,cancellation_token);
 
-        //    //‘Sƒtƒ@ƒCƒ‹–¼‚ğæ“¾
+        //    //å…¨ãƒ•ã‚¡ã‚¤ãƒ«åã‚’å–å¾—
         //    var vrmNames = GetAllVRMNames();
         //    for (int i = 0; i < vrmNames.Length; i++)
         //    {
         //        if (texture) texture = null;
-        //        //ƒLƒƒƒbƒVƒ…‰æ‘œŠm”F
+        //        //ã‚­ãƒ£ãƒƒã‚·ãƒ¥ç”»åƒç¢ºèª
         //        var isCache = File.Exists(folderPath_Cache + vrmNames[i] + ".png");
         //        if (isCache)
         //        {
-        //            //ƒLƒƒƒbƒVƒ…Ï‚İ‰æ‘œ‚ğ—¬—p
+        //            //ã‚­ãƒ£ãƒƒã‚·ãƒ¥æ¸ˆã¿ç”»åƒã‚’æµç”¨
         //            texture = GetCacheThumbnail(vrmNames[i]);
 
-        //            //ƒŠƒXƒg‚É’Ç‰Á
+        //            //ãƒªã‚¹ãƒˆã«è¿½åŠ 
         //            cacheThumbnails.Add(vrmNames[i], texture);
         //        }
         //        else
         //        {
         //            try
         //            {
-        //                //VRMƒtƒ@ƒCƒ‹‚©‚çƒTƒ€ƒlƒCƒ‹‚ğ’Šo‚·‚é
+        //                //VRMãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰ã‚µãƒ ãƒã‚¤ãƒ«ã‚’æŠ½å‡ºã™ã‚‹
         //                texture = await vrmRuntimeLoader.GetThumbnail(folderPath_Chara + vrmNames[i], cancellation_token);
 
         //                if (texture)
         //                {
-        //                    //ƒŠƒTƒCƒY
+        //                    //ãƒªã‚µã‚¤ã‚º
         //                    texture = ResizeTexture(texture, 256, 256);
-        //                    //Fî•ñæ“¾(CPU‘¤‚Ìˆ—‚Å‚ÍF‚Ìî•ñ‚â‚ç‚ğæ“¾‚Å‚«‚¸ŠDF‰æ‘œ‚É‚È‚é‚Ì‚Å)
+        //                    //è‰²æƒ…å ±å–å¾—(CPUå´ã®å‡¦ç†ã§ã¯è‰²ã®æƒ…å ±ã‚„ã‚‰ã‚’å–å¾—ã§ããšç°è‰²ç”»åƒã«ãªã‚‹ã®ã§)
         //                    texture = GetColorInfo(texture);
-        //                    //ƒŠƒXƒg‚É’Ç‰Á
+        //                    //ãƒªã‚¹ãƒˆã«è¿½åŠ 
         //                    cacheThumbnails.Add(vrmNames[i], texture);
-        //                    //ƒtƒHƒ‹ƒ_‚É‚à•Û‘¶
+        //                    //ãƒ•ã‚©ãƒ«ãƒ€ã«ã‚‚ä¿å­˜
         //                    File.WriteAllBytes(folderPath_Cache + vrmNames[i] + ".png", texture.EncodeToPNG());
         //                }
         //                else
         //                {
-        //                    //ƒ_ƒ~[‰æ‘œ¶¬
+        //                    //ãƒ€ãƒŸãƒ¼ç”»åƒç”Ÿæˆ
         //                    texture = new Texture2D(1, 1, TextureFormat.RGB24, false);
-        //                    //ƒŠƒXƒg‚É’Ç‰Á
+        //                    //ãƒªã‚¹ãƒˆã«è¿½åŠ 
         //                    cacheThumbnails.Add(vrmNames[i], texture);
-        //                    //ƒtƒHƒ‹ƒ_‚É‚à•Û‘¶
+        //                    //ãƒ•ã‚©ãƒ«ãƒ€ã«ã‚‚ä¿å­˜
         //                    File.WriteAllBytes(folderPath_Cache + vrmNames[i] + ".png", texture.EncodeToPNG());
         //                }
         //            }
         //            catch (System.OperationCanceledException)
         //            {
-        //                Debug.Log("ƒTƒ€ƒlƒCƒ‹ƒLƒƒƒbƒVƒ…’†‚É’†’f");
+        //                Debug.Log("ã‚µãƒ ãƒã‚¤ãƒ«ã‚­ãƒ£ãƒƒã‚·ãƒ¥ä¸­ã«ä¸­æ–­");
         //                throw;
         //            }
         //        }
         //        await UniTask.Yield(PlayerLoopTiming.Update, cancellation_token);
         //    }
 
-        //    //Š®—¹‚µ‚½
+        //    //å®Œäº†ã—ãŸ
         //    onThumbnailCompleted?.Invoke();
         //}
 
         /// <summary>
-        /// ƒeƒNƒXƒ`ƒƒ‚ÌƒŠƒTƒCƒY
+        /// ãƒ†ã‚¯ã‚¹ãƒãƒ£ã®ãƒªã‚µã‚¤ã‚º
         /// </summary>
         /// <param name="srcTexture"></param>
         /// <param name="newWidth"></param>
@@ -576,15 +578,15 @@ namespace UniLiveViewer
         /// <returns></returns>
         public static Texture2D ResizeTexture(Texture2D srcTexture, int newWidth, int newHeight)
         {
-            //w’è‚µ‚È‚¢‚ÆRGBA32‚É‚È‚Á‚Ä‚µ‚Ü‚Á‚½‚Ì‚Åˆê‰
+            //æŒ‡å®šã—ãªã„ã¨RGBA32ã«ãªã£ã¦ã—ã¾ã£ãŸã®ã§ä¸€å¿œ
             var resizedTexture = new Texture2D(newWidth, newHeight, TextureFormat.ARGB32, false);
             Graphics.ConvertTexture(srcTexture, resizedTexture);
             return resizedTexture;
         }
 
         /// <summary>
-        /// ƒVƒF[ƒ_[‘¤‚Å•`‰æ‚µ‚ÄƒeƒNƒXƒ`ƒƒ‚É‘‚«‚Ş‚½‚Ô‚ñi‘å‘ÌƒRƒsƒyj
-        /// ƒfƒvƒXŒn‚ğ–³Œø‰»‚µ‚È‚¢‚ÆQuestÀ‹@‚Å‚Í“®‚©‚È‚©‚Á‚½‚Ì‚Å—pˆÓ
+        /// ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼å´ã§æç”»ã—ã¦ãƒ†ã‚¯ã‚¹ãƒãƒ£ã«æ›¸ãè¾¼ã‚€ãŸã¶ã‚“ï¼ˆå¤§ä½“ã‚³ãƒ”ãƒšï¼‰
+        /// ãƒ‡ãƒ—ã‚¹ç³»ã‚’ç„¡åŠ¹åŒ–ã—ãªã„ã¨Questå®Ÿæ©Ÿã§ã¯å‹•ã‹ãªã‹ã£ãŸã®ã§ç”¨æ„
         /// </summary>
         /// <param name="texture2D"></param>
         /// <returns></returns>
@@ -592,8 +594,8 @@ namespace UniLiveViewer
         {
             //Texture mainTexture = _renderer.material.mainTexture;
             //RenderTexture currentRT = RenderTexture.active;
-            RenderTexture renderTexture = new RenderTexture(texture2D.width, texture2D.height, 0);//‘æOƒfƒvƒX
-            Graphics.Blit(texture2D, renderTexture, _renderer.sharedMaterial);//ƒfƒvƒX–³Œø‰»‚µ‚½ƒ}ƒeƒŠƒAƒ‹
+            RenderTexture renderTexture = new RenderTexture(texture2D.width, texture2D.height, 0);//ç¬¬ä¸‰ãƒ‡ãƒ—ã‚¹
+            Graphics.Blit(texture2D, renderTexture, _renderer.sharedMaterial);//ãƒ‡ãƒ—ã‚¹ç„¡åŠ¹åŒ–ã—ãŸãƒãƒ†ãƒªã‚¢ãƒ«
 
             RenderTexture.active = renderTexture;
             texture2D.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
@@ -608,7 +610,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ƒLƒƒƒbƒVƒ…‚µ‚½ƒTƒ€ƒlƒCƒ‹‚ğæ“¾
+        /// ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã—ãŸã‚µãƒ ãƒã‚¤ãƒ«ã‚’å–å¾—
         /// </summary>
         /// <param name="filePath">.png</param>
         /// <returns></returns>

@@ -168,7 +168,7 @@ namespace UniLiveViewer
                     if (fileManager.isSuccess)
                     {
                         //フォルダパスの表示を更新
-                        textDirectory.text = "(" + FileAccessManager.folderPath_Custom + ")";
+                        textDirectory.text = $"({FileAccessManager.folderPath_Custom})";
 
                         //ローディングアニメーションを無効状態
                         anime_Loading.gameObject.SetActive(false);
@@ -317,7 +317,6 @@ namespace UniLiveViewer
                 });
 
                 //時間差で読み込ませる
-                //await Task.Delay(200);
                 if (i % 2 == 0) await UniTask.Delay(250, cancellationToken: token);
             }
         }
@@ -438,7 +437,6 @@ namespace UniLiveViewer
                 //SampleUIを有効化
                 runtimeLoader.gameObject.SetActive(true);
 
-                //await Task.Delay(10);
                 await UniTask.Delay(10, cancellationToken: token);
 
                 //指定パスのVRMのみ読み込む

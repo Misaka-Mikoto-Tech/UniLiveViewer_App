@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 namespace UniLiveViewer
 {
@@ -8,12 +8,12 @@ namespace UniLiveViewer
         public enum CHARATYPE
         {
             NULL = 0,
-            UnityChan,//UV•û®
-            CandyChan,//UV•û®
-            UnityChanSSU,//Bone•û®
-            UnityChanSD,//Bone•û®
-            VketChan,///BlendShape•û®
-            UnityChanKAGURA,//Bone•û®
+            UnityChan,//UVæ–¹å¼
+            CandyChan,//UVæ–¹å¼
+            UnityChanSSU,//Boneæ–¹å¼
+            UnityChanSD,//Boneæ–¹å¼
+            VketChan,///BlendShapeæ–¹å¼
+            UnityChanKAGURA,//Boneæ–¹å¼
             VRM_UV,
             VRM_Bone,
             VRM_BlendShape,
@@ -28,7 +28,7 @@ namespace UniLiveViewer
         public FORMATTYPE formatType = FORMATTYPE.FBX;
         public CHARATYPE charaType = CHARATYPE.NULL;
 
-        [Header("ƒÚG‚ÌU“®(Œ»óVRM‚Ì‚İ)„")]
+        [Header("ï¼œæ¥è§¦æ™‚ã®æŒ¯å‹•(ç¾çŠ¶VRMã®ã¿)ï¼")]
         public float power = 0.75f;
         public float time = 0.2f;
     }

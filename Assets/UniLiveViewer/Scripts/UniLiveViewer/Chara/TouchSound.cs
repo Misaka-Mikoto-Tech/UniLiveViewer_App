@@ -1,8 +1,8 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 namespace UniLiveViewer
 {
-    //Œ»óSSU‚Ì‚µ‚Á‚Ûê—p
+    //ç¾çŠ¶SSUã®ã—ã£ã½å°‚ç”¨
     [RequireComponent(typeof(AudioSource))]
     public class TouchSound : MonoBehaviour
     {
@@ -17,23 +17,23 @@ namespace UniLiveViewer
             audioSource = GetComponent<AudioSource>();
             audioSource.volume = GlobalConfig.soundVolume_SE;
 
-            //eq‘S‚Ä‚ÉƒRƒ‰ƒCƒ_[‚ğ•t‚¯‚é
+            //è¦ªå­å…¨ã¦ã«ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’ä»˜ã‘ã‚‹
             CreateColliders(parentAnchor);
         }
 
         // Start is called before the first frame update
         void Start()
         {
-            //‰Šú‚Í–³Œø‰»‚µ‚Ä‚¨‚«Aİ’uó‘Ô‚Ì‚İ—LŒø‰»
+            //åˆæœŸã¯ç„¡åŠ¹åŒ–ã—ã¦ãŠãã€è¨­ç½®çŠ¶æ…‹ã®ã¿æœ‰åŠ¹åŒ–
             this.enabled = false;
         }
 
         private void CreateColliders(Transform parent)
         {
-            //––’[‚Å–³‚¯‚ê‚Îˆ—‚·‚é
+            //æœ«ç«¯ã§ç„¡ã‘ã‚Œã°å‡¦ç†ã™ã‚‹
             if (parent.childCount != 0)
             {
-                //ƒRƒ‰ƒCƒ_[‚ğ•t‚¯‚é
+                //ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’ä»˜ã‘ã‚‹
                 parent.gameObject.AddComponent(typeof(SphereCollider));
                 var col = parent.GetComponent<SphereCollider>();
                 col.gameObject.layer = Parameters.layerNo_UI;
@@ -42,7 +42,7 @@ namespace UniLiveViewer
 
                 foreach (Transform child in parent)
                 {
-                    //Ä‹A
+                    //å†å¸°
                     CreateColliders(child);
                 }
             }
@@ -51,7 +51,7 @@ namespace UniLiveViewer
         private void OnTriggerEnter(Collider other)
         {
             if (!this.enabled) return;
-            //ƒ^ƒbƒ`‰¹‚ğƒ‰ƒ“ƒ_ƒ€‚É‚È‚ç‚·
+            //ã‚¿ãƒƒãƒéŸ³ã‚’ãƒ©ãƒ³ãƒ€ãƒ ã«ãªã‚‰ã™
             int i = Random.Range(0, Sound.Length);
             audioSource.PlayOneShot(Sound[i]);
         }

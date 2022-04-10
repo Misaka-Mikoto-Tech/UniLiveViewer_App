@@ -1,10 +1,10 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace UniLiveViewer
 {
-    //–{“–‚ÍƒXƒNƒ[ƒ‹ƒrƒ…[‚É‚µ‚½‚¢Aƒ{ƒRƒ{ƒRƒ{ƒ^ƒ“¶¬‚ß‚¿‚á‚ƒRƒXƒg
+    //æœ¬å½“ã¯ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒ“ãƒ¥ãƒ¼ã«ã—ãŸã„ã€ãƒœã‚³ãƒœã‚³ãƒœã‚¿ãƒ³ç”Ÿæˆã‚ã¡ã‚ƒé«˜ã‚³ã‚¹ãƒˆ
     public class JumpList : MonoBehaviour
     {
         public enum TARGET
@@ -32,7 +32,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// •K—v‚É‰‚¶‚Äƒ{ƒ^ƒ“‚ğ’Ç‰Á¶¬
+        /// å¿…è¦ã«å¿œã˜ã¦ãƒœã‚¿ãƒ³ã‚’è¿½åŠ ç”Ÿæˆ
         /// </summary>
         public void BtnInstanceCheck(int needCount)
         {
@@ -49,8 +49,12 @@ namespace UniLiveViewer
                     btn = Instantiate(Button_BasePrefab);
                     btn.onTrigger += OnClick;
                     btn.transform.parent = parentAnchor;
-                    btn.transform.localPosition = new Vector3(initX, initY, 0);
+                    
                     btn.transform.localRotation = Quaternion.identity;
+
+                    //Zãƒ•ã‚¡ã‚¤ãƒ†ã‚£ãƒ³ã‚°å¯¾ç­–
+                    if((initX / 3) % 2 == 0) btn.transform.localPosition = new Vector3(initX, initY, 0);
+                    else btn.transform.localPosition = new Vector3(initX, initY, -0.01f);
 
                     btnList.Add(btn);
                     btn = null;
@@ -59,12 +63,12 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ƒ{ƒ^ƒ“‚ÉƒLƒƒƒ‰–¼‚ğİ’è‚·‚é
+        /// ãƒœã‚¿ãƒ³ã«ã‚­ãƒ£ãƒ©åã‚’è¨­å®šã™ã‚‹
         /// </summary>
         /// <param name="charaInfoDatas"></param>
         public void SetCharaDate(CharaInfoData[] charaInfoDatas)
         {
-            //•K—v‚È‚çƒ{ƒ^ƒ“‚ğ¶¬
+            //å¿…è¦ãªã‚‰ãƒœã‚¿ãƒ³ã‚’ç”Ÿæˆ
             BtnInstanceCheck(charaInfoDatas.Length);
             ;
             for (int i = 0; i < btnList.Count; i++)
@@ -86,12 +90,12 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ƒ{ƒ^ƒ“‚ÉƒAƒjƒ[ƒVƒ‡ƒ“–¼‚ğİ’è‚·‚é
+        /// ãƒœã‚¿ãƒ³ã«ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³åã‚’è¨­å®šã™ã‚‹
         /// </summary>
         /// <param name="danceInfoData"></param>
         public void SetAnimeData(DanceInfoData[] danceInfoData)
         {
-            //•K—v‚È‚çƒ{ƒ^ƒ“‚ğ¶¬
+            //å¿…è¦ãªã‚‰ãƒœã‚¿ãƒ³ã‚’ç”Ÿæˆ
             BtnInstanceCheck(danceInfoData.Length);
 
             for (int i = 0; i < btnList.Count; i++)
@@ -111,12 +115,12 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ƒ{ƒ^ƒ“‚ÉƒAƒjƒ[ƒVƒ‡ƒ“–¼‚ğİ’è‚·‚é
+        /// ãƒœã‚¿ãƒ³ã«ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³åã‚’è¨­å®šã™ã‚‹
         /// </summary>
         /// <param name="danceInfoData"></param>
         public void SetLipSyncNames(string[] lipSyncNames)
         {
-            //•K—v‚È‚çƒ{ƒ^ƒ“‚ğ¶¬
+            //å¿…è¦ãªã‚‰ãƒœã‚¿ãƒ³ã‚’ç”Ÿæˆ
             BtnInstanceCheck(lipSyncNames.Length);
 
             for (int i = 0; i < btnList.Count; i++)
@@ -136,11 +140,11 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ƒ{ƒ^ƒ“‚ÉƒI[ƒfƒBƒI–¼‚ğİ’è‚·‚é
+        /// ãƒœã‚¿ãƒ³ã«ã‚ªãƒ¼ãƒ‡ã‚£ã‚ªåã‚’è¨­å®šã™ã‚‹
         /// </summary>
         public void SetAudioDate()
         {
-            //•K—v‚È‚çƒ{ƒ^ƒ“‚ğ¶¬
+            //å¿…è¦ãªã‚‰ãƒœã‚¿ãƒ³ã‚’ç”Ÿæˆ
             BtnInstanceCheck(fileManager.audioList.Count);
 
             for (int i = 0; i < btnList.Count; i++)
@@ -160,12 +164,12 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ƒ{ƒ^ƒ“‚ÉƒAƒjƒ[ƒVƒ‡ƒ“–¼‚ğİ’è‚·‚é
+        /// ãƒœã‚¿ãƒ³ã«ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³åã‚’è¨­å®šã™ã‚‹
         /// </summary>
         /// <param name="danceInfoData"></param>
         public void SetItemData(DecorationItemInfo[] ItemInfo)
         {
-            //•K—v‚È‚çƒ{ƒ^ƒ“‚ğ¶¬
+            //å¿…è¦ãªã‚‰ãƒœã‚¿ãƒ³ã‚’ç”Ÿæˆ
             BtnInstanceCheck(ItemInfo.Length);
 
             for (int i = 0; i < btnList.Count; i++)
@@ -186,17 +190,17 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ƒŠƒXƒg“à‚Ì‚¢‚¸‚ê‚©‚Ìƒ{ƒ^ƒ“‚ªƒNƒŠƒbƒN‚³‚ê‚½
+        /// ãƒªã‚¹ãƒˆå†…ã®ã„ãšã‚Œã‹ã®ãƒœã‚¿ãƒ³ãŒã‚¯ãƒªãƒƒã‚¯ã•ã‚ŒãŸ
         /// </summary>
         /// <param name="btn"></param>
         private void OnClick(Button_Base btn)
         {
-            //ƒ{ƒ^ƒ“‚ğ“Á’è
+            //ãƒœã‚¿ãƒ³ã‚’ç‰¹å®š
             for (int i = 0; i < btnList.Count; i++)
             {
                 if (btn == btnList[i])
                 {
-                    //ƒJƒŒƒ“ƒg‚ğ“n‚·
+                    //ã‚«ãƒ¬ãƒ³ãƒˆã‚’æ¸¡ã™
                     onSelect?.Invoke(i);
                     break;
                 }

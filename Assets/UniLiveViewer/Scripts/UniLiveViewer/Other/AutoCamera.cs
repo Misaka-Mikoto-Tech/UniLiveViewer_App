@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,7 +7,7 @@ namespace UniLiveViewer
     public class AutoCamera : MonoBehaviour
     {
         public bool isUpdate = true;
-        public bool isSwitchingMode = false;//ƒJƒƒ‰Œó•â‚ğØ‚è‘Ö‚¦‚éƒ‚[ƒh
+        public bool isSwitchingMode = false;//ã‚«ãƒ¡ãƒ©å€™è£œã‚’åˆ‡ã‚Šæ›¿ãˆã‚‹ãƒ¢ãƒ¼ãƒ‰
         [SerializeField] private Camera[] _camera = new Camera[2];
 
         // Start is called before the first frame update
@@ -34,7 +34,7 @@ namespace UniLiveViewer
 
                 if (isUpdate)
                 {
-                    //ƒXƒNƒŠ[ƒ“‚Éˆêu”½‰f‚³‚¹‚é
+                    //ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ã«ä¸€ç¬åæ˜ ã•ã›ã‚‹
                     _camera[0].enabled = true;
                     _camera[1].enabled = true;
                     yield return null;

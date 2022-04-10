@@ -1,8 +1,8 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 namespace UniLiveViewer
 {
-    //b’è“I
+    //æš«å®šçš„
     public class MeshGuide : MonoBehaviour
     {
         private bool isGuide = false;
@@ -23,8 +23,8 @@ namespace UniLiveViewer
             guideObj.parent = transform;
             guideObj.localPosition = pos;
             guideMesh = guideObj.gameObject.GetComponent<MeshRenderer>();
-            guideObj.localScale = scala;//ƒTƒCƒY‚ğ–ß‚·
-            guideMesh.enabled = false;//”ñ•\¦‚É‚µ‚Ä‚¨‚­
+            guideObj.localScale = scala;//ã‚µã‚¤ã‚ºã‚’æˆ»ã™
+            guideMesh.enabled = false;//éè¡¨ç¤ºã«ã—ã¦ãŠã
         }
 
         // Update is called once per frame

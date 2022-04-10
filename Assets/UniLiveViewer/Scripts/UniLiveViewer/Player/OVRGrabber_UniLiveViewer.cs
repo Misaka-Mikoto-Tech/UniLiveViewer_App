@@ -1,22 +1,22 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System;
 
 namespace UniLiveViewer
 {
-    //ì‚è‚ªG(•s‹ï‡‚ ‚è)
+    //ä½œã‚ŠãŒé›‘(ä¸å…·åˆã‚ã‚Š)
     public class OVRGrabber_UniLiveViewer : OVRGrabber_Custom
     {
         public enum HandState
         {
-            DEFAULT,//‰½‚à‚µ‚Ä‚¢‚È‚¢A‰½‚à‚Â‚©‚ñ‚Å‚¢‚È‚¢
-            GRABBED_CHARA,//ƒLƒƒƒ‰‚ğ’Í‚ñ‚Å‚¢‚é
-            GRABBED_ITEM,//ƒAƒCƒeƒ€‚ğ’Í‚ñ‚Å‚¢‚é
-            GRABBED_OTHER,//ƒLƒƒƒ‰ˆÈŠO‚ğ’Í‚ñ‚Å‚¢‚é
-            SUMMONCIRCLE,//¢Š«wON
-            CHARA_ONCIRCLE//ƒLƒƒƒ‰‚ğ’Í‚ñ‚Å‚¢‚é‚©‚Â¢Š«wON
+            DEFAULT,//ä½•ã‚‚ã—ã¦ã„ãªã„ã€ä½•ã‚‚ã¤ã‹ã‚“ã§ã„ãªã„
+            GRABBED_CHARA,//ã‚­ãƒ£ãƒ©ã‚’æ´ã‚“ã§ã„ã‚‹
+            GRABBED_ITEM,//ã‚¢ã‚¤ãƒ†ãƒ ã‚’æ´ã‚“ã§ã„ã‚‹
+            GRABBED_OTHER,//ã‚­ãƒ£ãƒ©ä»¥å¤–ã‚’æ´ã‚“ã§ã„ã‚‹
+            SUMMONCIRCLE,//å¬å–šé™£ON
+            CHARA_ONCIRCLE//ã‚­ãƒ£ãƒ©ã‚’æ´ã‚“ã§ã„ã‚‹ã‹ã¤å¬å–šé™£ON
         }
 
-        //‘Î‰‚·‚éƒZƒŒƒNƒ^[
+        //å¯¾å¿œã™ã‚‹ã‚»ãƒ¬ã‚¯ã‚¿ãƒ¼
         public LineSelector lineSelector = null;
 
         public bool IsSummonCircle { get; private set; } = false;
@@ -27,7 +27,7 @@ namespace UniLiveViewer
         public Transform handMeshRoot;
 
         private AudioSource audioSource;
-        [SerializeField] private AudioClip[] Sound;//’Í‚İ,—£‚·,¶¬,íœ
+        [SerializeField] private AudioClip[] Sound;//æ´ã¿,é›¢ã™,ç”Ÿæˆ,å‰Šé™¤
 
         public event Action<OVRGrabber_UniLiveViewer> OnSummon;
         public event Action<OVRGrabber_UniLiveViewer> OnGrabItem;
@@ -54,30 +54,30 @@ namespace UniLiveViewer
         {
             base.Update();
 
-            //’Í‚İ•ƒZƒŒƒNƒ^[•\¦‚È‚çƒZƒŒƒNƒ^[‘€ìƒ‚[ƒh
+            //æ´ã¿ï¼†ã‚»ãƒ¬ã‚¯ã‚¿ãƒ¼è¡¨ç¤ºãªã‚‰ã‚»ãƒ¬ã‚¯ã‚¿ãƒ¼æ“ä½œãƒ¢ãƒ¼ãƒ‰
             if (handState == HandState.SUMMONCIRCLE)
             {
-                //FXV
+                //è‰²æ›´æ–°
                 lineSelector.SetMaterial(false);
             }
         }
 
         /// <summary>
-        /// ‹­§“I‚É‚Â
+        /// å¼·åˆ¶çš„ã«æŒã¤
         /// </summary>
         public void ForceGrabBegin(OVRGrabbable_Custom grabbedObj)
         {
             if(m_grabbedObj && m_grabbedObj == grabbedObj)
             {
-                //ƒŠƒZƒbƒg–Ú“I‚Åˆê’U—£‚·
+                //ãƒªã‚»ãƒƒãƒˆç›®çš„ã§ä¸€æ—¦é›¢ã™
                 OffhandGrabbed(m_grabbedObj);
             }
 
-            //ƒRƒ‰ƒCƒ_[Œó•â‚ğw’èƒIƒuƒWƒFƒNƒg‚Ì‚İ‚É‚·‚é
+            //ã‚³ãƒ©ã‚¤ãƒ€ãƒ¼å€™è£œã‚’æŒ‡å®šã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®ã¿ã«ã™ã‚‹
             m_grabCandidates.Clear();
             m_grabCandidates[grabbedObj] = 0;
 
-            //’Í‚İ’¼‚·
+            //æ´ã¿ç›´ã™
             GrabBegin();
             m_grabCandidates.Clear();
         }
@@ -88,21 +88,21 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ’Í‚İ‚ÌŠî–{‹@”\A’Í‚ñ‚¾ƒIƒuƒWƒFƒNƒg‚ÌÑ”zA’Í‚İƒ‚[ƒVƒ‡ƒ“‚É‚æ‚éíœ‹@”\
+        /// æ´ã¿ã®åŸºæœ¬æ©Ÿèƒ½ã€æ´ã‚“ã ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®é‡‡é…ã€æ´ã¿ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã«ã‚ˆã‚‹å‰Šé™¤æ©Ÿèƒ½
         /// </summary>
         protected override void GrabBegin()
         {
-            //Šî–{“I‚Èè‚ÉG‚ê‚Ä‚¢‚é‚à‚Ì‚ğ’Í‚Şˆ—
+            //åŸºæœ¬çš„ãªæ‰‹ã«è§¦ã‚Œã¦ã„ã‚‹ã‚‚ã®ã‚’æ´ã‚€å‡¦ç†
             base.GrabBegin();
 
-            //‰½‚©‚ğ’Í‚ñ‚¾ê‡
+            //ä½•ã‹ã‚’æ´ã‚“ã å ´åˆ
             if (grabbedObject)
             {
-                //ƒLƒƒƒ‰ˆÈŠO
+                //ã‚­ãƒ£ãƒ©ä»¥å¤–
                 if (!grabbedObject.gameObject.CompareTag(Parameters.tag_GrabChara))
                 {
-                    // TODO:‚±‚±d—l‚©‚ç—û‚è’¼‚µ‚½‚¢
-                    //—¼è’Í‚İ‚ÍƒAƒCƒeƒ€‚Æ‚¢‚¤d—l‚Å
+                    // TODO:ã“ã“ä»•æ§˜ã‹ã‚‰ç·´ã‚Šç›´ã—ãŸã„
+                    //ä¸¡æ‰‹æ´ã¿ã¯ã‚¢ã‚¤ãƒ†ãƒ ã¨ã„ã†ä»•æ§˜ã§
                     if (grabbedObject.isBothHandsGrab)
                     {
                         handState = HandState.GRABBED_ITEM;
@@ -110,7 +110,7 @@ namespace UniLiveViewer
                         grabbedObject.transform.parent = transform;
                         timeline.SetActive_AttachPoint(true);
 
-                        //item’Í‚ñ‚¾
+                        //itemæ´ã‚“ã 
                         OnGrabItem?.Invoke(this);
                     }
                     else
@@ -118,13 +118,13 @@ namespace UniLiveViewer
                         handState = HandState.GRABBED_OTHER;
                     }
                 }
-                //ƒLƒƒƒ‰
+                //ã‚­ãƒ£ãƒ©
                 else
                 {
-                    //¢Š«w‚Ìó‘Ô
+                    //å¬å–šé™£ã®çŠ¶æ…‹
                     if (IsSummonCircle)
                     {
-                        //¢Š«w‚Ìã‚Éæ‚¹‚é
+                        //å¬å–šé™£ã®ä¸Šã«ä¹—ã›ã‚‹
                         var chara = grabbedObject.gameObject.GetComponent<CharaController>();
                         chara.SetState(CharaController.CHARASTATE.ON_CIRCLE, lineSelector.LineEndAnchor);
 
@@ -132,32 +132,32 @@ namespace UniLiveViewer
                     }
                     else
                     {
-                        //è‚É‚½‚¹‚é
+                        //æ‰‹ã«æŒãŸã›ã‚‹
                         var chara = grabbedObject.gameObject.GetComponent<CharaController>();
                         chara.SetState(CharaController.CHARASTATE.HOLD, null);
 
                         handState = HandState.GRABBED_CHARA;
                     }
-                    //’Í‚İ‰¹
+                    //æ´ã¿éŸ³
                     audioSource.PlayOneShot(Sound[0]);
                 }
             }
-            //’Í‚ñ‚Å‚¢‚È‚¢ê‡
+            //æ´ã‚“ã§ã„ãªã„å ´åˆ
             else
             {
-                //¢Š«w‚Ìó‘Ô
+                //å¬å–šé™£ã®çŠ¶æ…‹
                 if (IsSummonCircle)
                 {
-                    //ƒZƒŒƒNƒ^[‚ÉƒIƒuƒWƒFƒNƒg‚ªG‚ê‚Ä‚¢‚é‚©(layer“I‚ÉƒLƒƒƒ‰)
+                    //ã‚»ãƒ¬ã‚¯ã‚¿ãƒ¼ã«ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆãŒè§¦ã‚Œã¦ã„ã‚‹ã‹(layerçš„ã«ã‚­ãƒ£ãƒ©)
                     if (!lineSelector.hitCollider.collider) return;
 
-                    //‘ÎÛƒIƒuƒWƒFƒNƒg‚ğƒtƒB[ƒ‹ƒh‚©‚çíœ‚·‚é
+                    //å¯¾è±¡ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã‹ã‚‰å‰Šé™¤ã™ã‚‹
                     timeline.DeletebindAsset(lineSelector.hitCollider.transform.GetComponent<CharaController>());
 
-                    //FXV
+                    //è‰²æ›´æ–°
                     lineSelector.SetMaterial(true);
 
-                    //íœ‰¹
+                    //å‰Šé™¤éŸ³
                     audioSource.PlayOneShot(Sound[3]);
                     handState = HandState.SUMMONCIRCLE;
                 }
@@ -165,129 +165,129 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// —£‚·Šî–{‹@”\A—£‚µ‚½ƒIƒuƒWƒFƒNƒg‚ÌÑ”z
+        /// é›¢ã™åŸºæœ¬æ©Ÿèƒ½ã€é›¢ã—ãŸã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®é‡‡é…
         /// </summary>
         protected override void GrabEnd()
         {
             if (!m_grabbedObj)
             {
-                //’Í‚İ‚ğ—£‚·Šî–{‹@”\
+                //æ´ã¿ã‚’é›¢ã™åŸºæœ¬æ©Ÿèƒ½
                 base.GrabEnd();
             }
             else
             {
                 CharaController keepChara = null;
 
-                //”ñ•\¦‚È‚ç•\¦‚É–ß‚·
+                //éè¡¨ç¤ºãªã‚‰è¡¨ç¤ºã«æˆ»ã™
                 if (!handMeshRoot.gameObject.activeSelf) handMeshRoot.gameObject.SetActive(true);
 
                 switch (handState)
                 {
-                    //ƒLƒƒƒ‰ˆÈŠO‚ğ’Í‚ñ‚Å‚¢‚ê‚Î
+                    //ã‚­ãƒ£ãƒ©ä»¥å¤–ã‚’æ´ã‚“ã§ã„ã‚Œã°
                     case HandState.GRABBED_OTHER:
-                        //’Í‚İ‚ğ—£‚·Šî–{‹@”\
+                        //æ´ã¿ã‚’é›¢ã™åŸºæœ¬æ©Ÿèƒ½
                         base.GrabEnd();
                         handState = HandState.DEFAULT;
                         break;
                     case HandState.GRABBED_ITEM:
-                        var grabbedObj = m_grabbedObj;//‰ğœŒãŠm”F‚Ìˆ×ƒL[ƒv
+                        var grabbedObj = m_grabbedObj;//è§£é™¤å¾Œç¢ºèªã®ç‚ºã‚­ãƒ¼ãƒ—
                         grabbedObj.transform.parent = null;
-                        //’Í‚İ‚ğ—£‚·Šî–{‹@”\
+                        //æ´ã¿ã‚’é›¢ã™åŸºæœ¬æ©Ÿèƒ½
                         base.GrabEnd();
                         handState = HandState.DEFAULT;
-                        //‚Ü‚¾•ß‚Ü‚ê‚Ä‚¢‚È‚¯‚ê‚Î˜g”ñ•\¦
+                        //ã¾ã æ•ã¾ã‚Œã¦ã„ãªã‘ã‚Œã°æ éè¡¨ç¤º
                         if(!grabbedObj.isGrabbed) grabbedObj.GetComponent<MeshRenderer>().enabled = false;
                         break;
-                    //ƒLƒƒƒ‰‚ğ’Í‚ñ‚Å‚¢‚é
+                    //ã‚­ãƒ£ãƒ©ã‚’æ´ã‚“ã§ã„ã‚‹
                     case HandState.GRABBED_CHARA:
                         keepChara = m_grabbedObj.gameObject.GetComponent<CharaController>();
-                        //’Í‚İ‚ğ—£‚·Šî–{‹@”\
+                        //æ´ã¿ã‚’é›¢ã™åŸºæœ¬æ©Ÿèƒ½
                         base.GrabEnd();
-                        //Portal‚É–ß‚·
+                        //Portalã«æˆ»ã™
                         PortalBack(keepChara);
-                        //—£‚·‰¹
+                        //é›¢ã™éŸ³
                         audioSource.PlayOneShot(Sound[1]);
                         handState = HandState.DEFAULT;
                         break;
-                    //ƒLƒƒƒ‰‚ğ’Í‚ñ‚Å‚¢‚é‚©‚Â¢Š«wON
+                    //ã‚­ãƒ£ãƒ©ã‚’æ´ã‚“ã§ã„ã‚‹ã‹ã¤å¬å–šé™£ON
                     case HandState.CHARA_ONCIRCLE:
                         keepChara = m_grabbedObj.gameObject.GetComponent<CharaController>();
-                        //’Í‚İ‚ğ—£‚·Šî–{‹@”\
+                        //æ´ã¿ã‚’é›¢ã™åŸºæœ¬æ©Ÿèƒ½
                         base.GrabEnd();
 
-                        //ƒtƒŠ[ƒgƒ‰ƒbƒN‚ª‚È‚¯‚ê‚ÎPortal‚É–ß‚·
+                        //ãƒ•ãƒªãƒ¼ãƒˆãƒ©ãƒƒã‚¯ãŒãªã‘ã‚Œã°Portalã«æˆ»ã™
                         string freeTrack;
                         if (!timeline.isFreeTrack(out freeTrack))
                         {
                             PortalBack(keepChara);
-                            //—£‚·‰¹
+                            //é›¢ã™éŸ³
                             audioSource.PlayOneShot(Sound[1]);
                             return;
                         }
 
-                        //ƒZƒŒƒNƒ^[‚ÌÀ•W‚ÆŠp“x‚ğæ“¾
+                        //ã‚»ãƒ¬ã‚¯ã‚¿ãƒ¼ã®åº§æ¨™ã¨è§’åº¦ã‚’å–å¾—
                         Vector3 pos = lineSelector.LineEndAnchor.position;
                         Vector3 eulerAngles = lineSelector.LineEndAnchor.localRotation.eulerAngles;
 
-                        //ˆÚs‚É¸”s‚È‚çPortal‚É–ß‚·
+                        //ç§»è¡Œã«å¤±æ•—ãªã‚‰Portalã«æˆ»ã™
                         if (!timeline.TransferPlayableAsset(keepChara, freeTrack, pos, eulerAngles))
                         {
                             PortalBack(keepChara);
-                            //—£‚·‰¹
+                            //é›¢ã™éŸ³
                             audioSource.PlayOneShot(Sound[1]);
                             return;
                         }
 
-                        //ƒLƒƒƒ‰‚Ìó‘Ô‚ğƒtƒB[ƒ‹ƒh‚Éİ’è
+                        //ã‚­ãƒ£ãƒ©ã®çŠ¶æ…‹ã‚’ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã«è¨­å®š
                         keepChara.SetState(CharaController.CHARASTATE.FIELD, null);
-                        //layer‚ğ•Ï‚¦‚é
+                        //layerã‚’å¤‰ãˆã‚‹
                         keepChara.gameObject.layer = Parameters.layerNo_FieldObject;
 
                         if (keepChara.charaInfoData.charaType == CharaInfoData.CHARATYPE.UnityChanSSU)
                         {
-                            //‚µ‚Á‚Ûƒ^ƒbƒ`‰¹‚ğ—LŒø‚É‚·‚é
+                            //ã—ã£ã½ã‚¿ãƒƒãƒéŸ³ã‚’æœ‰åŠ¹ã«ã™ã‚‹
                             keepChara.GetComponent<TouchSound>().enabled = true;
                         }
                         else
                         {
-                            //•s‹ï‡‚Ìˆ×–³Œø‰»
-                            //“Áê‰‰o‚Ìƒtƒ‰ƒO‚ğ—LŒø‚É‚·‚é
+                            //ä¸å…·åˆã®ç‚ºç„¡åŠ¹åŒ–
+                            //ç‰¹æ®Šæ¼”å‡ºã®ãƒ•ãƒ©ã‚°ã‚’æœ‰åŠ¹ã«ã™ã‚‹
                             //keepChara.GetComponent<SpecialFacial>().enabled = true;
                         }
 
-                        //¶¬‰¹
+                        //ç”ŸæˆéŸ³
                         audioSource.PlayOneShot(Sound[2]);
 
                         handState = HandState.SUMMONCIRCLE;
 
-                        //¢Š«‚µ‚½
+                        //å¬å–šã—ãŸ
                         OnSummon?.Invoke(this);
 
                         break;
                     default:
-                        //’Í‚İ‚ğ—£‚·Šî–{‹@”\
+                        //æ´ã¿ã‚’é›¢ã™åŸºæœ¬æ©Ÿèƒ½
                         base.GrabEnd();
                         handState = HandState.DEFAULT;
                         break;
                 }
             }
-            //—£‚µ‚½
+            //é›¢ã—ãŸ
             OnGrabEnd?.Invoke(this);
         }
 
 
         /// <summary>
-        /// ’Í‚ñ‚Å‚¢‚½‚à‚Ì‚ğƒ|[ƒ^ƒ‹‚É–ß‚·
+        /// æ´ã‚“ã§ã„ãŸã‚‚ã®ã‚’ãƒãƒ¼ã‚¿ãƒ«ã«æˆ»ã™
         /// </summary>
         /// <param name="keepChara"></param>
         private void PortalBack(CharaController keepChara)
         {
-            // ƒ|[ƒ^ƒ‹‚É–ß‚·
+            // ãƒãƒ¼ã‚¿ãƒ«ã«æˆ»ã™
             if (generatorPortal.gameObject.activeSelf)
             {
                 keepChara.SetState(CharaController.CHARASTATE.MINIATURE, generatorPortal.transform);
             }
-            ////ƒ|[ƒ^ƒ‹˜g‚ÌƒLƒƒƒ‰‚ğnull‰Šú‰»@•s—v
+            ////ãƒãƒ¼ã‚¿ãƒ«æ ã®ã‚­ãƒ£ãƒ©ã‚’nullåˆæœŸåŒ–ã€€ä¸è¦
             //else timeline.NewAssetBinding_Portal(null);
         }
 
@@ -299,40 +299,40 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ƒZƒŒƒNƒ^[‚Ì—LŒøE–³Œøó‘Ô‚ğØ‚è‘Ö‚¦‚é
+        /// ã‚»ãƒ¬ã‚¯ã‚¿ãƒ¼ã®æœ‰åŠ¹ãƒ»ç„¡åŠ¹çŠ¶æ…‹ã‚’åˆ‡ã‚Šæ›¿ãˆã‚‹
         /// </summary>
         public void SelectorChangeEnabled()
         {
             CharaController chara = null;
 
-            //Œ»İ‚Ìè‚Ìó‘Ô‚Å•ªŠò
+            //ç¾åœ¨ã®æ‰‹ã®çŠ¶æ…‹ã§åˆ†å²
             switch (handState)
             {
-                //ƒLƒƒƒ‰‚ğ’Í‚ñ‚Å‚¢‚é‚©‚Â¢Š«wON
+                //ã‚­ãƒ£ãƒ©ã‚’æ´ã‚“ã§ã„ã‚‹ã‹ã¤å¬å–šé™£ON
                 case HandState.CHARA_ONCIRCLE:
-                    //èŒ³‚É–ß‚·
+                    //æ‰‹å…ƒã«æˆ»ã™
                     handState = HandState.GRABBED_CHARA;
                     chara = grabbedObject.gameObject.GetComponent<CharaController>();
                     chara.SetState(CharaController.CHARASTATE.HOLD, null);
                     break;
-                //ƒLƒƒƒ‰‚ğ’Í‚ñ‚Å‚¢‚é
+                //ã‚­ãƒ£ãƒ©ã‚’æ´ã‚“ã§ã„ã‚‹
                 case HandState.GRABBED_CHARA:
-                    //¢Š«wã‚Éİ’u
+                    //å¬å–šé™£ä¸Šã«è¨­ç½®
                     handState = HandState.CHARA_ONCIRCLE;
                     chara = grabbedObject.gameObject.GetComponent<CharaController>();
                     chara.SetState(CharaController.CHARASTATE.ON_CIRCLE, lineSelector.LineEndAnchor);
                     break;
-                //‰½‚à‚µ‚Ä‚¢‚È‚¢
+                //ä½•ã‚‚ã—ã¦ã„ãªã„
                 case HandState.DEFAULT:
                     handState = HandState.SUMMONCIRCLE;
                     break;
-                //¢Š«wON
+                //å¬å–šé™£ON
                 case HandState.SUMMONCIRCLE:
                     handState = HandState.DEFAULT;
                     break;
             }
 
-            //¢Š«w‚Ìó‘Ô‚ğ”½“]
+            //å¬å–šé™£ã®çŠ¶æ…‹ã‚’åè»¢
             IsSummonCircle = !lineSelector.gameObject.activeSelf;
             lineSelector.gameObject.SetActive(IsSummonCircle);
         }

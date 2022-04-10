@@ -1,8 +1,8 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 namespace UniLiveViewer
 {
-    //TODOF1ƒ^ƒu1?‚É®—‚µ‚½‚¢
+    //TODOï¼š1ã‚¿ãƒ–1?ã«æ•´ç†ã—ãŸã„
     public class PopUpDetail : MonoBehaviour
     {
         [SerializeField] private Sprite[] sprPrefab = new Sprite[2];
@@ -19,7 +19,7 @@ namespace UniLiveViewer
             anime = GetComponent<Animator>();
             hitLayer = LayerMask.NameToLayer("Ignore Raycast");
 
-            //Œ¾Œê‚Å·‚µ‘Ö‚¦‚é
+            //è¨€èªã§å·®ã—æ›¿ãˆã‚‹
             if (GlobalConfig.systemData.LanguageCode == (int)SaveData.USE_LANGUAGE.JP)
             {
                 sprRender.sprite = sprPrefab[1];

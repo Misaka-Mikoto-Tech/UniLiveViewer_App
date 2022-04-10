@@ -1,12 +1,12 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 namespace UniLiveViewer
 {
     [RequireComponent(typeof(LineRenderer))]
     public class LineSelector : MonoBehaviour
     {
-        //ƒxƒWƒF‹Èü—p
-        [Header("ƒ‹Èü‚Ìİ’è„")]
+        //ãƒ™ã‚¸ã‚§æ›²ç·šç”¨
+        [Header("ï¼œæ›²ç·šã®è¨­å®šï¼")]
         [SerializeField]
         private Transform LineStartAnchor = null;
         public Transform LineEndAnchor = null;
@@ -18,7 +18,7 @@ namespace UniLiveViewer
         private Vector3[] BezierCurvePoint = new Vector3[3];
         private float BezierCurveTimer = 0;
 
-        //LineRenderer—p
+        //LineRendererç”¨
         private LineRenderer lineRenderer = null;
         //[SerializeField]
         //private float LineWidth = 0.01f;
@@ -26,15 +26,15 @@ namespace UniLiveViewer
         private int positionCount = 10;
 
 
-        //Õ“ËŒŸ’m
-        [Header("ƒÕ“ËŒŸ’m‚Ìİ’è„")]
+        //è¡çªæ¤œçŸ¥
+        [Header("ï¼œè¡çªæ¤œçŸ¥ã®è¨­å®šï¼")]
         [SerializeField] private Transform rayOrigin;
         [SerializeField] private Vector3 rayDirection = new Vector3(0, -1, 0);
         public RaycastHit hitCollider;
         private Transform keepHitObj;
 
-        //ƒeƒŒƒ|[ƒg
-        [Header("ƒ’Œ‚Ìİ’è„")]
+        //ãƒ†ãƒ¬ãƒãƒ¼ãƒˆ
+        [Header("ï¼œæŸ±ã®è¨­å®šï¼")]
         [SerializeField]
         private Transform teleportPoint;
         private Renderer _renderer;
@@ -45,64 +45,64 @@ namespace UniLiveViewer
         private void Awake()
         {
             lineRenderer = GetComponent<LineRenderer>();
-            //LineRenderer‚Ìƒpƒ‰ƒ[ƒ^İ’è
+            //LineRendererã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿è¨­å®š
             lineRenderer.positionCount = positionCount;
 
-            //Šp“x‚Ì‰Šú’l‚ğæ“¾
+            //è§’åº¦ã®åˆæœŸå€¤ã‚’å–å¾—
             EndAnchor_KeepEuler = LineEndAnchor.localRotation.eulerAngles;
-            //ƒŒƒ“ƒ_[‚Æ‚»‚Ìƒ}ƒeƒŠƒAƒ‹ƒvƒƒpƒeƒB‚ğæ“¾
+            //ãƒ¬ãƒ³ãƒ€ãƒ¼ã¨ãã®ãƒãƒ†ãƒªã‚¢ãƒ«ãƒ—ãƒ­ãƒ‘ãƒ†ã‚£ã‚’å–å¾—
             _renderer = teleportPoint.GetComponent<Renderer>();
             materialPropertyBlock = new MaterialPropertyBlock();
             _renderer.GetPropertyBlock(materialPropertyBlock);
-            //ƒx[ƒXƒJƒ‰[‚ğæ“¾
+            //ãƒ™ãƒ¼ã‚¹ã‚«ãƒ©ãƒ¼ã‚’å–å¾—
             baseColor = _renderer.material.GetColor("_TintColor");
 
-            //ŠJ–‹–³Œø‰»‚µ‚Ä‚¨‚­
+            //é–‹å¹•ç„¡åŠ¹åŒ–ã—ã¦ãŠã
             gameObject.SetActive(false);
         }
 
         // Update is called once per frame
         void Update()
         {
-            //ƒxƒWƒF‹Èü‚ÌŠJn“_A’†ŠÔ“_AI—¹“_‚ğZo‚·‚é
+            //ãƒ™ã‚¸ã‚§æ›²ç·šã®é–‹å§‹ç‚¹ã€ä¸­é–“ç‚¹ã€çµ‚äº†ç‚¹ã‚’ç®—å‡ºã™ã‚‹
             BezierCurvePoint[0] = LineStartAnchor.position;
             BezierCurvePoint[1] = LineStartAnchor.position + (LineStartAnchor.forward * distance / high);
             BezierCurvePoint[2] = LineStartAnchor.position + (LineStartAnchor.forward * distance);
-            BezierCurvePoint[2].y = transform.position.y;//ˆê’Ue‚Ì‚‚³‚É‘µ‚¦‚é
+            BezierCurvePoint[2].y = transform.position.y;//ä¸€æ—¦è¦ªã®é«˜ã•ã«æƒãˆã‚‹
 
-            //ƒxƒWƒF‹Èü‚ğì¬
+            //ãƒ™ã‚¸ã‚§æ›²ç·šã‚’ä½œæˆ
             Vector3 pos = Vector3.zero;
             for (int i = 0; i < lineRenderer.positionCount; i++)
             {
-                //BezierCurveTimer:0`1
+                //BezierCurveTimer:0ï½1
                 BezierCurveTimer = (float)i / (lineRenderer.positionCount - 1);
-                //ƒxƒWƒF‹Èü‚Ì•âŠ®À•W‚ğæ“¾
+                //ãƒ™ã‚¸ã‚§æ›²ç·šã®è£œå®Œåº§æ¨™ã‚’å–å¾—
                 pos = GetLerpPoint(BezierCurvePoint[0], BezierCurvePoint[1], BezierCurvePoint[2], BezierCurveTimer);
-                //À•W‚ğLineRenderer‚ÉƒZƒbƒg
+                //åº§æ¨™ã‚’LineRendererã«ã‚»ãƒƒãƒˆ
                 lineRenderer.SetPosition(i, pos);
             }
 
-            //°‚ÉŒü‚©‚Á‚Äray‚ğ”ò‚Î‚·
+            //åºŠã«å‘ã‹ã£ã¦rayã‚’é£›ã°ã™
             Physics.Raycast(rayOrigin.position, rayDirection, out hitCollider, 1.0f, Parameters.layerMask_StageFloor);
             Debug.DrawRay(rayOrigin.position, rayDirection, Color.red);
-            //°‚Ì‚‚³‚É‡‚í‚¹‚é
+            //åºŠã®é«˜ã•ã«åˆã‚ã›ã‚‹
             if (hitCollider.collider) BezierCurvePoint[2].y = hitCollider.point.y;
 
-            //’n–ÊAnchor—p‚ÌƒIƒuƒWƒFƒNƒg‚ğˆÚ“®‚·‚é
+            //åœ°é¢Anchorç”¨ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’ç§»å‹•ã™ã‚‹
             if (LineEndAnchor) LineEndAnchor.position = BezierCurvePoint[2];
 
-            //Õ“ËŒŸ’m(‚È‚é‚×‚­’Z‚­‚µ‚Ä‚é)
+            //è¡çªæ¤œçŸ¥(ãªã‚‹ã¹ãçŸ­ãã—ã¦ã‚‹)
             Physics.Raycast(LineEndAnchor.position, Vector3.up, out hitCollider, 1.0f, Parameters.layerMask_FieldObject);
 
             //Debug.DrawRay(LineEndAnchor.position, Vector3.up, Color.red);
         }
 
         /// <summary>
-        /// ’Œ‚ÌF‚ğİ’è
+        /// æŸ±ã®è‰²ã‚’è¨­å®š
         /// </summary>
         public void SetMaterial(bool isForcedReset)
         {
-            //‹­§‰Šú‰»
+            //å¼·åˆ¶åˆæœŸåŒ–
             if (isForcedReset)
             {
                 keepHitObj = null;
@@ -114,18 +114,18 @@ namespace UniLiveViewer
                 if (keepHitObj == hitCollider.transform) return;
                 keepHitObj = hitCollider.transform;
 
-                //hitó‘Ô‚É‰‚¶‚Äƒ}ƒeƒŠƒAƒ‹ƒvƒƒpƒeƒB‚ÌFî•ñ‚ğ•ÏX
+                //hitçŠ¶æ…‹ã«å¿œã˜ã¦ãƒãƒ†ãƒªã‚¢ãƒ«ãƒ—ãƒ­ãƒ‘ãƒ†ã‚£ã®è‰²æƒ…å ±ã‚’å¤‰æ›´
                 if (hitCollider.transform) materialPropertyBlock.SetColor("_TintColor", hitColor);
                 else materialPropertyBlock.SetColor("_TintColor", baseColor);
-                //ƒŒƒ“ƒ_[‚ÉƒvƒƒpƒeƒB‚ğƒZƒbƒg
+                //ãƒ¬ãƒ³ãƒ€ãƒ¼ã«ãƒ—ãƒ­ãƒ‘ãƒ†ã‚£ã‚’ã‚»ãƒƒãƒˆ
                 _renderer.SetPropertyBlock(materialPropertyBlock);
             }
         }
 
         /// <summary>
-        /// GroundPointer‚ÌƒIƒCƒ‰[Šp“x‚ğ‰ÁZ‚·‚é
+        /// GroundPointerã®ã‚ªã‚¤ãƒ©ãƒ¼è§’åº¦ã‚’åŠ ç®—ã™ã‚‹
         /// </summary>
-        /// <param ‰ÁZ‚·‚éŠp“x="addAngles"></param>
+        /// <param åŠ ç®—ã™ã‚‹è§’åº¦="addAngles"></param>
         public void GroundPointer_AddEulerAngles(Vector3 addAngles)
         {
             Vector3 eulerAngles = LineEndAnchor.localRotation.eulerAngles + addAngles;
@@ -133,12 +133,12 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ƒxƒWƒF‹Èüã‚Ì•âŠÔÀ•W‚ğ•Ô‚·
+        /// ãƒ™ã‚¸ã‚§æ›²ç·šä¸Šã®è£œé–“åº§æ¨™ã‚’è¿”ã™
         /// </summary>
-        /// <param ŠJn“_="point0"></param>
-        /// <param ’†ŠÔ“_="point1"></param>
-        /// <param I—¹“_="point2"></param>
-        /// <param LerpŒW”="time"></param>
+        /// <param é–‹å§‹ç‚¹="point0"></param>
+        /// <param ä¸­é–“ç‚¹="point1"></param>
+        /// <param çµ‚äº†ç‚¹="point2"></param>
+        /// <param Lerpä¿‚æ•°="time"></param>
         private Vector3 GetLerpPoint(Vector3 point0, Vector3 point1, Vector3 point2, float time)
         {
             Vector3 movePointA = Vector3.Lerp(point0, point1, time);

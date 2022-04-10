@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 namespace UniLiveViewer
 {
@@ -23,36 +23,31 @@ namespace UniLiveViewer
 
         private void OnEnable()
         {
-            //ƒV[ƒ“ƒ[ƒh‚Ì‚İ‚Ìˆ—
+            //ã‚·ãƒ¼ãƒ³ãƒ­ãƒ¼ãƒ‰æ™‚ã®ã¿ã®å‡¦ç†
             SceneLoad();
 
-            //ƒ[ƒfƒBƒ“ƒOƒAƒjƒ[ƒVƒ‡ƒ“‚ğƒ‰ƒ“ƒ_ƒ€İ’è
+            //ãƒ­ãƒ¼ãƒ‡ã‚£ãƒ³ã‚°ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’ãƒ©ãƒ³ãƒ€ãƒ è¨­å®š
             current = Random.Range(0, 2);
 
-            //ƒ[ƒfƒBƒ“ƒOƒAƒjƒ[ƒVƒ‡ƒ“ŠJn
+            //ãƒ­ãƒ¼ãƒ‡ã‚£ãƒ³ã‚°ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³é–‹å§‹
             anime.gameObject.SetActive(true);
             anime.SetBool(sLoadAnime[current], true);
         }
 
         /// <summary>
-        /// ƒV[ƒ“ƒ[ƒh‚Ì‚İ
+        /// ã‚·ãƒ¼ãƒ³ãƒ­ãƒ¼ãƒ‰æ™‚ã®ã¿
         /// </summary>
         private void SceneLoad()
         {
             if (sceneName)
             {
-                switch (GlobalConfig.sceneMode_static)
+                sceneName.text = GlobalConfig.sceneMode_static switch
                 {
-                    case GlobalConfig.SceneMode.CANDY_LIVE:
-                        sceneName.text = "šCRS Liveš";
-                        break;
-                    case GlobalConfig.SceneMode.KAGURA_LIVE:
-                        sceneName.text = "šKAGURA Liveš";
-                        break;
-                    case GlobalConfig.SceneMode.VIEWER:
-                        sceneName.text = "šViewerSceneš";
-                        break;
-                }
+                    GlobalConfig.SceneMode.CANDY_LIVE => "â˜…CRS Liveâ˜…",
+                    GlobalConfig.SceneMode.KAGURA_LIVE => "â˜…KAGURA Liveâ˜…",
+                    GlobalConfig.SceneMode.VIEWER => "â˜…ViewerSceneâ˜…",
+                    _ => "",
+                };
             }
         }
     }

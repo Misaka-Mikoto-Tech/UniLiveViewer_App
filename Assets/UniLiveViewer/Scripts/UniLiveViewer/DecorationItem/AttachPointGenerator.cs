@@ -1,12 +1,12 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace UniLiveViewer
 {
+    //ã¡ã³ã‚­ãƒ£ãƒ©ã€äººä»¥å¤–ãªã©ã«å¯¾å¿œã—ãã‚Œã¦ã„ãªã„
     public class AttachPointGenerator : MonoBehaviour
     {
-        //‚¿‚ÑƒLƒƒƒ‰‚Æ‚©lˆÈŠO‚É‘Î‰‚Å‚«‚Ä‚È‚¢A“ª‘å‚«‚¢‚Ì‚à¢‚é
         public AttachPoint anchorPointPrefab;
         public List<AttachPoint> anchorList = new List<AttachPoint>();
         private Animator anime;
@@ -20,7 +20,7 @@ namespace UniLiveViewer
         private CharaController charaCon;
         private TimelineController timeline;
 
-        public float height = 0;//g’·‚Í‚Æ‚è‚ ‚¦‚¸}‚ê‚é‚ªA‘¼‚ª‚¤‚Ü‚­‚¢‚©‚È‚¢‚Æ–³ˆÓ–¡(‰Šúp¨ƒoƒO‚Á‚Ä‚é“z‚à’¼‚³‚È‚¢‚Æ‚¢‚¯‚È‚¢)
+        public float height = 0;//èº«é•·ã¯ã¨ã‚Šã‚ãˆãšå›³ã‚Œã‚‹ãŒã€ä»–ãŒã†ã¾ãã„ã‹ãªã„ã¨ç„¡æ„å‘³(åˆæœŸå§¿å‹¢ãƒã‚°ã£ã¦ã‚‹å¥´ã‚‚ç›´ã•ãªã„ã¨ã„ã‘ãªã„)
 
         // Start is called before the first frame update
         void Start()
@@ -29,13 +29,13 @@ namespace UniLiveViewer
             charaCon = transform.GetComponent<CharaController>();
             timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
 
-            //g’·‚ğ}‚é(UIãƒx[ƒX–ñ0.15`0.35‚­‚ç‚¢)
+            //èº«é•·ã‚’å›³ã‚‹(UIä¸Šãƒ™ãƒ¼ã‚¹ç´„0.15ï½0.35ãã‚‰ã„)
             //height = anime.GetBoneTransform(HumanBodyBones.Head).position.y - anime.GetBoneTransform(HumanBodyBones.RightFoot).position.y;
-            //’¼‚·‚Ì–Ê“|‚È‚Ì‚ÅÀ‚(UIãƒx[ƒX–ñ0.07`0.12‚­‚ç‚¢)
+            //ç›´ã™ã®é¢å€’ãªã®ã§åº§é«˜(UIä¸Šãƒ™ãƒ¼ã‚¹ç´„0.07ï½0.12ãã‚‰ã„)
             height = anime.GetBoneTransform(HumanBodyBones.Head).position.y - anime.GetBoneTransform(HumanBodyBones.Spine).position.y;
 
 
-            //–ñ‹¹`“ª‚Ü‚Å‚Ì‹——£‚ª’Z‚¯‚ê‚Îƒ~ƒjƒLƒƒƒ‰‚Æ”F’è‚·‚é
+            //ç´„èƒ¸ï½é ­ã¾ã§ã®è·é›¢ãŒçŸ­ã‘ã‚Œã°ãƒŸãƒ‹ã‚­ãƒ£ãƒ©ã¨èªå®šã™ã‚‹
             //var dir = anime.GetBoneTransform(HumanBodyBones.Head).position - anime.GetBoneTransform(HumanBodyBones.Neck).parent.position;
             //if (dir.sqrMagnitude < 0.035f) isMiniChara = true;
 
@@ -43,28 +43,28 @@ namespace UniLiveViewer
             {
                 dicAttachPoint = new Dictionary<HumanBodyBones, float>()
             {
-                //offsetÀ•W
+                //offsetåº§æ¨™
                 { HumanBodyBones.LeftHand, 0f},
                 { HumanBodyBones.RightHand,  0f},
                 { HumanBodyBones.Head,0.16f},
                 { HumanBodyBones.Chest,0f},
-                //{ HumanBodyBones.Spine,0f}//˜
+                //{ HumanBodyBones.Spine,0f}//è…°
             };
 
                 foreach (var e in dicAttachPoint)
                 {
-                    //ƒAƒ^ƒbƒ`ƒIƒuƒWƒF¶¬
+                    //ã‚¢ã‚¿ãƒƒãƒã‚ªãƒ–ã‚¸ã‚§ç”Ÿæˆ
                     var attachPoint = Instantiate(anchorPointPrefab.gameObject, transform.position, Quaternion.identity);
                     var attachPointScript = attachPoint.GetComponent<AttachPoint>();
                     attachPointScript.myCharaCon = charaCon;
 
-                    //ƒpƒ‰ƒ[ƒ^İ’è
+                    //ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿è¨­å®š
                     attachPoint.name = "AP_" + Enum.GetName(typeof(HumanBodyBones), e.Key);
                     if (e.Key == HumanBodyBones.Neck)
                     {
-                        Transform chest = anime.GetBoneTransform(e.Key).parent;//ñ‚Ìeƒ{[ƒ“(”CˆÓ‚È‚Ì‚Å‚È‚¢‰Â”\«‚à‚ ‚é)
-                        if (!chest) chest = anime.GetBoneTransform(HumanBodyBones.Head).parent;//ŠmÀ‚É‚ ‚é“ª‚Ìeƒ{[ƒ“
-                                                                                               //ƒZƒbƒg‚·‚é
+                        Transform chest = anime.GetBoneTransform(e.Key).parent;//é¦–ã®è¦ªãƒœãƒ¼ãƒ³(ä»»æ„ãªã®ã§ãªã„å¯èƒ½æ€§ã‚‚ã‚ã‚‹)
+                        if (!chest) chest = anime.GetBoneTransform(HumanBodyBones.Head).parent;//ç¢ºå®Ÿã«ã‚ã‚‹é ­ã®è¦ªãƒœãƒ¼ãƒ³                                                                       
+                        //ã‚»ãƒƒãƒˆã™ã‚‹
                         attachPoint.transform.parent = chest;
                     }
                     else attachPoint.transform.parent = anime.GetBoneTransform(e.Key);
@@ -97,28 +97,28 @@ namespace UniLiveViewer
             {
                 dicAttachPoint = new Dictionary<HumanBodyBones, float>()
             {
-                //offsetÀ•W
+                //offsetåº§æ¨™
                 { HumanBodyBones.LeftHand, 0.05f},
                 { HumanBodyBones.RightHand,  0.05f},
                 { HumanBodyBones.Head,0.1f},
-                { HumanBodyBones.Neck,0.1f},//‹¹(ƒ‚ƒfƒ‹‚É‚æ‚Á‚Ä\‘¢‚ªˆÙ‚È‚é‚Ì‚Åˆê”ÔˆÀ‘S‚Éñ‚Ìe‚ğæ“¾‚·‚é)
-                { HumanBodyBones.Spine,-0.03f}//˜
+                { HumanBodyBones.Neck,0.1f},//èƒ¸(ãƒ¢ãƒ‡ãƒ«ã«ã‚ˆã£ã¦æ§‹é€ ãŒç•°ãªã‚‹ã®ã§ä¸€ç•ªå®‰å…¨ã«é¦–ã®è¦ªã‚’å–å¾—ã™ã‚‹)
+                { HumanBodyBones.Spine,-0.03f}//è…°
             };
 
                 foreach (var e in dicAttachPoint)
                 {
-                    //ƒAƒ^ƒbƒ`ƒIƒuƒWƒF¶¬
+                    //ã‚¢ã‚¿ãƒƒãƒã‚ªãƒ–ã‚¸ã‚§ç”Ÿæˆ
                     var attachPoint = Instantiate(anchorPointPrefab.gameObject, transform.position, Quaternion.identity);
                     var attachPointScript = attachPoint.GetComponent<AttachPoint>();
                     attachPointScript.myCharaCon = charaCon;
 
-                    //ƒpƒ‰ƒ[ƒ^İ’è
+                    //ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿è¨­å®š
                     attachPoint.name = "AP_" + Enum.GetName(typeof(HumanBodyBones), e.Key);
                     if (e.Key == HumanBodyBones.Neck)
                     {
-                        Transform chest = anime.GetBoneTransform(e.Key)?.parent;//ñ‚Ìeƒ{[ƒ“(”CˆÓ‚È‚Ì‚Å‚È‚¢‰Â”\«‚à‚ ‚é)
-                        if (!chest) chest = anime.GetBoneTransform(HumanBodyBones.Head).parent;//ŠmÀ‚É‚ ‚é“ª‚Ìeƒ{[ƒ“
-                                                                                               //ƒZƒbƒg‚·‚é
+                        Transform chest = anime.GetBoneTransform(e.Key)?.parent;//é¦–ã®è¦ªãƒœãƒ¼ãƒ³(ä»»æ„ãªã®ã§ãªã„å¯èƒ½æ€§ã‚‚ã‚ã‚‹)
+                        if (!chest) chest = anime.GetBoneTransform(HumanBodyBones.Head).parent;//ç¢ºå®Ÿã«ã‚ã‚‹é ­ã®è¦ªãƒœãƒ¼ãƒ³                                                                       
+                        //ã‚»ãƒƒãƒˆã™ã‚‹
                         attachPoint.transform.parent = chest;
                     }
                     else attachPoint.transform.parent = anime.GetBoneTransform(e.Key);
@@ -154,22 +154,22 @@ namespace UniLiveViewer
                 }
             }
 
-            //–³Œø‰»‚µ‚Ä‚¨‚­
+            //ç„¡åŠ¹åŒ–ã—ã¦ãŠã
             SetActive_AttachPoint(false);
         }
 
         public void Update()
         {
-            //¶è‚ÌƒAƒ^ƒbƒ`ƒ|ƒCƒ“ƒg‚ÌƒAƒCƒeƒ€”Šm”F
+            //å·¦æ‰‹ã®ã‚¢ã‚¿ãƒƒãƒãƒã‚¤ãƒ³ãƒˆã®ã‚¢ã‚¤ãƒ†ãƒ æ•°ç¢ºèª
             if (anchorList[0].transform.childCount == 0)
             {
-                //ˆ¬‚Á‚Ä‚¢‚½‚ç‰ğœ‚·‚é
+                //æ¡ã£ã¦ã„ãŸã‚‰è§£é™¤ã™ã‚‹
                 if (charaCon.keepHandL_Anime) timeline.SwitchHandType(charaCon, false, true);
             }
-            //‰Eè‚ÌƒAƒ^ƒbƒ`ƒ|ƒCƒ“ƒg‚ÌƒAƒCƒeƒ€”Šm”F
+            //å³æ‰‹ã®ã‚¢ã‚¿ãƒƒãƒãƒã‚¤ãƒ³ãƒˆã®ã‚¢ã‚¤ãƒ†ãƒ æ•°ç¢ºèª
             if (anchorList[1].transform.childCount == 0)
             {
-                //ˆ¬‚Á‚Ä‚¢‚½‚ç‰ğœ‚·‚é
+                //æ¡ã£ã¦ã„ãŸã‚‰è§£é™¤ã™ã‚‹
                 if (charaCon.keepHandR_Anime) timeline.SwitchHandType(charaCon, false, false);
             }
         }

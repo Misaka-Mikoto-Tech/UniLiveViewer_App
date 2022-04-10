@@ -112,7 +112,7 @@ namespace UniLiveViewer
                 FacialSyncController.Instantiate(FaceSyncPrefab, charaCon, blendShapeProxy);
 
                 //VMDプレイヤー追加(各Sync系の後に追加する)
-                targetVRM.AddComponent<VMDPlayer>();
+                targetVRM.AddComponent<VMDPlayer_Custom>();
                 //ScriptableObject追加
                 charaCon.charaInfoData = Instantiate(charaInfoDataPrefab);
 

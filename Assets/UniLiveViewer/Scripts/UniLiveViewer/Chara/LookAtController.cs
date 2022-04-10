@@ -1,26 +1,26 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using VRM;
 using UnityEngine.Animations.Rigging;
 using NanaCiel;
 
 namespace UniLiveViewer 
 {
-    //‰ü‘P‚Ì—]’n‚µ‚©‚È‚¢
+    //æ”¹å–„ã®ä½™åœ°ã—ã‹ãªã„
     public class LookAtController : MonoBehaviour
     {
-        [Header("ƒLookAt(ƒvƒŠƒZƒbƒgƒLƒƒƒ‰—p)„")]
+        [Header("ï¼œLookAt(ãƒ—ãƒªã‚»ãƒƒãƒˆã‚­ãƒ£ãƒ©ç”¨)ï¼")]
         [SerializeField] private SkinnedMeshRenderer skinMesh_Face;
 
-        [Header("ƒLookAt(VRM—pA©“®)„")]
+        [Header("ï¼œLookAt(VRMç”¨ã€è‡ªå‹•)ï¼")]
         public VRMLookAtBoneApplyer_Custom VRMLookAtEye_Bone = null;
         public VRMLookAtBlendShapeApplyer_Custom VRMLookAtEye_UV = null;
 
-        [Header("ƒ‹¤—L(©“®ŠÇ—)„")]
-        public Transform virtualEye;//³–Ê—p
-        public Transform virtualHead;//³–Ê—p
-        public Transform virtualRoot;//³–Ê—p
+        [Header("ï¼œå…±æœ‰(è‡ªå‹•ç®¡ç†)ï¼")]
+        public Transform virtualEye;//æ­£é¢ç”¨
+        public Transform virtualHead;//æ­£é¢ç”¨
+        public Transform virtualRoot;//æ­£é¢ç”¨
 
-        //Šeíƒ{[ƒ“Anchor‚ğæ“¾
+        //å„ç¨®ãƒœãƒ¼ãƒ³Anchorã‚’å–å¾—
         [HideInInspector] public Transform hipAnchor;
         [HideInInspector] public Transform headAnchor;
         [HideInInspector] public Transform chestAnchor;
@@ -32,24 +32,24 @@ namespace UniLiveViewer
         private CharaController charaCon;
         private HeadRigController headRigCon;
 
-        [Header("ƒƒpƒ‰ƒ[ƒ^[“ª—p„")]
+        [Header("ï¼œãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼é ­ç”¨ï¼")]
         public float inputWeight_Head = 0.0f;
         [SerializeField] private float searchAngle_Head = 60;
         [SerializeField] private float leapVal_Head = 0;
         private float leapSpeed_head = 0;
         private float angle_head;
 
-        [Header("ƒƒpƒ‰ƒ[ƒ^[–Ú—p„")]
+        [Header("ï¼œãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼ç›®ç”¨ï¼")]
         public float inputWeight_Eye = 0.0f;
         [SerializeField] private float searchAngle_Eye = 70;
         [SerializeField] private float leapVal_Eye = 0;
         private float leapSpeed_eye = 0;
         private float angle_eye;
 
-        [Tooltip("–Ú‚ÌŠ´“xŒW”"), SerializeField] private Vector2 eye_Amplitude;
-        [Tooltip("ÅI“I‚È’‹‚Ì’l"), SerializeField] private Vector3 result_EyeLook;
+        [Tooltip("ç›®ã®æ„Ÿåº¦ä¿‚æ•°"), SerializeField] private Vector2 eye_Amplitude;
+        [Tooltip("æœ€çµ‚çš„ãªæ³¨è¦–ã®å€¤"), SerializeField] private Vector3 result_EyeLook;
 
-        //‹ŒUnity‚¿‚á‚ñ—p(è“®‚ÅŠJ•ú‚·‚é‚½‚ß)
+        //æ—§Unityã¡ã‚ƒã‚“ç”¨(æ‰‹å‹•ã§é–‹æ”¾ã™ã‚‹ãŸã‚)
         private Material eyeMat;
 
         void Awake()
@@ -59,7 +59,7 @@ namespace UniLiveViewer
             if (!lookTarget) lookTarget = GameObject.FindGameObjectWithTag("MainCamera").gameObject.transform;
 
 
-            //Šeíƒ{[ƒ“‚©‚çƒAƒ“ƒJ[‚ğæ“¾
+            //å„ç¨®ãƒœãƒ¼ãƒ³ã‹ã‚‰ã‚¢ãƒ³ã‚«ãƒ¼ã‚’å–å¾—
             hipAnchor = animator.GetBoneTransform(HumanBodyBones.Hips);
             headAnchor = animator.GetBoneTransform(HumanBodyBones.Head);
             chestAnchor = animator.GetBoneTransform(HumanBodyBones.UpperChest);
@@ -75,7 +75,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// VRM—p‚ÌƒRƒ“ƒ|[ƒlƒ“ƒgQÆİ’è
+        /// VRMç”¨ã®ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆå‚ç…§è¨­å®š
         /// </summary>
         /// <param name="anime"></param>
         /// <param name="charaController"></param>
@@ -92,7 +92,7 @@ namespace UniLiveViewer
         // Start is called before the first frame update
         void Start()
         {
-            //‰¼‘zƒ‹[ƒg‚ğ¶¬(“ª‚Ì³–Ê—p)
+            //ä»®æƒ³ãƒ«ãƒ¼ãƒˆã‚’ç”Ÿæˆ(é ­ã®æ­£é¢ç”¨)
             virtualRoot = new GameObject("VirtualRoot").transform;
             virtualRoot.parent = hipAnchor;
             virtualRoot.gameObject.layer = Parameters.layerNo_VirtualHead;
@@ -100,7 +100,7 @@ namespace UniLiveViewer
             virtualRoot.localPosition = Vector3.zero;
             virtualRoot.rotation = transform.rotation;
 
-            //‰¼‘zƒwƒbƒh‚ğ¶¬(–Ú‚Ì³–Ê—p)
+            //ä»®æƒ³ãƒ˜ãƒƒãƒ‰ã‚’ç”Ÿæˆ(ç›®ã®æ­£é¢ç”¨)
             virtualHead = new GameObject("VirtualHead").transform;
             virtualHead.parent = headAnchor.parent;
             virtualHead.gameObject.layer = Parameters.layerNo_VirtualHead;
@@ -111,7 +111,7 @@ namespace UniLiveViewer
             virtualHead.localPosition = Vector3.zero;
             virtualHead.rotation = transform.rotation;
 
-            //‰¼‘zƒAƒC‚ğ¶¬(‚¢‚éH)
+            //ä»®æƒ³ã‚¢ã‚¤ã‚’ç”Ÿæˆ(ã„ã‚‹ï¼Ÿ)
             virtualEye = new GameObject("VirtualEye").transform;
             virtualEye.parent = headAnchor;
             virtualEye.gameObject.layer = Parameters.layerNo_VirtualHead;
@@ -121,7 +121,7 @@ namespace UniLiveViewer
 
         private void LateUpdate()
         {
-            //ƒ|[ƒY’†‚È‚çˆÈ‰ºˆ—‚µ‚È‚¢
+            //ãƒãƒ¼ã‚ºä¸­ãªã‚‰ä»¥ä¸‹å‡¦ç†ã—ãªã„
             if (Time.timeScale == 0) return;
 
             LookAt_Head();
@@ -130,25 +130,25 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// “ª‚Ì’‹ˆ—
+        /// é ­ã®æ³¨è¦–å‡¦ç†
         /// </summary>
         private void LookAt_Head()
         {
-            //“ü—Í‚ª‚ ‚é‚©
+            //å…¥åŠ›ãŒã‚ã‚‹ã‹
             if (0.0f < inputWeight_Head)
             {
-                //…•½ã‚Ìƒ^[ƒQƒbƒg‚Æ‚ÌŠp“x‚ğæ“¾
+                //æ°´å¹³ä¸Šã®ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã¨ã®è§’åº¦ã‚’å–å¾—
                 angle_head = GetHorizontalAngle(lookTarget, virtualRoot);
 
-                //³–Ê‚É‹ß‚¢‚Ù‚Ç‘¬“x‚ğã‚°‚é
+                //æ­£é¢ã«è¿‘ã„ã»ã©é€Ÿåº¦ã‚’ä¸Šã’ã‚‹
                 leapSpeed_head = Time.deltaTime * Mathf.Clamp((searchAngle_Head / angle_head), 0, 1);
 
-                //‹Šo“à‚È‚ç™X‚É1‚Ö(‘ÎÛ‚Ì•û‚ğŒü‚­)
+                //è¦–è¦šå†…ãªã‚‰å¾ã€…ã«1ã¸(å¯¾è±¡ã®æ–¹ã‚’å‘ã)
                 if (searchAngle_Head > angle_head)
                 {
                     leapVal_Head = Mathf.Clamp(leapVal_Head + leapSpeed_head, 0.0f, inputWeight_Head);
                 }
-                //‹ŠoŠO‚È‚ç™X‚É0‚Ö(³–Ê‚ğŒü‚­)
+                //è¦–è¦šå¤–ãªã‚‰å¾ã€…ã«0ã¸(æ­£é¢ã‚’å‘ã)
                 else
                 {
                     leapVal_Head = Mathf.Clamp(leapVal_Head - leapSpeed_head, 0.0f, inputWeight_Head);
@@ -156,30 +156,30 @@ namespace UniLiveViewer
             }
             else
             {
-                leapVal_Head = 0;//‰Šú‰»
+                leapVal_Head = 0;//åˆæœŸåŒ–
             }
         }
 
         /// <summary>
-        /// –Ú‚Ì’‹ˆ—
+        /// ç›®ã®æ³¨è¦–å‡¦ç†
         /// </summary>
         private void LookAt_Eye()
         {
-            //“ü—Í‚ª‚ ‚é‚©
+            //å…¥åŠ›ãŒã‚ã‚‹ã‹
             if (0.0f < inputWeight_Eye)
             {
-                //…•½ã‚Ìƒ^[ƒQƒbƒg‚Æ‚ÌŠp“x‚ğæ“¾
+                //æ°´å¹³ä¸Šã®ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã¨ã®è§’åº¦ã‚’å–å¾—
                 angle_eye = GetHorizontalAngle(lookTarget, virtualHead);
 
-                //³–Ê‚É‹ß‚¢‚Ù‚Ç‘¬“x‚ğã‚°‚é
+                //æ­£é¢ã«è¿‘ã„ã»ã©é€Ÿåº¦ã‚’ä¸Šã’ã‚‹
                 leapSpeed_eye = Time.deltaTime * Mathf.Clamp((searchAngle_Eye / angle_eye), 0, 1);
 
-                //‹Šo“à‚È‚ç™X‚É1‚Ö(‘ÎÛ‚Ì•û‚ğŒü‚­)
+                //è¦–è¦šå†…ãªã‚‰å¾ã€…ã«1ã¸(å¯¾è±¡ã®æ–¹ã‚’å‘ã)
                 if (searchAngle_Head > angle_head)
                 {
                     leapVal_Eye = Mathf.Clamp(leapVal_Eye + leapSpeed_eye, 0.0f, inputWeight_Eye);
                 }
-                //‹ŠoŠO‚È‚ç™X‚É0‚Ö(³–Ê‚ğŒü‚­)
+                //è¦–è¦šå¤–ãªã‚‰å¾ã€…ã«0ã¸(æ­£é¢ã‚’å‘ã)
                 else
                 {
                     leapVal_Eye = Mathf.Clamp(leapVal_Eye - leapSpeed_eye, 0.0f, inputWeight_Eye);
@@ -187,34 +187,34 @@ namespace UniLiveViewer
             }
             else
             {
-                leapVal_Eye = 0;//‰Šú‰»
+                leapVal_Eye = 0;//åˆæœŸåŒ–
             }
 
-            //‹â‚Ì’e‚È‚¢‚ÌH
+            //éŠ€ã®å¼¾ãªã„ã®ï¼Ÿ
             Vector3 v;
             switch (charaCon.charaInfoData.charaType)
             {
                 case CharaInfoData.CHARATYPE.UnityChan:
-                    //ƒ[ƒJƒ‹À•W‚É•ÏŠ·
+                    //ãƒ­ãƒ¼ã‚«ãƒ«åº§æ¨™ã«å¤‰æ›
                     v = virtualEye.InverseTransformPoint(lookTarget.position).normalized;
                     result_EyeLook.x = v.x * eye_Amplitude.x * leapVal_Eye;
                     result_EyeLook.y = -v.y * eye_Amplitude.y * leapVal_Eye;
-                    //UV‚ğƒIƒtƒZƒbƒg‚ğ”½‰f
+                    //UVã‚’ã‚ªãƒ•ã‚»ãƒƒãƒˆã‚’åæ˜ 
                     eyeMat.SetTextureOffset("_BaseMap", result_EyeLook);
                     break;
                 case CharaInfoData.CHARATYPE.CandyChan:
-                    //ƒ[ƒJƒ‹À•W‚É•ÏŠ·
+                    //ãƒ­ãƒ¼ã‚«ãƒ«åº§æ¨™ã«å¤‰æ›
                     v = virtualEye.InverseTransformPoint(lookTarget.position).normalized;
                     result_EyeLook.x = v.x * eye_Amplitude.x * leapVal_Eye;
                     result_EyeLook.y = -v.y * eye_Amplitude.y * leapVal_Eye;
-                    //UV‚ğƒIƒtƒZƒbƒg‚ğ”½‰f
+                    //UVã‚’ã‚ªãƒ•ã‚»ãƒƒãƒˆã‚’åæ˜ 
                     eyeMat.SetTextureOffset("_BaseMap", result_EyeLook);
                     break;
                 case CharaInfoData.CHARATYPE.UnityChanSSU:
                     result_EyeLook.x = eye_Amplitude.x * leapVal_Eye;
                     break;
                 case CharaInfoData.CHARATYPE.UnityChanSD:
-                    //ƒ[ƒJƒ‹À•W‚É•ÏŠ·
+                    //ãƒ­ãƒ¼ã‚«ãƒ«åº§æ¨™ã«å¤‰æ›
                     v = virtualEye.InverseTransformPoint(lookTarget.position).normalized;
                     result_EyeLook.x = -v.y * eye_Amplitude.x * leapVal_Eye;
                     result_EyeLook.y = v.x * eye_Amplitude.y * leapVal_Eye;
@@ -231,7 +231,7 @@ namespace UniLiveViewer
                 case CharaInfoData.CHARATYPE.VRM_Bone:
                     result_EyeLook.x = 90;
                     result_EyeLook.y = leapVal_Eye * 90;
-                    //–Ú‚ÉƒIƒtƒZƒbƒg‚ğ”½‰f
+                    //ç›®ã«ã‚ªãƒ•ã‚»ãƒƒãƒˆã‚’åæ˜ 
                     if (VRMLookAtEye_Bone)
                     {
                         VRMLookAtEye_Bone.HorizontalOuter.CurveXRangeDegree = result_EyeLook.x;
@@ -248,7 +248,7 @@ namespace UniLiveViewer
                 case CharaInfoData.CHARATYPE.VRM_BlendShape:
                     result_EyeLook.x = 90;
                     result_EyeLook.y = leapVal_Eye * 90;
-                    //–Ú‚ÉƒIƒtƒZƒbƒg‚ğ”½‰f
+                    //ç›®ã«ã‚ªãƒ•ã‚»ãƒƒãƒˆã‚’åæ˜ 
                     if (VRMLookAtEye_UV)
                     {
                         VRMLookAtEye_UV.Horizontal.CurveXRangeDegree = result_EyeLook.x;
@@ -265,16 +265,16 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// …•½ã‚Ìƒ^[ƒQƒbƒg‚Æ‚ÌŠp“x‚ğæ“¾
+        /// æ°´å¹³ä¸Šã®ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã¨ã®è§’åº¦ã‚’å–å¾—
         /// </summary>
         /// <param name="target"></param>
         /// <param name="origin"></param>
         /// <returns></returns>
         private float GetHorizontalAngle(Transform target, Transform origin)
         {
-            //ƒvƒŒƒCƒ„[‚Ì•ûŒü(…•½)
+            //ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®æ–¹å‘(æ°´å¹³)
             var playerDirection = (target.position - origin.position).GetHorizontalDirection();
-            //Šp“x
+            //è§’åº¦
             return Vector3.Angle(origin.forward.GetHorizontalDirection(), playerDirection);
         }
 
@@ -283,17 +283,17 @@ namespace UniLiveViewer
             switch (charaCon.charaInfoData.charaType)
             {
                 case CharaInfoData.CHARATYPE.UnityChanSSU:
-                    //‘S‘ÌA‘ÌA“ªA–Ú
+                    //å…¨ä½“ã€ä½“ã€é ­ã€ç›®
                     animator.SetLookAtWeight(1.0f, 0.0f, leapVal_Head, result_EyeLook.x);
                     animator.SetLookAtPosition(lookTarget.position);
                     break;
                 case CharaInfoData.CHARATYPE.UnityChanKAGURA:
-                    //‘S‘ÌA‘ÌA“ªA–Ú
+                    //å…¨ä½“ã€ä½“ã€é ­ã€ç›®
                     animator.SetLookAtWeight(1.0f, 0.0f, leapVal_Head, result_EyeLook.x);
                     animator.SetLookAtPosition(lookTarget.position);
                     break;
                 default:
-                    //‘S‘ÌA‘ÌA“ªA–Ú
+                    //å…¨ä½“ã€ä½“ã€é ­ã€ç›®
                     animator.SetLookAtWeight(1.0f, 0.0f, leapVal_Head, 0.0f);
                     animator.SetLookAtPosition(lookTarget.position);
                     break;

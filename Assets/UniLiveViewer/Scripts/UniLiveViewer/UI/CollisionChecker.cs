@@ -1,9 +1,9 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.UI;
 
 namespace UniLiveViewer
 {
-    //ƒ{ƒ^ƒ“ó‘Ô
+    //ãƒœã‚¿ãƒ³çŠ¶æ…‹
     public enum SWITCHSTATE
     {
         NULL = 0,
@@ -37,42 +37,42 @@ namespace UniLiveViewer
             }
             set
             {
-                //ƒ{ƒ^ƒ“ó‘Ô‚É‰‚¶‚ÄF‚ğXV
+                //ãƒœã‚¿ãƒ³çŠ¶æ…‹ã«å¿œã˜ã¦è‰²ã‚’æ›´æ–°
                 _myState = value;
                 isTouch = false;
                 ColorUpdate();
             }
         }
-        //F‚Ìİ’è
+        //è‰²ã®è¨­å®š
         public TargetColorSetting[] colorSetting;
 
         private void Awake()
         {
             for (int i = 0; i < colorSetting.Length; i++)
             {
-                colorSetting[i].Init();
+                colorSetting[i].Init(GlobalConfig.btnColor_Ena_sky);
             }
         }
 
-        //Enter‚µ‚½Ÿ‚ÌƒtƒŒ[ƒ€‚ÅExit‚·‚é‚ÆStay‚ÍŒÄ‚Î‚ê‚È‚¢‚ç‚µ‚¢
-        //‚¾‚ªExit‚à‚·‚è”²‚¯‚Ä‚¢‚é‹C‚ª‚·‚é‚Ì‚ÅAStay‚³‚¹‚ê‚ÎŠmÀ‚ÉExit‚ª”­¶‚·‚é‚©‚àH‚È‚Ì‚ÅStay‚ğg‚¤
+        //Enterã—ãŸæ¬¡ã®ãƒ•ãƒ¬ãƒ¼ãƒ ã§Exitã™ã‚‹ã¨Stayã¯å‘¼ã°ã‚Œãªã„ã‚‰ã—ã„
+        //ã ãŒExitã‚‚ã™ã‚ŠæŠœã‘ã¦ã„ã‚‹æ°—ãŒã™ã‚‹ã®ã§ã€Stayã•ã›ã‚Œã°ç¢ºå®Ÿã«ExitãŒç™ºç”Ÿã™ã‚‹ã‹ã‚‚ï¼Ÿãªã®ã§Stayã‚’ä½¿ã†
         private void OnCollisionStay(Collision collision)
         {
             if (isTouch) return;
             isTouch = true;
             ColorUpdate();
 
-            //ƒqƒbƒg‘ÎÛ
+            //ãƒ’ãƒƒãƒˆå¯¾è±¡
             if (collision.transform.name.Contains("Left")) isTouchL = true;
             else isTouchL = false;
 
-            //U“®ˆ—
+            //æŒ¯å‹•å‡¦ç†
             if (isTouchL) PlayerStateManager.ControllerVibration(OVRInput.Controller.LTouch, 1, 0.6f, 0.05f);
             else PlayerStateManager.ControllerVibration(OVRInput.Controller.RTouch, 1, 0.6f, 0.05f);
         }
 
         /// <summary>
-        /// —£‚ê‚½
+        /// é›¢ã‚ŒãŸæ™‚
         /// </summary>
         /// <param name="collision"></param>
         private void OnCollisionExit(Collision collision)
@@ -83,7 +83,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// À‘Ì‰»‚µ‚½
+        /// å®Ÿä½“åŒ–ã—ãŸæ™‚
         /// </summary>
         private void OnEnable()
         {
@@ -92,7 +92,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ó‘Ô‚É‰‚¶‚ÄF‚ğXV
+        /// çŠ¶æ…‹ã«å¿œã˜ã¦è‰²ã‚’æ›´æ–°
         /// </summary>
         private void ColorUpdate()
         {
@@ -106,30 +106,30 @@ namespace UniLiveViewer
     }
 
     /// <summary>
-    /// Fî•ñ‚ğŠÇ—‚·‚éƒNƒ‰ƒX
+    /// è‰²æƒ…å ±ã‚’ç®¡ç†ã™ã‚‹ã‚¯ãƒ©ã‚¹
     /// </summary>
     [System.Serializable]
     public class TargetColorSetting
     {
-        //TODO:ƒ_ƒT...‚Å‚à‚¢‚¢•û–@’m‚ç‚È‚¢
-        [Header("‚Ç‚ê‚©1í‚ÉƒAƒ^ƒbƒ`")]
+        //TODO:ãƒ€ã‚µ...ã§ã‚‚ã„ã„æ–¹æ³•çŸ¥ã‚‰ãªã„
+        [Header("ã©ã‚Œã‹1ç¨®ã«ã‚¢ã‚¿ãƒƒãƒ")]
         public Image targetImage;
         public SpriteRenderer targetSprite;
         public MeshRenderer meshRender;
         public TextMesh textMesh;
         [Space(20)]
-        [Tooltip("–³Œøó‘ÔƒJƒ‰[")]
+        [Tooltip("ç„¡åŠ¹çŠ¶æ…‹ã‚«ãƒ©ãƒ¼")]
         public Color DisableColor = new Color(0.3f, 0.3f, 0.3f);
-        [Tooltip("—LŒøó‘ÔƒJƒ‰[")]
+        [Tooltip("æœ‰åŠ¹çŠ¶æ…‹ã‚«ãƒ©ãƒ¼")]
         public Color EnableColor = new Color(0.7f, 0.7f, 0.7f);
-        [Tooltip("G‚ê‚Ä‚¢‚éó‘ÔƒJƒ‰[")]
+        [Tooltip("è§¦ã‚Œã¦ã„ã‚‹çŠ¶æ…‹ã‚«ãƒ©ãƒ¼")]
         public Color TouchColor = new Color(0.7f, 0.7f, 0.3f);
         //[System.NonSerialized]
         private DRAWTYPE drawType = DRAWTYPE.NULL;
 
         private MaterialPropertyBlock materialPropertyBlock;
 
-        public void Init()
+        public void Init(Color enableColor)
         {
             if (targetImage != null) drawType = DRAWTYPE.IMAGE;
             else if (targetSprite != null) drawType = DRAWTYPE.SPRITE;
@@ -137,7 +137,7 @@ namespace UniLiveViewer
             else if (textMesh != null)
             {
                 drawType = DRAWTYPE.TEXTMESH;
-                EnableColor = GlobalConfig.btnColor_Ena;
+                EnableColor = enableColor;
                 DisableColor = GlobalConfig.btnColor_Dis;
             }
 

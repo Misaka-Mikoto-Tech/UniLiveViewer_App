@@ -41,7 +41,7 @@ namespace UniLiveViewer
 
         public static SystemData systemData;
 
-        public static readonly Color btnColor_Ena = new Color(0, 1, 1, 1);//一旦ここで一括調整
+        public static readonly Color btnColor_Ena_sky = new Color(0, 1, 1, 1);//一旦ここで一括調整
         public static readonly Color btnColor_Dis = new Color(0.4f, 0.4f, 0.4f, 1);
 
         //public static float initCharaSize = 0.0f;

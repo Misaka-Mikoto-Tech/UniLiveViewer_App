@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
@@ -6,11 +6,11 @@ using NanaCiel;
 
 namespace UniLiveViewer
 {
-    //¡À‘•’†~’†
+    //ä»Šå®Ÿè£…ä¸­æ­¢ä¸­
     [RequireComponent(typeof(AudioSource))]
     public class SpecialFacial : MonoBehaviour
     {
-        [Header("ƒ‹ŒUnity‚¿‚á‚ñ—p„")]
+        [Header("ï¼œæ—§Unityã¡ã‚ƒã‚“ç”¨ï¼")]
         //[SerializeField]
         //private SkinnedMeshRenderer face;
         //[SerializeField]
@@ -20,7 +20,7 @@ namespace UniLiveViewer
 
         private bool isAngFace = false;
 
-        //[Header("ƒ‰¼‘zƒwƒbƒh—p„")]
+        //[Header("ï¼œä»®æƒ³ãƒ˜ãƒƒãƒ‰ç”¨ï¼")]
         //[SerializeField]
         //private string myLayer = "VirtualHead";
         //private Transform virtualHead;
@@ -49,7 +49,7 @@ namespace UniLiveViewer
             charaCon = GetComponent<CharaController>();
             if (charaCon.charaInfoData.charaType == CharaInfoData.CHARATYPE.UnityChan)
             {
-                //ƒWƒg–Ú50% + (CONF100% or ANG100%)
+                //ã‚¸ãƒˆç›®50% + (CONF100% or ANG100%)
                 listFaceID = new int[3] { 17, 3, 4 };
                 listFaceTransID = new int[3] { 6, 10, 12 };
             }
@@ -72,35 +72,35 @@ namespace UniLiveViewer
             //col.radius = 0.06f;
             //col.isTrigger = true;
 
-            //‰Šú‚Í–³Œø‰»‚µ‚Ä‚¨‚«Aİ’uó‘Ô‚Ì‚İ—LŒø‰»
+            //åˆæœŸã¯ç„¡åŠ¹åŒ–ã—ã¦ãŠãã€è¨­ç½®çŠ¶æ…‹ã®ã¿æœ‰åŠ¹åŒ–
             this.enabled = false;
         }
 
         // Update is called once per frame
         void Update()
         {
-            //ƒ}ƒjƒ…ƒAƒ‹ƒ‚[ƒh’†‚ÌAnimeCon‚ªkeep’†‚Ì‚İ
+            //ãƒãƒ‹ãƒ¥ã‚¢ãƒ«ãƒ¢ãƒ¼ãƒ‰ä¸­ã®AnimeConãŒkeepä¸­ã®ã¿
             if (!charaCon.keepRunAnime) return;
 
-            //Lookat‚ª—LŒøó‘Ô‚Ì
+            //LookatãŒæœ‰åŠ¹çŠ¶æ…‹ã®æ™‚
             if (charaCon.lookAtCon.inputWeight_Eye <= 0.0f) return;
 
-            ////‰¼ƒwƒbƒh‚ğƒLƒƒƒ‰‚Ì“ª‚É‡‚í‚¹‚é
+            ////ä»®ãƒ˜ãƒƒãƒ‰ã‚’ã‚­ãƒ£ãƒ©ã®é ­ã«åˆã‚ã›ã‚‹
             //virtualHead.position = CharaCon.centerEyeAnchor.position;
             //virtualHead.rotation = CharaCon.lastSpineAnchor.rotation;
 
             if (!faceChanging)
             {
-                //ƒ^[ƒQƒbƒg‚ªˆê’è‚æ‚è’á‚­A‹ßÚó‘Ô‚©
+                //ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãŒä¸€å®šã‚ˆã‚Šä½ãã€è¿‘æ¥çŠ¶æ…‹ã‹
                 if ((lookAtCon.lookTarget.position.y - transform.position.y) > 1.1f) return;
                 if ((transform.position - lookAtCon.lookTarget.position).GetHorizontalDirection().sqrMagnitude < 0.4f)
                 {
-                    //ƒ[ƒJƒ‹À•W‚É•ÏŠ·
+                    //ãƒ­ãƒ¼ã‚«ãƒ«åº§æ¨™ã«å¤‰æ›
                     dir = lookAtCon.virtualHead.InverseTransformPoint(lookAtCon.lookTarget.position).normalized;
-                    //‰¼ƒwƒbƒh‚©‚çŒ©‚Äƒ^[ƒQƒbƒg‚ğŒ©‰º‚ë‚·ó‘Ô
+                    //ä»®ãƒ˜ãƒƒãƒ‰ã‹ã‚‰è¦‹ã¦ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã‚’è¦‹ä¸‹ã‚ã™çŠ¶æ…‹
                     if (dir.y < -0.55f && dir.z >= 0.1f)
                     {
-                        //•\î•ÏX
+                        //è¡¨æƒ…å¤‰æ›´
                         if (charaCon.charaInfoData.charaType == CharaInfoData.CHARATYPE.UnityChan
                             || charaCon.charaInfoData.charaType == CharaInfoData.CHARATYPE.CandyChan)
                         {
@@ -112,32 +112,32 @@ namespace UniLiveViewer
                         {
                             StartCoroutine(ChangeFace_VRM());
                         }
-                        //•s–‰¹
+                        //ä¸æº€éŸ³
                         audioSource.PlayOneShot(Sound[0]);
                     }
                 }
             }
             else
             {
-                //ƒ^[ƒQƒbƒg‚ª‚±‚¿‚ç‚É‹C‚Ã‚¢‚Ä‚¢‚È‚¯‚ê‚Î(ƒVƒ‡ƒbƒN‰¹‚ª‚Ü‚¾)
+                //ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãŒã“ã¡ã‚‰ã«æ°—ã¥ã„ã¦ã„ãªã‘ã‚Œã°(ã‚·ãƒ§ãƒƒã‚¯éŸ³ãŒã¾ã )
                 if (!isShockSound)
                 {
-                    //ƒ^[ƒQƒbƒg‚©‚ç‹ü‚Ìray‚ğ”ò‚Î‚·
+                    //ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã‹ã‚‰è¦–ç·šã®rayã‚’é£›ã°ã™
                     Physics.Raycast(lookAtCon.lookTarget.position, lookAtCon.lookTarget.forward, out rayHit, 2.0f, Parameters.layerMask_VirtualHead);
-                    //‰¼ƒwƒbƒh‚Éƒqƒbƒg‚µ‚Ä‚¢‚ê‚Î(ƒ^[ƒQƒbƒg‚ª‚±‚¿‚ç‚ğŒ©‚½)
+                    //ä»®ãƒ˜ãƒƒãƒ‰ã«ãƒ’ãƒƒãƒˆã—ã¦ã„ã‚Œã°(ã‚¿ãƒ¼ã‚²ãƒƒãƒˆãŒã“ã¡ã‚‰ã‚’è¦‹ãŸ)
                     if (rayHit.collider && rayHit.collider.transform.root == transform)
                     {
                         isShockSound = true;
 
                         if (isAngFace)
                         {
-                            //ANG‰¹
+                            //ANGéŸ³
                             int i = Random.Range(0, Sound_ANG.Length);
                             audioSource.PlayOneShot(Sound_ANG[i]);
                         }
                         else
                         {
-                            //CONF‰¹
+                            //CONFéŸ³
                             int i = Random.Range(0, Sound_CONF.Length);
                             audioSource.PlayOneShot(Sound_CONF[i]);
                         }
@@ -147,7 +147,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// VRM—pEEE‚Æ‚è‚ ‚¦‚¸
+        /// VRMç”¨ãƒ»ãƒ»ãƒ»ã¨ã‚Šã‚ãˆãš
         /// </summary>
         public void SetAudioClip_VRM(AudioClip[] clips)
         {
@@ -166,7 +166,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// •\î‘JˆÚ(‹ŒUnity‚¿‚á‚ñ—p)
+        /// è¡¨æƒ…é·ç§»(æ—§Unityã¡ã‚ƒã‚“ç”¨)
         /// </summary>
         /// <returns></returns>
         private IEnumerator ChangeFace()
@@ -184,18 +184,18 @@ namespace UniLiveViewer
             }
             faceChanging = true;
 
-            //‹£‡‚·‚é‚Ì‚ÅƒŠƒbƒvƒVƒ“ƒN‚ğ~‚ß‚é
+            //ç«¶åˆã™ã‚‹ã®ã§ãƒªãƒƒãƒ—ã‚·ãƒ³ã‚¯ã‚’æ­¢ã‚ã‚‹
             charaCon.lipSync.enabled = false;
             yield return null;
 
-            //Šù‘¶•\î‚ğ‘S‚Ä‰Šú‰»‚µ‚Ä‚¨‚­
+            //æ—¢å­˜è¡¨æƒ…ã‚’å…¨ã¦åˆæœŸåŒ–ã—ã¦ãŠã
             charaCon.facialSync.AllClear_BlendShape();
-            //Šù‘¶•\î‚ğ‘S‚Ä‰Šú‰»‚µ‚Ä‚¨‚­
+            //æ—¢å­˜è¡¨æƒ…ã‚’å…¨ã¦åˆæœŸåŒ–ã—ã¦ãŠã
             charaCon.lipSync.AllClear_BlendShape();
             yield return null;
 
             float weight = 0;
-            //Šç‘JˆÚ
+            //é¡”é·ç§»
             for (int i = 0; i <= 10; i++)
             {
                 weight = 5 * i;
@@ -212,19 +212,19 @@ namespace UniLiveViewer
                 yield return new WaitForSeconds(0.05f);
             }
 
-            //•s–Šç‚ğ‚·‚®‰ğœ‚µ‚È‚¢‚æ‚¤‚ÉÅ’áŒÀƒL[ƒv
+            //ä¸æº€é¡”ã‚’ã™ãè§£é™¤ã—ãªã„ã‚ˆã†ã«æœ€ä½é™ã‚­ãƒ¼ãƒ—
             yield return new WaitForSeconds(3.0f);
 
-            //ˆê’è‚Ì‚‚³‚Ì‹“_‚Ü‚Å—ˆ‚½‚ç‰ğœ
+            //ä¸€å®šã®é«˜ã•ã®è¦–ç‚¹ã¾ã§æ¥ãŸã‚‰è§£é™¤
             while (dir.y < -0.2f)
             {
-                //ƒL[ƒv‚ª‰ğœ‚³‚ê‚Ä‚½‚ç‹­§I—¹
+                //ã‚­ãƒ¼ãƒ—ãŒè§£é™¤ã•ã‚Œã¦ãŸã‚‰å¼·åˆ¶çµ‚äº†
                 if (!charaCon.keepRunAnime) break;
                 dir = lookAtCon.virtualHead.InverseTransformPoint(lookAtCon.lookTarget.position).normalized;
                 yield return new WaitForSeconds(0.1f);
             }
 
-            //Šç‰ğœ
+            //é¡”è§£é™¤
             for (int i = 0; i <= 5; i++)
             {
                 weight = 50 - (10 * i);
@@ -241,14 +241,14 @@ namespace UniLiveViewer
                 yield return new WaitForSeconds(0.02f);
             }
 
-            //ƒŠƒbƒvƒVƒ“ƒN‚ğ–ß‚·
+            //ãƒªãƒƒãƒ—ã‚·ãƒ³ã‚¯ã‚’æˆ»ã™
             charaCon.lipSync.enabled = true;
             isShockSound = false;
             faceChanging = false;
         }
 
         /// <summary>
-        /// •\î‘JˆÚ(VRM—p)
+        /// è¡¨æƒ…é·ç§»(VRMç”¨)
         /// </summary>
         /// <returns></returns>
         private IEnumerator ChangeFace_VRM()
@@ -264,19 +264,19 @@ namespace UniLiveViewer
             }
             faceChanging = true;
 
-            //‹£‡‚·‚é‚Ì‚ÅƒŠƒbƒvƒVƒ“ƒN‚ğ~‚ß‚é
+            //ç«¶åˆã™ã‚‹ã®ã§ãƒªãƒƒãƒ—ã‚·ãƒ³ã‚¯ã‚’æ­¢ã‚ã‚‹
             charaCon.lipSync.enabled = false;
             yield return null;
 
-            //•\î•ÏX‚ğ‚·‚é‚Ì‚Åƒ}ƒjƒ…ƒAƒ‹mode‚É‚·‚é
+            //è¡¨æƒ…å¤‰æ›´ã‚’ã™ã‚‹ã®ã§ãƒãƒ‹ãƒ¥ã‚¢ãƒ«modeã«ã™ã‚‹
             charaCon.facialSync.isManualControl = true;
 
-            //Šù‘¶•\î‚ğ‘S‚Ä‰Šú‰»‚µ‚Ä‚¨‚­
+            //æ—¢å­˜è¡¨æƒ…ã‚’å…¨ã¦åˆæœŸåŒ–ã—ã¦ãŠã
             //charaCon.facialSync.AllClear_BlendShape();
             //charaCon.lipSync.AllClear_BlendShape();
 
             float weight = 0;
-            //Šç‘JˆÚ
+            //é¡”é·ç§»
             for (int i = 0; i <= 10; i++)
             {
                 weight = 0.1f * i;
@@ -285,19 +285,19 @@ namespace UniLiveViewer
                 yield return new WaitForSeconds(0.05f);
             }
 
-            //•s–Šç‚ğ‚·‚®‰ğœ‚µ‚È‚¢‚æ‚¤‚ÉÅ’áŒÀƒL[ƒv
+            //ä¸æº€é¡”ã‚’ã™ãè§£é™¤ã—ãªã„ã‚ˆã†ã«æœ€ä½é™ã‚­ãƒ¼ãƒ—
             yield return new WaitForSeconds(3.0f);
 
-            //ˆê’è‚Ì‚‚³‚Ì‹“_‚Ü‚Å—ˆ‚½‚ç‰ğœ
+            //ä¸€å®šã®é«˜ã•ã®è¦–ç‚¹ã¾ã§æ¥ãŸã‚‰è§£é™¤
             while (dir.y < -0.2f)
             {
-                //ƒL[ƒv‚ª‰ğœ‚³‚ê‚Ä‚½‚ç‹­§I—¹
+                //ã‚­ãƒ¼ãƒ—ãŒè§£é™¤ã•ã‚Œã¦ãŸã‚‰å¼·åˆ¶çµ‚äº†
                 if (!charaCon.keepRunAnime) break;
                 dir = lookAtCon.virtualHead.InverseTransformPoint(lookAtCon.lookTarget.position).normalized;
                 yield return new WaitForSeconds(0.1f);
             }
 
-            //Šç‰ğœ
+            //é¡”è§£é™¤
             for (int i = 0; i <= 5; i++)
             {
                 weight = 1 - (0.2f * i);
@@ -307,12 +307,12 @@ namespace UniLiveViewer
                 yield return new WaitForSeconds(0.02f);
             }
 
-            //ƒŠƒbƒvƒVƒ“ƒN‚ğ–ß‚·
+            //ãƒªãƒƒãƒ—ã‚·ãƒ³ã‚¯ã‚’æˆ»ã™
             charaCon.lipSync.enabled = true;
             isShockSound = false;
             faceChanging = false;
 
-            //•\î•ÏXƒ‚[ƒh‚ğ–ß‚·
+            //è¡¨æƒ…å¤‰æ›´ãƒ¢ãƒ¼ãƒ‰ã‚’æˆ»ã™
             charaCon.facialSync.isManualControl = false;
         }
     }

@@ -1,14 +1,14 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using VRM;
 
 namespace UniLiveViewer
 {
-    //CRS‚ğ—¬—pAƒvƒŠƒZƒbƒgƒLƒƒƒ‰‚¾‚¯Œ©’¼‚µ‚ª•K—v
+    //CRSã‚’æµç”¨ã€ãƒ—ãƒªã‚»ãƒƒãƒˆã‚­ãƒ£ãƒ©ã¯æ”¹å–„ã®ä½™åœ°ã‚ã‚Š
     public class FacialSyncController : MonoBehaviour
     {
-        //ˆµ‚¤•\î‚Ìí—Ş
+        //æ‰±ã†è¡¨æƒ…ã®ç¨®é¡
         public enum FACIALTYPE
         {
             BLINK = 0,
@@ -29,8 +29,8 @@ namespace UniLiveViewer
         public SkinnedMeshRenderer[] uniSkin = new SkinnedMeshRenderer[2];
         public VRMBlendShapeProxy vrmBlendShape;
 
-        [Header("ƒƒm[ƒh„")]
-        //Šù‘¶ƒ_ƒ“ƒXƒ‚[ƒt—p
+        [Header("ï¼œãƒãƒ¼ãƒ‰ï¼")]
+        //æ—¢å­˜ãƒ€ãƒ³ã‚¹ãƒ¢ãƒ¼ãƒ•ç”¨
         public Transform nodeBLINK;
         public Transform nodeJOY;
         public Transform nodeANGRY;
@@ -40,7 +40,7 @@ namespace UniLiveViewer
 
         public AnimationCurve weightCurve;
 
-        [Header("ƒ•R‚Ã‚¯‚éƒL[„")]
+        [Header("ï¼œç´ã¥ã‘ã‚‹ã‚­ãƒ¼ï¼")]
         [SerializeField] private string[] linkShapeKey_BLINK;
         [SerializeField] private string[] linkShapeKey_JOY;
         [SerializeField] private string[] linkShapeKey_ANGRY;
@@ -52,7 +52,7 @@ namespace UniLiveViewer
         public CharaController charaCon;
 
         public Dictionary<string, FACIALTYPE> dicUniMorph = new Dictionary<string, FACIALTYPE>();
-        public List<UnityChan_Morphs> UniMorphs = new List<UnityChan_Morphs>();//g—p‚·‚éƒ‚[ƒtî•ñ
+        public List<UnityChan_Morphs> UniMorphs = new List<UnityChan_Morphs>();//ä½¿ç”¨ã™ã‚‹ãƒ¢ãƒ¼ãƒ•æƒ…å ±
 
         public Dictionary<BlendShapePreset, FACIALTYPE> dicVMRMorph = new Dictionary<BlendShapePreset, FACIALTYPE>()
     {
@@ -68,7 +68,7 @@ namespace UniLiveViewer
             prefab.GetComponent<FacialSyncController>().charaCon = charaController;
 
             var instance = Instantiate(prefab, Vector3.zero, Quaternion.identity).GetComponent<FacialSyncController>();
-            instance.name = "FaceSyncController";//(clone)•¶š—ñ‚ª‚ ‚é‚ÆPath‚ªˆá‚Á‚Ä¢‚é
+            instance.name = "FaceSyncController";//(clone)æ–‡å­—åˆ—ãŒã‚ã‚‹ã¨PathãŒé•ã£ã¦å›°ã‚‹
             charaController.facialSync = instance;
             instance.transform.parent = charaController.transform;
             instance.vrmBlendShape = proxy;
@@ -84,16 +84,16 @@ namespace UniLiveViewer
         {
             if (!charaCon) charaCon = transform.parent.GetComponent<CharaController>();
 
-            //VRM‚ÍVRMBlendShapeProxy‚Ìd‘g‚İ‚ğg‚¤
+            //VRMã¯VRMBlendShapeProxyã®ä»•çµ„ã¿ã‚’ä½¿ã†
             if (charaCon.charaInfoData.formatType == CharaInfoData.FORMATTYPE.VRM)
             {
-                //VRMBlendShapeProxy‚ÌŠ„‚è“–‚Ä‚ğ—˜—p‚·‚é‚Ì‚Å“Á‚É‚È‚µ
+                //VRMBlendShapeProxyã®å‰²ã‚Šå½“ã¦ã‚’åˆ©ç”¨ã™ã‚‹ã®ã§ç‰¹ã«ãªã—
             }
-            //‚»‚Ì‘¼‚Í‚±‚¿‚ç‚Å“o˜^
+            //ãã®ä»–ã¯ã“ã¡ã‚‰ã§ç™»éŒ²
             else
             {
-                //Unity‚¿‚á‚ñŒn‚Ìƒ‚[ƒtƒŠƒXƒg‚ğì¬
-                //‘Î‰‚·‚é‘g‚İ‡‚í‚¹‚ğ“o˜^
+                //Unityã¡ã‚ƒã‚“ç³»ã®ãƒ¢ãƒ¼ãƒ•ãƒªã‚¹ãƒˆã‚’ä½œæˆ
+                //å¯¾å¿œã™ã‚‹çµ„ã¿åˆã‚ã›ã‚’ç™»éŒ²
                 foreach (var keyName in linkShapeKey_BLINK)
                 {
                     dicUniMorph.Add(keyName, FACIALTYPE.BLINK);
@@ -119,10 +119,10 @@ namespace UniLiveViewer
                 {
                     for (int i = 0; i < skin.sharedMesh.blendShapeCount; i++)
                     {
-                        //ƒVƒFƒCƒvƒL[–¼‚ğæ“¾
+                        //ã‚·ã‚§ã‚¤ãƒ—ã‚­ãƒ¼åã‚’å–å¾—
                         string name = skin.sharedMesh.GetBlendShapeName(i);
 
-                        //Æ‡
+                        //ç…§åˆ
                         if (dicUniMorph.ContainsKey(key: name))
                         {
                             var e = new UnityChan_Morphs();
@@ -142,10 +142,10 @@ namespace UniLiveViewer
         void Update()
         {
             if (isManualControl) return;
-            //VMD‚È‚çˆ—‚µ‚È‚¢
+            //VMDãªã‚‰å‡¦ç†ã—ãªã„
             if (charaCon.animationMode == CharaController.ANIMATIONMODE.VMD) return;
 
-            //VRMŠù‘¶ƒ_ƒ“ƒXƒ‚[ƒt
+            //VRMæ—¢å­˜ãƒ€ãƒ³ã‚¹ãƒ¢ãƒ¼ãƒ•
             if (charaCon.charaInfoData.formatType == CharaInfoData.FORMATTYPE.VRM)
             {
 
@@ -211,7 +211,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ƒVƒFƒGƒCƒvƒL[‚ğ‘S‚Ä‰Šú‰»‚·‚é
+        /// ã‚·ã‚§ã‚¨ã‚¤ãƒ—ã‚­ãƒ¼ã‚’å…¨ã¦åˆæœŸåŒ–ã™ã‚‹
         /// </summary>
         public void AllClear_BlendShape()
         {

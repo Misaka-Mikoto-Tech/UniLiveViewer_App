@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
+ï»¿using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -16,9 +15,9 @@ namespace UniLiveViewer
         [SerializeField] private GameObject manualHand;
         [SerializeField] private Transform[] Chara = new Transform[3];
 
-        //ƒNƒŠƒbƒNSE
+        //ã‚¯ãƒªãƒƒã‚¯SE
         private AudioSource audioSource;
-        [SerializeField] private AudioClip[] Sound;//ƒ{ƒ^ƒ“‰¹
+        [SerializeField] private AudioClip[] Sound;//ãƒœã‚¿ãƒ³éŸ³
 
         private void Awake()
         {
@@ -39,7 +38,7 @@ namespace UniLiveViewer
             audioSource = GetComponent<AudioSource>();
             audioSource.volume = GlobalConfig.soundVolume_SE;
 
-            //random‚ÉƒLƒƒƒ‰‚ª•Ï‚í‚é
+            //randomã«ã‚­ãƒ£ãƒ©ãŒå¤‰ã‚ã‚‹
             int r = Random.Range(0, 3);
             for (int i = 0; i < 3; i++)
             {
@@ -49,7 +48,7 @@ namespace UniLiveViewer
 
             if (GlobalConfig.systemData.LanguageCode != (int)SaveData.USE_LANGUAGE.NULL)
             {
-                //2‰ñ–ÚˆÈ~
+                //2å›ç›®ä»¥é™
                 sprRender.gameObject.SetActive(false);
                 StartCoroutine(SceneChange());
             }
@@ -73,20 +72,20 @@ namespace UniLiveViewer
             {
                 GlobalConfig.systemData.LanguageCode = (int)SaveData.USE_LANGUAGE.JP;
                 SaveData.SetJson_SystemData(GlobalConfig.systemData);
-                //·‚µ‘Ö‚¦‚é
+                //å·®ã—æ›¿ãˆã‚‹
                 sprRender.sprite = sprPrefab[1];
             }
             else
             {
                 GlobalConfig.systemData.LanguageCode = (int)SaveData.USE_LANGUAGE.EN;
                 SaveData.SetJson_SystemData(GlobalConfig.systemData);
-                //·‚µ‘Ö‚¦‚é
+                //å·®ã—æ›¿ãˆã‚‹
                 sprRender.sprite = sprPrefab[0];
             }
 
-            //ƒNƒŠƒbƒN‰¹
+            //ã‚¯ãƒªãƒƒã‚¯éŸ³
             audioSource.PlayOneShot(Sound[0]);
-            //Hand‚ğÁ‚·
+            //Handã‚’æ¶ˆã™
             manualHand.SetActive(false);
 
             StartCoroutine(SceneChange());
