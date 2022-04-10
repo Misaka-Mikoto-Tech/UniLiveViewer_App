@@ -30,7 +30,6 @@ namespace UniLiveViewer
         [SerializeField] private DanceInfoData DanceInfoData_VMDPrefab;//VMD用のテンプレ
         private DanceInfoData[] vmdDanceClipInfo;
 
-
         //汎用
         private TimelineController timeline = null;
         private FileAccessManager fileManager = null;
@@ -177,22 +176,20 @@ namespace UniLiveViewer
                 if (!portalChara) return;
                 vmdPlayer = portalChara.GetComponent<VMDPlayer_Custom>();
 
-
                 //VMD
                 if (GetNowAnimeInfo().formatType == DanceInfoData.FORMATTYPE.VMD)
                 {
                     //ポータル上のキャラにアニメーション設定
                     timeline.SetAnimationClip(timeline.sPortalBaseAniTrack, danceAniClipInfo[currentAnime], transform.position, Vector3.zero);
-
                     await UniTask.Yield(PlayerLoopTiming.Update, cts.Token);
 
                     //animatorを停止、VMDを再生
                     string folderPath = FileAccessManager.GetFullPath(FileAccessManager.FOLDERTYPE.MOTION);//VMDのパスを取得
-                    portalChara.GetComponent<Animator>().enabled = false;//Animatorが競合するので無効
+                    portalChara.GetComponent<Animator>().enabled = false;//Animatorが競合するので無効  
                     portalChara.animationMode = CharaController.ANIMATIONMODE.VMD;
                     await VMDPlay(vmdPlayer, folderPath, GetNowAnimeInfo().viewName, cts.Token);
                 }
-                //プリセットアニメーション
+                //プリセットアニメーション 
                 else
                 {
                     //反転設定
@@ -311,5 +308,6 @@ namespace UniLiveViewer
                 SetAnimation(0).Forget();
             }
         }
+
     }
 }

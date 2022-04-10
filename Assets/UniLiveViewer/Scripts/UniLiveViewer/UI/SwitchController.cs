@@ -796,6 +796,7 @@ namespace UniLiveViewer
 
                 //offset更新
                 slider_Offset.Value = 0;
+                //textMesh_Page1[3].text = slider_Offset.Value.ToString("0");
                 textMesh_Page1[3].text = $"{slider_Offset.Value:0000}";
 
                 //LipSyncボタンを表示(今回は実装しない)
@@ -812,6 +813,7 @@ namespace UniLiveViewer
 
                 //offset更新
                 slider_Offset.Value = SaveData.dicVMD_offset[generatorPortal.GetNowAnimeInfo().viewName];
+                //textMesh_Page1[3].text = slider_Offset.Value.ToString("0");
                 textMesh_Page1[3].text = $"{slider_Offset.Value:0000}";
 
                 //LipSyncボタンを表示(今回は実装しない)
@@ -1347,6 +1349,7 @@ namespace UniLiveViewer
         /// </summary>
         private void Update_InitCharaSize()
         {
+            //textMesh_Page3[0].text = slider_InitCharaSize.Value.ToString("0.00");
             textMesh_Page3[0].text = $"{slider_InitCharaSize.Value:0.00}";
         }
 
@@ -1359,6 +1362,7 @@ namespace UniLiveViewer
             //スライダーに反映
             slider_FixedFoveated.Value = Mathf.Clamp(slider_FixedFoveated.Value, 2, 4);
 #if UNITY_EDITOR
+            //textMesh_Page3[1].text = "noQuest:" + slider_FixedFoveated.Value;
             textMesh_Page3[1].text = $"noQuest:{slider_FixedFoveated.Value}";
 #elif UNITY_ANDROID
         //反映し直す

@@ -616,7 +616,6 @@ namespace UniLiveViewer
                     break;
             }
 
-
             //アニメーションを移行(取得した転送元アニメーションで新規登録)
             SetAnimationClip(toTrackName, danceInfoData, initPos, initEulerAngles);
 

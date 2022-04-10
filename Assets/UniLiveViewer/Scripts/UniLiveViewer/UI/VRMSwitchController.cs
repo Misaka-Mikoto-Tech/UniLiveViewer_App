@@ -424,7 +424,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        ///
+        /// 
         /// ※vrmModel取得後に非同期にかかわらずwaitを挟むとモデルの揺れ物がおかしな状態になる原因不明
         /// </summary>
         /// <param name="btn"></param>
@@ -471,10 +471,10 @@ namespace UniLiveViewer
                 }
                 await UniTask.Yield(PlayerLoopTiming.Update, token);
 
-
                 //各種component追加
                 var attacher = Instantiate(attacherPrefab.gameObject).GetComponent<ComponentAttacher_VRM>();
                 await attacher.Init(vrmModel.transform, touchCollider,token);
+
                 Destroy(attacher.gameObject);
 
                 //マテリアルコンバーターの追加

@@ -43,6 +43,7 @@ namespace UniLiveViewer
         {
             try
             {
+                await UniTask.Yield(PlayerLoopTiming.Update, token);
                 //Animation関連の調整
                 animator.runtimeAnimatorController = aniConPrefab;
                 animator.updateMode = AnimatorUpdateMode.Normal;
@@ -99,6 +100,8 @@ namespace UniLiveViewer
         {
             try
             {
+                await UniTask.Yield(PlayerLoopTiming.Update, token);
+
                 //不要なスクリプトを停止
                 targetVRM.GetComponent<HumanPoseTransfer>().enabled = false;
                 //vrmModel.GetComponent<Blinker>().enabled = false;
@@ -117,7 +120,6 @@ namespace UniLiveViewer
                 charaCon.charaInfoData = Instantiate(charaInfoDataPrefab);
 
                 await UniTask.Yield(PlayerLoopTiming.Update, token);
-
                 //注視関連の調整
                 var lookAtHead = targetVRM.GetComponent<VRMLookAtHead_Custom>();
                 var lookAtCon = targetVRM.AddComponent<LookAtController>();
