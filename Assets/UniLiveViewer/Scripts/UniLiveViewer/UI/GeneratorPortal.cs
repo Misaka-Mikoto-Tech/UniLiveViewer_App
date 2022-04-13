@@ -86,6 +86,8 @@ namespace UniLiveViewer
         {
             //VRMを追加
             listChara[listChara.Count - 1] = charaCon_vrm;
+            //無効化して管理
+            charaCon_vrm.gameObject.SetActive(false);
             //リストに空枠を追加(空をVRM読み込み枠として扱う)
             listChara.Add(null);
         }
@@ -141,14 +143,33 @@ namespace UniLiveViewer
             //キャラを生成
             var charaCon = Instantiate(listChara[currentChara]);
 
-            //VRMloaderにストックしているVRMPrefabが無効状態なので有効化
-            if (!charaCon.gameObject.activeSelf) charaCon.gameObject.SetActive(true);
+            bool isSuccess;
 
-            //パラメーター設定
-            charaCon.SetState(CharaController.CHARASTATE.MINIATURE, transform);//ミニチュア状態
+            //VRM
+            if (charaCon.charaInfoData.formatType == CharaInfoData.FORMATTYPE.VRM)
+            {
+                if (!charaCon.gameObject.activeSelf) charaCon.gameObject.SetActive(true);
+                
+                //パラメーター設定
+                charaCon.SetState(CharaController.CHARASTATE.MINIATURE, transform);//ミニチュア状態
 
-            //Timelineのポータル枠へバインドする
-            bool isSuccess = timeline.NewAssetBinding_Portal(charaCon);
+                //Timelineのポータル枠へバインドする
+                isSuccess = timeline.NewAssetBinding_Portal(charaCon);
+
+                //削除と揺れ物の再稼働
+                foreach (var e in charaCon.springBoneList)
+                {
+                    e.enabled = true;
+                }
+            }
+            else
+            {
+                //パラメーター設定
+                charaCon.SetState(CharaController.CHARASTATE.MINIATURE, transform);//ミニチュア状態
+
+                //Timelineのポータル枠へバインドする
+                isSuccess = timeline.NewAssetBinding_Portal(charaCon);
+            }
 
             if (isSuccess) SetAnimation(0).Forget();//キャラにアニメーション情報をセットする
             else if (!isSuccess && charaCon) Destroy(charaCon.gameObject);
