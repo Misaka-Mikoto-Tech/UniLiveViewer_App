@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using Cysharp.Threading.Tasks;
+using System.Collections;
+using System.Threading;
 using UnityEngine;
 
 namespace UniLiveViewer
@@ -11,6 +13,8 @@ namespace UniLiveViewer
         //public bool isViewerMode = false;
         private bool isInit = false;
 
+        private CancellationToken token;
+
         private void Awake()
         {
 
@@ -22,6 +26,8 @@ namespace UniLiveViewer
             if (!targetAnchor.parent.gameObject.activeSelf) targetAnchor.parent.gameObject.SetActive(true);
             //ターゲットの位置へ移動
             transform.position = targetAnchor.position;
+
+            token = this.GetCancellationTokenOnDestroy();
         }
 
         private void OnDisable()
@@ -33,7 +39,7 @@ namespace UniLiveViewer
         // Start is called before the first frame update
         void Start()
         {
-            StartCoroutine("init");
+            Init().Forget();
         }
 
         // Update is called once per frame
@@ -49,19 +55,18 @@ namespace UniLiveViewer
             transform.rotation = targetAnchor.rotation;
         }
 
-        private IEnumerator init()
+        private async UniTask Init()
         {
             //最初にとめておく(マニュアルモード)
-            yield return new WaitForSeconds(0.1f);
+            await UniTask.Delay(100, cancellationToken: token);
 
             //キャラを生成する
-            switchController.initPage();
-            yield return new WaitForSeconds(0.1f);
+            await switchController.InitPage();
+            await UniTask.Delay(100, cancellationToken: token);
 
             //非表示にする
             gameObject.SetActive(false);
             isInit = true;
-            yield return null;
         }
     }
 }

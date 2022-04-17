@@ -2,9 +2,12 @@ Shader "UniLiveViewer/Unlit LightMap"
 {
     Properties
     {
+        //コメントアウト着色機能テスト中
         _Color("Color", Color) = (1,1,1,1)
+        //_Color2("Color2", Color) = (1,1,1,1)
 		_MainTex("Texture", 2D) = "white" {}
 		_LightmapTex("Lightmap", 2D) = "gray" {}
+        //_LightmapTex2("Lightmap2", 2D) = "gray" {}
     }
     SubShader
     {
@@ -37,10 +40,13 @@ Shader "UniLiveViewer/Unlit LightMap"
             };
 
             fixed4 _Color;
+            //fixed4 _Color2;
             sampler2D _MainTex;
             float4 _MainTex_ST;
             sampler2D _LightmapTex;
 			float4 _LightmapTex_ST;
+            //sampler2D _LightmapTex2;
+            //float4 _LightmapTex_ST2;
 
             v2f vert (appdata v)
             {
@@ -52,11 +58,15 @@ Shader "UniLiveViewer/Unlit LightMap"
                 return o;
             }
 
-            fixed4 frag (v2f i) : SV_Target
+            fixed4 frag(v2f i) : SV_Target
             {
                 // sample the texture
-                //fixed4 col = _Color*tex2D(_MainTex, i.uv)*tex2D(_LightmapTex, i.uv2);
                 fixed4 col = _Color * tex2D(_LightmapTex, i.uv);
+                
+                //いけそうな感じはある
+                //fixed4 col = _Color * tex2D(_LightmapTex, i.uv) * tex2D(_LightmapTex2, i.uv);
+                //fixed4 col2 = _Color2 / (tex2D(_LightmapTex, i.uv) * (1 - tex2D(_LightmapTex2, i.uv)));
+                ///col += col2;
                 // apply fog
                 UNITY_APPLY_FOG(i.fogCoord, col);
                 return col;

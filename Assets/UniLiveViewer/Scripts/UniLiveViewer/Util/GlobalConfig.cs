@@ -9,9 +9,12 @@ namespace UniLiveViewer
         public static int layerNo_VirtualHead;
         public static int layerNo_UI;
         public static int layerNo_FieldObject;
+        public static int layerNo_GrabObject;
+        public static int layerMask_Default;
         public static int layerMask_VirtualHead;
         public static int layerMask_StageFloor;
         public static int layerMask_FieldObject;
+       
 
         //タグ
         public static readonly string tag_ItemMaterial = "ItemMaterial";
@@ -47,17 +50,20 @@ namespace UniLiveViewer
         //public static float initCharaSize = 0.0f;
         public Vector3 rotete = Vector3.zero;
 
+        private TimelineController timeline = null;
+
         private void Awake()
         {
             Parameters.layerNo_VirtualHead = LayerMask.NameToLayer("VirtualHead");
             Parameters.layerNo_UI = LayerMask.NameToLayer("UI");
             Parameters.layerNo_FieldObject = LayerMask.NameToLayer("FieldObject");
+            Parameters.layerNo_GrabObject = LayerMask.NameToLayer("GrabObject");
 
+            Parameters.layerMask_Default = LayerMask.GetMask("Default");
             //Parameters.layerask_VirtualHead = 1 << Parameters.layerNo_VirtualHead;// ビットシフトでもいい
             Parameters.layerMask_VirtualHead = LayerMask.GetMask("VirtualHead");
             Parameters.layerMask_StageFloor = LayerMask.GetMask("Stage_Floor");
             Parameters.layerMask_FieldObject = LayerMask.GetMask("FieldObject");
-
 
             if (targetFrameRate > 0) Application.targetFrameRate = targetFrameRate;
 
@@ -98,6 +104,8 @@ namespace UniLiveViewer
 
         private void HomePause()
         {
+            timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
+            timeline.TimelineManualMode();
             Time.timeScale = 0;
         }
 

@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8b22792c3b570444eb18cb78c2af3a74, type: 3}
-  m_Name: Audio Track (1)
+  m_Name: Audio Track 1
   m_EditorClassIdentifier: 
   m_Version: 3
   m_AnimClip: {fileID: 0}
   m_Locked: 0
-  m_Muted: 1
+  m_Muted: 0
   m_CustomPlayableFullTypename: 
   m_Curves: {fileID: 0}
   m_Parent: {fileID: 11400000}
@@ -25,7 +25,7 @@ MonoBehaviour:
     m_Start: 3.000000000000682
     m_ClipIn: 0
     m_Asset: {fileID: -8157786010608799073}
-    m_Duration: 235.02367346938775
+    m_Duration: 235.02366638183594
     m_TimeScale: 1
     m_ParentTrack: {fileID: -8853925218199466387}
     m_EaseInDuration: 0
@@ -109,7 +109,7 @@ MonoBehaviour:
   m_Name: AnimationPlayableAsset of VMD_Dummy
   m_EditorClassIdentifier: 
   m_Clip: {fileID: 7400000, guid: 07c7fb95a700a654cbafe32829be3774, type: 2}
-  m_Position: {x: 0.4068175, y: -0.3, z: 0.21928382}
+  m_Position: {x: 0.6120852, y: -0.3, z: -0.85858595}
   m_EulerAngles: {x: -0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
   m_MatchTargetFields: 63
@@ -284,7 +284,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f10dd60657c6004587f237a7e90f8e4, type: 3}
   m_Name: AudioPlayableAsset
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 8300000, guid: fb0fdf62133cbea45b11a7bad383d3dc, type: 3}
+  m_Clip: {fileID: 8300000, guid: 2bb17db6a9f69f14eb54881114019d43, type: 3}
   m_Loop: 0
   m_bufferingTime: 0.1
   m_ClipProperties:
@@ -489,7 +489,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f10dd60657c6004587f237a7e90f8e4, type: 3}
   m_Name: AudioPlayableAsset
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 8300000, guid: fb0fdf62133cbea45b11a7bad383d3dc, type: 3}
+  m_Clip: {fileID: 8300000, guid: 2bb17db6a9f69f14eb54881114019d43, type: 3}
   m_Loop: 0
   m_bufferingTime: 0.1
   m_ClipProperties:
@@ -1112,7 +1112,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
   m_Name: AnimationPlayableAsset of Unite In The Sky_FaceClip
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 0}
+  m_Clip: {fileID: 7400000, guid: 15cc782a9c0464a4a8e4168549d0762e, type: 2}
   m_Position: {x: 0, y: 0, z: 0}
   m_EulerAngles: {x: 0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
@@ -1156,7 +1156,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f10dd60657c6004587f237a7e90f8e4, type: 3}
   m_Name: AudioPlayableAsset
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 8300000, guid: fb0fdf62133cbea45b11a7bad383d3dc, type: 3}
+  m_Clip: {fileID: 8300000, guid: 2bb17db6a9f69f14eb54881114019d43, type: 3}
   m_Loop: 0
   m_bufferingTime: 0.1
   m_ClipProperties:
@@ -1248,7 +1248,7 @@ MonoBehaviour:
   m_Name: AnimationPlayableAsset of VMD_Dummy
   m_EditorClassIdentifier: 
   m_Clip: {fileID: 7400000, guid: 07c7fb95a700a654cbafe32829be3774, type: 2}
-  m_Position: {x: -0.0046759155, y: 0.02, z: 0.9398389}
+  m_Position: {x: -1.1042824, y: -0.3, z: 0.7089429}
   m_EulerAngles: {x: -0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
   m_MatchTargetFields: 63
@@ -1763,12 +1763,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8b22792c3b570444eb18cb78c2af3a74, type: 3}
-  m_Name: Audio Track (2)
+  m_Name: Audio Track 2
   m_EditorClassIdentifier: 
   m_Version: 3
   m_AnimClip: {fileID: 0}
   m_Locked: 0
-  m_Muted: 1
+  m_Muted: 0
   m_CustomPlayableFullTypename: 
   m_Curves: {fileID: 0}
   m_Parent: {fileID: 11400000}
@@ -1778,7 +1778,7 @@ MonoBehaviour:
     m_Start: 3.000000000000682
     m_ClipIn: 0
     m_Asset: {fileID: -4191173371362496819}
-    m_Duration: 235.02367346938775
+    m_Duration: 235.02366638183594
     m_TimeScale: 1
     m_ParentTrack: {fileID: -2465385942945581345}
     m_EaseInDuration: 0
@@ -1859,12 +1859,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8b22792c3b570444eb18cb78c2af3a74, type: 3}
-  m_Name: Audio Track (3)
+  m_Name: Audio Track 3
   m_EditorClassIdentifier: 
   m_Version: 3
   m_AnimClip: {fileID: 0}
   m_Locked: 0
-  m_Muted: 1
+  m_Muted: 0
   m_CustomPlayableFullTypename: 
   m_Curves: {fileID: 0}
   m_Parent: {fileID: 11400000}
@@ -1874,7 +1874,7 @@ MonoBehaviour:
     m_Start: 3.000000000000682
     m_ClipIn: 0
     m_Asset: {fileID: 6533782021791377383}
-    m_Duration: 235.02367346938775
+    m_Duration: 235.02366638183594
     m_TimeScale: 1
     m_ParentTrack: {fileID: -2354979905358701317}
     m_EaseInDuration: 0
@@ -1979,7 +1979,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
   m_Name: AnimationPlayableAsset of HandExpression
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 0}
+  m_Clip: {fileID: 7400000, guid: a0cd79db26c4d774c9860078c70a7984, type: 3}
   m_Position: {x: 0, y: 0, z: 0}
   m_EulerAngles: {x: 0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
@@ -2133,7 +2133,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
   m_Name: AnimationPlayableAsset of Unite In The Sky_LipClip
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 0}
+  m_Clip: {fileID: 7400000, guid: 2362a770c7b4693439e9f49ce97d3225, type: 2}
   m_Position: {x: 0, y: 0, z: 0}
   m_EulerAngles: {x: 0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
@@ -2245,7 +2245,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
-  m_Name: AnimationPlayableAsset of HandExpression R
+  m_Name: AnimationPlayableAsset of HandExpression
   m_EditorClassIdentifier: 
   m_Clip: {fileID: 0}
   m_Position: {x: 0, y: 0, z: 0}
@@ -2379,7 +2379,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f10dd60657c6004587f237a7e90f8e4, type: 3}
   m_Name: AudioPlayableAsset
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 0}
+  m_Clip: {fileID: 8300000, guid: 2bb17db6a9f69f14eb54881114019d43, type: 3}
   m_Loop: 0
   m_bufferingTime: 0.1
   m_ClipProperties:
@@ -2631,10 +2631,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
-  m_Name: AnimationPlayableAsset of VMD_Dummy
+  m_Name: AnimationPlayableAsset of 003_NOT01_Final
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 7400000, guid: 07c7fb95a700a654cbafe32829be3774, type: 2}
-  m_Position: {x: 0.4232781, y: 1.2365268, z: 4.958017}
+  m_Clip: {fileID: 7400000, guid: 01a3f2721e63f7247b7f53302ed7104f, type: 3}
+  m_Position: {x: -0.24849999, y: 9.782, z: 9.98}
   m_EulerAngles: {x: -0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
   m_MatchTargetFields: 63
@@ -2881,7 +2881,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
-  m_Name: AnimationPlayableAsset of HandExpression R
+  m_Name: AnimationPlayableAsset of HandExpression
   m_EditorClassIdentifier: 
   m_Clip: {fileID: 0}
   m_Position: {x: 0, y: 0, z: 0}
@@ -3396,7 +3396,7 @@ MonoBehaviour:
     m_Start: 5
     m_ClipIn: 0
     m_Asset: {fileID: -157416645166502421}
-    m_Duration: 228.4510040283203
+    m_Duration: 235.02366638183594
     m_TimeScale: 1
     m_ParentTrack: {fileID: 3050745344211241543}
     m_EaseInDuration: 0
@@ -3594,7 +3594,7 @@ MonoBehaviour:
   m_Name: AnimationPlayableAsset of VMD_Dummy
   m_EditorClassIdentifier: 
   m_Clip: {fileID: 7400000, guid: 07c7fb95a700a654cbafe32829be3774, type: 2}
-  m_Position: {x: 0.19323865, y: 0.02, z: 0.88500166}
+  m_Position: {x: 0.06440786, y: -0.3, z: 0.4172578}
   m_EulerAngles: {x: -0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
   m_MatchTargetFields: 63
@@ -3615,7 +3615,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
   m_Name: AnimationPlayableAsset of HandExpression
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 0}
+  m_Clip: {fileID: 7400000, guid: a0cd79db26c4d774c9860078c70a7984, type: 3}
   m_Position: {x: 0, y: 0, z: 0}
   m_EulerAngles: {x: 0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
@@ -3752,7 +3752,7 @@ MonoBehaviour:
   m_Name: AnimationPlayableAsset of VMD_Dummy
   m_EditorClassIdentifier: 
   m_Clip: {fileID: 7400000, guid: 07c7fb95a700a654cbafe32829be3774, type: 2}
-  m_Position: {x: 0.16120562, y: -0.3, z: 0.14206123}
+  m_Position: {x: -0.29895973, y: -0.3, z: -0.6369586}
   m_EulerAngles: {x: -0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
   m_MatchTargetFields: 63
@@ -4129,7 +4129,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f10dd60657c6004587f237a7e90f8e4, type: 3}
   m_Name: AudioPlayableAsset
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 8300000, guid: fb0fdf62133cbea45b11a7bad383d3dc, type: 3}
+  m_Clip: {fileID: 8300000, guid: 2bb17db6a9f69f14eb54881114019d43, type: 3}
   m_Loop: 0
   m_bufferingTime: 0.1
   m_ClipProperties:
@@ -4362,12 +4362,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8b22792c3b570444eb18cb78c2af3a74, type: 3}
-  m_Name: Audio Track (4)
+  m_Name: Audio Track 4
   m_EditorClassIdentifier: 
   m_Version: 3
   m_AnimClip: {fileID: 0}
   m_Locked: 0
-  m_Muted: 1
+  m_Muted: 0
   m_CustomPlayableFullTypename: 
   m_Curves: {fileID: 0}
   m_Parent: {fileID: 11400000}
@@ -4377,7 +4377,7 @@ MonoBehaviour:
     m_Start: 3.000000000000682
     m_ClipIn: 0
     m_Asset: {fileID: -7315568033530956456}
-    m_Duration: 235.02367346938775
+    m_Duration: 235.02366638183594
     m_TimeScale: 1
     m_ParentTrack: {fileID: 8572675776410250893}
     m_EaseInDuration: 0
@@ -4461,7 +4461,7 @@ MonoBehaviour:
   m_Name: AnimationPlayableAsset of VMD_Dummy
   m_EditorClassIdentifier: 
   m_Clip: {fileID: 7400000, guid: 07c7fb95a700a654cbafe32829be3774, type: 2}
-  m_Position: {x: 0.01227963, y: 0.02, z: 0.9160204}
+  m_Position: {x: 1.4113951, y: -0.3, z: -0.13328218}
   m_EulerAngles: {x: -0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
   m_MatchTargetFields: 63

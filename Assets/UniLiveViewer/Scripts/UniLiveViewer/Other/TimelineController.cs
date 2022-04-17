@@ -18,6 +18,7 @@ namespace UniLiveViewer
         private const string ANITRACK5 = "Animation Track5";
 
         private const string assetName_MainAudio = "Main Audio";
+        private readonly string[] AUDIOTRACK = { "Audio Track 1", "Audio Track 2", "Audio Track 3", "Audio Track 4" };
 
         private const string SUBTRACK0 = "Override 0";
         private const string SUBTRACK1 = "Override 1";
@@ -41,7 +42,8 @@ namespace UniLiveViewer
         public CharaController[] trackBindChara = new CharaController[6];
 
         public int FieldCharaCount { get; private set; } = 0;//フィールドのキャラカウント
-        public event Action FieldCharaUpdate;//設置キャラ数の更新時
+        public event Action FieldCharaAdded;//設置キャラ数の更新時
+        public event Action FieldCharaDeleted;//設置キャラ数の更新時
         public int maxFieldChara = 1;//最大召喚数
 
         public bool isPortalChara() { return trackBindChara[PORTAL_ELEMENT]; }
@@ -413,6 +415,26 @@ namespace UniLiveViewer
                 //登録する
                 (oldAudioClip.asset as AudioPlayableAsset).clip = newAudioClip;
 
+                //スペクトル用
+                if (GlobalConfig.sceneMode_static == GlobalConfig.SceneMode.CANDY_LIVE)
+                {
+                    if (newAudioClip.name.Contains(".mp3") || newAudioClip.name.Contains(".wav"))
+                    {
+                        //ランタイム上手くいかなかった
+                    }
+                    else
+                    {
+                        for (int i = 0; i < 4; i++)
+                        {
+                            track = tracks.FirstOrDefault(x => x.name == AUDIOTRACK[i]);
+                            clips = track.GetClips();
+                            oldAudioClip = clips.FirstOrDefault(x => x.displayName != "");
+                            oldAudioClip.duration = AudioClip_StartTime + fileManager.audioList[fileManager.CurrentAudio].length;//秒
+                            (oldAudioClip.asset as AudioPlayableAsset).clip = newAudioClip;
+                        }
+                    }
+                }
+
                 //反映の為にディレクターをリスタートする
                 TimeLineReStart();
             }
@@ -630,7 +652,7 @@ namespace UniLiveViewer
 
             //フィールドカウンター
             FieldCharaCount++;
-            FieldCharaUpdate?.Invoke();
+            FieldCharaAdded?.Invoke();
 
             return true;
         }
@@ -653,7 +675,7 @@ namespace UniLiveViewer
 
             //フィールドカウンター
             FieldCharaCount--;
-            FieldCharaUpdate?.Invoke();
+            FieldCharaDeleted?.Invoke();
         }
 
         /// <summary>
@@ -673,7 +695,7 @@ namespace UniLiveViewer
                     if (i != PORTAL_ELEMENT) FieldCharaCount--;
                 }
             }
-            FieldCharaUpdate?.Invoke();
+            FieldCharaDeleted?.Invoke();
         }
 
         /// <summary>
@@ -692,7 +714,7 @@ namespace UniLiveViewer
             }
             //フィールドカウンター
             FieldCharaCount = 0;
-            FieldCharaUpdate?.Invoke();
+            FieldCharaDeleted?.Invoke();
         }
 
         /// <summary>
@@ -776,6 +798,14 @@ namespace UniLiveViewer
         /// </summary>
         public void TimelinePlay()
         {
+            //表情系をリセットしておく
+            foreach (var chara in trackBindChara)
+            {
+                if (!chara) continue;
+                chara.facialSync.AllClear_BlendShape();
+                chara.lipSync.AllClear_BlendShape();
+            }
+
             //モードをマニュアルからゲームタイマーへ
             if (playableDirector.timeUpdateMode == DirectorUpdateMode.Manual)
             {
@@ -822,14 +852,6 @@ namespace UniLiveViewer
         {
             playableDirector.time = 0;
             //TimelinePlay();
-
-            //表情系をリセットしておく
-            foreach (var chara in trackBindChara)
-            {
-                if (!chara) continue;
-                chara.facialSync.AllClear_BlendShape();
-                chara.lipSync.AllClear_BlendShape();
-            }
         }
 
         /// <summary>

@@ -119,7 +119,7 @@ namespace UniLiveViewer
         /// 指定Currentのキャラをセットする
         /// </summary>
         /// <param Currentを動かす="moveCurrent">動かす必要がなければ0</param>
-        public void SetChara(int moveCurrent)
+        public async UniTask SetChara(int moveCurrent)
         {
             isGenerateComplete = false;
 
@@ -145,22 +145,25 @@ namespace UniLiveViewer
 
             bool isSuccess;
 
+            if(cts == null) cts = new CancellationTokenSource();
+
             //VRM
             if (charaCon.charaInfoData.formatType == CharaInfoData.FORMATTYPE.VRM)
             {
                 if (!charaCon.gameObject.activeSelf) charaCon.gameObject.SetActive(true);
-                
-                //パラメーター設定
-                charaCon.SetState(CharaController.CHARASTATE.MINIATURE, transform);//ミニチュア状態
-
-                //Timelineのポータル枠へバインドする
-                isSuccess = timeline.NewAssetBinding_Portal(charaCon);
 
                 //削除と揺れ物の再稼働
                 foreach (var e in charaCon.springBoneList)
                 {
                     e.enabled = true;
                 }
+                await UniTask.Yield(PlayerLoopTiming.Update, cts.Token);
+
+                //パラメーター設定
+                charaCon.SetState(CharaController.CHARASTATE.MINIATURE, transform);//ミニチュア状態
+
+                //Timelineのポータル枠へバインドする
+                isSuccess = timeline.NewAssetBinding_Portal(charaCon);
             }
             else
             {
@@ -185,8 +188,6 @@ namespace UniLiveViewer
         {
             try
             {
-                cts = new CancellationTokenSource();
-
                 //Current移動制限
                 currentAnime += moveCurrent;
                 if (currentAnime < 0) currentAnime = danceAniClipInfo.Length - 1;
@@ -313,6 +314,7 @@ namespace UniLiveViewer
         private void OnDisable()
         {
             cts.Cancel();
+            cts = new CancellationTokenSource();
         }
 
         private void OnEnable()
@@ -321,7 +323,7 @@ namespace UniLiveViewer
             if (!isGenerateComplete)
             {
                 isGenerateComplete = true;
-                SetChara(0);
+                SetChara(0).Forget();
             }
             else if (retryVMD)
             {

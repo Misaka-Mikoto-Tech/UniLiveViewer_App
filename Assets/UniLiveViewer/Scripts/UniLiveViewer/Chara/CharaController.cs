@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using VRM;
+using NanaCiel;
 
 namespace UniLiveViewer
 {
@@ -30,6 +31,17 @@ namespace UniLiveViewer
         [HideInInspector]public LookAtController lookAtCon;
         public CharaInfoData charaInfoData;
         private float reScalar = 0;
+        //現状VRM専用
+        public SkinnedMeshRenderer[] GetSkinnedMeshRenderers => skinnedMeshRenderers;
+        [SerializeField] private SkinnedMeshRenderer[] skinnedMeshRenderers;
+        public SkinnedMeshRenderer[] GetMorphSkinnedMeshRenderers => morphSkinnedMeshRenderers;
+        [SerializeField] private SkinnedMeshRenderer[] morphSkinnedMeshRenderers;
+        public void SetSkinnedMeshRenderers(SkinnedMeshRenderer[] skins)
+        {
+            skinnedMeshRenderers = skins;
+            morphSkinnedMeshRenderers = skins.GetMorphSkinnedMeshRenderer();
+        }
+
 
         [Header("＜TimeLine自動管理＞")]
         public string bindTrackName = "";
@@ -77,8 +89,6 @@ namespace UniLiveViewer
         public void SetState(CHARASTATE setState, Transform overrideTarget)
         {
             Vector3 globalScale = Vector3.zero;
-
-            if (overrideTarget) Debug.Log(overrideTarget.name);
 
             overrideAnchor = overrideTarget;
             charaState = setState;
@@ -139,7 +149,7 @@ namespace UniLiveViewer
             }
 
             //揺れもの接触振動
-            if (charaInfoData.formatType == CharaInfoData.FORMATTYPE.VRM)
+            if (charaInfoData && charaInfoData.formatType == CharaInfoData.FORMATTYPE.VRM)
             {
                 foreach (var springBone in springBoneList)
                 {

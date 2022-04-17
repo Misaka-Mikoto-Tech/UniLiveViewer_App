@@ -21,19 +21,19 @@ namespace UniLiveViewer
             switch (GlobalConfig.sceneMode_static)
             {
                 case GlobalConfig.SceneMode.CANDY_LIVE:
-                    transform.position = new Vector3(4, 3, 5.5f);
+                    EndPoint =  new Vector3(4, 1.0f, 5.5f);
+                    transform.position = EndPoint + (Vector3.up * 2);
                     transform.rotation = Quaternion.Euler(new Vector3(0, 90, 0));
-                    EndPoint = new Vector3(4, 1.2f, 5.5f);
                     break;
                 case GlobalConfig.SceneMode.KAGURA_LIVE:
-                    transform.position = new Vector3(0, 3, 3);
+                    EndPoint = new Vector3(0, 1.6f, 3);
+                    transform.position = EndPoint + (Vector3.up * 2);
                     transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
-                    EndPoint = new Vector3(0, 1.2f, 3);
                     break;
                 case GlobalConfig.SceneMode.VIEWER:
-                    transform.position = new Vector3(0, 3, 4);
+                    EndPoint = new Vector3(0, 1.1f, 4);
+                    transform.position = EndPoint + (Vector3.up * 2);
                     transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
-                    EndPoint = new Vector3(0, 1.2f, 4);
                     break;
             }
             StartCoroutine(Init());

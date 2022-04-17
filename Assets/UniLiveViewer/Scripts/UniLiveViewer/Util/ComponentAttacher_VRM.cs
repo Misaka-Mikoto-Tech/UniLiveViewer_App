@@ -5,6 +5,7 @@ using UniHumanoid;
 using Cysharp.Threading.Tasks;
 using System.Threading;
 using System;
+using System.Linq;
 
 namespace UniLiveViewer 
 {
@@ -17,15 +18,16 @@ namespace UniLiveViewer
         [SerializeField] private AttachPoint attachPointPrefab;
         [SerializeField] private GameObject lowShadowPrefab;
         [SerializeField] private GameObject guidePrefab;
+        [SerializeField] private MaterialConverter matConverter;
 
         private VRMMeta meta;
         private GameObject targetVRM;
         private Animator animator;
-        private CharaController charaCon;
+        public CharaController CharaCon { get; private set; }
 
         private List<VRMSpringBone> vrmSpringBones = new List<VRMSpringBone>();
 
-        public void Init(Transform _targetVRM)
+        public async UniTask Init(Transform _targetVRM, SkinnedMeshRenderer[] skins, CancellationToken token)
         {
             try
             {
@@ -34,30 +36,22 @@ namespace UniLiveViewer
                 meta = targetVRM.GetComponent<VRMMeta>();
                 if (meta == null) return;
 
-                //非同期だと乱れが生じるのでinstance化まで動かさない
+                //乱れが生じるのでinstance化まで動かさない
                 vrmSpringBones.AddRange(targetVRM.transform.Find("secondary").GetComponents<VRMSpringBone>());
-
                 foreach (var e in vrmSpringBones)
                 {
                     e.enabled = false;
                 }
 
-                //Meshが消える対策
-                var meshs = targetVRM.GetComponentsInChildren<SkinnedMeshRenderer>();
-                //Bounds bounds;
-                foreach (var mesh in meshs)
-                {
-                    //上手くいかない
-                    //bounds = mesh.bounds;
-                    //bounds.Expand(Vector3.one);
-                    //mesh.bounds = bounds;
-
-                    //良くないがこれで
-                    mesh.updateWhenOffscreen = true;
-                }
+                await UniTask.Yield(PlayerLoopTiming.Update, token);
 
                 animator = targetVRM.GetComponent<Animator>();
-                charaCon = targetVRM.GetComponent<CharaController>();
+                CharaCon = targetVRM.AddComponent<CharaController>();
+                //スキンメッシュレンダーの流用
+                CharaCon.SetSkinnedMeshRenderers(skins);
+                //マテリアル関係
+                matConverter = targetVRM.AddComponent<MaterialConverter>();
+                matConverter.Init();
             }
             catch (OperationCanceledException)
             {
@@ -72,9 +66,21 @@ namespace UniLiveViewer
         {
             try
             {
+                //いろいろ追加される前にmeshrenderのみマテリアル調整
+                var meshRenderers = targetVRM.GetComponentsInChildren<MeshRenderer>();
+                if (meshRenderers != null && meshRenderers.Length > 0)
+                {
+                    await matConverter.Conversion_Item(meshRenderers.ToArray(), token);
+                }
+
                 await UniTask.WhenAll(
                 CustomizeComponent_Standard(token),
                 CustomizeComponent_VRM(touchCollider, token));
+
+                //skinの方はVRMから流用
+                await matConverter.Conversion(CharaCon.GetSkinnedMeshRenderers, token);
+
+                Destroy(targetVRM.GetComponent<MaterialConverter>());
             }
             catch
             {
@@ -156,17 +162,18 @@ namespace UniLiveViewer
                 //不要なスクリプトを停止
                 targetVRM.GetComponent<HumanPoseTransfer>().enabled = false;
                 //vrmModel.GetComponent<Blinker>().enabled = false;
+                Destroy(targetVRM.GetComponent<VRMFirstPerson_Custom>());//今後使うかも
 
                 var blendShapeProxy = targetVRM.GetComponent<VRMBlendShapeProxy>();
 
                 //ScriptableObject追加
-                charaCon.charaInfoData = Instantiate(charaInfoDataPrefab);
+                CharaCon.charaInfoData = Instantiate(charaInfoDataPrefab);
 
                 //リップシンクの追加(ScriptableObject後)
-                LipSyncController.Instantiate(LipSyncPrefab, charaCon, blendShapeProxy);
+                LipSyncController.Instantiate(LipSyncPrefab, CharaCon, blendShapeProxy);
 
                 //フェイスシンクの追加(ScriptableObject後)
-                FacialSyncController.Instantiate(FaceSyncPrefab, charaCon, blendShapeProxy);
+                FacialSyncController.Instantiate(FaceSyncPrefab, CharaCon, blendShapeProxy);
 
                 //VMDプレイヤー追加(各Sync系の後)
                 targetVRM.AddComponent<VMDPlayer_Custom>();
@@ -177,22 +184,22 @@ namespace UniLiveViewer
                 var lookAtHead = targetVRM.GetComponent<VRMLookAtHead_Custom>();
                 var lookAtCon = targetVRM.AddComponent<LookAtController>();
                 lookAtHead.Target = GameObject.FindGameObjectWithTag("MainCamera").transform;
-                lookAtCon.SetVRMComponent(animator, charaCon, lookAtHead.Target);
+                lookAtCon.SetVRMComponent(animator, CharaCon, lookAtHead.Target);
                 lookAtHead.UpdateType = UpdateType.LateUpdate;
                 if (targetVRM.GetComponent<VRMLookAtBoneApplyer_Custom>() != null)
                 {
-                    charaCon.charaInfoData.charaType = CharaInfoData.CHARATYPE.VRM_Bone;
+                    CharaCon.charaInfoData.charaType = CharaInfoData.CHARATYPE.VRM_Bone;
                     lookAtCon.VRMLookAtEye_Bone = targetVRM.GetComponent<VRMLookAtBoneApplyer_Custom>();
                 }
                 if (targetVRM.GetComponent<VRMLookAtBlendShapeApplyer_Custom>() != null)
                 {
-                    charaCon.charaInfoData.charaType = CharaInfoData.CHARATYPE.VRM_BlendShape;
+                    CharaCon.charaInfoData.charaType = CharaInfoData.CHARATYPE.VRM_BlendShape;
                     lookAtCon.VRMLookAtEye_UV = targetVRM.GetComponent<VRMLookAtBlendShapeApplyer_Custom>();
                 }
 
                 string name = meta.Meta.Title;
-                if (name != "") charaCon.charaInfoData.viewName = name;
-                else charaCon.charaInfoData.viewName = targetVRM.name;
+                if (name != "") CharaCon.charaInfoData.viewName = name;
+                else CharaCon.charaInfoData.viewName = targetVRM.name;
 
                 //揺れモノ調整
                 List<VRMSpringBoneColliderGroup> colliderList = new List<VRMSpringBoneColliderGroup>();//統合用
@@ -207,14 +214,14 @@ namespace UniLiveViewer
                         vrmSpringBones[i].ColliderGroups = colliderList.ToArray();
                         colliderList.Clear();
                         //登録
-                        charaCon.springBoneList.Add(vrmSpringBones[i]);
+                        CharaCon.springBoneList.Add(vrmSpringBones[i]);
                     }
                     else
                     {
                         //そのまま追加
                         vrmSpringBones[i].ColliderGroups = touchCollider.colliders;
                         //登録
-                        charaCon.springBoneList.Add(vrmSpringBones[i]);
+                        CharaCon.springBoneList.Add(vrmSpringBones[i]);
                     }
                 }
 

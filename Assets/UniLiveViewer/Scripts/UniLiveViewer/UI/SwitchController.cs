@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System;
 using System.Collections;
 using System.Threading;
@@ -127,8 +127,9 @@ namespace UniLiveViewer
             {
                 btn_Offset[i].onTrigger += ChangeOffset_Anime;
             }
-            btn_Reverse.onTrigger += ChangeReverse_Anime;
-            timeline.FieldCharaUpdate += () => { Update_FieldChara().Forget(); };
+            btn_Reverse.onTrigger += (b) => ChangeReverse_Anime(b).Forget();
+            timeline.FieldCharaAdded += () => { Add_FieldChara().Forget(); };
+            timeline.FieldCharaDeleted += () => { Add_FieldChara().Forget(); };
             slider_Offset.ValueUpdate += () =>
             {
                 //キャラが不在なら終了
@@ -162,7 +163,7 @@ namespace UniLiveViewer
             vrmSelectUI.VRMAdded += (vrm) =>
             {
                 generatorPortal.AddVRMPrefab(vrm);//VRMを追加
-                ChangeChara(0);//追加されたVRMを生成する
+                ChangeChara(0).Forget();//追加されたVRMを生成する
             };
             btn_jumpList[0].onTrigger += (btn) =>
             {
@@ -202,7 +203,7 @@ namespace UniLiveViewer
                 {
                     case JumpList.TARGET.CHARA:
                         moveIndex = jumpCurrent - generatorPortal.currentChara;
-                        ChangeChara(moveIndex);
+                        ChangeChara(moveIndex).Forget();
                         break;
                     case JumpList.TARGET.ANIME:
                         moveIndex = jumpCurrent - generatorPortal.currentAnime;
@@ -290,7 +291,7 @@ namespace UniLiveViewer
 
         private void OnEnable()
         {
-            initPage();
+            InitPage().Forget();
         }
 
         // Start is called before the first frame update
@@ -479,7 +480,7 @@ namespace UniLiveViewer
             {
                 case 0:
                     //モデルページ
-                    if (Input.GetKeyDown(KeyCode.I)) ChangeChara(1);
+                    if (Input.GetKeyDown(KeyCode.I)) ChangeChara(1).Forget();
                     if (Input.GetKeyDown(KeyCode.K)) ChangeAnime(1).Forget();
                     if (Input.GetKeyDown(KeyCode.L))
                     {
@@ -487,7 +488,7 @@ namespace UniLiveViewer
                         btn_VRMLoad.gameObject.SetActive(false);
 
                         //VRM選択画面を表示
-                        vrmSelectUI.initPage();
+                        vrmSelectUI.InitPage(0);
                     }
                     break;
                 case 1:
@@ -575,13 +576,13 @@ namespace UniLiveViewer
             }
 
             //ページを初期化する    
-            initPage();
+            InitPage().Forget();
         }
 
         /// <summary>
         /// 各ページを開く際の初期化処理
         /// </summary>
-        public void initPage()
+        public async UniTask InitPage()
         {
             switch (currentPage)
             {
@@ -589,14 +590,13 @@ namespace UniLiveViewer
                     //ポータルにキャラが存在していなければ生成しておく
                     if (!timeline.isPortalChara())
                     {
-                        ChangeChara(0);
-                        ChangeAnime(0).Forget();
+                        await ChangeChara(0);
+                        ChangeAnime_UI();
                     }
 
                     var bindChara = timeline.trackBindChara[TimelineController.PORTAL_ELEMENT];
                     if (bindChara)
                     {
-
                         //反転ボタンの状態をセット
                         btn_Reverse.isEnable = generatorPortal.isAnimationReverse;
                     }
@@ -687,7 +687,7 @@ namespace UniLiveViewer
                     if (i == 0) moveIndex = -1;
                     else if (i == 1) moveIndex = 1;
                     //キャラを変更する
-                    ChangeChara(moveIndex);
+                    ChangeChara(moveIndex).Forget();
 
                     //クリック音
                     audioSource.PlayOneShot(Sound[0]);
@@ -717,10 +717,10 @@ namespace UniLiveViewer
         /// キャラを変更する
         /// </summary>
         /// <param name="moveIndex"></param>
-        private void ChangeChara(int moveIndex)
+        private async UniTask ChangeChara(int moveIndex)
         {
             // キャラを切り替える
-            generatorPortal.SetChara(moveIndex);
+            await generatorPortal.SetChara(moveIndex);
 
             var bindChara = timeline.trackBindChara[TimelineController.PORTAL_ELEMENT];
             string charaName;
@@ -781,6 +781,11 @@ namespace UniLiveViewer
         private async UniTask ChangeAnime(int moveIndex)
         {
             await generatorPortal.SetAnimation(moveIndex);
+            ChangeAnime_UI();
+        }
+
+        private void ChangeAnime_UI()
+        {
             //表示更新
             textMesh_Page1[1].text = generatorPortal.GetNowAnimeInfo().viewName;
             textMesh_Page1[1].fontSize = textMesh_Page1[1].text.FontSizeMatch(600, 30, 50);
@@ -878,7 +883,7 @@ namespace UniLiveViewer
         /// 次反転アニメーションに切り替える
         /// </summary>
         /// <param name="btn"></param>
-        private void ChangeReverse_Anime(Button_Base btn)
+        private async UniTaskVoid ChangeReverse_Anime(Button_Base btn)
         {
             //btn_Reverse.Reverse();
             generatorPortal.isAnimationReverse = btn_Reverse.isEnable;
@@ -887,7 +892,7 @@ namespace UniLiveViewer
             if (timeline.trackBindChara[TimelineController.PORTAL_ELEMENT])
             {
                 //キャラを生成して反転を反映させる
-                generatorPortal.SetChara(0);
+                await generatorPortal.SetChara(0);
                 textMesh_Page1[0].text = generatorPortal.GetNowAnimeInfo().viewName;
                 textMesh_Page1[0].fontSize = textMesh_Page1[0].text.FontSizeMatch(600, 30, 50);
 
@@ -910,7 +915,7 @@ namespace UniLiveViewer
             btn_VRMLoad.gameObject.SetActive(false);
 
             //VRM選択画面を表示
-            vrmSelectUI.initPage();
+            vrmSelectUI.InitPage(0);
 
             //クリック音
             audioSource.PlayOneShot(Sound[0]);
@@ -962,17 +967,17 @@ namespace UniLiveViewer
 
 
         /// <summary>
-        /// フィールド上のキャラ数に変更があった時
+        /// キャラを追加する
         /// </summary>
-        private async UniTaskVoid Update_FieldChara()
+        private async UniTaskVoid Add_FieldChara()
         {
-            if (currentPage == 0)
+            if (currentPage == 0 && transform.root.gameObject.activeSelf)
             {
                 //負荷が高いので削除処理とフレームをずらす
                 await UniTask.Delay(250, cancellationToken: cancellation_token);
 
                 //ポータルにキャラが存在していなければ生成しておく
-                if (!timeline.isPortalChara()) ChangeChara(0);
+                if (!timeline.isPortalChara()) await ChangeChara(0);
 
                 //フィールド設置数のテキストセット
                 textMesh_Page1[2].text = $"{timeline.FieldCharaCount}/{timeline.maxFieldChara}";

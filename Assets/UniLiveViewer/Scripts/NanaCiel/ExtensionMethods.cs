@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace NanaCiel
 {
@@ -31,6 +32,20 @@ namespace NanaCiel
             int result = coeffic / str.Length;
             result = Mathf.Clamp(result, min, max);
             return result;
+        }
+
+        //blendshapeが設定されているSkinnedMeshRendererのみ抽出
+        public static SkinnedMeshRenderer[] GetMorphSkinnedMeshRenderer(this SkinnedMeshRenderer[] skin)
+        {
+            List<SkinnedMeshRenderer> result = new List<SkinnedMeshRenderer>();
+            foreach (var e in skin)
+            {
+                if(e.sharedMesh.blendShapeCount > 0)
+                {
+                    result.Add(e);
+                }
+            }
+            return result.ToArray();
         }
     }
 

@@ -34,7 +34,11 @@ namespace UniLiveViewer
         [SerializeField] private Button_Base btn_AllReset;
         [SerializeField] private Button_Base btn_SetOK;
         private GameObject vrmModel;
-        private MaterialConverter converter;
+        private MaterialConverter matConverter;
+
+        [Space(1)]
+        [Header("＜3ページ＞")]
+        [SerializeField] private TextMesh textErrorResult;
 
         [Header("＜アタッチャー＞")]
         [SerializeField] private ComponentAttacher_VRM attacherPrefab;
@@ -53,7 +57,6 @@ namespace UniLiveViewer
         //当たり判定
         private VRMTouchColliders touchCollider = null;
 
-        private int currentPage = 0;
         private CancellationToken cancellation_token;
         private int[] randomBox;
         private string[] vrmNames;
@@ -143,7 +146,7 @@ namespace UniLiveViewer
         /// <summary>
         /// カレントページで開き直す（初期化）
         /// </summary>
-        public void initPage()
+        public void InitPage(int currentPage)
         {
             //UIを表示
             SetUIView(false);
@@ -186,7 +189,7 @@ namespace UniLiveViewer
                     {
                         //回転セレクターにマテリアル名のリストを渡す
                         List<string> strList = new List<string>();
-                        foreach (var e in converter.materials)
+                        foreach (var e in matConverter.materials)
                         {
                             strList.Add(e.name);
                         }
@@ -195,6 +198,8 @@ namespace UniLiveViewer
                         //表示を更新
                         MaterialInfoUpdate();
                     }
+                    break;
+                case 2:
                     break;
             }
         }
@@ -220,14 +225,8 @@ namespace UniLiveViewer
                 //全VRMファイル名を取得
                 var array = fileManager.GetAllVRMNames();
                 //最大15件に丸める
-                if (array.Length > 15)
-                {
-                    vrmNames = array.Take(15).ToArray();
-                }
-                else
-                {
-                    vrmNames = array;
-                }
+                if (array.Length > 15) vrmNames = array.Take(15).ToArray();
+                else vrmNames = array;
                 //ランダム配列を設定
                 randomBox = new int[vrmNames.Length];
                 for (int i = 0; i < randomBox.Length; i++) randomBox[i] = i;
@@ -309,9 +308,7 @@ namespace UniLiveViewer
                         {
                             //時間差で読み込み音を鳴らす
                             await UniTask.Delay(500, cancellationToken: token);
-                            //yield return new WaitForSeconds(0.5f);
                             audioSource.PlayOneShot(Sound[1]);
-                            //StartCoroutine(DelaySound());
                         }
                     }
                 });
@@ -325,7 +322,7 @@ namespace UniLiveViewer
         /// ランダムシャッフル（ランダムな2要素を交換→シャッフルされない要素もありえる）
         /// </summary>
         /// <param name="num"></param>
-        int[] Shuffle(int[] inputArray)
+        private int[] Shuffle(int[] inputArray)
         {
             for (int i = 0; i < inputArray.Length; i++)
             {
@@ -409,12 +406,26 @@ namespace UniLiveViewer
 
             try
             {
-                //VRM設定
                 await SetVRM(btn, cancellation_token);
+            }
+            catch (OperationCanceledException)
+            {
+                
             }
             catch (Exception e)
             {
-                Debug.Log("ロード失敗:" + e);
+                runtimeLoader.gameObject.SetActive(false);
+
+                //errorページ
+                InitPage(2);
+
+                Debug.Log(e);
+                System.IO.StringReader rs = new System.IO.StringReader(e.ToString());
+                textErrorResult.text = $"{rs.ReadLine()}";//1行まで
+                await UniTask.Delay(5000, cancellationToken: cancellation_token);
+
+                //UIを非表示にする
+                SetUIView(true);
             }
             finally
             {
@@ -425,7 +436,6 @@ namespace UniLiveViewer
 
         /// <summary>
         /// 
-        /// ※vrmModel取得後に非同期にかかわらずwaitを挟むとモデルの揺れ物がおかしな状態になる原因不明
         /// </summary>
         /// <param name="btn"></param>
         /// <param name="token"></param>
@@ -440,106 +450,84 @@ namespace UniLiveViewer
                 await UniTask.Delay(10, cancellationToken: token);
 
                 //指定パスのVRMのみ読み込む
-                //string fileName = btn.transform.GetChild(1).GetComponent<TextMesh>().text;
                 string fileName = btn.transform.name;
                 string fullPath = FileAccessManager.GetFullPath(FileAccessManager.FOLDERTYPE.CHARA) + fileName;
 
                 //if (vrmModel) vrmModel = null;
-                vrmModel = await runtimeLoader.OnOpenClicked_VRM(fullPath, token);
+                var instance =  await runtimeLoader.OnOpenClicked_VRM(fullPath, token);
+
+
+                //Meshが消える対策
+                instance.EnableUpdateWhenOffscreen();
 
                 //キャンセル確認
                 token.ThrowIfCancellationRequested();
 
                 //最低限の設定
+                vrmModel = instance.gameObject;
                 vrmModel.name = fileName;
-                vrmModel.tag = "Grab_Chara";
-                vrmModel.layer = LayerMask.NameToLayer("GrabObject");
-                var characon = vrmModel.AddComponent<CharaController>();
-
-                //Meshが消える対策
-                var meshs = characon.GetComponentsInChildren<SkinnedMeshRenderer>();
-                //Bounds bounds;
-                foreach (var mesh in meshs)
-                {
-                    //上手くいかない
-                    //bounds = mesh.bounds;
-                    //bounds.Expand(Vector3.one);
-                    //mesh.bounds = bounds;
-
-                    //良くないがこれで
-                    mesh.updateWhenOffscreen = true;
-                }
-                await UniTask.Yield(PlayerLoopTiming.Update, token);
+                vrmModel.tag = Parameters.tag_GrabChara;
+                vrmModel.layer = Parameters.layerNo_GrabObject;
 
                 //各種component追加
                 var attacher = Instantiate(attacherPrefab.gameObject).GetComponent<ComponentAttacher_VRM>();
-                await attacher.Init(vrmModel.transform, touchCollider,token);
+                await attacher.Init(vrmModel.transform, instance.SkinnedMeshRenderers.ToArray(), token);
+                //var characon = attacher.CharaCon;
 
-                Destroy(attacher.gameObject);
+                await attacher.Attachment(touchCollider, token);
 
                 //マテリアルコンバーターの追加
-                if (converter) converter = null;
-                converter = vrmModel.AddComponent<MaterialConverter>();
-                converter.InitMaterials();
+                if (matConverter) matConverter = null;
+                //matConverter = vrmModel.AddComponent<MaterialConverter>();
+                //matConverter.Init();
+                //skinの方はVRMから流用
+                //await matConverter.Conversion(characon.GetSkinnedMeshRenderers, token);
+                //meshはない？のでサーチ
+                //var meshRenderers = vrmModel.GetComponentsInChildren<MeshRenderer>();
+                //if (meshRenderers != null && meshRenderers.Length > 0)
+                //{
+                //    await matConverter.Conversion_Item(meshRenderers.ToArray(), token);
+                //}
+                //Destroy(vrmModel.GetComponent<MaterialConverter>());
 
-                //読み込んだVRM
-                if (characon)
-                {
-                    // TODO:シェーダーどうするか
+                // TODO:シェーダーどうするか
+                //調整が必要なマテリアルがあるか
+                //if (matConverter.materials != null && matConverter.materials.Count > 0)
+                //{
+                //    //VRMをプリセットアンカーに移動
+                //    vrmModel.transform.parent = vrmPresetAnchor;
+                //    vrmModel.transform.localPosition = Vector3.zero;
+                //    vrmModel.transform.localRotation = Quaternion.identity;
 
-                    //調整が必要なマテリアルがあるか
-                    if (converter.materials != null && converter.materials.Count > 0)
-                    {
-                        //VRMをプリセットアンカーに移動
-                        vrmModel.transform.parent = vrmPresetAnchor;
-                        vrmModel.transform.localPosition = Vector3.zero;
-                        vrmModel.transform.localRotation = Quaternion.identity;
+                //    //マテリアル設定ページへ
+                //    InitPage(1);
+                //}
+                //else
+                //{
+                //    //VRM追加した
+                //    VRMAdded?.Invoke(characon);
 
-                        //マテリアル設定ページへ
-                        currentPage = 1;
-                        initPage();
-                    }
-                    else
-                    {
-                        //ページを最初へ
-                        currentPage = 0;
+                //    //UIを非表示にする
+                //    SetUIView(true);
+                //}
 
-                        //早すぎると揺れものが半端な位置で固まる(正常な位置に落ち着くまでインスタンス化も禁止)
-                        await UniTask.Delay(700, cancellationToken: token);
-
-                        //VRM追加した
-                        VRMAdded?.Invoke(characon);
-
-                        vrmModel.gameObject.SetActive(false);//無効化しておく
-
-                        //UIを非表示にする
-                        SetUIView(true);
-
-                        vrmModel = null;//管理を解除
-                    }
-
-                }
-            }
-            catch
-            {
-                if (vrmModel) Destroy(vrmModel);
-                vrmModel = null;
-
-                //ページを最初へ
-                currentPage = 0;
-
-                //サンプルUIを無効状態に(親がDisableだとVRMの各Awakeが走らない)
-                runtimeLoader.gameObject.SetActive(false);
+                //VRM追加した
+                VRMAdded?.Invoke(attacher.CharaCon);
 
                 //UIを非表示にする
                 SetUIView(true);
 
-                Debug.Log("VRM読み込みエラー");
+            
+
+            }
+            catch
+            {
+                if (vrmModel) Destroy(vrmModel);
                 throw;
             }
             finally
             {
-
+                vrmModel = null;//管理を解除
             }
         }
 
@@ -552,9 +540,9 @@ namespace UniLiveViewer
             audioSource.PlayOneShot(Sound[0]);
 
             int current = rollSelector_Material.current;
-            var type = (MaterialConverter.SurfaceType)converter.materials[current].GetFloat("_Surface");
-            var face = (MaterialConverter.RenderFace)converter.materials[current].GetFloat("_Cull");
-            var color = converter.materials[current].GetColor("_BaseColor");
+            var type = (MaterialConverter.SurfaceType)matConverter.materials[current].GetFloat("_Surface");
+            var face = (MaterialConverter.RenderFace)matConverter.materials[current].GetFloat("_Cull");
+            var color = matConverter.materials[current].GetColor("_BaseColor");
 
             //buttonに反映
             if (type == MaterialConverter.SurfaceType.Opaque)
@@ -603,23 +591,23 @@ namespace UniLiveViewer
 
             if (btn == btn_SuefaceType[0])
             {
-                converter.SetSurface(current, MaterialConverter.SurfaceType.Opaque);
+                matConverter.SetSurface(current, MaterialConverter.SurfaceType.Opaque);
             }
             else if (btn == btn_SuefaceType[1])
             {
-                converter.SetSurface(current, MaterialConverter.SurfaceType.Transparent);
+                matConverter.SetSurface(current, MaterialConverter.SurfaceType.Transparent);
             }
             else if (btn == btn_RenderFace[0])
             {
-                converter.SetRenderFace(current, MaterialConverter.RenderFace.Front);
+                matConverter.SetRenderFace(current, MaterialConverter.RenderFace.Front);
             }
             else if (btn == btn_RenderFace[1])
             {
-                converter.SetRenderFace(current, MaterialConverter.RenderFace.Back);
+                matConverter.SetRenderFace(current, MaterialConverter.RenderFace.Back);
             }
             else if (btn == btn_RenderFace[2])
             {
-                converter.SetRenderFace(current, MaterialConverter.RenderFace.Both);
+                matConverter.SetRenderFace(current, MaterialConverter.RenderFace.Both);
             }
 
             //UI表示を更新
@@ -632,7 +620,7 @@ namespace UniLiveViewer
         private void MaterialSetting_TransparentColor()
         {
             //透明を更新
-            converter.SetColor_Transparent(rollSelector_Material.current, slider_Transparent.Value);
+            matConverter.SetColor_Transparent(rollSelector_Material.current, slider_Transparent.Value);
         }
 
         /// <summary>
@@ -645,7 +633,7 @@ namespace UniLiveViewer
             audioSource.PlayOneShot(Sound[0]);
 
             //マテリアルをリセット
-            converter.ResetMaterials();
+            matConverter.ResetMaterials();
 
             //UI表示を更新
             MaterialInfoUpdate();
@@ -657,9 +645,6 @@ namespace UniLiveViewer
         /// <param name="btn"></param>
         private void MaterialSetting_SetOK(Button_Base btn)
         {
-            //ページを最初へ
-            currentPage = 0;
-
             //クリック音
             audioSource.PlayOneShot(Sound[0]);
 
@@ -667,15 +652,13 @@ namespace UniLiveViewer
             vrmModel.transform.localPosition = Vector3.zero;
             vrmModel.transform.localRotation = Quaternion.identity;
 
-            vrmModel.gameObject.SetActive(false);//無効化しておく
+            //VRM追加した
+            VRMAdded?.Invoke(vrmModel.GetComponent<CharaController>());
 
             //UIを非表示にする
             SetUIView(true);
 
-            //VRM追加した
-            VRMAdded?.Invoke(vrmModel.GetComponent<CharaController>());
-
-            vrmModel = null;//管理を解除
+            vrmModel = null;
         }
     }
 }

@@ -102,7 +102,23 @@ namespace UniLiveViewer
         // Start is called before the first frame update
         void Start()
         {
-            //非表を初期化
+            switch (GlobalConfig.sceneMode_static)
+            {
+                case GlobalConfig.SceneMode.CANDY_LIVE:
+                    transform.position = new Vector3(0, 0.4f, 6.5f);
+                    transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
+                    break;
+                case GlobalConfig.SceneMode.KAGURA_LIVE:
+                    transform.position = new Vector3(0, 1, 4);
+                    transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
+                    break;
+                case GlobalConfig.SceneMode.VIEWER:
+                    transform.position = new Vector3(0, 0.5f, 5.5f);
+                    transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
+                    break;
+            }
+
+
             handUI.gameObject.SetActive(isHandUI);
 
             for (int i = 0; i < crossUI.Length; i++)
