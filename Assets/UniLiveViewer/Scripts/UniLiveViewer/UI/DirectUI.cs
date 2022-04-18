@@ -18,19 +18,19 @@ namespace UniLiveViewer
         // Start is called before the first frame update
         void Start()
         {
-            switch (GlobalConfig.sceneMode_static)
+            switch (SystemInfo.sceneMode)
             {
-                case GlobalConfig.SceneMode.CANDY_LIVE:
+                case SceneMode.CANDY_LIVE:
                     EndPoint =  new Vector3(4, 1.0f, 5.5f);
                     transform.position = EndPoint + (Vector3.up * 2);
                     transform.rotation = Quaternion.Euler(new Vector3(0, 90, 0));
                     break;
-                case GlobalConfig.SceneMode.KAGURA_LIVE:
+                case SceneMode.KAGURA_LIVE:
                     EndPoint = new Vector3(0, 1.6f, 3);
                     transform.position = EndPoint + (Vector3.up * 2);
                     transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
                     break;
-                case GlobalConfig.SceneMode.VIEWER:
+                case SceneMode.VIEWER:
                     EndPoint = new Vector3(0, 1.1f, 4);
                     transform.position = EndPoint + (Vector3.up * 2);
                     transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));

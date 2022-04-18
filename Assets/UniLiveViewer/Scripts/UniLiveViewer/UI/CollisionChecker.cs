@@ -50,7 +50,7 @@ namespace UniLiveViewer
         {
             for (int i = 0; i < colorSetting.Length; i++)
             {
-                colorSetting[i].Init(GlobalConfig.btnColor_Ena_sky);
+                colorSetting[i].Init(SystemInfo.btnColor_Ena_sky);
             }
         }
 
@@ -138,7 +138,7 @@ namespace UniLiveViewer
             {
                 drawType = DRAWTYPE.TEXTMESH;
                 EnableColor = enableColor;
-                DisableColor = GlobalConfig.btnColor_Dis;
+                DisableColor = SystemInfo.btnColor_Dis;
             }
 
             materialPropertyBlock = new MaterialPropertyBlock();

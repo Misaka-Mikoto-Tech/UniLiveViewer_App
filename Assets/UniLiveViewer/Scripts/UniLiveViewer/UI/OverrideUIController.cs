@@ -16,13 +16,14 @@ namespace UniLiveViewer
         [SerializeField] private Camera overlayCamera;
         [SerializeField] private Renderer _rendererFade;
         [SerializeField] private Renderer _rendererClosing;
+        [SerializeField] private TextMesh[] vmdError = new TextMesh[2];
 
         private MaterialPropertyBlock materialPropertyBlock;
         private Color baseColor;
 
         private void Awake()
         {
-            if (GlobalConfig.sceneMode_static == GlobalConfig.SceneMode.VIEWER)
+            if (SystemInfo.sceneMode == SceneMode.VIEWER)
             {
                 backGroundCon = GameObject.FindGameObjectWithTag("BackGroundController").GetComponent<BackGroundController>();
             }
@@ -40,18 +41,38 @@ namespace UniLiveViewer
             materialPropertyBlock.SetColor("_BaseColor", baseColor);
             _rendererFade.SetPropertyBlock(materialPropertyBlock);
 
-            fileManager.onThumbnailCompleted += LoadEnd;
-            switchController.onSceneSwitch += SceneEnd;
+            fileManager.onLoadStart += () => { anime_Loading.gameObject.SetActive(true); };
+            fileManager.onVMDLoadError += VMDLoadError;
+            fileManager.onThumbnailCompleted += () => { StartCoroutine(EndUpdate()); };
+            switchController.onSceneSwitch += (str) => { StartCoroutine(SceneEndUpdate(str)); };
+
+            
+
+            foreach (var e in vmdError)
+            {
+                if (e.gameObject.activeSelf) e.gameObject.SetActive(false);
+            }
         }
 
         private void Start()
         {
-            anime_Loading.gameObject.SetActive(true);
+            
         }
 
-        private void LoadEnd()
+        private void VMDLoadError()
         {
-            StartCoroutine(EndUpdate());
+            Debug.Log("読み込み失敗発生==" + SystemInfo.userProfile.data.LanguageCode);
+
+            if (anime_Loading.gameObject.activeSelf) anime_Loading.gameObject.SetActive(false);
+
+            if (SystemInfo.userProfile.data.LanguageCode == (int)USE_LANGUAGE.JP)
+            {
+                vmdError[0].gameObject.SetActive(true);
+            }
+            else if(SystemInfo.userProfile.data.LanguageCode == (int)USE_LANGUAGE.EN)
+            {
+                vmdError[1].gameObject.SetActive(true);
+            }
         }
 
         IEnumerator EndUpdate()
@@ -78,11 +99,6 @@ namespace UniLiveViewer
 
             overlayCamera.enabled = false;
             player.enabled = true;//操作可能に
-        }
-
-        private void SceneEnd(string sceneName)
-        {
-            StartCoroutine(SceneEndUpdate(sceneName));
         }
 
         IEnumerator SceneEndUpdate(string sceneName)

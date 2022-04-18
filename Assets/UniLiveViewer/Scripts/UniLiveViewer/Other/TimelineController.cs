@@ -111,33 +111,15 @@ namespace UniLiveViewer
                 Debug.Log("メインオーディオが見つかりません");
 
             }
-            if (GlobalConfig.sceneMode_static == GlobalConfig.SceneMode.CANDY_LIVE)
-            {
+
+
+            byte current = (byte)SystemInfo.sceneMode;
 #if UNITY_EDITOR
-                maxFieldChara = 5;
+            maxFieldChara = SystemInfo.MAXCHARA_EDITOR[current];
 #elif UNITY_ANDROID
-            if (SystemInfo.deviceName == "Oculus Quest 2") maxFieldChara = 3;
-            else if (SystemInfo.deviceName == "Oculus Quest") maxFieldChara = 2;
+            if (SystemInfo.deviceName == "Oculus Quest 2") maxFieldChara = SystemInfo.MAXCHARA_QUEST2[current];
+            else if (SystemInfo.deviceName == "Oculus Quest") maxFieldChara = SystemInfo.MAXCHARA_QUEST1[current];
 #endif
-            }
-            else if (GlobalConfig.sceneMode_static == GlobalConfig.SceneMode.KAGURA_LIVE)
-            {
-#if UNITY_EDITOR
-                maxFieldChara = 5;
-#elif UNITY_ANDROID
-            if (SystemInfo.deviceName == "Oculus Quest 2") maxFieldChara = 2;
-            else if (SystemInfo.deviceName == "Oculus Quest") maxFieldChara = 2;
-#endif
-            }
-            else if (GlobalConfig.sceneMode_static == GlobalConfig.SceneMode.VIEWER)
-            {
-#if UNITY_EDITOR
-                maxFieldChara = 5;
-#elif UNITY_ANDROID
-            if (SystemInfo.deviceName == "Oculus Quest 2") maxFieldChara = 5;
-            else if (SystemInfo.deviceName == "Oculus Quest") maxFieldChara = 4;
-#endif
-            }
         }
 
         private void Update()
@@ -416,7 +398,7 @@ namespace UniLiveViewer
                 (oldAudioClip.asset as AudioPlayableAsset).clip = newAudioClip;
 
                 //スペクトル用
-                if (GlobalConfig.sceneMode_static == GlobalConfig.SceneMode.CANDY_LIVE)
+                if (SystemInfo.sceneMode == SceneMode.CANDY_LIVE)
                 {
                     if (newAudioClip.name.Contains(".mp3") || newAudioClip.name.Contains(".wav"))
                     {
@@ -446,7 +428,7 @@ namespace UniLiveViewer
         {
             if (sName.Contains(".vmd"))
             {
-                SaveData.dicVMD_offset[sName] = val;
+                SystemInfo.dicVMD_offset[sName] = val;
             }
         }
 

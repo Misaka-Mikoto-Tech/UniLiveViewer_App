@@ -67,7 +67,7 @@ namespace UniLiveViewer
             touchCollider = GameObject.FindGameObjectWithTag("Player").GetComponent<VRMTouchColliders>();
 
             audioSource = GetComponent<AudioSource>();
-            audioSource.volume = GlobalConfig.soundVolume_SE;
+            audioSource.volume = SystemInfo.soundVolume_SE;
 
             //コールバック登録・・・2ページ目
             foreach (var e in btn_SuefaceType)
@@ -451,7 +451,7 @@ namespace UniLiveViewer
 
                 //指定パスのVRMのみ読み込む
                 string fileName = btn.transform.name;
-                string fullPath = FileAccessManager.GetFullPath(FileAccessManager.FOLDERTYPE.CHARA) + fileName;
+                string fullPath = FileAccessManager.GetFullPath(FOLDERTYPE.CHARA) + fileName;
 
                 //if (vrmModel) vrmModel = null;
                 var instance =  await runtimeLoader.OnOpenClicked_VRM(fullPath, token);
@@ -466,8 +466,8 @@ namespace UniLiveViewer
                 //最低限の設定
                 vrmModel = instance.gameObject;
                 vrmModel.name = fileName;
-                vrmModel.tag = Parameters.tag_GrabChara;
-                vrmModel.layer = Parameters.layerNo_GrabObject;
+                vrmModel.tag = SystemInfo.tag_GrabChara;
+                vrmModel.layer = SystemInfo.layerNo_GrabObject;
 
                 //各種component追加
                 var attacher = Instantiate(attacherPrefab.gameObject).GetComponent<ComponentAttacher_VRM>();

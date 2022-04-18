@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 
 namespace UniLiveViewer 
 {
-    public static class Parameters
+    public static class SystemInfo
     {
         //レイヤー
         public static int layerNo_VirtualHead;
@@ -14,56 +14,71 @@ namespace UniLiveViewer
         public static int layerMask_VirtualHead;
         public static int layerMask_StageFloor;
         public static int layerMask_FieldObject;
-       
-
         //タグ
         public static readonly string tag_ItemMaterial = "ItemMaterial";
         public static readonly string tag_GrabChara = "Grab_Chara";
         public static readonly string tag_GrabSliderVolume = "Grab_Slider_Volume";
+
+        public static UserProfile userProfile;
+        public static SceneMode sceneMode;
+        public static float soundVolume_SE = 0.3f;//SE音量
+        public static bool isControllerVibration = true;//controller振動
+        public static OVRManager.FixedFoveatedRenderingLevel levelFFR;
+        public static string folderPath_Persistent;//システム設定値など
+        public static Dictionary<string, int> dicVMD_offset = new Dictionary<string, int>();
+
+        //一括ボタンカラー(仮)
+        public static readonly Color btnColor_Ena_sky = new Color(0, 1, 1, 1);
+        public static readonly Color btnColor_Dis = new Color(0.4f, 0.4f, 0.4f, 1);
+
+        //召喚上限(CRS/KAGURA/VIEW)
+        public static readonly byte[] MAXCHARA_QUEST1 = { 2, 2, 4 };
+        public static readonly byte[] MAXCHARA_QUEST2 = { 3, 2, 5 };
+        public static readonly byte[] MAXCHARA_EDITOR = { 5, 5, 5 };
+
+        public static readonly byte MAXAUDIO_EDITOR = 30;
+        public static readonly byte MAXAUDIO_QUEST = 10;
+    }
+
+    public enum SceneMode
+    {
+        CANDY_LIVE,
+        KAGURA_LIVE,
+        VIEWER,
+    }
+    
+    public enum USE_LANGUAGE  
+    {
+        NULL,   
+        JP,     
+        EN,  
+        KO//未使用
     }
 
     public class GlobalConfig : MonoBehaviour
     {
-        public enum SceneMode
-        {
-            CANDY_LIVE,
-            KAGURA_LIVE,
-            VIEWER,
-        }
-        [SerializeField] private SceneMode sceneMode = SceneMode.CANDY_LIVE;
-        public static SceneMode sceneMode_static;
-
-        public int targetFrameRate = -1;
-        public int shaderLOD = 1000;
+        [SerializeField] private SceneMode _sceneMode = SceneMode.CANDY_LIVE;
+        [SerializeField] private int targetFrameRate = -1;
+        [SerializeField] private int shaderLOD = 1000;
         [Header("＜Debug.Log()を一括で切り替える＞")]
-        public bool isDebug = true;
+        [SerializeField] private bool isDebug = true;
         [Header("＜オキュラス固有＞")]
-        public OVRManager.FixedFoveatedRenderingLevel Level;
-        public static float soundVolume_SE = 0.3f;
-        public static bool isControllerVibration = true;
-
-        public static SystemData systemData;
-
-        public static readonly Color btnColor_Ena_sky = new Color(0, 1, 1, 1);//一旦ここで一括調整
-        public static readonly Color btnColor_Dis = new Color(0.4f, 0.4f, 0.4f, 1);
-
-        //public static float initCharaSize = 0.0f;
-        public Vector3 rotete = Vector3.zero;
+        [SerializeField] private OVRManager.FixedFoveatedRenderingLevel _levelFFR = OVRManager.FixedFoveatedRenderingLevel.Medium;
 
         private TimelineController timeline = null;
 
         private void Awake()
         {
-            Parameters.layerNo_VirtualHead = LayerMask.NameToLayer("VirtualHead");
-            Parameters.layerNo_UI = LayerMask.NameToLayer("UI");
-            Parameters.layerNo_FieldObject = LayerMask.NameToLayer("FieldObject");
-            Parameters.layerNo_GrabObject = LayerMask.NameToLayer("GrabObject");
+            SystemInfo.layerNo_VirtualHead = LayerMask.NameToLayer("VirtualHead");
+            SystemInfo.layerNo_UI = LayerMask.NameToLayer("UI");
+            SystemInfo.layerNo_FieldObject = LayerMask.NameToLayer("FieldObject");
+            SystemInfo.layerNo_GrabObject = LayerMask.NameToLayer("GrabObject");
 
-            Parameters.layerMask_Default = LayerMask.GetMask("Default");
+            SystemInfo.layerMask_Default = LayerMask.GetMask("Default");
             //Parameters.layerask_VirtualHead = 1 << Parameters.layerNo_VirtualHead;// ビットシフトでもいい
-            Parameters.layerMask_VirtualHead = LayerMask.GetMask("VirtualHead");
-            Parameters.layerMask_StageFloor = LayerMask.GetMask("Stage_Floor");
-            Parameters.layerMask_FieldObject = LayerMask.GetMask("FieldObject");
+            SystemInfo.layerMask_VirtualHead = LayerMask.GetMask("VirtualHead");
+            SystemInfo.layerMask_StageFloor = LayerMask.GetMask("Stage_Floor");
+            SystemInfo.layerMask_FieldObject = LayerMask.GetMask("FieldObject");
 
             if (targetFrameRate > 0) Application.targetFrameRate = targetFrameRate;
 
@@ -71,16 +86,14 @@ namespace UniLiveViewer
 
             //Cursor.visible = false;
 
-            sceneMode_static = sceneMode;
+            SystemInfo.sceneMode = _sceneMode;
 
             //中心以外の描画のレベルを下げる(最大値)
-            OVRManager.fixedFoveatedRenderingLevel = Level;
+            SystemInfo.levelFFR = _levelFFR;
+            OVRManager.fixedFoveatedRenderingLevel = _levelFFR;
 
             //描画負荷に応じてfixedFoveatedRenderingLevelを自動的に調整する
             OVRManager.useDynamicFixedFoveatedRendering = true;
-
-            systemData = SaveData.GetJson_SystemData();
-            if (systemData == null) systemData = new SystemData();
 
 #if UNITY_EDITOR
             //デバッグログを一括で有効・無効化

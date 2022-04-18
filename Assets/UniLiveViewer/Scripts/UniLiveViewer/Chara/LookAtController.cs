@@ -95,7 +95,7 @@ namespace UniLiveViewer
             //仮想ルートを生成(頭の正面用)
             virtualRoot = new GameObject("VirtualRoot").transform;
             virtualRoot.parent = hipAnchor;
-            virtualRoot.gameObject.layer = Parameters.layerNo_VirtualHead;
+            virtualRoot.gameObject.layer = SystemInfo.layerNo_VirtualHead;
             //virtualRoot.gameObject.layer = Parameters.layer_VirtualHead;
             virtualRoot.localPosition = Vector3.zero;
             virtualRoot.rotation = transform.rotation;
@@ -103,7 +103,7 @@ namespace UniLiveViewer
             //仮想ヘッドを生成(目の正面用)
             virtualHead = new GameObject("VirtualHead").transform;
             virtualHead.parent = headAnchor.parent;
-            virtualHead.gameObject.layer = Parameters.layerNo_VirtualHead;
+            virtualHead.gameObject.layer = SystemInfo.layerNo_VirtualHead;
             virtualHead.gameObject.AddComponent(typeof(SphereCollider));
             var col = virtualHead.GetComponent<SphereCollider>();
             col.radius = 0.06f;
@@ -114,7 +114,7 @@ namespace UniLiveViewer
             //仮想アイを生成(いる？)
             virtualEye = new GameObject("VirtualEye").transform;
             virtualEye.parent = headAnchor;
-            virtualEye.gameObject.layer = Parameters.layerNo_VirtualHead;
+            virtualEye.gameObject.layer = SystemInfo.layerNo_VirtualHead;
             virtualEye.localPosition = Vector3.zero;
             virtualEye.rotation = transform.rotation;
         }

@@ -47,7 +47,7 @@ namespace UniLiveViewer
             generatorPortal = GameObject.FindGameObjectWithTag("GeneratorPortal").gameObject.GetComponent<GeneratorPortal>();
             timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
             audioSource = GetComponent<AudioSource>();
-            audioSource.volume = GlobalConfig.soundVolume_SE;
+            audioSource.volume = SystemInfo.soundVolume_SE;
         }
 
         public override void Update()
@@ -99,7 +99,7 @@ namespace UniLiveViewer
             if (grabbedObject)
             {
                 //キャラ以外
-                if (!grabbedObject.gameObject.CompareTag(Parameters.tag_GrabChara))
+                if (!grabbedObject.gameObject.CompareTag(SystemInfo.tag_GrabChara))
                 {
                     // TODO:ここ仕様から練り直したい
                     //両手掴みはアイテムという仕様で
@@ -241,7 +241,7 @@ namespace UniLiveViewer
                         //キャラの状態をフィールドに設定
                         keepChara.SetState(CharaController.CHARASTATE.FIELD, null);
                         //layerを変える
-                        keepChara.gameObject.layer = Parameters.layerNo_FieldObject;
+                        keepChara.gameObject.layer = SystemInfo.layerNo_FieldObject;
 
                         if (keepChara.charaInfoData.charaType == CharaInfoData.CHARATYPE.UnityChanSSU)
                         {

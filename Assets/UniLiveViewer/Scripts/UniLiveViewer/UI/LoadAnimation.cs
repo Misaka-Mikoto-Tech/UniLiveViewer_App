@@ -13,7 +13,6 @@ namespace UniLiveViewer
         {
             anime = GetComponent<Animator>();
             current = Random.Range(0, 2);
-            gameObject.SetActive(false);
         }
 
         private void OnDisable()
@@ -41,11 +40,11 @@ namespace UniLiveViewer
         {
             if (sceneName)
             {
-                sceneName.text = GlobalConfig.sceneMode_static switch
+                sceneName.text = SystemInfo.sceneMode switch
                 {
-                    GlobalConfig.SceneMode.CANDY_LIVE => "★CRS Live★",
-                    GlobalConfig.SceneMode.KAGURA_LIVE => "★KAGURA Live★",
-                    GlobalConfig.SceneMode.VIEWER => "★ViewerScene★",
+                    SceneMode.CANDY_LIVE => "★CRS Live★",
+                    SceneMode.KAGURA_LIVE => "★KAGURA Live★",
+                    SceneMode.VIEWER => "★ViewerScene★",
                     _ => "",
                 };
             }

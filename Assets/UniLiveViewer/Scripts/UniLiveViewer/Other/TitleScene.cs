@@ -36,7 +36,7 @@ namespace UniLiveViewer
         void Start()
         {
             audioSource = GetComponent<AudioSource>();
-            audioSource.volume = GlobalConfig.soundVolume_SE;
+            audioSource.volume = SystemInfo.soundVolume_SE;
 
             //randomにキャラが変わる
             int r = Random.Range(0, 3);
@@ -46,7 +46,7 @@ namespace UniLiveViewer
                 else Chara[i].gameObject.SetActive(false);
             }
 
-            if (GlobalConfig.systemData.LanguageCode != (int)SaveData.USE_LANGUAGE.NULL)
+            if (SystemInfo.userProfile.data.LanguageCode != (int)USE_LANGUAGE.NULL)
             {
                 //2回目以降
                 sprRender.gameObject.SetActive(false);
@@ -70,15 +70,15 @@ namespace UniLiveViewer
         {
             if (btn.name.Contains("_JP"))
             {
-                GlobalConfig.systemData.LanguageCode = (int)SaveData.USE_LANGUAGE.JP;
-                SaveData.SetJson_SystemData(GlobalConfig.systemData);
+                SystemInfo.userProfile.data.LanguageCode = (int)USE_LANGUAGE.JP;
+                SystemInfo.userProfile.WriteJson();
                 //差し替える
                 sprRender.sprite = sprPrefab[1];
             }
             else
             {
-                GlobalConfig.systemData.LanguageCode = (int)SaveData.USE_LANGUAGE.EN;
-                SaveData.SetJson_SystemData(GlobalConfig.systemData);
+                SystemInfo.userProfile.data.LanguageCode = (int)USE_LANGUAGE.EN;
+                SystemInfo.userProfile.WriteJson();
                 //差し替える
                 sprRender.sprite = sprPrefab[0];
             }

@@ -43,7 +43,7 @@ namespace UniLiveViewer
         private void Awake()
         {
             audioSource = GetComponent<AudioSource>();
-            audioSource.volume = GlobalConfig.soundVolume_SE;
+            audioSource.volume = SystemInfo.soundVolume_SE;
             lookAtCon = GetComponent<LookAtController>();
 
             charaCon = GetComponent<CharaController>();
@@ -123,7 +123,7 @@ namespace UniLiveViewer
                 if (!isShockSound)
                 {
                     //ターゲットから視線のrayを飛ばす
-                    Physics.Raycast(lookAtCon.lookTarget.position, lookAtCon.lookTarget.forward, out rayHit, 2.0f, Parameters.layerMask_VirtualHead);
+                    Physics.Raycast(lookAtCon.lookTarget.position, lookAtCon.lookTarget.forward, out rayHit, 2.0f, SystemInfo.layerMask_VirtualHead);
                     //仮ヘッドにヒットしていれば(ターゲットがこちらを見た)
                     if (rayHit.collider && rayHit.collider.transform.root == transform)
                     {

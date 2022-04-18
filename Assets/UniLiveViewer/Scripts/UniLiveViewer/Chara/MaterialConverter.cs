@@ -77,7 +77,7 @@ namespace UniLiveViewer
             fallbackShader.Add("Universal Render Pipeline/Lit", fallbackShader_default);
             fallbackShader.Add("Universal Render Pipeline/Simple Lit", fallbackShader_default);
 
-            layer_Default = Parameters.layerMask_Default;
+            layer_Default = SystemInfo.layerMask_Default;
 
             //replaceShader.Add(Shader.Find("Shader Graphs/Simple MToon"));
             //replaceShader.Add(Shader.Find("Shader Graphs/Simple Standard"));

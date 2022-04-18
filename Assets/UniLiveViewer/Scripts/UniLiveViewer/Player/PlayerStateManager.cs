@@ -76,7 +76,7 @@ namespace UniLiveViewer
         {
             timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
             audioSource = GetComponent<AudioSource>();
-            audioSource.volume = GlobalConfig.soundVolume_SE;
+            audioSource.volume = SystemInfo.soundVolume_SE;
 
             charaCam = GetComponent<CharacterCameraConstraint_Custom>();
             textMesh_CamHei = handUI.GetChild(0).GetComponent<TextMesh>();
@@ -102,17 +102,17 @@ namespace UniLiveViewer
         // Start is called before the first frame update
         void Start()
         {
-            switch (GlobalConfig.sceneMode_static)
+            switch (SystemInfo.sceneMode)
             {
-                case GlobalConfig.SceneMode.CANDY_LIVE:
+                case SceneMode.CANDY_LIVE:
                     transform.position = new Vector3(0, 0.4f, 6.5f);
                     transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
                     break;
-                case GlobalConfig.SceneMode.KAGURA_LIVE:
+                case SceneMode.KAGURA_LIVE:
                     transform.position = new Vector3(0, 1, 4);
                     transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
                     break;
-                case GlobalConfig.SceneMode.VIEWER:
+                case SceneMode.VIEWER:
                     transform.position = new Vector3(0, 0.5f, 5.5f);
                     transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
                     break;
@@ -468,7 +468,7 @@ namespace UniLiveViewer
             for (int i = 0; i < ovrGrabber.Length; i++)
             {
                 if (!ovrGrabber[i].grabbedObject) continue;
-                if (ovrGrabber[i].grabbedObject.gameObject.CompareTag(Parameters.tag_GrabSliderVolume))
+                if (ovrGrabber[i].grabbedObject.gameObject.CompareTag(SystemInfo.tag_GrabSliderVolume))
                 {
                     return true;
                 }
@@ -502,7 +502,7 @@ namespace UniLiveViewer
         /// <param name="time">振動時間、上限2秒らしい</param>
         public static void ControllerVibration(OVRInput.Controller touch, float frequency, float amplitude, float time)
         {
-            if (!GlobalConfig.isControllerVibration) return;
+            if (!SystemInfo.isControllerVibration) return;
 
             if (instance) instance.UniTask_ControllerVibration(touch, frequency, amplitude, time);
 

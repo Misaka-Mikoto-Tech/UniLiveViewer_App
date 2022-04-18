@@ -2247,7 +2247,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
   m_Name: AnimationPlayableAsset of HandExpression
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 0}
+  m_Clip: {fileID: 7400000, guid: a0cd79db26c4d774c9860078c70a7984, type: 3}
   m_Position: {x: 0, y: 0, z: 0}
   m_EulerAngles: {x: 0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
@@ -2769,7 +2769,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
   m_Name: AnimationPlayableAsset of Unite In The Sky_LipClip
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 0}
+  m_Clip: {fileID: 7400000, guid: 2362a770c7b4693439e9f49ce97d3225, type: 2}
   m_Position: {x: 0, y: 0, z: 0}
   m_EulerAngles: {x: 0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
@@ -2883,7 +2883,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
   m_Name: AnimationPlayableAsset of HandExpression
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 0}
+  m_Clip: {fileID: 7400000, guid: a0cd79db26c4d774c9860078c70a7984, type: 3}
   m_Position: {x: 0, y: 0, z: 0}
   m_EulerAngles: {x: 0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
@@ -3361,7 +3361,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
   m_Name: AnimationPlayableAsset of Unite In The Sky_FaceClip
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 0}
+  m_Clip: {fileID: 7400000, guid: 15cc782a9c0464a4a8e4168549d0762e, type: 2}
   m_Position: {x: 0, y: 0, z: 0}
   m_EulerAngles: {x: 0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
@@ -3591,11 +3591,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
-  m_Name: AnimationPlayableAsset of VMD_Dummy
+  m_Name: AnimationPlayableAsset of 003_NOT01_Final
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 7400000, guid: 07c7fb95a700a654cbafe32829be3774, type: 2}
-  m_Position: {x: 0.06440786, y: -0.3, z: 0.4172578}
-  m_EulerAngles: {x: -0, y: 0, z: 0}
+  m_Clip: {fileID: 7400000, guid: 01a3f2721e63f7247b7f53302ed7104f, type: 3}
+  m_Position: {x: 5.5968714, y: -0.3, z: 5.024044}
+  m_EulerAngles: {x: -0, y: 315, z: 0}
   m_UseTrackMatchFields: 1
   m_MatchTargetFields: 63
   m_RemoveStartOffset: 1

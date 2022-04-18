@@ -176,8 +176,8 @@ namespace UniLiveViewer
             {
                 if (i < ItemInfo.Length)
                 {
-                    if (GlobalConfig.systemData.LanguageCode == (int)SaveData.USE_LANGUAGE.JP) btnList[i].SetTextMesh(ItemInfo[i].itemName[1]);
-                    else if (GlobalConfig.systemData.LanguageCode == (int)SaveData.USE_LANGUAGE.EN) btnList[i].SetTextMesh(ItemInfo[i].itemName[0]);
+                    if (SystemInfo.userProfile.data.LanguageCode == (int)USE_LANGUAGE.JP) btnList[i].SetTextMesh(ItemInfo[i].itemName[1]);
+                    else if (SystemInfo.userProfile.data.LanguageCode == (int)USE_LANGUAGE.EN) btnList[i].SetTextMesh(ItemInfo[i].itemName[0]);
                     if (!btnList[i].gameObject.activeSelf) btnList[i].gameObject.SetActive(true);
                 }
                 else if (ItemInfo.Length <= i)

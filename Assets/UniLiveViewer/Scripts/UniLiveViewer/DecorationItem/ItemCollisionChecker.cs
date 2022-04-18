@@ -10,7 +10,7 @@ namespace UniLiveViewer
 
         private void OnTriggerEnter(Collider other)
         {
-            if (other.CompareTag(Parameters.tag_ItemMaterial))
+            if (other.CompareTag(SystemInfo.tag_ItemMaterial))
             {
                 OnTrigger?.Invoke(this, other);
             }

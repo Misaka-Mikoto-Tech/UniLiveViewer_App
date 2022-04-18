@@ -206,7 +206,7 @@ namespace UniLiveViewer
                     await UniTask.Yield(PlayerLoopTiming.Update, cts.Token);
 
                     //animatorを停止、VMDを再生
-                    string folderPath = FileAccessManager.GetFullPath(FileAccessManager.FOLDERTYPE.MOTION);//VMDのパスを取得
+                    string folderPath = FileAccessManager.GetFullPath(FOLDERTYPE.MOTION);//VMDのパスを取得
                     portalChara.GetComponent<Animator>().enabled = false;//Animatorが競合するので無効  
                     portalChara.animationMode = CharaController.ANIMATIONMODE.VMD;
                     await VMDPlay(vmdPlayer, folderPath, GetNowAnimeInfo().viewName, cts.Token);

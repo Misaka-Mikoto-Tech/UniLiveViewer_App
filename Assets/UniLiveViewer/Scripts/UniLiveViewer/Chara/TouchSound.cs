@@ -15,7 +15,7 @@ namespace UniLiveViewer
         private void Awake()
         {
             audioSource = GetComponent<AudioSource>();
-            audioSource.volume = GlobalConfig.soundVolume_SE;
+            audioSource.volume = SystemInfo.soundVolume_SE;
 
             //親子全てにコライダーを付ける
             CreateColliders(parentAnchor);
@@ -36,7 +36,7 @@ namespace UniLiveViewer
                 //コライダーを付ける
                 parent.gameObject.AddComponent(typeof(SphereCollider));
                 var col = parent.GetComponent<SphereCollider>();
-                col.gameObject.layer = Parameters.layerNo_UI;
+                col.gameObject.layer = SystemInfo.layerNo_UI;
                 col.radius = colliderRadius;
                 col.isTrigger = true;
 

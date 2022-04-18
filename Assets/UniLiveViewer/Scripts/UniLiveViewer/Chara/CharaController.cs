@@ -61,7 +61,7 @@ namespace UniLiveViewer
             }
             get
             {
-                if (reScalar == 0) reScalar = GlobalConfig.systemData.InitCharaSize;
+                if (reScalar == 0) reScalar = SystemInfo.userProfile.data.InitCharaSize;
                 return reScalar;
             }
         }

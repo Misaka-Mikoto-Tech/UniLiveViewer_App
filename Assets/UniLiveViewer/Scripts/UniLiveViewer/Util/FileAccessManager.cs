@@ -11,17 +11,17 @@ using VRM.FirstPersonSample;
 
 namespace UniLiveViewer 
 {
+    public enum FOLDERTYPE
+    {
+        CHARA,
+        MOTION,
+        BGM,
+        SETTING
+    }
+
     [RequireComponent(typeof(SpriteRenderer))]
     public class FileAccessManager : MonoBehaviour
     {
-        public enum FOLDERTYPE
-        {
-            CHARA,
-            MOTION,
-            BGM,
-            SETTING
-        }
-
         public static string folderPath_Custom;//VMDやmp3など
         public string sMssage;//デバッグ用
 
@@ -53,48 +53,44 @@ namespace UniLiveViewer
         [SerializeField] private Texture2D texDummy;
         private static SpriteRenderer _renderer;
 
-#if UNITY_EDITOR
-        private const int MAX_AUDIOCOUNT = 30;
-#elif UNITY_ANDROID
-        private const int MAX_AUDIOCOUNT = 10;
-#endif
+        private byte maxAudioCount = 0;
 
+        public event Action onLoadStart;
         public event Action onFolderCheckCompleted;
         public event Action onAudioCompleted;
         public event Action onThumbnailCompleted;
+        public event Action onVMDLoadError;
 
         [SerializeField] VRMRuntimeLoader_Custom vrmRuntimeLoader;
 
 
         private void Awake()
         {
-            //Linkだと両方反応するのでelif必須→PLATFORM_OCULUSってのがあるみたい
+
+        //Linkだと両方反応するのでelif必須→PLATFORM_OCULUSってのがあるみたい
 #if UNITY_EDITOR
-            folderPath_Custom = "D:/User/UniLiveViewer/";
+        folderPath_Custom = "D:/User/UniLiveViewer/";
             sMssage = "windowsとして認識しています";
+            maxAudioCount = SystemInfo.MAXAUDIO_EDITOR;
 #elif UNITY_ANDROID
             folderPath_Custom = "/storage/emulated/0/" + "UniLiveViewer/";
             sMssage = "Questとして認識しています";
+            maxAudioCount = SystemInfo.MAXAUDIO_QUEST;
 #endif
             //folderPath_Custom = Application.persistentDataPath + "/";
             //folderPath_Custom = Application.temporaryCachePath + "/";
 
             cancellation_token = this.GetCancellationTokenOnDestroy();
 
+            _renderer = GetComponent<SpriteRenderer>();
             presetCount = presetAudioClip.Length;
 
             for (int i = 0; i < presetCount; i++)
             {
                 audioList.Add(presetAudioClip[i]);
             }
-
-            _renderer = GetComponent<SpriteRenderer>();
-
-            cancellation_token = this.GetCancellationTokenOnDestroy();
-
             //アプリフォルダの作成
             StartCoroutine(CreateFolder());
-
         }
 
         public static string GetFullPath(FOLDERTYPE type)
@@ -121,12 +117,18 @@ namespace UniLiveViewer
 
             try
             {
-                //ベースフォルダチェック
+                //無ければ毎回作成
                 for (int i = 0; i < folderName.Length; i++)
                 {
                     sFullPath = folderPath_Custom + folderName[i];
                     CreateFolder(sFullPath);
                 }
+
+                onLoadStart?.Invoke();
+
+                //言語確認が欲しいので最優先
+                if (SystemInfo.userProfile == null) SystemInfo.userProfile = new UserProfile();
+                SystemInfo.userProfile.ReadJson();
 
                 //キャッシュフォルダ
                 //sFullPath = folderPath_Custom + folderName[(int)FOLDERTYPE.CHARA] + cachePath;
@@ -137,7 +139,12 @@ namespace UniLiveViewer
                 //CreateFolder(sFullPath);
 
                 //VMDのファイル名を取得
-                GetAllVMDNames();
+                if (!GetAllVMDNames())
+                {
+                    onVMDLoadError?.Invoke();
+                    isSuccess = false;
+                    yield break;
+                }
                 //GetAllVMDLipSyncNames();
 
                 isSuccess = true;
@@ -146,7 +153,6 @@ namespace UniLiveViewer
             {
                 isSuccess = false;
             }
-
 
             if (isSuccess)
             {
@@ -171,7 +177,6 @@ namespace UniLiveViewer
 
         private void CreateFolder(string fullPath)
         {
-            //キャッシュフォルダ
             try
             {
                 var b = Directory.Exists(fullPath);
@@ -240,12 +245,12 @@ namespace UniLiveViewer
         /// アプリフォルダ内のVMDファイル名を取得
         /// </summary>
         /// <returns></returns>
-        private void GetAllVMDNames()
+        private bool GetAllVMDNames()
         {
             //初期化
-            if (SaveData.dicVMD_offset.Count != 0)
+            if (SystemInfo.dicVMD_offset.Count != 0)
             {
-                SaveData.dicVMD_offset.Clear();
+                SystemInfo.dicVMD_offset.Clear();
             }
 
             //offset情報ファイルがあれば読み込む
@@ -255,7 +260,9 @@ namespace UniLiveViewer
                 foreach (string line in File.ReadLines(path + "MotionOffset.txt"))
                 {
                     string[] spl = line.Split(',');
-                    SaveData.dicVMD_offset.Add(spl[0], int.Parse(spl[1]));
+                    if (spl.Length != 2) return false;
+                    if(spl[0]==""|| spl[1] == "") return false;
+                    SystemInfo.dicVMD_offset.Add(spl[0], int.Parse(spl[1]));
                 }
             }
 
@@ -270,22 +277,30 @@ namespace UniLiveViewer
                 for (int i = 0; i < names.Length; i++)
                 {
                     names[i] = names[i].Replace(sFolderPath, "");
-                    vmdList.Add(names[i]);
 
-                    //既存offset情報がなければ追加
-                    if (!SaveData.dicVMD_offset.ContainsKey(names[i]))
+                    //ファイル名に区切りのカンマが含まれると困る
+                    if (names[i].Contains(",")) return false;
+                    else
                     {
-                        SaveData.dicVMD_offset.Add(names[i], 0);
+                        vmdList.Add(names[i]);
+
+                        //既存offset情報がなければ追加
+                        if (!SystemInfo.dicVMD_offset.ContainsKey(names[i]))
+                        {
+                            SystemInfo.dicVMD_offset.Add(names[i], 0);
+                        }
                     }
                 }
 
                 //一旦保存
-                SaveData.SaveOffset();
+                SystemInfo.userProfile.SaveOffset();
             }
             catch
             {
                 sMssage = "VMDファイル読み込みに失敗しました";
+                return false;
             }
+            return true;
         }
 
         /// <summary>
@@ -368,7 +383,7 @@ namespace UniLiveViewer
 
             foreach (string str in mp3_path)
             {
-                if (AudioCount < MAX_AUDIOCOUNT) AudioCount++;
+                if (AudioCount < maxAudioCount) AudioCount++;
                 else break;
                 var src = $"file://{str}";
                 using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(src, AudioType.MPEG))
@@ -405,7 +420,7 @@ namespace UniLiveViewer
 
             foreach (string str in wav_path)
             {
-                if (AudioCount < MAX_AUDIOCOUNT) AudioCount++;
+                if (AudioCount < maxAudioCount) AudioCount++;
                 else break;
                 var src = $"file://{str}";
                 using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(src, AudioType.WAV))
