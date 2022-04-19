@@ -117,8 +117,8 @@ namespace UniLiveViewer
 #if UNITY_EDITOR
             maxFieldChara = SystemInfo.MAXCHARA_EDITOR[current];
 #elif UNITY_ANDROID
-            if (SystemInfo.deviceName == "Oculus Quest 2") maxFieldChara = SystemInfo.MAXCHARA_QUEST2[current];
-            else if (SystemInfo.deviceName == "Oculus Quest") maxFieldChara = SystemInfo.MAXCHARA_QUEST1[current];
+            if (UnityEngine.SystemInfo.deviceName == "Oculus Quest 2") maxFieldChara = SystemInfo.MAXCHARA_QUEST2[current];
+            else if (UnityEngine.SystemInfo.deviceName == "Oculus Quest") maxFieldChara = SystemInfo.MAXCHARA_QUEST1[current];
 #endif
         }
 
@@ -203,6 +203,16 @@ namespace UniLiveViewer
                     }
                 }
             }
+        }
+
+        public void ClearPortal()
+        {
+            IEnumerable<PlayableBinding> outputs = playableDirector.playableAsset.outputs;
+            //ポータル用BaseAnimeのPlayableBindingを取得
+            PlayableBinding Asset_BaseAnime = outputs.FirstOrDefault(x => x.streamName == sPortalBaseAniTrack);
+            //bindを解除
+            playableDirector.SetGenericBinding(Asset_BaseAnime.sourceObject, null);
+            trackBindChara[PORTAL_ELEMENT] = null;
         }
 
         /// <summary>
@@ -661,14 +671,14 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// 名前一致でトラックバインドキャラを削除する
+        /// ID一致でバインドアセットを削除
         /// </summary>
         /// <param name="chara"></param>
-        public void DeletebindAsset_CleanUp(string hViewName)
+        public void DeletebindAsset_CleanUp(int _id)
         {
             for (int i = 0; i < trackBindChara.Length; i++)
             {
-                if (trackBindChara[i] && hViewName == trackBindChara[i].charaInfoData.viewName)
+                if (trackBindChara[i] && _id == trackBindChara[i].charaInfoData.vrmID)
                 {
                     Destroy(trackBindChara[i].gameObject);
                     trackBindChara[i] = null;

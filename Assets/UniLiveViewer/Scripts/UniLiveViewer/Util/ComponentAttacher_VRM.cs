@@ -18,7 +18,8 @@ namespace UniLiveViewer
         [SerializeField] private AttachPoint attachPointPrefab;
         [SerializeField] private GameObject lowShadowPrefab;
         [SerializeField] private GameObject guidePrefab;
-        [SerializeField] private MaterialConverter matConverter;
+        private MaterialConverter matConverter;
+        private MaterialManager matManager;
 
         private VRMMeta meta;
         private GameObject targetVRM;
@@ -52,6 +53,7 @@ namespace UniLiveViewer
                 //マテリアル関係
                 matConverter = targetVRM.AddComponent<MaterialConverter>();
                 matConverter.Init();
+                matManager = targetVRM.AddComponent<MaterialManager>();
             }
             catch (OperationCanceledException)
             {
@@ -79,6 +81,7 @@ namespace UniLiveViewer
 
                 //skinの方はVRMから流用
                 await matConverter.Conversion(CharaCon.GetSkinnedMeshRenderers, token);
+                await matManager.ExtractMaterials(CharaCon.GetSkinnedMeshRenderers, token);
 
                 Destroy(targetVRM.GetComponent<MaterialConverter>());
             }
@@ -198,6 +201,8 @@ namespace UniLiveViewer
                 }
 
                 string name = meta.Meta.Title;
+                CharaCon.charaInfoData.vrmID = VRMSwitchController.loadVRMID;
+                VRMSwitchController.loadVRMID++;
                 if (name != "") CharaCon.charaInfoData.viewName = name;
                 else CharaCon.charaInfoData.viewName = targetVRM.name;
 

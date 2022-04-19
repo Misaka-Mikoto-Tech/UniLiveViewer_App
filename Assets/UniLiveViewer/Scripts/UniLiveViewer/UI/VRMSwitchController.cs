@@ -12,6 +12,8 @@ namespace UniLiveViewer
     //[RequireComponent(typeof(FileAccessManager))]
     public class VRMSwitchController : MonoBehaviour
     {
+        public static int loadVRMID = 0;
+
         [SerializeField] private Transform[] pageTransform;
         [SerializeField] private Transform displayAnchor;
 
@@ -33,8 +35,8 @@ namespace UniLiveViewer
         [SerializeField] private SliderGrabController slider_Transparent = null;
         [SerializeField] private Button_Base btn_AllReset;
         [SerializeField] private Button_Base btn_SetOK;
-        private GameObject vrmModel;
-        private MaterialConverter matConverter;
+        //private MaterialConverter matConverter;
+        
 
         [Space(1)]
         [Header("＜3ページ＞")]
@@ -51,6 +53,7 @@ namespace UniLiveViewer
         [SerializeField] private AudioClip[] Sound;//ボタン音,読み込み音,クリック音                               
         //VRM読み込み時イベント
         public event Action<CharaController> VRMAdded;
+        public event Action<CharaController> onSetupComplete;
         //ファイルアクセスとサムネの管理
         private FileAccessManager fileManager;
         //private Dictionary<string, Sprite> dicVRMSprite = new Dictionary<string, Sprite>();
@@ -187,13 +190,9 @@ namespace UniLiveViewer
                     //VRMが存在していればUIを更新
                     if (vrmPresetAnchor.GetChild(0))
                     {
-                        //回転セレクターにマテリアル名のリストを渡す
-                        List<string> strList = new List<string>();
-                        foreach (var e in matConverter.materials)
-                        {
-                            strList.Add(e.name);
-                        }
-                        rollSelector_Material.init(strList);
+                        var matLocation = vrmPresetAnchor.GetChild(0).GetComponent<MaterialManager>().matLocation;
+                        List<string> list = new List<string>(matLocation.Keys);
+                        rollSelector_Material.Init(list);
 
                         //表示を更新
                         MaterialInfoUpdate();
@@ -203,8 +202,6 @@ namespace UniLiveViewer
                     break;
             }
         }
-
-
 
         /// <summary>
         /// VRMの数だけサムネボタンを生成する
@@ -442,20 +439,18 @@ namespace UniLiveViewer
         /// <returns></returns>
         private async UniTask SetVRM(Button_Base btn, CancellationToken token)
         {
+            GameObject vrmModel = null;
             try
             {
                 //SampleUIを有効化
                 runtimeLoader.gameObject.SetActive(true);
-
                 await UniTask.Delay(10, cancellationToken: token);
 
                 //指定パスのVRMのみ読み込む
                 string fileName = btn.transform.name;
                 string fullPath = FileAccessManager.GetFullPath(FOLDERTYPE.CHARA) + fileName;
 
-                //if (vrmModel) vrmModel = null;
                 var instance =  await runtimeLoader.OnOpenClicked_VRM(fullPath, token);
-
 
                 //Meshが消える対策
                 instance.EnableUpdateWhenOffscreen();
@@ -472,63 +467,28 @@ namespace UniLiveViewer
                 //各種component追加
                 var attacher = Instantiate(attacherPrefab.gameObject).GetComponent<ComponentAttacher_VRM>();
                 await attacher.Init(vrmModel.transform, instance.SkinnedMeshRenderers.ToArray(), token);
-                //var characon = attacher.CharaCon;
-
                 await attacher.Attachment(touchCollider, token);
-
-                //マテリアルコンバーターの追加
-                if (matConverter) matConverter = null;
-                //matConverter = vrmModel.AddComponent<MaterialConverter>();
-                //matConverter.Init();
-                //skinの方はVRMから流用
-                //await matConverter.Conversion(characon.GetSkinnedMeshRenderers, token);
-                //meshはない？のでサーチ
-                //var meshRenderers = vrmModel.GetComponentsInChildren<MeshRenderer>();
-                //if (meshRenderers != null && meshRenderers.Length > 0)
-                //{
-                //    await matConverter.Conversion_Item(meshRenderers.ToArray(), token);
-                //}
-                //Destroy(vrmModel.GetComponent<MaterialConverter>());
-
-                // TODO:シェーダーどうするか
-                //調整が必要なマテリアルがあるか
-                //if (matConverter.materials != null && matConverter.materials.Count > 0)
-                //{
-                //    //VRMをプリセットアンカーに移動
-                //    vrmModel.transform.parent = vrmPresetAnchor;
-                //    vrmModel.transform.localPosition = Vector3.zero;
-                //    vrmModel.transform.localRotation = Quaternion.identity;
-
-                //    //マテリアル設定ページへ
-                //    InitPage(1);
-                //}
-                //else
-                //{
-                //    //VRM追加した
-                //    VRMAdded?.Invoke(characon);
-
-                //    //UIを非表示にする
-                //    SetUIView(true);
-                //}
 
                 //VRM追加した
                 VRMAdded?.Invoke(attacher.CharaCon);
 
                 //UIを非表示にする
                 SetUIView(true);
-
-            
-
             }
             catch
             {
                 if (vrmModel) Destroy(vrmModel);
                 throw;
             }
-            finally
-            {
-                vrmModel = null;//管理を解除
-            }
+        }
+
+        public void VRMEditing(CharaController _vrmModel)
+        {
+            //VRMをプリセットアンカーに移動
+            _vrmModel.SetState(CharaController.CHARASTATE.NULL, vrmPresetAnchor);
+
+            //マテリアル設定ページへ
+            InitPage(1);
         }
 
         /// <summary>
@@ -536,49 +496,49 @@ namespace UniLiveViewer
         /// </summary>
         private void MaterialInfoUpdate()
         {
-            //クリック音
-            audioSource.PlayOneShot(Sound[0]);
+            ////クリック音
+            //audioSource.PlayOneShot(Sound[0]);
 
-            int current = rollSelector_Material.current;
-            var type = (MaterialConverter.SurfaceType)matConverter.materials[current].GetFloat("_Surface");
-            var face = (MaterialConverter.RenderFace)matConverter.materials[current].GetFloat("_Cull");
-            var color = matConverter.materials[current].GetColor("_BaseColor");
+            //int current = rollSelector_Material.current;
+            //var type = (MaterialConverter.SurfaceType)matConverter.materials[current].GetFloat("_Surface");
+            //var face = (MaterialConverter.RenderFace)matConverter.materials[current].GetFloat("_Cull");
+            //var color = matConverter.materials[current].GetColor("_BaseColor");
 
-            //buttonに反映
-            if (type == MaterialConverter.SurfaceType.Opaque)
-            {
-                btn_SuefaceType[0].isEnable = true;
-                btn_SuefaceType[1].isEnable = false;
-                //スライダー無効化
-                slider_Transparent.gameObject.SetActive(false);
-            }
-            else if (type == MaterialConverter.SurfaceType.Transparent)
-            {
-                btn_SuefaceType[0].isEnable = false;
-                btn_SuefaceType[1].isEnable = true;
-                //スライダー有効化
-                slider_Transparent.gameObject.SetActive(true);
-                slider_Transparent.Value = color.a;
-            }
-            //buttonに反映
-            if (face == MaterialConverter.RenderFace.Front)
-            {
-                btn_RenderFace[0].isEnable = true;
-                btn_RenderFace[1].isEnable = false;
-                btn_RenderFace[2].isEnable = false;
-            }
-            else if (face == MaterialConverter.RenderFace.Back)
-            {
-                btn_RenderFace[0].isEnable = false;
-                btn_RenderFace[1].isEnable = true;
-                btn_RenderFace[2].isEnable = false;
-            }
-            else if (face == MaterialConverter.RenderFace.Both)
-            {
-                btn_RenderFace[0].isEnable = false;
-                btn_RenderFace[1].isEnable = false;
-                btn_RenderFace[2].isEnable = true;
-            }
+            ////buttonに反映
+            //if (type == MaterialConverter.SurfaceType.Opaque)
+            //{
+            //    btn_SuefaceType[0].isEnable = true;
+            //    btn_SuefaceType[1].isEnable = false;
+            //    //スライダー無効化
+            //    slider_Transparent.gameObject.SetActive(false);
+            //}
+            //else if (type == MaterialConverter.SurfaceType.Transparent)
+            //{
+            //    btn_SuefaceType[0].isEnable = false;
+            //    btn_SuefaceType[1].isEnable = true;
+            //    //スライダー有効化
+            //    slider_Transparent.gameObject.SetActive(true);
+            //    slider_Transparent.Value = color.a;
+            //}
+            ////buttonに反映
+            //if (face == MaterialConverter.RenderFace.Front)
+            //{
+            //    btn_RenderFace[0].isEnable = true;
+            //    btn_RenderFace[1].isEnable = false;
+            //    btn_RenderFace[2].isEnable = false;
+            //}
+            //else if (face == MaterialConverter.RenderFace.Back)
+            //{
+            //    btn_RenderFace[0].isEnable = false;
+            //    btn_RenderFace[1].isEnable = true;
+            //    btn_RenderFace[2].isEnable = false;
+            //}
+            //else if (face == MaterialConverter.RenderFace.Both)
+            //{
+            //    btn_RenderFace[0].isEnable = false;
+            //    btn_RenderFace[1].isEnable = false;
+            //    btn_RenderFace[2].isEnable = true;
+            //}
         }
 
         /// <summary>
@@ -587,31 +547,31 @@ namespace UniLiveViewer
         /// <param name="btn"></param>
         private void MaterialSetting_Change(Button_Base btn)
         {
-            int current = rollSelector_Material.current;
+            //int current = rollSelector_Material.current;
 
-            if (btn == btn_SuefaceType[0])
-            {
-                matConverter.SetSurface(current, MaterialConverter.SurfaceType.Opaque);
-            }
-            else if (btn == btn_SuefaceType[1])
-            {
-                matConverter.SetSurface(current, MaterialConverter.SurfaceType.Transparent);
-            }
-            else if (btn == btn_RenderFace[0])
-            {
-                matConverter.SetRenderFace(current, MaterialConverter.RenderFace.Front);
-            }
-            else if (btn == btn_RenderFace[1])
-            {
-                matConverter.SetRenderFace(current, MaterialConverter.RenderFace.Back);
-            }
-            else if (btn == btn_RenderFace[2])
-            {
-                matConverter.SetRenderFace(current, MaterialConverter.RenderFace.Both);
-            }
+            //if (btn == btn_SuefaceType[0])
+            //{
+            //    matConverter.SetSurface(current, MaterialConverter.SurfaceType.Opaque);
+            //}
+            //else if (btn == btn_SuefaceType[1])
+            //{
+            //    matConverter.SetSurface(current, MaterialConverter.SurfaceType.Transparent);
+            //}
+            //else if (btn == btn_RenderFace[0])
+            //{
+            //    matConverter.SetRenderFace(current, MaterialConverter.RenderFace.Front);
+            //}
+            //else if (btn == btn_RenderFace[1])
+            //{
+            //    matConverter.SetRenderFace(current, MaterialConverter.RenderFace.Back);
+            //}
+            //else if (btn == btn_RenderFace[2])
+            //{
+            //    matConverter.SetRenderFace(current, MaterialConverter.RenderFace.Both);
+            //}
 
-            //UI表示を更新
-            MaterialInfoUpdate();
+            ////UI表示を更新
+            //MaterialInfoUpdate();
         }
 
         /// <summary>
@@ -619,8 +579,8 @@ namespace UniLiveViewer
         /// </summary>
         private void MaterialSetting_TransparentColor()
         {
-            //透明を更新
-            matConverter.SetColor_Transparent(rollSelector_Material.current, slider_Transparent.Value);
+            ////透明を更新
+            //matConverter.SetColor_Transparent(rollSelector_Material.current, slider_Transparent.Value);
         }
 
         /// <summary>
@@ -629,14 +589,14 @@ namespace UniLiveViewer
         /// <param name="btn"></param>
         private void MaterialSetting_AllReset(Button_Base btn)
         {
-            //クリック音
-            audioSource.PlayOneShot(Sound[0]);
+            ////クリック音
+            //audioSource.PlayOneShot(Sound[0]);
 
-            //マテリアルをリセット
-            matConverter.ResetMaterials();
+            ////マテリアルをリセット
+            //matConverter.ResetMaterials();
 
-            //UI表示を更新
-            MaterialInfoUpdate();
+            ////UI表示を更新
+            //MaterialInfoUpdate();
         }
 
         /// <summary>
@@ -648,17 +608,20 @@ namespace UniLiveViewer
             //クリック音
             audioSource.PlayOneShot(Sound[0]);
 
-            vrmModel.transform.parent = runtimeLoader.transform;
-            vrmModel.transform.localPosition = Vector3.zero;
-            vrmModel.transform.localRotation = Quaternion.identity;
+            var vrm = vrmPresetAnchor.GetChild(0).GetComponent<CharaController>();
+            if (vrm && vrm.charaInfoData.formatType == CharaInfoData.FORMATTYPE.VRM)
+            {
+                vrm.SetState(CharaController.CHARASTATE.NULL,null);
+                vrm.transform.parent = runtimeLoader.transform;
+                vrm.transform.localPosition = Vector3.zero;
+                vrm.transform.localRotation = Quaternion.identity;
 
-            //VRM追加した
-            VRMAdded?.Invoke(vrmModel.GetComponent<CharaController>());
+                onSetupComplete?.Invoke(vrm);
+            }
 
             //UIを非表示にする
             SetUIView(true);
 
-            vrmModel = null;
         }
     }
 }

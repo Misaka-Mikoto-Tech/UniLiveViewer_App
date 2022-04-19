@@ -24,8 +24,8 @@ namespace UniLiveViewer
 #if UNITY_EDITOR
             result = SystemInfo.MAXCHARA_EDITOR[(byte)mode];
 #elif UNITY_ANDROID
-            if (SystemInfo.deviceName == "Oculus Quest 2") result = SystemInfo.MAXCHARA_QUEST2[(byte)mode].ToString();
-            else if (SystemInfo.deviceName == "Oculus Quest") result = SystemInfo.MAXCHARA_QUEST1[(byte)mode].ToString();
+            if (UnityEngine.SystemInfo.deviceName == "Oculus Quest 2") result = SystemInfo.MAXCHARA_QUEST2[(byte)mode];
+            else if (UnityEngine.SystemInfo.deviceName == "Oculus Quest") result = SystemInfo.MAXCHARA_QUEST1[(byte)mode];
 #endif
             return result;
         }
@@ -33,9 +33,9 @@ namespace UniLiveViewer
         // Update is called once per frame
         void Update()
         {
-            textMeshe_memory[0].text = "予約:" + Profiler.GetTotalReservedMemoryLong().ToString();
-            textMeshe_memory[1].text = "使用:" + Profiler.GetTotalAllocatedMemoryLong().ToString();
-            textMeshe_memory[2].text = "空き:" + Profiler.GetTotalUnusedReservedMemoryLong().ToString();
+            textMeshe_memory[0].text = $"予約:{Profiler.GetTotalReservedMemoryLong() / 1024}kb";
+            textMeshe_memory[1].text = $"使用:{Profiler.GetTotalAllocatedMemoryLong() / 1024}kb";
+            textMeshe_memory[2].text = $"空き:{Profiler.GetTotalUnusedReservedMemoryLong() / 1024}kb";
         }
     }
 }

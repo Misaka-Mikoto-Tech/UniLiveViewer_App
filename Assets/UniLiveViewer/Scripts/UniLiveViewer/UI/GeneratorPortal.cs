@@ -93,6 +93,25 @@ namespace UniLiveViewer
         }
 
         /// <summary>
+        /// CurrentのPrefabを入れ替える
+        /// </summary>
+        /// <param name="charaCon_vrm"></param>
+        public void ChangeCurrentVRM(CharaController charaCon_vrm)
+        {
+            if (listChara[currentChara].charaInfoData.formatType
+                != CharaInfoData.FORMATTYPE.VRM) return;
+
+            charaCon_vrm.gameObject.SetActive(false);
+            //オリジナル以外は削除可
+            if(listChara[currentChara].name.Contains("(Clone)"))
+            {
+                Destroy(listChara[currentChara].gameObject);
+            }
+            listChara[currentChara] = charaCon_vrm;
+
+        }
+
+        /// <summary>
         /// カレントのVRMPrefabを削除する
         /// </summary>
         public void DeleteCurrenVRM()
@@ -100,16 +119,16 @@ namespace UniLiveViewer
             if (listChara[currentChara].charaInfoData.formatType
                 != CharaInfoData.FORMATTYPE.VRM) return;
 
-            string viewName = listChara[currentChara].charaInfoData.viewName;
+            int id = listChara[currentChara].charaInfoData.vrmID;
 
             //Prefabから削除
             Destroy(listChara[currentChara].gameObject);
-            listChara.RemoveAt(currentChara);
 
+            listChara.RemoveAt(currentChara);
             currentChara--;
 
             //フィールド上に存在すれば削除
-            timeline.DeletebindAsset_CleanUp(viewName);
+            timeline.DeletebindAsset_CleanUp(id);
 
             //未使用アセットサーチが走り、不要なものを削除
             Resources.UnloadUnusedAssets();

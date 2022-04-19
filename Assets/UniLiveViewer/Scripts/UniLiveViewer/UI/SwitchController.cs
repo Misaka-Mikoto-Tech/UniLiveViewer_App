@@ -39,6 +39,7 @@ namespace UniLiveViewer
         [SerializeField] private Button_Base[] btn_Offset = new Button_Base[2];
         [SerializeField] private Button_Switch btn_Reverse = null;
         [SerializeField] private Button_Base btn_VRMLoad = null;
+        [SerializeField] private Button_Base btn_VRMSetting = null;
         [SerializeField] private Button_Base btn_VRMDelete = null;
         [SerializeField] private Button_Base btn_DeleteAll = null;
         [SerializeField] private Button_Base btn_FaceUpdate = null;
@@ -49,7 +50,7 @@ namespace UniLiveViewer
         [SerializeField] private SliderGrabController slider_EyeLook = null;
 
         private Transform offsetAnchor;
-        private Transform mouthAnchor;
+        private Transform VRMOptionAnchor;
 
         [Space(1), Header("＜2ページ＞")]
         [SerializeField] private Button_Base[] btn_Audio = new Button_Base[2];
@@ -154,10 +155,11 @@ namespace UniLiveViewer
                 timeline.trackBindChara[TimelineController.PORTAL_ELEMENT].lookAtCon.inputWeight_Head = slider_HeadLook.Value;
             };
             btn_VRMLoad.onTrigger += VRMLoad;
+            btn_VRMSetting.onTrigger += VRMSetting;
             btn_VRMDelete.onTrigger += DeleteModel;
             btn_DeleteAll.onTrigger += DeleteModel;
             btn_FaceUpdate.onTrigger += Switch_Mouth;
-            mouthAnchor = btn_FaceUpdate.transform.parent;
+            VRMOptionAnchor = btn_FaceUpdate.transform.parent;
             btn_MouthUpdate.onTrigger += Switch_Mouth;
             vrmSelectUI.VRMAdded += (vrm) =>
             {
@@ -222,6 +224,16 @@ namespace UniLiveViewer
                         break;
                 }
                 audioSource.PlayOneShot(Sound[0]);//クリック音
+            };
+            vrmSelectUI.onSetupComplete += (vrm) =>
+            {
+                timeline.ClearPortal();
+                //VRMのPrefabを差し替える
+                generatorPortal.ChangeCurrentVRM(vrm);
+                ChangeChara(0).Forget();
+
+                //var instance = Instantiate(vrm).GetComponent<CharaController>();
+                //instance.SetState(CharaController.CHARASTATE.MINIATURE, generatorPortal.transform);
             };
 
             //コールバック登録・・・2ページ目
@@ -300,10 +312,9 @@ namespace UniLiveViewer
 
             //VRMロードの画面とボタンを非表示
             btn_VRMLoad.gameObject.SetActive(false);
-            btn_VRMDelete.gameObject.SetActive(false);
 
             if (offsetAnchor.gameObject.activeSelf) offsetAnchor.gameObject.SetActive(false);
-            if (mouthAnchor.gameObject.activeSelf) mouthAnchor.gameObject.SetActive(false);
+            if (VRMOptionAnchor.gameObject.activeSelf) VRMOptionAnchor.gameObject.SetActive(false);
 
             if (SystemInfo.sceneMode == SceneMode.CANDY_LIVE)
             {
@@ -749,13 +760,11 @@ namespace UniLiveViewer
                     //モーフボタン初期化
                     if (bindChara.charaInfoData.formatType == CharaInfoData.FORMATTYPE.FBX)
                     {
-                        if (mouthAnchor.gameObject.activeSelf) mouthAnchor.gameObject.SetActive(false);
-                        if (btn_VRMDelete.gameObject.activeSelf) btn_VRMDelete.gameObject.SetActive(false);
+                        if (VRMOptionAnchor.gameObject.activeSelf) VRMOptionAnchor.gameObject.SetActive(false);
                     }
                     else
                     {
-                        if (!mouthAnchor.gameObject.activeSelf) mouthAnchor.gameObject.SetActive(true);
-                        if (!btn_VRMDelete.gameObject.activeSelf) btn_VRMDelete.gameObject.SetActive(true);
+                        if (!VRMOptionAnchor.gameObject.activeSelf) VRMOptionAnchor.gameObject.SetActive(true);
                     }
                 }
             }
@@ -768,8 +777,7 @@ namespace UniLiveViewer
                 //生成ボタンの表示
                 if (timeline.FieldCharaCount < timeline.maxFieldChara) btn_VRMLoad.gameObject.SetActive(true);
 
-                if (mouthAnchor.gameObject.activeSelf) mouthAnchor.gameObject.SetActive(false);
-                if (btn_VRMDelete.gameObject.activeSelf) btn_VRMDelete.gameObject.SetActive(false);
+                if (VRMOptionAnchor.gameObject.activeSelf) VRMOptionAnchor.gameObject.SetActive(false);
             }
         }
 
@@ -919,12 +927,31 @@ namespace UniLiveViewer
         }
 
         /// <summary>
+        /// VRM設定用画面を開く
+        /// </summary>
+        /// <param name="btn"></param>
+        private void VRMSetting(Button_Base btn)
+        {
+            var vrm = timeline.trackBindChara[TimelineController.PORTAL_ELEMENT];
+            if (vrm && vrm.charaInfoData.formatType == CharaInfoData.FORMATTYPE.VRM)
+            {
+                //var instance = Instantiate(vrm.gameObject).GetComponent<CharaController>();
+
+                //コピーをVRM設定画面に渡す
+                vrmSelectUI.VRMEditing(vrm);
+            }
+
+            //クリック音
+            audioSource.PlayOneShot(Sound[0]);
+        }
+
+        /// <summary>
         /// VRMキャラを削除
         /// </summary>
         /// <param name="btn"></param>
         private void DeleteModel(Button_Base btn)
         {
-            if (btn == btn_VRMDelete)
+            if (btn == btn_VRMDelete && timeline.isPortalChara())
             {
                 //VRMを削除する
                 generatorPortal.DeleteCurrenVRM();

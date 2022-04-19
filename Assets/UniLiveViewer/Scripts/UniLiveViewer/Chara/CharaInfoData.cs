@@ -24,6 +24,7 @@ namespace UniLiveViewer
             VRM,
         }
 
+        public int vrmID = 0;
         public string viewName = "";
         public FORMATTYPE formatType = FORMATTYPE.FBX;
         public CHARATYPE charaType = CHARATYPE.NULL;

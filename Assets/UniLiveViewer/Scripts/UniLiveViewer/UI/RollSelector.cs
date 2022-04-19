@@ -32,7 +32,7 @@ namespace UniLiveViewer
             StopCoroutine(RollUpdate());
         }
 
-        public void init(List<string> _list)
+        public void Init(List<string> _list)
         {
             //前回データを削除
             current = 0;
@@ -67,7 +67,7 @@ namespace UniLiveViewer
                     if (current < 0) current = baseList.Count - 1;
 
                     //イベント
-                    if (onTouch != null) onTouch();
+                    onTouch.Invoke();
 
                     anime.SetBool("Roll_Up", true);
 
@@ -101,7 +101,7 @@ namespace UniLiveViewer
                     if (current >= baseList.Count) current = 0;
 
                     //イベント
-                    if (onTouch != null) onTouch();
+                    onTouch?.Invoke();
 
                     anime.SetBool("Roll_Down", true);
 
