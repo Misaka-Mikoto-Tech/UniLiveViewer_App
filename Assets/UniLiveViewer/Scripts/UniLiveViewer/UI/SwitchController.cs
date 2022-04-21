@@ -742,7 +742,7 @@ namespace UniLiveViewer
                 if (btn_VRMLoad.gameObject.activeSelf) btn_VRMLoad.gameObject.SetActive(false);
 
                 //VRM選択画面を非表示(開いたまま別キャラは確認できない仕様)
-                vrmSelectUI.SetUIView(true);
+                vrmSelectUI.UIShow(false);
 
                 textMesh_Page1[0].text = charaName;
                 textMesh_Page1[0].fontSize = textMesh_Page1[0].text.FontSizeMatch(600, 30, 50);

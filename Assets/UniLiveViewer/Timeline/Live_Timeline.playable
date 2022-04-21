@@ -128,9 +128,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
-  m_Name: AnimationPlayableAsset of CloseHand_Animation
+  m_Name: AnimationPlayableAsset of HandExpression
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 7400000, guid: bc5f3274b7008ec45b68b3f658067ac6, type: 2}
+  m_Clip: {fileID: 7400000, guid: a0cd79db26c4d774c9860078c70a7984, type: 3}
   m_Position: {x: 0, y: 0, z: 0}
   m_EulerAngles: {x: 0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
@@ -301,7 +301,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
   m_Name: AnimationPlayableAsset of Unite In The Sky_FaceClip
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 0}
+  m_Clip: {fileID: 7400000, guid: 15cc782a9c0464a4a8e4168549d0762e, type: 2}
   m_Position: {x: 0, y: 0, z: 0}
   m_EulerAngles: {x: 0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
@@ -1110,9 +1110,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
-  m_Name: AnimationPlayableAsset of UniteInTheSky -WA-_FaceClip
+  m_Name: AnimationPlayableAsset of Unite In The Sky_FaceClip
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 0}
+  m_Clip: {fileID: 7400000, guid: 15cc782a9c0464a4a8e4168549d0762e, type: 2}
   m_Position: {x: 0, y: 0, z: 0}
   m_EulerAngles: {x: 0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
@@ -1383,7 +1383,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
   m_Name: AnimationPlayableAsset of Unite In The Sky_LipClip
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 0}
+  m_Clip: {fileID: 7400000, guid: 2362a770c7b4693439e9f49ce97d3225, type: 2}
   m_Position: {x: 0, y: 0, z: 0}
   m_EulerAngles: {x: 0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
@@ -1977,9 +1977,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
-  m_Name: AnimationPlayableAsset of UC01_001_JAK01_003
+  m_Name: AnimationPlayableAsset of HandExpression
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 0}
+  m_Clip: {fileID: 7400000, guid: a0cd79db26c4d774c9860078c70a7984, type: 3}
   m_Position: {x: 0, y: 0, z: 0}
   m_EulerAngles: {x: 0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
@@ -2131,9 +2131,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
-  m_Name: AnimationPlayableAsset of UniteInTheSky -WA-_LipClip
+  m_Name: AnimationPlayableAsset of Unite In The Sky_LipClip
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 0}
+  m_Clip: {fileID: 7400000, guid: 2362a770c7b4693439e9f49ce97d3225, type: 2}
   m_Position: {x: 0, y: 0, z: 0}
   m_EulerAngles: {x: 0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
@@ -2245,9 +2245,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
-  m_Name: AnimationPlayableAsset of CloseHand_Animation
+  m_Name: AnimationPlayableAsset of HandExpression
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 7400000, guid: bc5f3274b7008ec45b68b3f658067ac6, type: 2}
+  m_Clip: {fileID: 7400000, guid: a0cd79db26c4d774c9860078c70a7984, type: 3}
   m_Position: {x: 0, y: 0, z: 0}
   m_EulerAngles: {x: 0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
@@ -2631,10 +2631,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
-  m_Name: AnimationPlayableAsset of VMD_Dummy
+  m_Name: AnimationPlayableAsset of 003_NOT01_Final
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 7400000, guid: 07c7fb95a700a654cbafe32829be3774, type: 2}
-  m_Position: {x: 3.655779, y: 0.9736879, z: 4.6931252}
+  m_Clip: {fileID: 7400000, guid: 01a3f2721e63f7247b7f53302ed7104f, type: 3}
+  m_Position: {x: 3.98, y: 1.0820018, z: 5.7485}
   m_EulerAngles: {x: -0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
   m_MatchTargetFields: 63
@@ -2881,9 +2881,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
-  m_Name: AnimationPlayableAsset of CloseHand_Animation
+  m_Name: AnimationPlayableAsset of HandExpression
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 7400000, guid: bc5f3274b7008ec45b68b3f658067ac6, type: 2}
+  m_Clip: {fileID: 7400000, guid: a0cd79db26c4d774c9860078c70a7984, type: 3}
   m_Position: {x: 0, y: 0, z: 0}
   m_EulerAngles: {x: 0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
@@ -2903,9 +2903,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
-  m_Name: AnimationPlayableAsset of CloseHand_Animation
+  m_Name: AnimationPlayableAsset of HandExpression
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 7400000, guid: bc5f3274b7008ec45b68b3f658067ac6, type: 2}
+  m_Clip: {fileID: 7400000, guid: a0cd79db26c4d774c9860078c70a7984, type: 3}
   m_Position: {x: 0, y: 0, z: 0}
   m_EulerAngles: {x: 0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
@@ -3591,11 +3591,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
-  m_Name: AnimationPlayableAsset of 003_NOT01_Final
+  m_Name: AnimationPlayableAsset of 002_SIM01_Final
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 7400000, guid: 01a3f2721e63f7247b7f53302ed7104f, type: 3}
-  m_Position: {x: 6.0271654, y: -0.3, z: 3.6183658}
-  m_EulerAngles: {x: -0, y: 315, z: 0}
+  m_Clip: {fileID: 7400000, guid: 2011bc200c39863488eed08d1d19e6d2, type: 3}
+  m_Position: {x: 3.8278968, y: -0.3, z: 4.226734}
+  m_EulerAngles: {x: -0, y: 330, z: 0}
   m_UseTrackMatchFields: 1
   m_MatchTargetFields: 63
   m_RemoveStartOffset: 1
@@ -3613,9 +3613,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
-  m_Name: AnimationPlayableAsset of CloseHand_Animation
+  m_Name: AnimationPlayableAsset of HandExpression
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 0}
+  m_Clip: {fileID: 7400000, guid: a0cd79db26c4d774c9860078c70a7984, type: 3}
   m_Position: {x: 0, y: 0, z: 0}
   m_EulerAngles: {x: 0, y: 0, z: 0}
   m_UseTrackMatchFields: 1
@@ -4458,11 +4458,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 030f85c3f73729f4f976f66ffb23b875, type: 3}
-  m_Name: AnimationPlayableAsset of VMD_Dummy
+  m_Name: AnimationPlayableAsset of 002_SIM01_Final
   m_EditorClassIdentifier: 
-  m_Clip: {fileID: 7400000, guid: 07c7fb95a700a654cbafe32829be3774, type: 2}
-  m_Position: {x: 6.775852, y: -0.3, z: 4.52185}
-  m_EulerAngles: {x: -0, y: 0, z: 0}
+  m_Clip: {fileID: 7400000, guid: 2011bc200c39863488eed08d1d19e6d2, type: 3}
+  m_Position: {x: 2.1176057, y: -0.3, z: 5.7591953}
+  m_EulerAngles: {x: -0, y: 285, z: 0}
   m_UseTrackMatchFields: 1
   m_MatchTargetFields: 63
   m_RemoveStartOffset: 1

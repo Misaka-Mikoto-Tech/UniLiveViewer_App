@@ -22,7 +22,7 @@ namespace UniLiveViewer
 
         private void OnEnable()
         {
-            if (!isInit) return;
+            if (!isInit || !targetAnchor) return;
             if (!targetAnchor.parent.gameObject.activeSelf) targetAnchor.parent.gameObject.SetActive(true);
             //ターゲットの位置へ移動
             transform.position = targetAnchor.position;
@@ -32,7 +32,7 @@ namespace UniLiveViewer
 
         private void OnDisable()
         {
-            if (!isInit) return;
+            if (!isInit || !targetAnchor) return;
             if (targetAnchor.parent.gameObject.activeSelf) targetAnchor.parent.gameObject.SetActive(false);
         }
 

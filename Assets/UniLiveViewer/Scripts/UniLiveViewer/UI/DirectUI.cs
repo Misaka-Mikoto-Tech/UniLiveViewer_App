@@ -62,14 +62,15 @@ namespace UniLiveViewer
 
         private void OnEnable()
         {
+            if (!playerStateManager) return;
             if (isInit) transform.position = (playerStateManager.transform.position - keepDistance);
         }
 
         private void OnDisable()
         {
+            if (!playerStateManager) return;
             if (isInit) keepDistance = playerStateManager.transform.position - transform.position;
         }
-
     }
 
 }
