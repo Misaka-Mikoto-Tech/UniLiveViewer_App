@@ -22,8 +22,8 @@ namespace UniLiveViewer
                         try
                         {
                             //レンダーとそのマテリアルプロパティを取得
-                            info.materialPropertyBlock.Add(new MaterialPropertyBlock());
-                            info._renderer.GetPropertyBlock(info.materialPropertyBlock[i]);
+                            //info.materialPropertyBlock.Add(new MaterialPropertyBlock());
+                            //info._renderer.GetPropertyBlock(info.materialPropertyBlock[i]);
                             //初期カラーを取得しておく
                             //TODO:ここライトマップのアイテムだとエラー、いずれ直す
                             info.initColor.Add(info._renderer.materials[i].GetColor("_BaseColor"));
@@ -56,19 +56,25 @@ namespace UniLiveViewer
                 //部位の特定
                 if (info.itemCollisionChecker == parts)
                 {
-                    //対象メッシュの全マテリアルのTexを置換
-                    for (int i = 0; i < info.materialPropertyBlock.Count; i++)
+                    for (int i = 0; i < info._renderer.materials.Length; i++)
                     {
-                        info.materialPropertyBlock[i].SetTexture("_BaseMap", newTextur);
-                        info._renderer.SetPropertyBlock(info.materialPropertyBlock[i]);
+                        info._renderer.materials[i].SetTexture("_BaseMap", newTextur);
                     }
+
+                    //複製しないとPrefab編集が面倒になるのでやめた
+                    //対象メッシュの全マテリアルのTexを置換
+                    //for (int i = 0; i < info.materialPropertyBlock.Count; i++)
+                    //{
+                        //info.materialPropertyBlock[i].SetTexture("_BaseMap", newTextur);
+                        //info._renderer.SetPropertyBlock(info.materialPropertyBlock[i]);
+                    //}
                     break;
                 }
             }
         }
 
         /// <summary>
-        /// 初期カラーに戻す
+        /// 初期カラーに戻す（準備しただけ）
         /// </summary>
         /// <param name="renderIndex"></param>
         /// <param name="materialIndex"></param>
@@ -83,7 +89,7 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// 指定カラーに変更
+        /// 指定カラーに変更（準備しただけ）
         /// </summary>
         /// <param name="renderIndex"></param>
         /// <param name="materialIndex"></param>

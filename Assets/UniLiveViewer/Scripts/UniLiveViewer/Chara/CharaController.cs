@@ -32,14 +32,12 @@ namespace UniLiveViewer
         public CharaInfoData charaInfoData;
         private float reScalar = 0;
         //現状VRM専用
-        public SkinnedMeshRenderer[] GetSkinnedMeshRenderers => skinnedMeshRenderers;
-        [SerializeField] private SkinnedMeshRenderer[] skinnedMeshRenderers;
-        public SkinnedMeshRenderer[] GetMorphSkinnedMeshRenderers => morphSkinnedMeshRenderers;
-        [SerializeField] private SkinnedMeshRenderer[] morphSkinnedMeshRenderers;
-        public void SetSkinnedMeshRenderers(SkinnedMeshRenderer[] skins)
+        public IReadOnlyList<SkinnedMeshRenderer> GetSkinnedMeshRenderers;
+        public IReadOnlyList<SkinnedMeshRenderer> GetMorphSkinnedMeshRenderers;
+        public void SetSkinnedMeshRenderers(IReadOnlyList<SkinnedMeshRenderer> skins)
         {
-            skinnedMeshRenderers = skins;
-            morphSkinnedMeshRenderers = skins.GetMorphSkinnedMeshRenderer();
+            GetSkinnedMeshRenderers = skins;
+            GetMorphSkinnedMeshRenderers = skins.GetMorphSkinnedMeshRenderer();
         }
 
 
@@ -96,9 +94,11 @@ namespace UniLiveViewer
             {
                 case CHARASTATE.NULL:
                     globalScale = Vector3.one;
+                    gameObject.layer = SystemInfo.layerNo_Default;
                     break;
                 case CHARASTATE.MINIATURE:
                     globalScale = new Vector3(0.25f, 0.25f, 0.25f);
+                    gameObject.layer = SystemInfo.layerNo_GrabObject;
                     break;
                 case CHARASTATE.HOLD:
                     globalScale = new Vector3(0.25f, 0.25f, 0.25f);
@@ -108,13 +108,7 @@ namespace UniLiveViewer
                     break;
                 case CHARASTATE.FIELD:
                     globalScale = new Vector3(1.0f, 1.0f, 1.0f);
-
-                    ////足の角度を直す
-                    //if (animationMode == ANIMATIONMODE.VMD)
-                    //{
-                    //    //transform.GetComponent<VMDPlayer>().ToeIKReset_Full().Forget();
-                    //    //transform.GetComponent<VMDPlayer>().ToeIKReset();
-                    //}
+                    gameObject.layer = SystemInfo.layerNo_FieldObject;
                     break;
             }
 
@@ -160,6 +154,14 @@ namespace UniLiveViewer
                         break;
                     }
                 }
+            }
+        }
+
+        public void SetEnabelSpringBones(bool isEnabel)
+        {
+            foreach (var e in springBoneList)
+            {
+                e.enabled = isEnabel;
             }
         }
 

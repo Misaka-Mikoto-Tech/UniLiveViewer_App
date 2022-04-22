@@ -12,22 +12,30 @@ namespace UniLiveViewer
         private Animator anime;
         private Dictionary<HumanBodyBones, float> dicAttachPoint = new Dictionary<HumanBodyBones, float>();
 
-        public bool isCustomize = false;
-
-        public bool isswitch = false;
-        public float subnnl;
+        public bool isCustomize = false;//現状SD専用
 
         private CharaController charaCon;
         private TimelineController timeline;
 
         public float height = 0;//身長はとりあえず図れるが、他がうまくいかないと無意味(初期姿勢バグってる奴も直さないといけない)
 
-        // Start is called before the first frame update
-        void Start()
+        private void Awake()
         {
             anime = GetComponent<Animator>();
             charaCon = transform.GetComponent<CharaController>();
+        }
+
+        // Start is called before the first frame update
+        void Start()
+        {
             timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
+
+            Init();
+        }
+
+        private void Init()
+        {
+            if (anchorList != null && anchorList.Count > 0) return;//Prefab対策
 
             //身長を図る(UI上ベース約0.15～0.35くらい)
             //height = anime.GetBoneTransform(HumanBodyBones.Head).position.y - anime.GetBoneTransform(HumanBodyBones.RightFoot).position.y;
@@ -39,17 +47,18 @@ namespace UniLiveViewer
             //var dir = anime.GetBoneTransform(HumanBodyBones.Head).position - anime.GetBoneTransform(HumanBodyBones.Neck).parent.position;
             //if (dir.sqrMagnitude < 0.035f) isMiniChara = true;
 
+            //SD用
             if (isCustomize)
             {
                 dicAttachPoint = new Dictionary<HumanBodyBones, float>()
-            {
-                //offset座標
-                { HumanBodyBones.LeftHand, 0f},
-                { HumanBodyBones.RightHand,  0f},
-                { HumanBodyBones.Head,0.16f},
-                { HumanBodyBones.Chest,0f},
-                //{ HumanBodyBones.Spine,0f}//腰
-            };
+                {
+                    //offset座標
+                    { HumanBodyBones.LeftHand, 0f},
+                    { HumanBodyBones.RightHand,  0f},
+                    { HumanBodyBones.Head,0.16f},
+                    { HumanBodyBones.Chest,0f},
+                    //{ HumanBodyBones.Spine,0f}//腰
+                };
 
                 foreach (var e in dicAttachPoint)
                 {
@@ -60,14 +69,7 @@ namespace UniLiveViewer
 
                     //パラメータ設定
                     attachPoint.name = "AP_" + Enum.GetName(typeof(HumanBodyBones), e.Key);
-                    if (e.Key == HumanBodyBones.Neck)
-                    {
-                        Transform chest = anime.GetBoneTransform(e.Key).parent;//首の親ボーン(任意なのでない可能性もある)
-                        if (!chest) chest = anime.GetBoneTransform(HumanBodyBones.Head).parent;//確実にある頭の親ボーン                                                                       
-                        //セットする
-                        attachPoint.transform.parent = chest;
-                    }
-                    else attachPoint.transform.parent = anime.GetBoneTransform(e.Key);
+                    attachPoint.transform.parent = anime.GetBoneTransform(e.Key);
                     attachPoint.transform.localRotation = Quaternion.identity;
 
                     switch (e.Key)
@@ -93,17 +95,18 @@ namespace UniLiveViewer
                     anchorList.Add(attachPointScript);
                 }
             }
+            //一般
             else
             {
                 dicAttachPoint = new Dictionary<HumanBodyBones, float>()
-            {
-                //offset座標
-                { HumanBodyBones.LeftHand, 0.05f},
-                { HumanBodyBones.RightHand,  0.05f},
-                { HumanBodyBones.Head,0.1f},
-                { HumanBodyBones.Neck,0.1f},//胸(モデルによって構造が異なるので一番安全に首の親を取得する)
-                { HumanBodyBones.Spine,-0.03f}//腰
-            };
+                {
+                    //offset座標
+                    { HumanBodyBones.LeftHand, 0.05f},
+                    { HumanBodyBones.RightHand,  0.05f},
+                    { HumanBodyBones.Head,0.1f},
+                    { HumanBodyBones.Chest,0.05f},
+                    { HumanBodyBones.Spine,-0.03f}//腰
+                };
 
                 foreach (var e in dicAttachPoint)
                 {
@@ -114,10 +117,11 @@ namespace UniLiveViewer
 
                     //パラメータ設定
                     attachPoint.name = "AP_" + Enum.GetName(typeof(HumanBodyBones), e.Key);
-                    if (e.Key == HumanBodyBones.Neck)
+                    if (e.Key == HumanBodyBones.Chest)
                     {
-                        Transform chest = anime.GetBoneTransform(e.Key)?.parent;//首の親ボーン(任意なのでない可能性もある)
-                        if (!chest) chest = anime.GetBoneTransform(HumanBodyBones.Head).parent;//確実にある頭の親ボーン                                                                       
+                        Transform chest = anime.GetBoneTransform(HumanBodyBones.UpperChest);
+                        if (!chest) chest = anime.GetBoneTransform(HumanBodyBones.Neck)?.parent;
+                        if (!chest) chest = anime.GetBoneTransform(HumanBodyBones.Head)?.parent;
                         //セットする
                         attachPoint.transform.parent = chest;
                     }
@@ -131,8 +135,8 @@ namespace UniLiveViewer
                         //    attachPoint.transform.position += new Vector3(0, e.Value, 0);
                         //    attachPoint.transform.localScale = Vector3.one * 0.45f;
                         //    break;
-                        case HumanBodyBones.Neck:
-                            if (height >= 0.11f) attachPoint.transform.localPosition = new Vector3(0, e.Value + 0.01f, 0);
+                        case HumanBodyBones.Chest:
+                            if (height >= 0.11f) attachPoint.transform.localPosition = new Vector3(0, e.Value, 0);
                             else attachPoint.transform.localPosition = new Vector3(0, e.Value, 0);
                             attachPoint.transform.localScale = Vector3.one * 0.4f;
                             break;
@@ -147,7 +151,7 @@ namespace UniLiveViewer
                         default:
                             attachPoint.transform.localPosition = new Vector3(0, e.Value, 0);
                             //attachPoint.transform.position += new Vector3(0, e.Value, 0);
-                            attachPoint.transform.localScale = Vector3.one * 0.35f;
+                            attachPoint.transform.localScale = Vector3.one * 0.4f;
                             break;
                     }
                     anchorList.Add(attachPointScript);

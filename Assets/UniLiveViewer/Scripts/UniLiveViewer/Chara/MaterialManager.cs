@@ -1,5 +1,4 @@
 ﻿using Cysharp.Threading.Tasks;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
@@ -29,17 +28,12 @@ namespace UniLiveViewer
         /// マテリアル情報を抽出
         /// </summary>
         /// <param name="_skinMesh"></param>
-        public async UniTask ExtractMaterials(SkinnedMeshRenderer[] _skinMeshs,CancellationToken token)
+        public async UniTask ExtractMaterials(CharaController charaCon,CancellationToken token)
         {
-            foreach (var e in _skinMeshs)
+            foreach (var e in charaCon.GetSkinnedMeshRenderers)
             {
                 AddMaterialInfo(e);
                 await UniTask.Yield(PlayerLoopTiming.Update, token);
-            }
-
-            foreach (var e in info)
-            {
-                Debug.Log($"リスト追加->{e.skinMesh}/{e.index}番目/{e.name}");
             }
         }
 
@@ -47,7 +41,6 @@ namespace UniLiveViewer
         {
             MaterialInfo _info;
             string matName = "";
-
             for (int i = 0; i < _skinMesh.materials.Length; i++)
             {
                 matName = _skinMesh.materials[i].name;
@@ -66,6 +59,78 @@ namespace UniLiveViewer
                 info.Add(_info);
 
                 //Debug.Log($"リスト追加->{_skinMesh}/{i}番目/{matName}");
+            }
+        }
+
+        public void SetSurface(string name, SurfaceType type)
+        {
+            int _index;
+            for (int i = 0; i < info.Count; i++)
+            {
+                if (info[i].name == name)
+                {
+                    _index = info[i].index;
+                    info[i].skinMesh.materials[_index].SetFloat("_Surface", (float)type);
+                }
+            }
+        }
+
+        public void SetRenderFace(string name, RenderFace render)
+        {
+            int _index;
+            for (int i = 0; i < info.Count; i++)
+            {
+                if (info[i].name == name)
+                {
+                    _index = info[i].index;
+                    info[i].skinMesh.materials[_index].SetFloat("_Cull", (float)render);
+                }
+            }
+        }
+
+        public void SetCutoff(string name, int val)
+        {
+            int _index;
+            for (int i = 0; i < info.Count; i++)
+            {
+                if (info[i].name == name)
+                {
+                    _index = info[i].index;
+                    info[i].skinMesh.materials[_index].SetFloat("_AlphaClip", val);
+                }
+            }
+        }
+
+        public void SetColor_Transparent(string name, float alpha)
+        {
+            int _index;
+            Color col;
+            for (int i = 0;i< info.Count;i++)
+            {
+                if (info[i].name == name)
+                {
+                    _index = info[i].index;
+                    col = info[i].skinMesh.materials[_index].GetColor("_Color");
+                    col.a = alpha;
+                    info[i].skinMesh.materials[_index].SetColor("_Color", col);
+
+                    col = info[i].skinMesh.materials[_index].GetColor("_ShadeColor");
+                    col.a = alpha;
+                    info[i].skinMesh.materials[_index].SetColor("_ShadeColor", col);
+                }
+            }
+        }
+
+        public void SetCutoffVal(string name, float val)
+        {
+            int _index;
+            for (int i = 0; i < info.Count; i++)
+            {
+                if (info[i].name == name)
+                {
+                    _index = info[i].index;
+                    info[i].skinMesh.materials[_index].SetFloat("_Cutoff", val);
+                }
             }
         }
     }

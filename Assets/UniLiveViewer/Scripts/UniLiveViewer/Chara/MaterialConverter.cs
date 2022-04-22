@@ -7,35 +7,35 @@ using UnityEngine;
 
 namespace UniLiveViewer
 {
+    public enum SurfaceType
+    {
+        Opaque,
+        Transparent
+    }
+    public enum BlendMode_MToon
+    {
+        Opaque,
+        Cutout,
+        Transparent,
+        TransparentWithZWrite
+    }
+    public enum BlendMode
+    {
+        Alpha,
+        Premultiply,
+        Additive,
+        Multiply
+    }
+    public enum RenderFace//この並びはURP
+    {
+        Both,
+        Back,
+        Front
+    }
+
     //ちゃんとURP用shader作ったら不要
     public class MaterialConverter : MonoBehaviour
     {
-        public enum SurfaceType
-        {
-            Opaque,
-            Transparent
-        }
-        public enum BlendMode_MToon
-        {
-            Opaque,
-            Cutout,
-            Transparent,
-            TransparentWithZWrite
-        }
-        public enum BlendMode
-        {
-            Alpha,
-            Premultiply,
-            Additive,
-            Multiply
-        }
-        public enum RenderFace
-        {
-            Both,
-            Back,
-            Front
-        }
-
 
         public List<Material> materials { get; private set; } = new List<Material>();
         public List<Material> materials_Base { get; private set; } = new List<Material>();//リセット用に取得
@@ -77,7 +77,7 @@ namespace UniLiveViewer
             fallbackShader.Add("Universal Render Pipeline/Lit", fallbackShader_default);
             fallbackShader.Add("Universal Render Pipeline/Simple Lit", fallbackShader_default);
 
-            layer_Default = SystemInfo.layerMask_Default;
+            layer_Default = SystemInfo.layerNo_Default;
 
             //replaceShader.Add(Shader.Find("Shader Graphs/Simple MToon"));
             //replaceShader.Add(Shader.Find("Shader Graphs/Simple Standard"));
@@ -85,12 +85,12 @@ namespace UniLiveViewer
             //replaceShader = Shader.Find("Universal Render Pipeline/Unlit");
         }
 
-        public async UniTask Conversion(SkinnedMeshRenderer[] meshRenderers, CancellationToken token)
+        public async UniTask Conversion(CharaController charaCon, CancellationToken token)
         {
             try
             {
                 //前処理
-                await Pretreatment(meshRenderers, token);
+                await Pretreatment(charaCon, token);
                 //置換
                 await ShaderReplace(token);
             }
@@ -108,13 +108,13 @@ namespace UniLiveViewer
         /// 前処理
         /// </summary>
         /// <param name="parent"></param>
-        private async UniTask Pretreatment(SkinnedMeshRenderer[] meshRenderers, CancellationToken token)
+        private async UniTask Pretreatment(CharaController charaCon, CancellationToken token)
         {
             try
             {
                 await UniTask.Yield(PlayerLoopTiming.Update, token);
 
-                foreach (var mesh in meshRenderers)
+                foreach (var mesh in charaCon.GetSkinnedMeshRenderers)
                 {
                     //あれば不要なので無効化しておく
                     
@@ -123,8 +123,8 @@ namespace UniLiveViewer
                         mesh.transform.GetChild(0).gameObject.SetActive(false);
                     }
                     //レイヤー設定
-                    if (mesh.transform.name.Contains("eye") 
-                        && mesh.transform.name.Contains("face"))
+                    if (mesh.transform.name.Contains("eye", StringComparison.OrdinalIgnoreCase) 
+                        || mesh.transform.name.Contains("face", StringComparison.OrdinalIgnoreCase))
                     {
                         //目や顔にアウトラインは残念な感じになりやすいので設定しない
                         mesh.gameObject.layer = layer_Default;
@@ -221,55 +221,55 @@ namespace UniLiveViewer
         /// </summary>
         /// <param name="current"></param>
         /// <param name="type"></param>
-        public void SetSurface(int current, SurfaceType type)
-        {
-            //SurfaceType
-            materials[current].SetFloat("_Surface", (float)type);
+        //public void SetSurface(int current, SurfaceType type)
+        //{
+        //    //SurfaceType
+        //    materials[current].SetFloat("_Surface", (float)type);
 
-            //調整
-            SetupMaterialBlendMode(materials[current]);
-        }
+        //    //調整
+        //    SetupMaterialBlendMode(materials[current]);
+        //}
 
         /// <summary>
         /// ブレンドモードを設定
         /// </summary>
         /// <param name="current"></param>
         /// <param name="mode"></param>
-        public void SetBlendMode(int current, BlendMode mode)
-        {
-            //BlendMode
-            materials[current].SetFloat("_Blend", (float)mode);
+        //public void SetBlendMode(int current, BlendMode mode)
+        //{
+        //    //BlendMode
+        //    materials[current].SetFloat("_Blend", (float)mode);
 
-            //調整
-            SetupMaterialBlendMode(materials[current]);
-        }
+        //    //調整
+        //    SetupMaterialBlendMode(materials[current]);
+        //}
 
         /// <summary>
         /// 描画面を設定
         /// </summary>
         /// <param name="current"></param>
         /// <param name="render"></param>
-        public void SetRenderFace(int current, RenderFace render)
-        {
-            //RenderFace
-            materials[current].SetFloat("_Cull", (float)render);
+        //public void SetRenderFace(int current, RenderFace render)
+        //{
+        //    //RenderFace
+        //    materials[current].SetFloat("_Cull", (float)render);
 
-            //調整
-            //SetupMaterialBlendMode(materials[current]);
-        }
+        //    //調整
+        //    //SetupMaterialBlendMode(materials[current]);
+        //}
 
         /// <summary>
         /// カラーのアルファのみ設定
         /// </summary>
         /// <param name="current"></param>
         /// <param name="alpha"></param>
-        public void SetColor_Transparent(int current, float alpha)
-        {
-            //透明調整
-            Color col = materials[current].color;
-            col.a = alpha;
-            materials[current].color = col;
-        }
+        //public void SetColor_Transparent(int current, float alpha)
+        //{
+        //    //透明調整
+        //    Color col = materials[current].color;
+        //    col.a = alpha;
+        //    materials[current].color = col;
+        //}
 
         /// <summary>
         /// 参考
@@ -323,8 +323,9 @@ namespace UniLiveViewer
             else material.SetFloat("_Surface", (float)SurfaceType.Opaque);
 
             material.SetFloat("_Cutoff", cutoffVal);
-            material.SetFloat("_Blend", (float)blendMode);
-            material.SetFloat("_Cull", (float)renderFace);
+            //material.SetFloat("_Blend", (float)blendMode);
+            material.SetFloat("_Blend", (float)BlendMode.Alpha);//他が上手くいかない
+            material.SetFloat("_Cull", (float)renderFace);//URPで変わっている注意
             material.SetInt("_ZWrite", zWrite);
             material.SetInt("_SrcBlend", _SrcBlend);
             material.SetInt("_DstBlend", _DstBlend);

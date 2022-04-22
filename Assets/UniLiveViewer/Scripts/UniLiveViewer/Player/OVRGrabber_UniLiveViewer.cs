@@ -240,8 +240,6 @@ namespace UniLiveViewer
 
                         //キャラの状態をフィールドに設定
                         keepChara.SetState(CharaController.CHARASTATE.FIELD, null);
-                        //layerを変える
-                        keepChara.gameObject.layer = SystemInfo.layerNo_FieldObject;
 
                         if (keepChara.charaInfoData.charaType == CharaInfoData.CHARATYPE.UnityChanSSU)
                         {

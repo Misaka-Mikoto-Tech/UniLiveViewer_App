@@ -17,6 +17,7 @@ namespace UniLiveViewer
         void Start()
         {
             lookAtController = GetComponent<LookAtController>();
+
             guideObj = Instantiate(guidePrefab).transform;
             Vector3 pos = guideObj.localPosition;
             Vector3 scala = guideObj.localScale;

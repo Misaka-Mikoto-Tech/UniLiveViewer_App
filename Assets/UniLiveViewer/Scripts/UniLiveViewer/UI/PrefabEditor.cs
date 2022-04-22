@@ -1,20 +1,37 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using NanaCiel;
+using System;
+using System.Linq;
 
 namespace UniLiveViewer 
 {
     public class PrefabEditor : MonoBehaviour
     {
         [SerializeField] private Transform vrmPresetAnchor;//マテリアル調整時用のキャラ座標アンカー
-        [SerializeField] private RollSelector rollSelector_Material;
+        [SerializeField] private RollSelector rollSelector;
         [SerializeField] private Button_Switch[] btn_SuefaceType = new Button_Switch[2];
         [SerializeField] private Button_Switch[] btn_RenderFace = new Button_Switch[3];
+        [SerializeField] private Button_Switch[] btn_Cutoff = new Button_Switch[2];
         [SerializeField] private SliderGrabController slider_Transparent = null;
+        [SerializeField] private SliderGrabController slider_Cutoff = null;
         [SerializeField] private Button_Base btn_AllReset;
 
+        [SerializeField] private LineRenderer lineRenderer = null;
+        [SerializeField] private Vector3 localOffset;
+        [SerializeField] private float lineWeight_Second = 0.2f;
+        [SerializeField] private float lineWeight_Third = 0.7f;
+        private Vector3[] linePos = new Vector3[3];
+        private Vector3 endpoint, dir, result;
+
         public CharaController EditTarget => editTarget;
-        [SerializeField]private CharaController editTarget;
+        private CharaController editTarget;
+        private MaterialManager matManager;
+
+        private string currentMatName;
+
+        public event Action onCurrentUpdate;
 
         private void Awake()
         {
@@ -26,9 +43,25 @@ namespace UniLiveViewer
             {
                 e.onTrigger += MaterialSetting_Change;
             }
-            slider_Transparent.ValueUpdate += MaterialSetting_TransparentColor;
-            rollSelector_Material.onTouch += MaterialInfoUpdate;
+            foreach (var e in btn_Cutoff)
+            {
+                e.onTrigger += MaterialSetting_Change;
+            }
+
+            slider_Transparent.ValueUpdate += () =>
+            {
+                //透明を更新
+                matManager.SetColor_Transparent(currentMatName, slider_Transparent.Value);
+            };
+            slider_Cutoff.ValueUpdate += () =>
+            {
+                //透明を更新
+                matManager.SetCutoffVal(currentMatName, slider_Cutoff.Value);
+            };
+            rollSelector.onTouch += MaterialInfoUpdate;
             btn_AllReset.onTrigger += MaterialSetting_AllReset;
+
+            lineRenderer.positionCount = 3;
         }
 
         // Start is called before the first frame update
@@ -40,7 +73,28 @@ namespace UniLiveViewer
         // Update is called once per frame
         void Update()
         {
+            LineDraw();
+        }
 
+        private void LineDraw()
+        {
+            endpoint = vrmPresetAnchor.position + localOffset;
+            dir = endpoint - lineRenderer.transform.position;
+
+            linePos[0] = lineRenderer.transform.position;
+
+            result = linePos[0].GetHorizontalDirection() + dir.GetHorizontalDirection() * lineWeight_Second;
+            result.y = endpoint.y;
+            linePos[1] = result;
+
+            result = linePos[0].GetHorizontalDirection() + dir.GetHorizontalDirection() * lineWeight_Third;
+            result.y = endpoint.y;
+            linePos[2] = result;
+
+            for (int i = 0; i < lineRenderer.positionCount; i++)
+            {
+                lineRenderer.SetPosition(i, linePos[i]);
+            }
         }
 
         public void SetEditingTarget(CharaController _editTarget)
@@ -48,16 +102,13 @@ namespace UniLiveViewer
             //VRMをプリセットアンカーに移動
             editTarget = _editTarget;
             editTarget.SetState(CharaController.CHARASTATE.NULL, vrmPresetAnchor);
-        }
-
-        public void Init()
-        {
-            if (!editTarget) return;
+            matManager = editTarget.transform.GetComponent<MaterialManager>();
 
             //回転UI初期化
-            var matLocation = editTarget.GetComponent<MaterialManager>().matLocation;
-            List<string> list = new List<string>(matLocation.Keys);
-            rollSelector_Material.Init(list);
+            List<string> list_mat = new List<string>(matManager.matLocation.Keys);
+            rollSelector.Init(list_mat);
+
+            MaterialInfoUpdate();
         }
 
         /// <summary>
@@ -65,8 +116,55 @@ namespace UniLiveViewer
         /// </summary>
         private void MaterialInfoUpdate()
         {
-            ////クリック音
-            //audioSource.PlayOneShot(Sound[0]);
+            currentMatName = rollSelector.GetCurrentMatName();
+            localOffset = matManager.matLocation[currentMatName] * SystemInfo.userProfile.data.InitCharaSize;
+
+            onCurrentUpdate?.Invoke();
+
+            //恐らく全て同じという前提
+            var matInfo = matManager.info.FirstOrDefault(x => x.name == currentMatName);
+            //全取得
+            int _index = matInfo.index;
+            SurfaceType surfaceType = (SurfaceType)matInfo.skinMesh.materials[_index].GetFloat("_Surface");
+            RenderFace renderFace = (RenderFace)matInfo.skinMesh.materials[_index].GetFloat("_Cull");
+            Color color = matInfo.skinMesh.materials[_index].GetColor("_Color");
+            bool alphaClip = matInfo.skinMesh.materials[_index].GetFloat("_AlphaClip") == 1 ? true : false;
+            float cutoff = matInfo.skinMesh.materials[_index].GetFloat("_Cutoff");
+
+            //UIに反映
+            for (int i = 0; i < btn_SuefaceType.Length; i++)
+            {
+                if (i == (int)surfaceType) btn_SuefaceType[i].isEnable = true;
+                else btn_SuefaceType[i].isEnable = false;
+            }
+
+            if (surfaceType == SurfaceType.Opaque) slider_Transparent.gameObject.SetActive(false);
+            else if (surfaceType == SurfaceType.Transparent)
+            {
+                slider_Transparent.gameObject.SetActive(true);
+                slider_Transparent.Value = color.a;
+            }
+
+            for (int i = 0; i < btn_RenderFace.Length; i++)
+            {
+                if (i == (int)renderFace) btn_RenderFace[i].isEnable = true;
+                else btn_RenderFace[i].isEnable = false;
+            }
+
+
+            if (alphaClip)
+            {
+                btn_Cutoff[0].isEnable = true;
+                btn_Cutoff[1].isEnable = false;
+                slider_Cutoff.gameObject.SetActive(true);
+                slider_Cutoff.Value = cutoff;
+            }
+            else
+            {
+                btn_Cutoff[0].isEnable = false;
+                btn_Cutoff[1].isEnable = true;
+                slider_Cutoff.gameObject.SetActive(false);
+            }
 
             //int current = rollSelector_Material.current;
             //var type = (MaterialConverter.SurfaceType)matConverter.materials[current].GetFloat("_Surface");
@@ -116,40 +214,53 @@ namespace UniLiveViewer
         /// <param name="btn"></param>
         private void MaterialSetting_Change(Button_Base btn)
         {
-            //int current = rollSelector_Material.current;
+            if (btn == btn_SuefaceType[0])
+            {
+                matManager.SetSurface(currentMatName, SurfaceType.Opaque);
+                slider_Transparent.gameObject.SetActive(false);
+                btn_SuefaceType[1].isEnable = false;
+            }
+            else if (btn == btn_SuefaceType[1])
+            {
+                matManager.SetSurface(currentMatName, SurfaceType.Transparent);
+                slider_Transparent.gameObject.SetActive(true);
+                btn_SuefaceType[0].isEnable = false;
+            }
 
-            //if (btn == btn_SuefaceType[0])
-            //{
-            //    matConverter.SetSurface(current, MaterialConverter.SurfaceType.Opaque);
-            //}
-            //else if (btn == btn_SuefaceType[1])
-            //{
-            //    matConverter.SetSurface(current, MaterialConverter.SurfaceType.Transparent);
-            //}
-            //else if (btn == btn_RenderFace[0])
-            //{
-            //    matConverter.SetRenderFace(current, MaterialConverter.RenderFace.Front);
-            //}
-            //else if (btn == btn_RenderFace[1])
-            //{
-            //    matConverter.SetRenderFace(current, MaterialConverter.RenderFace.Back);
-            //}
-            //else if (btn == btn_RenderFace[2])
-            //{
-            //    matConverter.SetRenderFace(current, MaterialConverter.RenderFace.Both);
-            //}
+            if (btn == btn_RenderFace[0])
+            {
+                matManager.SetRenderFace(currentMatName, RenderFace.Both);
+                btn_RenderFace[1].isEnable = false;
+                btn_RenderFace[2].isEnable = false;
+            }
+            else if (btn == btn_RenderFace[1])
+            {
+                matManager.SetRenderFace(currentMatName, RenderFace.Back);
+                btn_RenderFace[0].isEnable = false;
+                btn_RenderFace[2].isEnable = false;
+            }
+            else if (btn == btn_RenderFace[2])
+            {
+                matManager.SetRenderFace(currentMatName, RenderFace.Front);
+                btn_RenderFace[0].isEnable = false;
+                btn_RenderFace[1].isEnable = false;
+            }
+
+            if (btn == btn_Cutoff[0])
+            {
+                matManager.SetCutoff(currentMatName, 1);
+                slider_Cutoff.gameObject.SetActive(true);
+                btn_Cutoff[1].isEnable = false;
+            }
+            else if (btn == btn_Cutoff[1])
+            {
+                matManager.SetCutoff(currentMatName, 0);
+                slider_Cutoff.gameObject.SetActive(false);
+                btn_Cutoff[0].isEnable = false;
+            }
 
             ////UI表示を更新
             //MaterialInfoUpdate();
-        }
-
-        /// <summary>
-        /// マテリアルの透明色を設定
-        /// </summary>
-        private void MaterialSetting_TransparentColor()
-        {
-            ////透明を更新
-            //matConverter.SetColor_Transparent(rollSelector_Material.current, slider_Transparent.Value);
         }
 
         /// <summary>

@@ -1,17 +1,17 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace UniLiveViewer 
 {
     //RollSelectorのUI用
     public class TouchCollision : MonoBehaviour
     {
-        public bool isTouch = false;
+        public event Action<TouchCollision> onHit;
+        public Collider _collider;
 
         private void OnTriggerStay(Collider other)
         {
-            if (isTouch) return;
-
-            isTouch = true;
+            onHit?.Invoke(this);
 
             //振動処理
             if (other.transform.name.Contains("_l_"))

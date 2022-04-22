@@ -1,6 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using UnityEngine;
@@ -27,12 +26,6 @@ namespace UniLiveViewer
         [Space(1)]
         [Header("＜2ページ＞")]
         [SerializeField] private PrefabEditor prefabEditor;
-        //[SerializeField] private Transform vrmPresetAnchor;//マテリアル調整時用のキャラ座標アンカー
-        //[SerializeField] private RollSelector rollSelector_Material;
-        //[SerializeField] private Button_Switch[] btn_SuefaceType = new Button_Switch[2];
-        //[SerializeField] private Button_Switch[] btn_RenderFace = new Button_Switch[3];
-        //[SerializeField] private SliderGrabController slider_Transparent = null;
-        //[SerializeField] private Button_Base btn_AllReset;
         [SerializeField] private Button_Base btn_SetOK;
         //private MaterialConverter matConverter;
 
@@ -60,8 +53,6 @@ namespace UniLiveViewer
         private VRMTouchColliders touchCollider = null;
 
         private CancellationToken cancellation_token;
-        //private int[] randomBox;
-        //private string[] vrmNames;
 
         private async void Awake()
         {
@@ -73,7 +64,7 @@ namespace UniLiveViewer
 
             //コールバック登録・・・2ページ目
             btn_SetOK.onTrigger += MaterialSetting_SetOK;
-            
+            prefabEditor.onCurrentUpdate += () => { audioSource.PlayOneShot(Sound[0]); };//クリック音
             cancellation_token = this.GetCancellationTokenOnDestroy();
 
 
@@ -141,7 +132,7 @@ namespace UniLiveViewer
                     }
                     break;
                 case 1:
-                    prefabEditor.Init();
+                    //prefabEditor.Init();
 
                     //表示を更新
                     //MaterialInfoUpdate();
@@ -194,7 +185,7 @@ namespace UniLiveViewer
 
                 //各種component追加
                 var attacher = Instantiate(attacherPrefab.gameObject).GetComponent<ComponentAttacher_VRM>();
-                await attacher.Init(vrmModel.transform, instance.SkinnedMeshRenderers.ToArray(), cancellation_token);
+                await attacher.Init(vrmModel.transform, instance.SkinnedMeshRenderers, cancellation_token);
                 await attacher.Attachment(touchCollider, cancellation_token);
 
                 //VRM追加した
@@ -238,8 +229,6 @@ namespace UniLiveViewer
             //マテリアル設定ページへ
             InitPage(1);
         }
-
-        
 
         /// <summary>
         /// マテリアル設定の確定

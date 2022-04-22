@@ -92,6 +92,8 @@ namespace UniLiveViewer
         // Start is called before the first frame update
         void Start()
         {
+            if (virtualRoot) return;//Prefab対策
+
             //仮想ルートを生成(頭の正面用)
             virtualRoot = new GameObject("VirtualRoot").transform;
             virtualRoot.parent = hipAnchor;
@@ -262,6 +264,12 @@ namespace UniLiveViewer
                     break;
             }
 
+        }
+
+        public void SetEnable_VRMLookAtEye(bool isEnable)
+        {
+            if (VRMLookAtEye_Bone) VRMLookAtEye_Bone.enabled = isEnable;
+            else if (VRMLookAtEye_UV) VRMLookAtEye_UV.enabled = isEnable;
         }
 
         /// <summary>

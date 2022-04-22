@@ -10,6 +10,8 @@ namespace UniLiveViewer
         [SerializeField] private TextMesh[] textMeshes_maxChara = new TextMesh[3];
         [SerializeField] private TextMesh[] textMeshe_memory = new TextMesh[3];
 
+        
+
         // Start is called before the first frame update
         void Start()
         {
@@ -33,9 +35,9 @@ namespace UniLiveViewer
         // Update is called once per frame
         void Update()
         {
-            textMeshe_memory[0].text = $"予約:{Profiler.GetTotalReservedMemoryLong() / 1024}kb";
-            textMeshe_memory[1].text = $"使用:{Profiler.GetTotalAllocatedMemoryLong() / 1024}kb";
-            textMeshe_memory[2].text = $"空き:{Profiler.GetTotalUnusedReservedMemoryLong() / 1024}kb";
+            textMeshe_memory[0].text = $"Reserved:{(Profiler.GetTotalReservedMemoryLong() / 1024 / 1024):0}MB";
+            textMeshe_memory[1].text = $"Usable:{(Profiler.GetTotalAllocatedMemoryLong() / 1024 / 1024):0}MB";
+            textMeshe_memory[2].text = $"Free:{(Profiler.GetTotalUnusedReservedMemoryLong() / 1024 / 1024):0}MB";
         }
     }
 }

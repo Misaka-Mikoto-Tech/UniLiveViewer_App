@@ -35,7 +35,7 @@ namespace NanaCiel
         }
 
         //blendshapeが設定されているSkinnedMeshRendererのみ抽出
-        public static SkinnedMeshRenderer[] GetMorphSkinnedMeshRenderer(this SkinnedMeshRenderer[] skin)
+        public static IReadOnlyList<SkinnedMeshRenderer> GetMorphSkinnedMeshRenderer(this IReadOnlyList<SkinnedMeshRenderer> skin)
         {
             List<SkinnedMeshRenderer> result = new List<SkinnedMeshRenderer>();
             foreach (var e in skin)

@@ -100,6 +100,10 @@ namespace UniLiveViewer
         {
             if (listChara[currentChara].charaInfoData.formatType
                 != CharaInfoData.FORMATTYPE.VRM) return;
+            
+            //Prefab化で値が残ってしまうので無効化
+            charaCon_vrm.lookAtCon.SetEnable_VRMLookAtEye(false);
+            charaCon_vrm.SetEnabelSpringBones(false);
 
             charaCon_vrm.gameObject.SetActive(false);
             //オリジナル以外は削除可
@@ -161,6 +165,14 @@ namespace UniLiveViewer
 
             //キャラを生成
             var charaCon = Instantiate(listChara[currentChara]);
+            if (listChara[currentChara].GetComponent<MaterialManager>())
+            {
+                var matManager_f = listChara[currentChara].GetComponent<MaterialManager>();
+                var matManager_t = charaCon.GetComponent<MaterialManager>();
+
+                matManager_t.matLocation = matManager_f.matLocation;
+                matManager_t.info = matManager_f.info;
+            }
 
             bool isSuccess;
 
@@ -171,11 +183,10 @@ namespace UniLiveViewer
             {
                 if (!charaCon.gameObject.activeSelf) charaCon.gameObject.SetActive(true);
 
-                //削除と揺れ物の再稼働
-                foreach (var e in charaCon.springBoneList)
-                {
-                    e.enabled = true;
-                }
+                //Prefab化経由は無効化されているので戻す
+                charaCon.lookAtCon.SetEnable_VRMLookAtEye(true);
+                //揺れ物の再稼働
+                charaCon.SetEnabelSpringBones(true);
                 await UniTask.Yield(PlayerLoopTiming.Update, cts.Token);
 
                 //パラメーター設定

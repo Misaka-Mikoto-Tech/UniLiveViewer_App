@@ -28,7 +28,7 @@ namespace UniLiveViewer
 
         private List<VRMSpringBone> vrmSpringBones = new List<VRMSpringBone>();
 
-        public async UniTask Init(Transform _targetVRM, SkinnedMeshRenderer[] skins, CancellationToken token)
+        public async UniTask Init(Transform _targetVRM, IReadOnlyList<SkinnedMeshRenderer> skins, CancellationToken token)
         {
             try
             {
@@ -64,6 +64,7 @@ namespace UniLiveViewer
                 throw new Exception("Attacher initialize");
             }
         }
+
         public async UniTask Attachment(VRMTouchColliders touchCollider, CancellationToken token)
         {
             try
@@ -80,8 +81,8 @@ namespace UniLiveViewer
                 CustomizeComponent_VRM(touchCollider, token));
 
                 //skinの方はVRMから流用
-                await matConverter.Conversion(CharaCon.GetSkinnedMeshRenderers, token);
-                await matManager.ExtractMaterials(CharaCon.GetSkinnedMeshRenderers, token);
+                await matConverter.Conversion(CharaCon, token);
+                await matManager.ExtractMaterials(CharaCon, token);
 
                 Destroy(targetVRM.GetComponent<MaterialConverter>());
             }

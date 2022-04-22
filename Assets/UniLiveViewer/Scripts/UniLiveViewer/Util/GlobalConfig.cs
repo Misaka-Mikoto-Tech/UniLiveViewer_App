@@ -6,6 +6,7 @@ namespace UniLiveViewer
     public static class SystemInfo
     {
         //レイヤー
+        public static int layerNo_Default;
         public static int layerNo_VirtualHead;
         public static int layerNo_UI;
         public static int layerNo_FieldObject;
@@ -69,6 +70,7 @@ namespace UniLiveViewer
 
         private void Awake()
         {
+            SystemInfo.layerNo_Default = LayerMask.NameToLayer("Default");
             SystemInfo.layerNo_VirtualHead = LayerMask.NameToLayer("VirtualHead");
             SystemInfo.layerNo_UI = LayerMask.NameToLayer("UI");
             SystemInfo.layerNo_FieldObject = LayerMask.NameToLayer("FieldObject");
