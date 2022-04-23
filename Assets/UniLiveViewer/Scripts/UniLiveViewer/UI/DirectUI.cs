@@ -26,12 +26,12 @@ namespace UniLiveViewer
                     transform.rotation = Quaternion.Euler(new Vector3(0, 90, 0));
                     break;
                 case SceneMode.KAGURA_LIVE:
-                    EndPoint = new Vector3(0, 1.6f, 3);
+                    EndPoint = new Vector3(0, 1.35f, 3);
                     transform.position = EndPoint + (Vector3.up * 2);
                     transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
                     break;
                 case SceneMode.VIEWER:
-                    EndPoint = new Vector3(0, 1.1f, 4);
+                    EndPoint = new Vector3(0, 1.0f, 4);
                     transform.position = EndPoint + (Vector3.up * 2);
                     transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
                     break;

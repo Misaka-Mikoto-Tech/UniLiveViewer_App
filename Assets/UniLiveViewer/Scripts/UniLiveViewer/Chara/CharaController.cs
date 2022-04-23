@@ -95,6 +95,9 @@ namespace UniLiveViewer
                 case CHARASTATE.NULL:
                     globalScale = Vector3.one;
                     gameObject.layer = SystemInfo.layerNo_Default;
+                    lookAtCon.enabled = false;
+                    lookAtCon.Reset_VRMLookAtEye();
+                    lookAtCon.SetEnable_VRMLookAtEye(false);
                     break;
                 case CHARASTATE.MINIATURE:
                     globalScale = new Vector3(0.25f, 0.25f, 0.25f);

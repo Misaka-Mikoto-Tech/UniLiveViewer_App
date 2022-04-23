@@ -1,5 +1,4 @@
 ﻿using Cysharp.Threading.Tasks;
-using System.Collections;
 using System.Threading;
 using UnityEngine;
 
@@ -61,7 +60,7 @@ namespace UniLiveViewer
             await UniTask.Delay(100, cancellationToken: token);
 
             //キャラを生成する
-            await switchController.InitPage();
+            switchController.InitPage();
             await UniTask.Delay(100, cancellationToken: token);
 
             //非表示にする

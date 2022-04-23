@@ -26,7 +26,7 @@ namespace UniLiveViewer
         [Space(1)]
         [Header("＜2ページ＞")]
         [SerializeField] private PrefabEditor prefabEditor;
-        [SerializeField] private Button_Base btn_SetOK;
+        [SerializeField] private Button_Base btn_Apply;
         //private MaterialConverter matConverter;
 
 
@@ -63,7 +63,7 @@ namespace UniLiveViewer
             audioSource.volume = SystemInfo.soundVolume_SE;
 
             //コールバック登録・・・2ページ目
-            btn_SetOK.onTrigger += MaterialSetting_SetOK;
+            btn_Apply.onTrigger += MaterialSetting_SetOK;
             prefabEditor.onCurrentUpdate += () => { audioSource.PlayOneShot(Sound[0]); };//クリック音
             cancellation_token = this.GetCancellationTokenOnDestroy();
 
@@ -80,6 +80,8 @@ namespace UniLiveViewer
                 await UniTask.Delay(500, cancellationToken: cancellation_token);
                 audioSource.PlayOneShot(Sound[1]);
             };
+
+            UIShow(false);
         }
 
         /// <summary>

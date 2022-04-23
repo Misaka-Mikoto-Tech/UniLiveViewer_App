@@ -34,10 +34,13 @@ namespace UniLiveViewer
         private TimelineController timeline = null;
         private FileAccessManager fileManager = null;
 
+        public event Action onGeneratedChara;
+        public event Action onEmptyCurrent;
+        public event Action onGeneratedAnime;
+
         private VMDPlayer_Custom vmdPlayer;
-        private bool isGenerateComplete = true;
         private bool retryVMD = false;
-        private CancellationTokenSource cts;
+        private CancellationTokenSource cts = new CancellationTokenSource();
 
         //読み込み済みVMD情報
         private static Dictionary<string, VMD> dic_VMDReader = new Dictionary<string, VMD>();
@@ -102,7 +105,6 @@ namespace UniLiveViewer
                 != CharaInfoData.FORMATTYPE.VRM) return;
             
             //Prefab化で値が残ってしまうので無効化
-            charaCon_vrm.lookAtCon.SetEnable_VRMLookAtEye(false);
             charaCon_vrm.SetEnabelSpringBones(false);
 
             charaCon_vrm.gameObject.SetActive(false);
@@ -144,70 +146,87 @@ namespace UniLiveViewer
         /// <param Currentを動かす="moveCurrent">動かす必要がなければ0</param>
         public async UniTask SetChara(int moveCurrent)
         {
-            isGenerateComplete = false;
+            CharaController charaCon = null;
 
-            currentChara += moveCurrent;
-
-            //Current移動制限
-            if (currentChara < 0) currentChara = listChara.Count - 1;
-            else if (currentChara >= listChara.Count) currentChara = 0;
-
-            if (!timeline) timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
-
-            //既存のポータルキャラを削除
-            timeline.DestoryPortalChara();
-
-            //フィールド上限オーバーなら生成しない
-            if (timeline.FieldCharaCount >= timeline.maxFieldChara) return;
-
-            //null枠の場合も処理しない
-            if (!listChara[currentChara]) return;
-
-            //キャラを生成
-            var charaCon = Instantiate(listChara[currentChara]);
-            if (listChara[currentChara].GetComponent<MaterialManager>())
+            try
             {
-                var matManager_f = listChara[currentChara].GetComponent<MaterialManager>();
-                var matManager_t = charaCon.GetComponent<MaterialManager>();
+                currentChara += moveCurrent;
 
-                matManager_t.matLocation = matManager_f.matLocation;
-                matManager_t.info = matManager_f.info;
+                //Current移動制限
+                if (currentChara < 0) currentChara = listChara.Count - 1;
+                else if (currentChara >= listChara.Count) currentChara = 0;
+
+                if (!timeline) timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
+
+                //既存のポータルキャラを削除
+                timeline.DestoryPortalChara();
+
+                //フィールド上限オーバーなら生成しない
+                if (timeline.FieldCharaCount >= timeline.maxFieldChara) return;
+
+                //null枠の場合も処理しない
+                if (!listChara[currentChara])
+                {
+                    onEmptyCurrent?.Invoke();
+                    return;
+                }
+
+                //キャラを生成
+                charaCon = Instantiate(listChara[currentChara]);
+                if (listChara[currentChara].GetComponent<MaterialManager>())
+                {
+                    var matManager_f = listChara[currentChara].GetComponent<MaterialManager>();
+                    var matManager_t = charaCon.GetComponent<MaterialManager>();
+
+                    matManager_t.matLocation = matManager_f.matLocation;
+                    matManager_t.info = matManager_f.info;
+                }
+
+                bool isSuccess;
+                if (cts == null) cts = new CancellationTokenSource();
+
+                //VRM
+                if (charaCon.charaInfoData.formatType == CharaInfoData.FORMATTYPE.VRM)
+                {
+                    if (!charaCon.gameObject.activeSelf) charaCon.gameObject.SetActive(true);
+
+                    //Prefab化経由は無効化されているので戻す
+                    charaCon.lookAtCon.enabled = true;
+                    charaCon.lookAtCon.SetEnable_VRMLookAtEye(true);
+
+                    //揺れ物の再稼働
+                    charaCon.SetEnabelSpringBones(true);
+                    await UniTask.Yield(PlayerLoopTiming.Update, cts.Token);
+
+                    //パラメーター設定
+                    charaCon.SetState(CharaController.CHARASTATE.MINIATURE, transform);//ミニチュア状態
+
+                    //Timelineのポータル枠へバインドする
+                    isSuccess = timeline.NewAssetBinding_Portal(charaCon);
+                }
+                else
+                {
+                    //パラメーター設定
+                    charaCon.SetState(CharaController.CHARASTATE.MINIATURE, transform);//ミニチュア状態
+
+                    //Timelineのポータル枠へバインドする
+                    isSuccess = timeline.NewAssetBinding_Portal(charaCon);
+                }
+
+                if (!isSuccess)
+                {
+                    if (charaCon) Destroy(charaCon.gameObject);
+                    return;
+                }
+
+                onGeneratedChara?.Invoke();
+                SetAnimation(0).Forget();//キャラにアニメーション情報をセットする
+
             }
-
-            bool isSuccess;
-
-            if(cts == null) cts = new CancellationTokenSource();
-
-            //VRM
-            if (charaCon.charaInfoData.formatType == CharaInfoData.FORMATTYPE.VRM)
+            catch (OperationCanceledException)
             {
-                if (!charaCon.gameObject.activeSelf) charaCon.gameObject.SetActive(true);
-
-                //Prefab化経由は無効化されているので戻す
-                charaCon.lookAtCon.SetEnable_VRMLookAtEye(true);
-                //揺れ物の再稼働
-                charaCon.SetEnabelSpringBones(true);
-                await UniTask.Yield(PlayerLoopTiming.Update, cts.Token);
-
-                //パラメーター設定
-                charaCon.SetState(CharaController.CHARASTATE.MINIATURE, transform);//ミニチュア状態
-
-                //Timelineのポータル枠へバインドする
-                isSuccess = timeline.NewAssetBinding_Portal(charaCon);
+                if (charaCon) Destroy(charaCon.gameObject);
             }
-            else
-            {
-                //パラメーター設定
-                charaCon.SetState(CharaController.CHARASTATE.MINIATURE, transform);//ミニチュア状態
-
-                //Timelineのポータル枠へバインドする
-                isSuccess = timeline.NewAssetBinding_Portal(charaCon);
-            }
-
-            if (isSuccess) SetAnimation(0).Forget();//キャラにアニメーション情報をセットする
-            else if (!isSuccess && charaCon) Destroy(charaCon.gameObject);
-
-            isGenerateComplete = true;
         }
 
         /// <summary>
@@ -256,6 +275,8 @@ namespace UniLiveViewer
                     timeline.SetAnimationClip(timeline.sPortalBaseAniTrack, danceAniClipInfo[currentAnime], transform.position, Vector3.zero);
                     await UniTask.Yield(PlayerLoopTiming.Update, cts.Token);
                 }
+
+                onGeneratedAnime?.Invoke();
             }
             catch (OperationCanceledException)
             {
@@ -350,15 +371,18 @@ namespace UniLiveViewer
         private void OnEnable()
         {
             //リトライ処理
-            if (!isGenerateComplete)
-            {
-                isGenerateComplete = true;
-                SetChara(0).Forget();
-            }
-            else if (retryVMD)
+            if (retryVMD)
             {
                 retryVMD = false;
                 SetAnimation(0).Forget();
+            }
+            else
+            {
+                //キャラが存在していなければ生成しておく
+                if (!timeline.isPortalChara())
+                {
+                    SetChara(0).Forget();
+                }
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 namespace UniLiveViewer 
 {
@@ -58,7 +59,6 @@ namespace UniLiveViewer
 
     public class GlobalConfig : MonoBehaviour
     {
-        [SerializeField] private SceneMode _sceneMode = SceneMode.CANDY_LIVE;
         [SerializeField] private int targetFrameRate = -1;
         [SerializeField] private int shaderLOD = 1000;
         [Header("＜Debug.Log()を一括で切り替える＞")]
@@ -67,6 +67,14 @@ namespace UniLiveViewer
         [SerializeField] private OVRManager.FixedFoveatedRenderingLevel _levelFFR = OVRManager.FixedFoveatedRenderingLevel.Medium;
 
         private TimelineController timeline = null;
+
+        public static void CheckNowScene()
+        {
+            string sName = SceneManager.GetActiveScene().name;
+            if (sName == "LiveScene") SystemInfo.sceneMode = SceneMode.CANDY_LIVE;
+            else if (sName == "KAGURAScene") SystemInfo.sceneMode = SceneMode.KAGURA_LIVE;
+            else if (sName == "ViewerScene") SystemInfo.sceneMode = SceneMode.VIEWER;
+        }
 
         private void Awake()
         {
@@ -87,9 +95,6 @@ namespace UniLiveViewer
             Shader.globalMaximumLOD = shaderLOD;
 
             //Cursor.visible = false;
-
-            SystemInfo.sceneMode = _sceneMode;
-
             //中心以外の描画のレベルを下げる(最大値)
             SystemInfo.levelFFR = _levelFFR;
             OVRManager.fixedFoveatedRenderingLevel = _levelFFR;

@@ -92,7 +92,7 @@ namespace UniLiveViewer
                 //前処理
                 await Pretreatment(charaCon, token);
                 //置換
-                await ShaderReplace(token);
+                await ShaderReplace(charaCon,token);
             }
             catch (OperationCanceledException)
             {
@@ -133,6 +133,7 @@ namespace UniLiveViewer
                     {
                         mesh.gameObject.layer = gameObject.layer;
                     }
+
                     //マテリアル取得
                     foreach (var mat in mesh.materials)
                     {
@@ -150,7 +151,7 @@ namespace UniLiveViewer
             }
         }
 
-        private async UniTask ShaderReplace(CancellationToken token)
+        private async UniTask ShaderReplace(CharaController charaCon,CancellationToken token)
         {
             try
             {
@@ -161,7 +162,7 @@ namespace UniLiveViewer
                 {
                     for (int i = 0; i < materials.Count; i++)
                     {
-                        SetupMaterialBlendMode(materials[i]);
+                        SetupMaterialBlendMode2(materials[i]);
                     }
                 }
             }
@@ -182,7 +183,7 @@ namespace UniLiveViewer
                     mesh.gameObject.layer = gameObject.layer;
                     for (int i = 0; i < mesh.materials.Length; i++)
                     {
-                        SetupMaterialBlendMode(mesh.materials[i]);
+                        SetupMaterialBlendMode2(mesh.materials[i]);
                     }
                 }
             }
@@ -201,19 +202,19 @@ namespace UniLiveViewer
         /// </summary>
         public void ResetMaterials()
         {
-            if (materials.Count != materials_Base.Count) return;
+            //if (materials.Count != materials_Base.Count) return;
 
-            for (int i = 0; i < materials.Count; i++)
-            {
-                //ベースから設定値をコピー
-                materials[i].SetFloat("_Surface", (float)materials_Base[i].GetFloat("_Surface"));
-                materials[i].SetFloat("_Blend", (float)materials_Base[i].GetFloat("_Blend"));
-                materials[i].SetFloat("_Cull", (float)materials_Base[i].GetFloat("_Cull"));
-                materials[i].color = materials_Base[i].color;
+            //for (int i = 0; i < materials.Count; i++)
+            //{
+            //    //ベースから設定値をコピー
+            //    materials[i].SetFloat("_Surface", (float)materials_Base[i].GetFloat("_Surface"));
+            //    materials[i].SetFloat("_Blend", (float)materials_Base[i].GetFloat("_Blend"));
+            //    materials[i].SetFloat("_Cull", (float)materials_Base[i].GetFloat("_Cull"));
+            //    materials[i].color = materials_Base[i].color;
 
-                //調整
-                SetupMaterialBlendMode(materials[i]);
-            }
+            //    //調整
+            //    SetupMaterialBlendMode(materials[i]);
+            //}
         }
 
         /// <summary>
@@ -271,6 +272,189 @@ namespace UniLiveViewer
         //    materials[current].color = col;
         //}
 
+        void SetupMaterialBlendMode2(Material material)
+        {
+            var replaceShader = fallbackShader.FirstOrDefault(x => x.Key == material.shader.name).Value;
+            if (!replaceShader) return;
+
+            if (replaceShader == fallbackShader_default)
+            {
+                material.shader = replaceShader;
+                return;
+            }
+
+            //影texture必須なので調整する
+            if (material.GetTexture("_ShadeTexture") == null) material.SetTexture("_ShadeTexture", material.GetTexture("_MainTex"));
+
+            
+            alphaBlend = Array.IndexOf(material.shaderKeywords, "_ALPHABLEND_ON") != -1;
+            blendMode = (BlendMode)material.GetFloat("_BlendMode");
+            alphaClip = Array.IndexOf(material.shaderKeywords, "_ALPHATEST_ON") != -1;
+            cutoffVal = material.GetFloat("_Cutoff");
+
+            renderFace = (RenderFace)material.GetFloat("_CullMode");
+            renderType = material.GetTag("RenderType", true);
+
+            zWrite = material.GetInt("_ZWrite");
+            _SrcBlend = material.GetInt("_SrcBlend");
+            _DstBlend = material.GetInt("_DstBlend");
+            _ALPHATEST_ON = material.IsKeywordEnabled("_ALPHATEST_ON");
+            _ALPHABLEND_ON = material.IsKeywordEnabled("_ALPHABLEND_ON");
+            _ALPHAPREMULTIPLY_ON = material.IsKeywordEnabled("_ALPHAPREMULTIPLY_ON");
+            ShadowCaster = material.GetShaderPassEnabled("ShadowCaster");
+            renderQueue = material.renderQueue;
+
+            // ### debug用 ###
+            //Debug.Log("-------------------------------------------------------------");
+            //Debug.Log($"{material.name}→Transparent:{alphaBlend} / cut out:{alphaClip} / blendMode:{blendMode} / RenderType:{renderType} / renderFace:{renderFace}");
+            //Debug.Log($"zWrite:{zWrite} / _Src:{_SrcBlend} / _Dst:{_DstBlend} / _ALPHATEST_ON:{_ALPHATEST_ON} / _ALPHABLEND_ON:{_ALPHABLEND_ON} / _ALPHAPREMULTIPLY_ON:{_ALPHAPREMULTIPLY_ON} / ShadowCaster:{ShadowCaster} / renderQueue:{renderQueue}");
+            // ######
+
+            //Transparent
+            alphaBlend = Array.IndexOf(material.shaderKeywords, "_ALPHABLEND_ON") != -1;
+            blendMode = replaceBlendmode[(BlendMode_MToon)material.GetFloat("_BlendMode")];
+            //cut out
+            alphaClip = Array.IndexOf(material.shaderKeywords, "_ALPHATEST_ON") != -1;
+            cutoffVal = material.GetFloat("_Cutoff");
+
+            renderType = material.GetTag("RenderType", true);
+            renderFace = (RenderFace)material.GetFloat("_CullMode");
+
+            //置換
+            material.shader = replaceShader;
+
+            material.SetFloat("_Cull", (float)renderFace);//URPで変わっている注意
+            if (!alphaBlend)
+            {
+                material.SetOverrideTag("RenderType", "Opaque");
+
+                //Opaque
+                if (!alphaClip)
+                {
+                    material.SetFloat("_Surface", (float)SurfaceType.Opaque);
+                    material.SetInt("_ZWrite", 1);
+                    material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+                    material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
+                    material.SetFloat("_AlphaClip", 0);
+
+                    material.DisableKeyword("_ALPHABLEND_ON");
+                    material.DisableKeyword("_ALPHATEST_ON");
+                    material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+
+                    material.renderQueue = -1;
+                }
+                //Cutoff
+                else
+                {
+                    material.SetFloat("_Surface", (float)SurfaceType.Opaque);
+                    material.SetInt("_ZWrite", 1);
+                    material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+                    material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
+                    material.SetFloat("_AlphaClip", 1);
+                    material.SetFloat("_Cutoff", cutoffVal);
+
+                    material.DisableKeyword("_ALPHABLEND_ON");
+                    material.EnableKeyword("_ALPHATEST_ON");
+                    material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+
+                    material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.AlphaTest;
+                }
+            }
+            else if (alphaBlend)
+            {
+                material.SetOverrideTag("RenderType", "Transparent");
+                material.SetFloat("_Blend", (float)BlendMode.Alpha);//透明なら必要、他だと上手くいかない
+                material.SetFloat("_AlphaClip", 0);
+
+                //Transparent
+                if (zWrite == 0)
+                {
+                    //material.SetFloat("_Surface", (float)SurfaceType.Transparent);
+                    //material.SetInt("_ZWrite", 0);
+                    //material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                    //material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+
+                    //material.EnableKeyword("_ALPHABLEND_ON");
+                    //material.DisableKeyword("_ALPHATEST_ON");
+                    //material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+
+                    //material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+
+                    material.SetOverrideTag("RenderType", "");
+
+                    material.SetFloat("_Surface", (float)SurfaceType.Opaque);
+                    material.SetInt("_ZWrite", 1);
+                    material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+                    material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
+                    material.SetFloat("_AlphaClip", 1);
+                    material.SetFloat("_Cutoff", cutoffVal);
+
+                    material.DisableKeyword("_ALPHABLEND_ON");
+                    material.EnableKeyword("_ALPHATEST_ON");
+                    material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+
+                    material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.AlphaTest;
+                }
+                //TransparentWithZWrite
+                else if (zWrite == 1)
+                {
+                    //material.SetFloat("_Surface", (float)SurfaceType.Transparent);
+                    //material.SetInt("_ZWrite", 1);
+                    //material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                    //material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+
+                    //material.EnableKeyword("_ALPHABLEND_ON");
+                    //material.DisableKeyword("_ALPHATEST_ON");
+                    //material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+
+                    //material.renderQueue = 2501;
+
+                    material.SetOverrideTag("RenderType", "");
+
+                    material.SetFloat("_Surface", (float)SurfaceType.Opaque);
+                    material.SetInt("_ZWrite", 1);
+                    material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+                    material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
+                    material.SetFloat("_AlphaClip", 1);
+                    material.SetFloat("_Cutoff", cutoffVal);
+
+                    material.DisableKeyword("_ALPHABLEND_ON");
+                    material.EnableKeyword("_ALPHATEST_ON");
+                    material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+
+                    material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.AlphaTest;
+                }
+            }
+
+
+            //debug(material);
+        }
+
+        private void debug(Material material)
+        {
+            alphaBlend = Array.IndexOf(material.shaderKeywords, "_ALPHABLEND_ON") != -1;
+            blendMode = (BlendMode)material.GetFloat("_Blend");
+            alphaClip = Array.IndexOf(material.shaderKeywords, "_ALPHATEST_ON") != -1;
+            cutoffVal = material.GetFloat("_Cutoff");
+
+            renderFace = (RenderFace)material.GetFloat("_Cull");
+
+            renderType = material.GetTag("RenderType", true);
+
+            zWrite = material.GetInt("_ZWrite");
+            _SrcBlend = material.GetInt("_SrcBlend");
+            _DstBlend = material.GetInt("_DstBlend");
+            _ALPHATEST_ON = material.IsKeywordEnabled("_ALPHATEST_ON");
+            _ALPHABLEND_ON = material.IsKeywordEnabled("_ALPHABLEND_ON");
+            _ALPHAPREMULTIPLY_ON = material.IsKeywordEnabled("_ALPHAPREMULTIPLY_ON");
+            ShadowCaster = material.GetShaderPassEnabled("ShadowCaster");
+            renderQueue = material.renderQueue;
+
+            Debug.Log($"{material.name}→Transparent:{alphaBlend} / cut out:{alphaClip} / blendMode:{blendMode} / RenderType:{renderType} / renderFace:{renderFace}");
+            Debug.Log($"zWrite:{zWrite} / _Src:{_SrcBlend} / _Dst:{_DstBlend} / _ALPHATEST_ON:{_ALPHATEST_ON} / _ALPHABLEND_ON:{_ALPHABLEND_ON} / _ALPHAPREMULTIPLY_ON:{_ALPHAPREMULTIPLY_ON} / ShadowCaster:{ShadowCaster} / renderQueue:{renderQueue}");
+            Debug.Log("-------------------------------------------------------------");
+        }
+
         /// <summary>
         /// 参考
         /// ttps://answers.unity.com/questions/1608815/change-surface-type-with-lwrp.html
@@ -288,7 +472,7 @@ namespace UniLiveViewer
 
             //Transparent
             alphaBlend = Array.IndexOf(material.shaderKeywords, "_ALPHABLEND_ON") != -1;
-            BlendMode blendMode = replaceBlendmode[(BlendMode_MToon)material.GetFloat("_BlendMode")];
+            blendMode = replaceBlendmode[(BlendMode_MToon)material.GetFloat("_BlendMode")];
             //cut out
             alphaClip = Array.IndexOf(material.shaderKeywords, "_ALPHATEST_ON") != -1;
             cutoffVal = material.GetFloat("_Cutoff");
@@ -325,50 +509,53 @@ namespace UniLiveViewer
             material.SetFloat("_Cutoff", cutoffVal);
             //material.SetFloat("_Blend", (float)blendMode);
             material.SetFloat("_Blend", (float)BlendMode.Alpha);//他が上手くいかない
-            material.SetFloat("_Cull", (float)renderFace);//URPで変わっている注意
+            //material.SetFloat("_Cull", (float)renderFace);//URPで変わっている注意
             material.SetInt("_ZWrite", zWrite);
             material.SetInt("_SrcBlend", _SrcBlend);
             material.SetInt("_DstBlend", _DstBlend);
 
-            if(_ALPHATEST_ON) material.EnableKeyword("_ALPHATEST_ON");
-            else material.DisableKeyword("_ALPHATEST_ON");
-            if (_ALPHABLEND_ON) material.EnableKeyword("_ALPHABLEND_ON");
-            else material.DisableKeyword("_ALPHABLEND_ON");
-            if (_ALPHAPREMULTIPLY_ON) material.EnableKeyword("_ALPHAPREMULTIPLY_ON");
-            else material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-            if (ShadowCaster) material.EnableKeyword("ShadowCaster");
-            else material.DisableKeyword("ShadowCaster");
+            if (false)
+            {
+                if (_ALPHATEST_ON) material.EnableKeyword("_ALPHATEST_ON");
+                else material.DisableKeyword("_ALPHATEST_ON");
+                if (_ALPHABLEND_ON) material.EnableKeyword("_ALPHABLEND_ON");
+                else material.DisableKeyword("_ALPHABLEND_ON");
+                if (_ALPHAPREMULTIPLY_ON) material.EnableKeyword("_ALPHAPREMULTIPLY_ON");
+                else material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+                if (ShadowCaster) material.EnableKeyword("ShadowCaster");
+                else material.DisableKeyword("ShadowCaster");
 
-            material.renderQueue = renderQueue;
+                material.renderQueue = renderQueue;
 
-            if(alphaClip) material.SetFloat("_AlphaClip", 1);
-            else material.SetFloat("_AlphaClip", 0);
+                if (alphaClip) material.SetFloat("_AlphaClip", 1);
+                else material.SetFloat("_AlphaClip", 0);
+            }
 
 
             // ### debug用 ###
             //Transparent
-            //alphaBlend = Array.IndexOf(material.shaderKeywords, "_ALPHABLEND_ON") != -1;
-            //blendMode = (BlendMode)material.GetFloat("_Blend");
-            ////cut out
-            //alphaClip = Array.IndexOf(material.shaderKeywords, "_ALPHATEST_ON") != -1;
-            //cutoffVal = material.GetFloat("_Cutoff");
+            alphaBlend = Array.IndexOf(material.shaderKeywords, "_ALPHABLEND_ON") != -1;
+            blendMode = (BlendMode)material.GetFloat("_Blend");
+            //cut out
+            alphaClip = Array.IndexOf(material.shaderKeywords, "_ALPHATEST_ON") != -1;
+            cutoffVal = material.GetFloat("_Cutoff");
 
-            //renderFace = (RenderFace)material.GetFloat("_Cull");
+            renderFace = (RenderFace)material.GetFloat("_Cull");
 
-            //renderType = material.GetTag("RenderType", true);
+            renderType = material.GetTag("RenderType", true);
 
-            //zWrite = material.GetInt("_ZWrite");
-            //_SrcBlend = material.GetInt("_SrcBlend");
-            //_DstBlend = material.GetInt("_DstBlend");
-            //_ALPHATEST_ON = material.IsKeywordEnabled("_ALPHATEST_ON");
-            //_ALPHABLEND_ON = material.IsKeywordEnabled("_ALPHABLEND_ON");
-            //_ALPHAPREMULTIPLY_ON = material.IsKeywordEnabled("_ALPHAPREMULTIPLY_ON");
-            //ShadowCaster = material.GetShaderPassEnabled("ShadowCaster");
-            //renderQueue = material.renderQueue;
+            zWrite = material.GetInt("_ZWrite");
+            _SrcBlend = material.GetInt("_SrcBlend");
+            _DstBlend = material.GetInt("_DstBlend");
+            _ALPHATEST_ON = material.IsKeywordEnabled("_ALPHATEST_ON");
+            _ALPHABLEND_ON = material.IsKeywordEnabled("_ALPHABLEND_ON");
+            _ALPHAPREMULTIPLY_ON = material.IsKeywordEnabled("_ALPHAPREMULTIPLY_ON");
+            ShadowCaster = material.GetShaderPassEnabled("ShadowCaster");
+            renderQueue = material.renderQueue;
 
-            //Debug.Log($"{material.name}→Transparent:{alphaBlend} / cut out:{alphaClip} / blendMode:{blendMode} / RenderType:{renderType} / renderFace:{renderFace}");
-            //Debug.Log($"zWrite:{zWrite} / _Src:{_SrcBlend} / _Dst:{_DstBlend} / _ALPHATEST_ON:{_ALPHATEST_ON} / _ALPHABLEND_ON:{_ALPHABLEND_ON} / _ALPHAPREMULTIPLY_ON:{_ALPHAPREMULTIPLY_ON} / ShadowCaster:{ShadowCaster} / renderQueue:{renderQueue}");
-            //Debug.Log("-------------------------------------------------------------");
+            Debug.Log($"{material.name}→Transparent:{alphaBlend} / cut out:{alphaClip} / blendMode:{blendMode} / RenderType:{renderType} / renderFace:{renderFace}");
+            Debug.Log($"zWrite:{zWrite} / _Src:{_SrcBlend} / _Dst:{_DstBlend} / _ALPHATEST_ON:{_ALPHATEST_ON} / _ALPHABLEND_ON:{_ALPHABLEND_ON} / _ALPHAPREMULTIPLY_ON:{_ALPHAPREMULTIPLY_ON} / ShadowCaster:{ShadowCaster} / renderQueue:{renderQueue}");
+            Debug.Log("-------------------------------------------------------------");
         }
 
         /// <summary>

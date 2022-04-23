@@ -165,47 +165,6 @@ namespace UniLiveViewer
                 btn_Cutoff[1].isEnable = true;
                 slider_Cutoff.gameObject.SetActive(false);
             }
-
-            //int current = rollSelector_Material.current;
-            //var type = (MaterialConverter.SurfaceType)matConverter.materials[current].GetFloat("_Surface");
-            //var face = (MaterialConverter.RenderFace)matConverter.materials[current].GetFloat("_Cull");
-            //var color = matConverter.materials[current].GetColor("_BaseColor");
-
-            ////buttonに反映
-            //if (type == MaterialConverter.SurfaceType.Opaque)
-            //{
-            //    btn_SuefaceType[0].isEnable = true;
-            //    btn_SuefaceType[1].isEnable = false;
-            //    //スライダー無効化
-            //    slider_Transparent.gameObject.SetActive(false);
-            //}
-            //else if (type == MaterialConverter.SurfaceType.Transparent)
-            //{
-            //    btn_SuefaceType[0].isEnable = false;
-            //    btn_SuefaceType[1].isEnable = true;
-            //    //スライダー有効化
-            //    slider_Transparent.gameObject.SetActive(true);
-            //    slider_Transparent.Value = color.a;
-            //}
-            ////buttonに反映
-            //if (face == MaterialConverter.RenderFace.Front)
-            //{
-            //    btn_RenderFace[0].isEnable = true;
-            //    btn_RenderFace[1].isEnable = false;
-            //    btn_RenderFace[2].isEnable = false;
-            //}
-            //else if (face == MaterialConverter.RenderFace.Back)
-            //{
-            //    btn_RenderFace[0].isEnable = false;
-            //    btn_RenderFace[1].isEnable = true;
-            //    btn_RenderFace[2].isEnable = false;
-            //}
-            //else if (face == MaterialConverter.RenderFace.Both)
-            //{
-            //    btn_RenderFace[0].isEnable = false;
-            //    btn_RenderFace[1].isEnable = false;
-            //    btn_RenderFace[2].isEnable = true;
-            //}
         }
 
         /// <summary>
@@ -258,9 +217,6 @@ namespace UniLiveViewer
                 slider_Cutoff.gameObject.SetActive(false);
                 btn_Cutoff[0].isEnable = false;
             }
-
-            ////UI表示を更新
-            //MaterialInfoUpdate();
         }
 
         /// <summary>

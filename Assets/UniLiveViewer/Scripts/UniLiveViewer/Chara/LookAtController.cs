@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using VRM;
-using UnityEngine.Animations.Rigging;
+//using UnityEngine.Animations.Rigging;
 using NanaCiel;
 
 namespace UniLiveViewer 
@@ -30,7 +30,7 @@ namespace UniLiveViewer
         public Transform lookTarget;
         private Animator animator;
         private CharaController charaCon;
-        private HeadRigController headRigCon;
+        //private HeadRigController headRigCon;
 
         [Header("＜パラメーター頭用＞")]
         public float inputWeight_Head = 0.0f;
@@ -270,6 +270,32 @@ namespace UniLiveViewer
         {
             if (VRMLookAtEye_Bone) VRMLookAtEye_Bone.enabled = isEnable;
             else if (VRMLookAtEye_UV) VRMLookAtEye_UV.enabled = isEnable;
+        }
+
+        public void Reset_VRMLookAtEye()
+        {
+            if (VRMLookAtEye_Bone)
+            {
+                VRMLookAtEye_Bone.HorizontalOuter.CurveXRangeDegree = 0;
+                VRMLookAtEye_Bone.HorizontalOuter.CurveYRangeDegree = 0;
+                VRMLookAtEye_Bone.HorizontalInner.CurveXRangeDegree = 0;
+                VRMLookAtEye_Bone.HorizontalInner.CurveYRangeDegree = 0;
+
+                VRMLookAtEye_Bone.VerticalDown.CurveXRangeDegree = 0;
+                VRMLookAtEye_Bone.VerticalDown.CurveYRangeDegree = 0;
+                VRMLookAtEye_Bone.VerticalUp.CurveXRangeDegree = 0;
+                VRMLookAtEye_Bone.VerticalUp.CurveYRangeDegree = 0;
+            }
+            else if (VRMLookAtEye_UV)
+            {
+                VRMLookAtEye_UV.Horizontal.CurveXRangeDegree = 0;
+                VRMLookAtEye_UV.Horizontal.CurveYRangeDegree = 0;
+
+                VRMLookAtEye_UV.VerticalDown.CurveXRangeDegree = 0;
+                VRMLookAtEye_UV.VerticalDown.CurveYRangeDegree = 0;
+                VRMLookAtEye_UV.VerticalUp.CurveXRangeDegree = 0;
+                VRMLookAtEye_UV.VerticalUp.CurveYRangeDegree = 0;
+            }
         }
 
         /// <summary>

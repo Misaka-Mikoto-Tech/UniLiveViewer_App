@@ -23,6 +23,8 @@ namespace UniLiveViewer
 
         private void Awake()
         {
+            GlobalConfig.CheckNowScene();
+
             if (SystemInfo.sceneMode == SceneMode.VIEWER)
             {
                 backGroundCon = GameObject.FindGameObjectWithTag("BackGroundController").GetComponent<BackGroundController>();
@@ -45,8 +47,6 @@ namespace UniLiveViewer
             fileManager.onVMDLoadError += VMDLoadError;
             fileManager.onThumbnailCompleted += () => { StartCoroutine(EndUpdate()); };
             switchController.onSceneSwitch += (str) => { StartCoroutine(SceneEndUpdate(str)); };
-
-            
 
             foreach (var e in vmdError)
             {

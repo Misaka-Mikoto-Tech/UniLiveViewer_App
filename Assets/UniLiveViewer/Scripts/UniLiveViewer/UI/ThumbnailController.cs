@@ -75,18 +75,15 @@ namespace UniLiveViewer
             //一旦全部非表示
             ThumbnailShow(false);
 
-            if (randomBox == null)
-            {
-                //全VRMファイル名を取得
-                var array = _vrmNames;
-                //最大15件に丸める
-                if (array.Length > 15) vrmNames = array.Take(15).ToArray();
-                else vrmNames = array;
-                //ランダム配列を設定
-                randomBox = new int[vrmNames.Length];
-                for (int i = 0; i < randomBox.Length; i++) randomBox[i] = i;
-                randomBox = Shuffle(randomBox);
-            }
+            //全VRMファイル名を取得
+            var array = _vrmNames;
+            //最大15件に丸める
+            if (array.Length > 15) vrmNames = array.Take(15).ToArray();
+            else vrmNames = array;
+            //ランダム配列を設定
+            randomBox = new int[vrmNames.Length];
+            for (int i = 0; i < randomBox.Length; i++) randomBox[i] = i;
+            randomBox = Shuffle(randomBox);
             await UniTask.Delay(10, cancellationToken: cancellation_token);
 
             //Button_Base baseButton;
@@ -155,12 +152,12 @@ namespace UniLiveViewer
                     {
                         spr = null;
                     }
-                }
 
-                if (i % GENERATE_COUNT[r] == GENERATE_COUNT[r] - 1 )
-                {
-                    onGenerated?.Invoke();
-                    await UniTask.Delay(GENERATE_INTERVAL[r], cancellationToken: cancellation_token);
+                    if (i % GENERATE_COUNT[r] == 0)
+                    {
+                        onGenerated?.Invoke();
+                        await UniTask.Delay(GENERATE_INTERVAL[r], cancellationToken: cancellation_token);
+                    }
                 }
             }
         }
