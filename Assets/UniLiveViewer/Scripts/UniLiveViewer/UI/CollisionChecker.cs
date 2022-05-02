@@ -46,11 +46,33 @@ namespace UniLiveViewer
         //色の設定
         public TargetColorSetting[] colorSetting;
 
-        private void Awake()
+        /// <summary>
+        /// 実体化した時
+        /// </summary>
+        private void OnEnable()
+        {
+            isTouch = false;
+            ColorUpdate();
+        }
+
+        public void Init()
         {
             for (int i = 0; i < colorSetting.Length; i++)
             {
                 colorSetting[i].Init(SystemInfo.btnColor_Ena_sky);
+            }
+        }
+
+        /// <summary>
+        /// 状態に応じて色を更新
+        /// </summary>
+        private void ColorUpdate()
+        {
+            if (colorSetting == null) return;
+
+            for (int i = 0; i < colorSetting.Length; i++)
+            {
+                colorSetting[i].SetColor(_myState, isTouch);
             }
         }
 
@@ -80,28 +102,6 @@ namespace UniLiveViewer
             if (!isTouch) return;
             isTouch = false;
             ColorUpdate();
-        }
-
-        /// <summary>
-        /// 実体化した時
-        /// </summary>
-        private void OnEnable()
-        {
-            isTouch = false;
-            ColorUpdate();
-        }
-
-        /// <summary>
-        /// 状態に応じて色を更新
-        /// </summary>
-        private void ColorUpdate()
-        {
-            if (colorSetting == null) return;
-
-            for (int i = 0; i < colorSetting.Length; i++)
-            {
-                colorSetting[i].SetColor(_myState, isTouch);
-            }
         }
     }
 

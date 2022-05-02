@@ -57,12 +57,7 @@ namespace UniLiveViewer
         private async UniTask Init()
         {
             //最初にとめておく(マニュアルモード)
-            await UniTask.Delay(100, cancellationToken: token);
-
-            //キャラを生成する
-            switchController.InitPage();
-            await UniTask.Delay(100, cancellationToken: token);
-
+            await UniTask.Delay(200, cancellationToken: token);
             //非表示にする
             gameObject.SetActive(false);
             isInit = true;

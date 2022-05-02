@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace UniLiveViewer
@@ -8,7 +8,7 @@ namespace UniLiveViewer
         /// <summary>
         /// クリック演出
         /// </summary>
-        protected override IEnumerator ClickDirecting()
+        protected override async UniTaskVoid ClickDirecting()
         {
             //何度も押せないように物理判定を消す
             myRb.isKinematic = true;
@@ -24,18 +24,15 @@ namespace UniLiveViewer
             if (collisionChecker.isTouchL) PlayerStateManager.ControllerVibration(OVRInput.Controller.LTouch, 1, 1, 0.1f);
             else PlayerStateManager.ControllerVibration(OVRInput.Controller.RTouch, 1, 1f, 0.1f);
 
-            yield return new WaitForSeconds(delayTime);
+            await UniTask.Delay((int)(delayTime * 1000), cancellationToken: cancellation_token);
 
             //張り付かないように少し前進
             collisionChecker.transform.position -= collisionChecker.transform.forward * 0.001f;
             //物理演算を再開
             myRb.isKinematic = false;
 
-            //状態リセット
-            //collisionChecker.StateReset();
-
             //連続で触れないように一定時間後に触れられるようにする
-            yield return new WaitForSeconds(0.25f);
+            await UniTask.Delay(200, cancellationToken: cancellation_token);
             myCol.enabled = true;
         }
     }

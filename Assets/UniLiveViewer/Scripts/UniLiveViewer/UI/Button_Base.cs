@@ -1,5 +1,6 @@
-﻿using System;
-using System.Collections;
+﻿using Cysharp.Threading.Tasks;
+using System;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -39,11 +40,20 @@ namespace UniLiveViewer
         protected Rigidbody myRb;
         protected BoxCollider myCol;
 
-        // Start is called before the first frame update
+        protected CancellationToken cancellation_token;
+
         protected virtual void Awake()
         {
+            cancellation_token = this.GetCancellationTokenOnDestroy();
+
+            collisionChecker.Init();
             myRb = collisionChecker.GetComponent<Rigidbody>();
             myCol = collisionChecker.GetComponent<BoxCollider>();
+        }
+
+        private void OnEnable()
+        {
+            InitDirecting().Forget();
         }
 
         private void FixedUpdate()
@@ -60,10 +70,7 @@ namespace UniLiveViewer
             if (collisionChecker.transform.localPosition.z >= 0.0f)
             {
                 //ボタンに触れていれば
-                if (collisionChecker.Touching())
-                {
-                    ClickAction();
-                }
+                if (collisionChecker.Touching()) ClickAction();
             }
         }
 
@@ -75,7 +82,8 @@ namespace UniLiveViewer
             //isTrigger = true;
             if (!gameObject.activeSelf) return;
 
-            StartCoroutine(ClickDirecting());
+            ClickDirecting().Forget();
+
             //押したと判定する
             onTrigger?.Invoke(this);
             onTrigger_Event?.Invoke();
@@ -84,7 +92,7 @@ namespace UniLiveViewer
         /// <summary>
         /// クリック演出
         /// </summary>
-        protected virtual IEnumerator ClickDirecting()
+        protected virtual async UniTaskVoid ClickDirecting()
         {
             //何度も押せないように物理判定を消す
             myRb.isKinematic = true;
@@ -101,7 +109,7 @@ namespace UniLiveViewer
             else PlayerStateManager.ControllerVibration(OVRInput.Controller.RTouch, 1, 1f, 0.1f);
 
             //押した後のインターバル
-            yield return new WaitForSeconds(delayTime);
+            await UniTask.Delay((int)(delayTime * 1000), cancellationToken: cancellation_token);
 
             //張り付かないように少し前進
             collisionChecker.transform.position -= collisionChecker.transform.forward * 0.001f;
@@ -119,6 +127,28 @@ namespace UniLiveViewer
         {
             if (collisionChecker.colorSetting == null || !collisionChecker.colorSetting[0].textMesh) return;
             collisionChecker.colorSetting[0].textMesh.text = str;
+        }
+
+        private async UniTaskVoid InitDirecting()
+        {
+            await UniTask.Yield(cancellation_token);
+
+            //押せないように物理判定を消す
+            myRb.isKinematic = true;
+            myCol.enabled = false;
+
+            //座標初期化
+            collisionChecker.transform.localPosition = Vector3.zero;
+
+            //インターバル
+            await UniTask.Delay((int)(delayTime * 1000), cancellationToken: cancellation_token);
+
+            //張り付かないように少し前進
+            collisionChecker.transform.position -= collisionChecker.transform.forward * 0.001f;
+
+            //物理演算を再開し、触れられるように戻す 
+            myRb.isKinematic = false;
+            myCol.enabled = true;
         }
 
         /// <summary>
@@ -141,31 +171,6 @@ namespace UniLiveViewer
             var diff = neutralAnchor.position - collisionChecker.transform.position; //バネの伸び
             var force = diff * r;
             myRb.AddForce(force);
-        }
-
-        private void OnEnable()
-        {
-            StartCoroutine(InitDirecting());
-        }
-
-        private IEnumerator InitDirecting()
-        {
-            //押せないように物理判定を消す
-            myRb.isKinematic = true;
-            myCol.enabled = false;
-
-            //座標初期化
-            collisionChecker.transform.localPosition = Vector3.zero;
-
-            //インターバル
-            yield return new WaitForSeconds(delayTime);
-
-            //張り付かないように少し前進
-            collisionChecker.transform.position -= collisionChecker.transform.forward * 0.001f;
-
-            //物理演算を再開し、触れられるように戻す 
-            myRb.isKinematic = false;
-            myCol.enabled = true;
         }
     }
 }
