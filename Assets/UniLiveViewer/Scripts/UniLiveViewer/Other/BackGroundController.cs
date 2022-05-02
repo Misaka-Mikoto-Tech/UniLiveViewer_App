@@ -54,7 +54,7 @@ namespace UniLiveViewer
         public void Clear_CubemapTex()
         {
             string str;
-            cubemap_Mat.SetTexture("_Tex", null);
+            //cubemap_Mat.SetTexture("_Tex", null);
             //ワームホールを無効化しておく
             currntHole = 0;
             SetWormHole(0, out str);

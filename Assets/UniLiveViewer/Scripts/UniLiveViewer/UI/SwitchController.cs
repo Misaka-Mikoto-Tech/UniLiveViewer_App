@@ -77,7 +77,7 @@ namespace UniLiveViewer
         [SerializeField] private SliderGrabController slider_InitCharaSize = null;
         [SerializeField] private SliderGrabController slider_FixedFoveated = null;
         [SerializeField] private SliderGrabController slider_Fog = null;
-        [SerializeField] private Button_Base btn_passthrough = null;
+        [SerializeField] private Button_Base[] btn_passthrough = null;
 
         private BackGroundController backGroundCon;
 
@@ -263,26 +263,37 @@ namespace UniLiveViewer
             };
             slider_FixedFoveated.ValueUpdate += Update_FixedFoveated;
             slider_Fog.ValueUpdate += () => { RenderSettings.fogDensity = slider_Fog.Value; };
-            //今回は実装しない
-            //btn_passthrough.onTrigger += (b) => {
 
-            //    if (b.gameObject.activeSelf)
-            //    {
-            //        b.isEnable = !b.isEnable;
+            playerStateManager.myCamera.clearFlags = CameraClearFlags.Skybox;
+            playerStateManager.myOVRManager.isInsightPassthroughEnabled = false;
+            for (int i = 0;i< btn_passthrough.Length;i++)
+            {
+                btn_passthrough[i].onTrigger += PassthroughAction;
+            }
+        }
 
-            //        if (b)
-            //        {
-            //            backGroundCon.Clear_CubemapTex();
-            //            DynamicGI.UpdateEnvironment();
-            //        }
-            //        else
-            //        {
-            //            string str;
-            //            backGroundCon.SetCubemap(0, out str);
-            //            DynamicGI.UpdateEnvironment();
-            //        }
-            //    }
-            //};
+        private void PassthroughAction(Button_Base btn)
+        {
+            if(btn == btn_passthrough[0])
+            {
+                //if (!b.gameObject.activeSelf) return;
+                if (btn.isEnable)
+                {
+                    playerStateManager.myCamera.clearFlags = CameraClearFlags.Color;
+                    //backGroundCon.Clear_CubemapTex();
+                    //DynamicGI.UpdateEnvironment();
+                }
+                else
+                {
+                    playerStateManager.myCamera.clearFlags = CameraClearFlags.Skybox;
+                    //string str;
+                    //backGroundCon.SetCubemap(0, out str);
+                    //DynamicGI.UpdateEnvironment();
+                }
+            }
+
+            if (btn.isEnable) playerStateManager.myOVRManager.isInsightPassthroughEnabled = true;
+            else playerStateManager.myOVRManager.isInsightPassthroughEnabled = false;
         }
 
         private void OnEnable()
@@ -696,6 +707,8 @@ namespace UniLiveViewer
                         //各種有効化状態にボタンを合わせる
                         btnE[0].isEnable = btnE_ActionParent[0].gameObject.activeSelf;
                     }
+                    btn_passthrough[0].isEnable = playerStateManager.myOVRManager.isInsightPassthroughEnabled;
+
                     //キャラサイズ
                     slider_InitCharaSize.Value = SystemInfo.userProfile.data.InitCharaSize;
                     Update_InitCharaSize();

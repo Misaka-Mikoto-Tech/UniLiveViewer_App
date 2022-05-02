@@ -12,6 +12,8 @@ namespace UniLiveViewer
         private static bool isSummonCircle = false;
         public static bool isGrabbedChara_OnCircle = false;
         private TimelineController timeline;
+        public OVRManager myOVRManager;
+        public Camera myCamera;
 
         [Header("掴み")]
         [SerializeField] private OVRGrabber_UniLiveViewer[] ovrGrabber = null;//左右                                                                      

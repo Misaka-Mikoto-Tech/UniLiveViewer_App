@@ -1,5 +1,5 @@
 {
-    "m_SGVersion": 2,
+    "m_SGVersion": 3,
     "m_Type": "UnityEditor.ShaderGraph.GraphData",
     "m_ObjectId": "9963a757d187400db1e8b09f500e9a96",
     "m_Properties": [
@@ -23,6 +23,12 @@
         }
     ],
     "m_Keywords": [],
+    "m_Dropdowns": [],
+    "m_CategoryData": [
+        {
+            "m_Id": "e4bea5d3eeff4d9cacd91f205f968618"
+        }
+    ],
     "m_Nodes": [
         {
             "m_Id": "62861dae2b8a4b3e8798c4e85c005c9a"
@@ -577,10 +583,11 @@
         "serializedMesh": {
             "m_SerializedMesh": "{\"mesh\":{\"instanceID\":0}}",
             "m_Guid": ""
-        }
+        },
+        "preventRotation": false
     },
     "m_Path": "Shader Graphs",
-    "m_ConcretePrecision": 0,
+    "m_GraphPrecision": 0,
     "m_PreviewMode": 2,
     "m_OutputNode": {
         "m_Id": ""
@@ -947,9 +954,13 @@
         "m_GuidSerialized": "ae47a420-11c1-42e8-a6ae-36af29eddcbd"
     },
     "m_Name": "Span",
+    "m_DefaultRefNameVersion": 0,
+    "m_RefNameGeneratedByDisplayName": "",
     "m_DefaultReferenceName": "Vector1_23321761324f497ca24832eeda674a42",
     "m_OverrideReferenceName": "",
     "m_GeneratePropertyBlock": true,
+    "m_UseCustomSlotLabel": false,
+    "m_CustomSlotLabel": "",
     "m_Precision": 0,
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
@@ -1485,7 +1496,8 @@
     "m_CustomColors": {
         "m_SerializableColors": []
     },
-    "m_Space": 2
+    "m_Space": 2,
+    "m_PositionSource": 0
 }
 
 {
@@ -1841,9 +1853,13 @@
         "m_GuidSerialized": "c0783c30-2bb0-4e25-b673-6f1546a816e5"
     },
     "m_Name": "Emission",
+    "m_DefaultRefNameVersion": 0,
+    "m_RefNameGeneratedByDisplayName": "",
     "m_DefaultReferenceName": "Color_55d6b94406bf47068565df7715cb3266",
     "m_OverrideReferenceName": "",
     "m_GeneratePropertyBlock": true,
+    "m_UseCustomSlotLabel": false,
+    "m_CustomSlotLabel": "",
     "m_Precision": 0,
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
@@ -1854,6 +1870,7 @@
         "b": 1.0,
         "a": 1.0
     },
+    "isMainColor": false,
     "m_ColorMode": 0
 }
 
@@ -2358,9 +2375,13 @@
         "m_GuidSerialized": "0dcf72cf-fc49-4e44-b207-c6d92ea9442e"
     },
     "m_Name": "Texture",
+    "m_DefaultRefNameVersion": 0,
+    "m_RefNameGeneratedByDisplayName": "",
     "m_DefaultReferenceName": "Texture2D_7b1a046d3aef4960aaddfc30343ff237",
     "m_OverrideReferenceName": "",
     "m_GeneratePropertyBlock": true,
+    "m_UseCustomSlotLabel": false,
+    "m_CustomSlotLabel": "",
     "m_Precision": 0,
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
@@ -2369,6 +2390,8 @@
         "m_SerializedTexture": "{\"texture\":{\"fileID\":2800000,\"guid\":\"e055b4ea48aa671489f40938d7f460ac\",\"type\":3}}",
         "m_Guid": ""
     },
+    "isMainTexture": false,
+    "useTilingAndOffset": false,
     "m_Modifiable": true,
     "m_DefaultType": 0
 }
@@ -2639,9 +2662,13 @@
         "m_GuidSerialized": "810603b4-2f2e-40a7-9a3f-3c5967547c98"
     },
     "m_Name": "Base",
+    "m_DefaultRefNameVersion": 0,
+    "m_RefNameGeneratedByDisplayName": "",
     "m_DefaultReferenceName": "Color_89c26cd1f7ce48e790b654fffd21fe6a",
     "m_OverrideReferenceName": "",
     "m_GeneratePropertyBlock": true,
+    "m_UseCustomSlotLabel": false,
+    "m_CustomSlotLabel": "",
     "m_Precision": 0,
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
@@ -2652,6 +2679,7 @@
         "b": 0.07547169923782349,
         "a": 0.0
     },
+    "isMainColor": false,
     "m_ColorMode": 0
 }
 
@@ -3014,9 +3042,13 @@
         "m_GuidSerialized": "1ad69d2f-5029-4bd2-81e5-a33423a8581c"
     },
     "m_Name": "Speed",
+    "m_DefaultRefNameVersion": 0,
+    "m_RefNameGeneratedByDisplayName": "",
     "m_DefaultReferenceName": "Vector1_b2783bc3ead44ea3aaae0cff2ee70098",
     "m_OverrideReferenceName": "",
     "m_GeneratePropertyBlock": true,
+    "m_UseCustomSlotLabel": false,
+    "m_CustomSlotLabel": "",
     "m_Precision": 0,
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
@@ -3741,6 +3773,33 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.CategoryData",
+    "m_ObjectId": "e4bea5d3eeff4d9cacd91f205f968618",
+    "m_Name": "",
+    "m_ChildObjectList": [
+        {
+            "m_Id": "7b1a046d3aef4960aaddfc30343ff237"
+        },
+        {
+            "m_Id": "89c26cd1f7ce48e790b654fffd21fe6a"
+        },
+        {
+            "m_Id": "55d6b94406bf47068565df7715cb3266"
+        },
+        {
+            "m_Id": "e7683e3624e7412d843a44dc9270f82b"
+        },
+        {
+            "m_Id": "b2783bc3ead44ea3aaae0cff2ee70098"
+        },
+        {
+            "m_Id": "23321761324f497ca24832eeda674a42"
+        }
+    ]
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.StepNode",
     "m_ObjectId": "e58518169ae74ec2a58a9bb438658c1f",
     "m_Group": {
@@ -3800,9 +3859,13 @@
         "m_GuidSerialized": "075919aa-fb93-4958-99d7-7028bb56a014"
     },
     "m_Name": "EmissionPower",
+    "m_DefaultRefNameVersion": 0,
+    "m_RefNameGeneratedByDisplayName": "",
     "m_DefaultReferenceName": "Vector1_e7683e3624e7412d843a44dc9270f82b",
     "m_OverrideReferenceName": "",
     "m_GeneratePropertyBlock": true,
+    "m_UseCustomSlotLabel": false,
+    "m_CustomSlotLabel": "",
     "m_Precision": 0,
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
@@ -3816,17 +3879,23 @@
 }
 
 {
-    "m_SGVersion": 0,
+    "m_SGVersion": 1,
     "m_Type": "UnityEditor.Rendering.Universal.ShaderGraph.UniversalTarget",
     "m_ObjectId": "e7b85db17dad470ea46f460053344fa2",
     "m_ActiveSubTarget": {
         "m_Id": "61d910767d8e44c699e21611ae81bffd"
     },
+    "m_AllowMaterialOverride": false,
     "m_SurfaceType": 1,
+    "m_ZTestMode": 4,
+    "m_ZWriteControl": 0,
     "m_AlphaMode": 2,
-    "m_TwoSided": false,
+    "m_RenderFace": 2,
     "m_AlphaClip": false,
-    "m_CustomEditorGUI": ""
+    "m_CastShadows": true,
+    "m_ReceiveShadows": true,
+    "m_CustomEditorGUI": "",
+    "m_SupportVFX": false
 }
 
 {
