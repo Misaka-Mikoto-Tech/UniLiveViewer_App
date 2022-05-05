@@ -11,9 +11,11 @@ namespace UniLiveViewer
         [Header("＜ページ・タブボタン＞")]
         [SerializeField] private Button_Switch[] btnTab;
         [SerializeField] private Transform[] pageAnchor;
+        public Transform[] GetPageAnchor => pageAnchor;
 
         private CancellationToken cancellation_token;
-        private int current = 0;
+        public int current { get; private set; }
+        public Transform GetCurrentPage() { return pageAnchor[current]; } 
 
         [Header("＜Sound＞")]
         [SerializeField] private AudioClip[] Sound;//ボタン音

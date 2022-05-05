@@ -1,5 +1,4 @@
 ﻿using Cysharp.Threading.Tasks;
-using System;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
@@ -35,7 +34,6 @@ namespace UniLiveViewer
 
         private Material matMirrore;//LiveScene用
         private BackGroundController backGroundCon;
-        public event Action<string> onSceneSwitch;
         private CancellationToken cancellation_token;
 
         private void Awake()
@@ -429,7 +427,9 @@ namespace UniLiveViewer
         private async UniTaskVoid SceneChange(string sceneName)
         {
             await UniTask.Delay(100, cancellationToken: cancellation_token);
-            onSceneSwitch?.Invoke(sceneName);
+
+            OverrideUIController.LoadNextScene(sceneName);
+
             await UniTask.Delay(400, cancellationToken: cancellation_token);//音の分だけ待つ
 
             //音が割れるので止める

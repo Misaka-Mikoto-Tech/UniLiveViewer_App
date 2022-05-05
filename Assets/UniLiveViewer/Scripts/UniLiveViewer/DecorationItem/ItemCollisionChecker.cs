@@ -1,8 +1,9 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace UniLiveViewer
 {
+    //廃止予定
     [RequireComponent(typeof(BoxCollider))]
     public class ItemCollisionChecker : MonoBehaviour
     {

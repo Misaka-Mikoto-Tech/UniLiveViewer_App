@@ -7,7 +7,6 @@ namespace UniLiveViewer
     public class MoveUI : MonoBehaviour
     {
         [SerializeField] private Transform targetAnchor;
-        [SerializeField] private SwitchController switchController;
 
         //public bool isViewerMode = false;
         private bool isInit = false;

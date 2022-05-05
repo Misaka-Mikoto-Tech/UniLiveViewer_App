@@ -48,6 +48,9 @@ namespace UniLiveViewer
             timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
             audioSource = GetComponent<AudioSource>();
             audioSource.volume = SystemInfo.soundVolume_SE;
+
+            //textMesh_CrossUI = crossUI.GetChild(0).GetComponent<TextMesh>();
+            //crossUI.gameObject.SetActive(false);
         }
 
         public override void Update()
@@ -93,7 +96,7 @@ namespace UniLiveViewer
         protected override void GrabBegin()
         {
             //基本的な手に触れているものを掴む処理
-            base.GrabBegin();
+            if(!IsSummonCircle) base.GrabBegin();
 
             //何かを掴んだ場合
             if (grabbedObject)

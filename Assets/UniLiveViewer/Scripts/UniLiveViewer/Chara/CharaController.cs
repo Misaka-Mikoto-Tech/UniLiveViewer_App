@@ -53,8 +53,7 @@ namespace UniLiveViewer
         {
             set
             {
-                reScalar = value;
-                reScalar = Mathf.Clamp(reScalar, 0.25f, 5.0f);
+                reScalar = Mathf.Clamp(value, 0.25f, 5.0f);
                 transform.localScale = Vector3.one * reScalar;
             }
             get

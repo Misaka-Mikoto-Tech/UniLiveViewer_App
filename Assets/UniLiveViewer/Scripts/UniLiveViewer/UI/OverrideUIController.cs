@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using Cysharp.Threading.Tasks;
+using System.Collections;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -6,9 +8,10 @@ namespace UniLiveViewer
 {
     public class OverrideUIController : MonoBehaviour
     {
+        public static OverrideUIController instance;
+
         [SerializeField] private PlayerStateManager player;
         [SerializeField] private FileAccessManager fileManager;
-        [SerializeField] private SwitchController switchController;
         private BackGroundController backGroundCon;
 
         [Header("UI")]
@@ -20,10 +23,14 @@ namespace UniLiveViewer
 
         private MaterialPropertyBlock materialPropertyBlock;
         private Color baseColor;
+        
+        private CancellationToken cancellation_Token;
 
         private void Awake()
         {
             GlobalConfig.CheckNowScene();
+
+            cancellation_Token = this.GetCancellationTokenOnDestroy();
 
             if (SystemInfo.sceneMode == SceneMode.VIEWER)
             {
@@ -45,18 +52,24 @@ namespace UniLiveViewer
 
             fileManager.onLoadStart += () => { anime_Loading.gameObject.SetActive(true); };
             fileManager.onVMDLoadError += VMDLoadError;
-            fileManager.onThumbnailCompleted += () => { StartCoroutine(EndUpdate()); };
-            switchController.onSceneSwitch += (str) => { StartCoroutine(SceneEndUpdate(str)); };
+            fileManager.onThumbnailCompleted += () => { FinishLoading().Forget(); };
 
             foreach (var e in vmdError)
             {
                 if (e.gameObject.activeSelf) e.gameObject.SetActive(false);
             }
+
+            instance = this;
         }
 
         private void Start()
         {
             
+        }
+
+        public static void LoadNextScene(string sceneName)
+        {
+            instance.LoadScene(sceneName).Forget();
         }
 
         private void VMDLoadError()
@@ -75,14 +88,13 @@ namespace UniLiveViewer
             }
         }
 
-        IEnumerator EndUpdate()
+        private async  UniTaskVoid FinishLoading()
         {
-            yield return null;
+            await UniTask.Yield(cancellation_Token);
 
             //まずloadingアニメーションを消す
             anime_Loading.gameObject.SetActive(false);
-
-            yield return null;
+            await UniTask.Yield(cancellation_Token);
 
             //暗転する
             baseColor = materialPropertyBlock.GetColor("_BaseColor");
@@ -94,18 +106,18 @@ namespace UniLiveViewer
 
                 materialPropertyBlock.SetColor("_BaseColor", baseColor);
                 _rendererFade.SetPropertyBlock(materialPropertyBlock);
-                yield return null;
+                await UniTask.Yield(cancellation_Token);
             }
 
             overlayCamera.enabled = false;
             player.enabled = true;//操作可能に
         }
 
-        IEnumerator SceneEndUpdate(string sceneName)
+        private async UniTask LoadScene(string sceneName)
         {
             overlayCamera.enabled = true;
             player.enabled = false;//操作不可に
-            yield return null;
+            await UniTask.Yield(cancellation_Token);
 
             //閉幕演出
             _rendererClosing.enabled = true;
@@ -115,14 +127,14 @@ namespace UniLiveViewer
             {
                 t += Time.deltaTime * (50 - i) * 0.1f;
                 _rendererClosing.sharedMaterial.SetFloat("_Scala", t);
-                yield return null;
+                await UniTask.Yield(cancellation_Token);
             }
 
             while (t < 150)
             {
                 t += Time.deltaTime * 150;
                 _rendererClosing.sharedMaterial.SetFloat("_Scala", t);
-                yield return null;
+                await UniTask.Yield(cancellation_Token);
             }
 
             //skyboxの初期化
@@ -133,7 +145,7 @@ namespace UniLiveViewer
             //ロードが早すぎても最低演出分は待機する
             var async = SceneManager.LoadSceneAsync(sceneName);
             async.allowSceneActivation = false;
-            yield return new WaitForSeconds(1.0f);
+            await UniTask.Delay(1000,cancellationToken: cancellation_Token);
             async.allowSceneActivation = true;
         }
     }

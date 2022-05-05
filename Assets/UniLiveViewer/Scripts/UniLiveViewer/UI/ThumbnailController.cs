@@ -70,7 +70,7 @@ namespace UniLiveViewer
         /// <summary>
         /// VRMの数だけサムネボタンを生成する
         /// </summary>
-        public async UniTaskVoid SetThumbnail(string[] _vrmNames)
+        public async UniTask SetThumbnail(string[] _vrmNames)
         {
             //一旦全部非表示
             ThumbnailShow(false);

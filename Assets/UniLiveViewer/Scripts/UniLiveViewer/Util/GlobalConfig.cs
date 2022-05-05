@@ -53,7 +53,7 @@ namespace UniLiveViewer
     {
         NULL,   
         JP,     
-        EN,  
+        EN,
         KO//未使用
     }
 

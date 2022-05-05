@@ -5,8 +5,8 @@ namespace UniLiveViewer
 {
     public class DecorationItemInfo : MonoBehaviour
     {
-        public string[] itemName = new string[2] { "ItemName", "アイテム名" };
-        public string[] flavorText = new string[2] { "Unremarkable item", "何の変哲もないアイテム" };
+        public string[] itemName = new string[2] { "アイテム名","ItemName" };
+        public string[] flavorText = new string[2] { "何の変哲もないアイテム", "Unremarkable item" };
         public Texture2D[] texs = new Texture2D[0];
         public RenderInfo[] renderInfo = new RenderInfo[1];
 
@@ -46,6 +46,20 @@ namespace UniLiveViewer
 
         /// <summary>
         /// 指定テクスチャに変更
+        /// </summary>
+        public void SetTexture(Texture tex)
+        {
+            foreach (var info in renderInfo)
+            {
+                for (int i = 0; i < info._renderer.materials.Length; i++)
+                {
+                    info._renderer.materials[i].SetTexture("_BaseMap", tex);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 指定テクスチャに変更(旧)
         /// </summary>
         public void SetTexture(ItemCollisionChecker parts, Collider other)
         {

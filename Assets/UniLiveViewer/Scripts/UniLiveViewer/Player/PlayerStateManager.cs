@@ -1,16 +1,20 @@
 ﻿using UnityEngine;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using static UniLiveViewer.OVRGrabber_UniLiveViewer;
 
 namespace UniLiveViewer 
 {
-    //TODO:見直す、整理する
     public class PlayerStateManager : MonoBehaviour
     {
+        public enum HandType
+        {
+            LHand = 0,
+            RHand = 1
+        }
+
         [Header("基本")]
         [SerializeField] private SimpleCapsuleWithStickMovement simpleCapsuleWithStickMovement = null;
-        private static bool isSummonCircle = false;
-        public static bool isGrabbedChara_OnCircle = false;
         private TimelineController timeline;
         public OVRManager myOVRManager;
         public Camera myCamera;
@@ -22,57 +26,29 @@ namespace UniLiveViewer
         private Vector3 initBothHandsDistance;
         private Transform bothHandsCenterAnchor;
 
+        public OVRGrabbable_Custom[] bothHandsCandidate = new OVRGrabbable_Custom[2];
+
         [Header("UI関係")]
-        [SerializeField] private MoveUI moveUI;
-        [SerializeField] private Transform handUI;
+        [SerializeField] private MoveUI mainUI;
         private bool isMoveUI = false;
-        private bool isHandUI = false;
-        private TextMesh textMesh_CamHei;
-        private CharacterCameraConstraint_Custom charaCam;
-        [SerializeField] private Transform[] crossUI = new Transform[2];
-        private TextMesh[] textMesh_cross = new TextMesh[2];
+        public HandUIController handUIController;
+
         [Header("使用キー")]
+        [SerializeField] private KeyConfig key_Lcon;
+        [SerializeField] private KeyConfig key_Rcon;
+        [Header("windows U")]
         //UI
         [SerializeField] private KeyCode uiKey_win = KeyCode.U;
-        [SerializeField] private OVRInput.RawButton[] uiKey_quest = { OVRInput.RawButton.Y, OVRInput.RawButton.B };
-        //回転に使用するキー
-        [SerializeField]
-        private OVRInput.RawButton[] roteKey_LCon = {
-            OVRInput.RawButton.LThumbstickLeft,OVRInput.RawButton.LThumbstickRight
-        };
-        [SerializeField]
-        private OVRInput.RawButton[] roteKey_Rcon = {
-            OVRInput.RawButton.RThumbstickLeft,OVRInput.RawButton.RThumbstickRight
-        };
-        //サイズ変更に使用するキー
-        [SerializeField]
-        private OVRInput.RawButton[] resizeKey_LCon = {
-            OVRInput.RawButton.LThumbstickDown,OVRInput.RawButton.LThumbstickUp
-        };
 
-        [SerializeField]
-        private OVRInput.RawButton[] resizeKey_RCon = {
-            OVRInput.RawButton.RThumbstickDown,OVRInput.RawButton.RThumbstickUp
-        };
-        //ラインセレクター表示切替キー
-        [SerializeField]
-        private OVRInput.RawButton[] lineOnKey = {
-            OVRInput.RawButton.X, OVRInput.RawButton.A
-        };
-        //アタッチに使用
-        [SerializeField]
-        private OVRInput.RawButton[] actionKey = {
-            OVRInput.RawButton.LIndexTrigger, OVRInput.RawButton.RIndexTrigger
-        };
-
-        [Header("サウンド")]
-        private AudioSource audioSource;
+        [Space(10) , Header("サウンド")]
         [SerializeField] private AudioClip[] Sound;//UI開く,UI閉じる
-
-        public OVRGrabbable_Custom[] bothHandsCandidate = new OVRGrabbable_Custom[2];
+        private AudioSource audioSource;
 
         private CancellationToken cancellation_token;
         private static PlayerStateManager instance = null;
+
+        [SerializeField] private AnimationCurve FadeCurve;
+        private float curveTimer;
 
         private void Awake()
         {
@@ -80,13 +56,7 @@ namespace UniLiveViewer
             audioSource = GetComponent<AudioSource>();
             audioSource.volume = SystemInfo.soundVolume_SE;
 
-            charaCam = GetComponent<CharacterCameraConstraint_Custom>();
-            textMesh_CamHei = handUI.GetChild(0).GetComponent<TextMesh>();
-
-            for (int i = 0; i < crossUI.Length; i++)
-            {
-                textMesh_cross[i] = crossUI[i].GetChild(0).GetComponent<TextMesh>();
-            }
+            handUIController = GetComponent<HandUIController>();
 
             //両手掴み用
             foreach (var hand in ovrGrabber)
@@ -119,192 +89,205 @@ namespace UniLiveViewer
                     transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
                     break;
             }
-
-
-            handUI.gameObject.SetActive(isHandUI);
-
-            for (int i = 0; i < crossUI.Length; i++)
-            {
-                crossUI[i].gameObject.SetActive(false);
-            }
-
             this.enabled = false;
         }
 
         // Update is called once per frame
         void Update()
         {
-            isGrabbedChara_OnCircle = false;
-            isSummonCircle = false;
+            CheckInputKey(HandType.LHand, key_Lcon);
+            CheckInputKey(HandType.RHand, key_Rcon);
 
-            //左手制御
-            if (ovrGrabber[0].handState == OVRGrabber_UniLiveViewer.HandState.CHARA_ONCIRCLE)
+            DebugInput();
+        }
+
+        private void CharaResize(float addVal)
+        {
+            var chara = timeline.trackBindChara[TimelineController.PORTAL_ELEMENT];
+            chara.CustomScalar += addVal;
+            handUIController.handUI_CharaAdjustment[0].textMesh.text = $"{chara.CustomScalar:0.00}";
+            handUIController.handUI_CharaAdjustment[1].textMesh.text = $"{chara.CustomScalar:0.00}";
+        }
+
+        private void CheckInputKey(HandType handType, KeyConfig key)
+        {
+            OVRGrabber_UniLiveViewer hand = ovrGrabber[(int)handType];
+
+            switch (hand.handState)
             {
-                isGrabbedChara_OnCircle = true;
-                crossUI[0].gameObject.SetActive(true);
-
-                //左手左回転
-                if (OVRInput.GetDown(roteKey_LCon[0]))
-                {
-                    ovrGrabber[0].lineSelector.GroundPointer_AddEulerAngles(new Vector3(0, +15, 0));
-                    //回転音
-                    audioSource.PlayOneShot(Sound[2]);
-                }
-                //左手右回転
-                else if (OVRInput.GetDown(roteKey_LCon[1]))
-                {
-                    ovrGrabber[0].lineSelector.GroundPointer_AddEulerAngles(new Vector3(0, -15, 0));
-                    //回転音
-                    audioSource.PlayOneShot(Sound[2]);
-                }
-
-                //左手縮小
-                if (OVRInput.Get(resizeKey_LCon[0]))
-                {
-                    timeline.trackBindChara[TimelineController.PORTAL_ELEMENT].CustomScalar += -0.005f;
-                }
-                //左手拡大
-                else if (OVRInput.Get(resizeKey_LCon[1]))
-                {
-                    timeline.trackBindChara[TimelineController.PORTAL_ELEMENT].CustomScalar += 0.005f;
-                }
-
-                textMesh_cross[0].text = $"{timeline.trackBindChara[TimelineController.PORTAL_ELEMENT].CustomScalar:0.00}";
-            }
-            else
-            {
-                crossUI[0].gameObject.SetActive(false);
-            }
-
-            if (ovrGrabber[1].handState == OVRGrabber_UniLiveViewer.HandState.CHARA_ONCIRCLE)
-            {
-                isGrabbedChara_OnCircle = true;
-                crossUI[1].gameObject.SetActive(true);
-
-                //右手左回転
-                if (OVRInput.GetDown(roteKey_Rcon[0]))
-                {
-                    ovrGrabber[1].lineSelector.GroundPointer_AddEulerAngles(new Vector3(0, +15, 0));
-                    //回転音
-                    audioSource.PlayOneShot(Sound[2]);
-                }
-                //右手右回転
-                else if (OVRInput.GetDown(roteKey_Rcon[1]))
-                {
-                    ovrGrabber[1].lineSelector.GroundPointer_AddEulerAngles(new Vector3(0, -15, 0));
-                    //回転音
-                    audioSource.PlayOneShot(Sound[2]);
-                }
-
-                //右手縮小
-                if (OVRInput.Get(resizeKey_RCon[0]))
-                {
-                    timeline.trackBindChara[TimelineController.PORTAL_ELEMENT].CustomScalar += -0.01f;
-                }
-                //右手拡大
-                else if (OVRInput.Get(resizeKey_RCon[1]))
-                {
-                    timeline.trackBindChara[TimelineController.PORTAL_ELEMENT].CustomScalar += 0.01f;
-                }
-
-                textMesh_cross[1].text = $"{timeline.trackBindChara[TimelineController.PORTAL_ELEMENT].CustomScalar:0.00}";
-            }
-            else
-            {
-                crossUI[1].gameObject.SetActive(false);
-            }
-
-            //キャラが召喚陣にセットされていれば
-            if (isGrabbedChara_OnCircle)
-            {
-                //移動と方向転換を無効化
-                simpleCapsuleWithStickMovement.EnableLinearMovement = false;
-                simpleCapsuleWithStickMovement.EnableRotation = false;
-            }
-            //初期化系
-            else
-            {
-                simpleCapsuleWithStickMovement.EnableRotation = true;
-                if (!isHandUI) simpleCapsuleWithStickMovement.EnableLinearMovement = true;
-
-                //ハンドUI出現中
-                if (isHandUI)
-                {
-                    //アナログスティックでカメラ位置調整
-                    if (OVRInput.GetDown(OVRInput.RawButton.LThumbstickUp))
+                case HandState.GRABBED_CHARA:
+                    if (OVRInput.GetDown(key.action))
                     {
-                        charaCam.HeightOffset = Mathf.Clamp(charaCam.HeightOffset + 0.05f, 0f, 1.5f);
-                        textMesh_CamHei.text = $"{charaCam.HeightOffset:0.00}";
-                    }
-                    if (OVRInput.GetDown(OVRInput.RawButton.LThumbstickDown))
-                    {
-                        charaCam.HeightOffset = Mathf.Clamp(charaCam.HeightOffset - 0.05f, 0f, 1.5f);
-                        textMesh_CamHei.text = $"{charaCam.HeightOffset:0.00}";
-                    }
-                }
-            }
+                        hand.SelectorChangeEnabled();
+                        Click_SummonCircle();
 
-            //ラインセレクター切り替え
-            for (int i = 0; i < lineOnKey.Length; i++)
-            {
-                if (OVRInput.GetDown(lineOnKey[i]))
-                {
-                    ovrGrabber[i].SelectorChangeEnabled();
-                    Click_SummonCircle();
-                }
-            }
-
-            //UI表示
-            if (OVRInput.GetDown(uiKey_quest[1]) || Input.GetKeyDown(uiKey_win))
-            {
-                SwitchUI();
-            }
-            if (OVRInput.GetDown(uiKey_quest[0]))
-            {
-                SwitchHandUI();
-            }
-
-            //アイテムをアタッチする
-            for (int i = 0; i < actionKey.Length; i++)
-            {
-                if (OVRInput.GetDown(actionKey[i]))
-                {
-                    var grabObj = ovrGrabber[i].grabbedObject;
-                    if (grabObj && grabObj.isBothHandsGrab)
-                    {
-                        ovrGrabber[i].FoeceGrabEnd();
-
-                        //アタッチ対象ありかつマニュアルモード
-                        if (grabObj.hitCollider && timeline.isManualMode())
+                        if (!handUIController.handUI_CharaAdjustment[(int)handType].Show)
                         {
-                            //手なら握らせる
-                            if (grabObj.hitCollider.name.Contains("Hand"))
-                            {
-                                var targetChara = grabObj.hitCollider.GetComponent<AttachPoint>().myCharaCon;
-                                timeline.SwitchHandType(targetChara, true, grabObj.hitCollider.name.Contains("Left"));
-                            }
-
-                            //アタッチする
-                            grabObj.AttachToHitCollider();
-                            audioSource.PlayOneShot(Sound[3]);
+                            handUIController.handUI_CharaAdjustment[(int)handType].Show = true;
                         }
-                        //アタッチ先がなければ削除
+                        CharaResize(0);
+                    }
+                    break;
+
+                case HandState.CHARA_ONCIRCLE:
+                    if (OVRInput.GetDown(key.rotate_L))
+                    {
+                        hand.lineSelector.GroundPointer_AddEulerAngles(new Vector3(0, +15, 0));
+                        audioSource.PlayOneShot(Sound[2]);//回転音
+                    }
+                    else if (OVRInput.GetDown(key.rotate_R))
+                    {
+                        hand.lineSelector.GroundPointer_AddEulerAngles(new Vector3(0, -15, 0));
+                        audioSource.PlayOneShot(Sound[2]);//回転音
+                    }
+
+                    
+                    if (OVRInput.Get(key.resize_D))
+                    {
+                        curveTimer += Time.deltaTime;
+                        CharaResize(-0.01f * FadeCurve.Evaluate(curveTimer));
+                    }
+                    else if (OVRInput.Get(key.resize_U))
+                    {
+                        curveTimer += Time.deltaTime;
+                        CharaResize(0.01f * FadeCurve.Evaluate(curveTimer));
+                    }
+                    else
+                    {
+                        curveTimer = 0;
+                    }
+
+                    if (OVRInput.GetDown(key.action))
+                    {
+                        hand.SelectorChangeEnabled();
+                        Click_SummonCircle();
+
+                        if (handUIController.handUI_CharaAdjustment[(int)handType].Show)
+                        {
+                            handUIController.handUI_CharaAdjustment[(int)handType].Show = false;
+                        }
+                    }
+                    break;
+                case HandState.GRABBED_ITEM:
+
+                    if(!handUIController.handUI_ItemMatSelecter[(int)handType].Show)
+                    {
+                        if (OVRInput.GetDown(key.trigger)) ItemAttachment(hand);
+                    }
+                    else
+                    {
+                        //TODO:雑、直す
+                        Vector2 stick = OVRInput.Get(key.thumbstick);
+                        if(stick.sqrMagnitude > 0)
+                        {
+                            float rad = Mathf.Atan2(stick.x, stick.y);
+                            float degree = rad * Mathf.Rad2Deg;
+                            if (degree < 0) degree += 360;
+                            //Mathfは四捨五入ではない→.NET使用
+                            handUIController.SetCurrent_ItemMaterial((int)handType, (int)System.Math.Round(degree / 45));
+                            var tex = handUIController.GetTexture_ItemMaterial((int)handType);
+                            if (tex)
+                            {
+                                hand.grabbedObject.GetComponent<DecorationItemInfo>().SetTexture(tex);
+                                audioSource.PlayOneShot(Sound[2]);
+                            }
+                        }
+                    }
+
+                    if (OVRInput.GetDown(key.action))
+                    {
+                        if (!handUIController.handUI_ItemMatSelecter[(int)handType].Show)
+                        {
+                            handUIController.handUI_ItemMatSelecter[(int)handType].Show = true;
+                            handUIController.InitItemMaterialSelector((int)handType, hand.grabbedObject.GetComponent<DecorationItemInfo>());
+                            audioSource.PlayOneShot(Sound[0]);
+                        }
                         else
                         {
-                            Destroy(grabObj.gameObject);
-                            audioSource.PlayOneShot(Sound[4]);
+                            handUIController.handUI_ItemMatSelecter[(int)handType].Show = false;
+                            audioSource.PlayOneShot(Sound[1]);
                         }
-
-
-                        //両手がフリーか
-                        if (!ovrGrabber[0].grabbedObject && !ovrGrabber[1].grabbedObject)
+                        MovementRestrictions();
+                    }
+                    break;
+                default:
+                    if (handType == HandType.LHand && handUIController.handUI_PlayerHeight.Show)
+                    {
+                        //アナログスティックでカメラ位置調整
+                        if (OVRInput.GetDown(key.resize_U))
                         {
-                            //アタッチポイントを無効化
-                            timeline.SetActive_AttachPoint(false);
+                            handUIController.PlayerHeight += 0.05f;
+                        }
+                        if (OVRInput.GetDown(key.resize_D))
+                        {
+                            handUIController.PlayerHeight -= 0.05f;
                         }
                     }
+
+                    //アイテムを離した状態で選択はできない仕様
+                    if (handUIController.handUI_ItemMatSelecter[(int)handType].Show)
+                    {
+                        handUIController.handUI_ItemMatSelecter[(int)handType].Show = false;
+                        audioSource.PlayOneShot(Sound[1]);
+
+                        MovementRestrictions();
+                    }
+
+                    if (OVRInput.GetDown(key.action))
+                    {
+                        hand.SelectorChangeEnabled();
+                        Click_SummonCircle();
+                    }
+
+                    if (OVRInput.GetDown(key.menuUI))
+                    {
+                        if (hand == ovrGrabber[1]) SwitchUI();
+                        else if (hand == ovrGrabber[0]) SwitchHandUI();
+                    }
+                    break;
+            }
+        }
+
+        public void ItemAttachment(OVRGrabber_UniLiveViewer hand)
+        {
+            var grabObj = hand.grabbedObject;
+            if (grabObj && grabObj.isBothHandsGrab)
+            {
+                hand.FoeceGrabEnd();
+
+                //アタッチ対象ありかつマニュアルモード
+                if (grabObj.hitCollider && timeline.isManualMode())
+                {
+                    //手なら握らせる
+                    if (grabObj.hitCollider.name.Contains("Hand"))
+                    {
+                        var targetChara = grabObj.hitCollider.GetComponent<AttachPoint>().myCharaCon;
+                        timeline.SwitchHandType(targetChara, true, grabObj.hitCollider.name.Contains("Left"));
+                    }
+
+                    //アタッチする
+                    grabObj.AttachToHitCollider();
+                    audioSource.PlayOneShot(Sound[3]);
+                }
+                //アタッチ先がなければ削除
+                else
+                {
+                    Destroy(grabObj.gameObject);
+                    audioSource.PlayOneShot(Sound[4]);
+                }
+
+                //両手がフリーか
+                if (!ovrGrabber[0].grabbedObject && !ovrGrabber[1].grabbedObject)
+                {
+                    //アタッチポイントを無効化
+                    timeline.SetActive_AttachPoint(false);
                 }
             }
+        }
+
+        public void DebugInput()
+        {
+            if (Input.GetKeyDown(uiKey_win)) SwitchUI();
         }
 
         private void LateUpdate()
@@ -324,18 +307,18 @@ namespace UniLiveViewer
         /// 召喚陣の状態をスイッチ
         /// </summary>
         /// <param name="target"></param>
-        public void ChangeSummonCircle(OVRGrabber_UniLiveViewer target)
+        public void ChangeSummonCircle(OVRGrabber_UniLiveViewer hand)
         {
-            //ラインセレクター切り替え
-            for (int i = 0; i < lineOnKey.Length; i++)
+            hand.SelectorChangeEnabled();
+            Click_SummonCircle();
+
+            int i = 0;
+            if (hand == ovrGrabber[1]) i = 1;
+            if (handUIController.handUI_CharaAdjustment[i].Show)
             {
-                if (ovrGrabber[i] == target)
-                {
-                    ovrGrabber[i].SelectorChangeEnabled();
-                    Click_SummonCircle();
-                    break;
-                }
+                handUIController.handUI_CharaAdjustment[i].Show = false;
             }
+            MovementRestrictions();
         }
 
         /// <summary>
@@ -426,8 +409,8 @@ namespace UniLiveViewer
         public void SwitchUI()
         {
             //UI表示の切り替え
-            isMoveUI = !moveUI.gameObject.activeSelf;
-            moveUI.gameObject.SetActive(isMoveUI);
+            isMoveUI = !mainUI.gameObject.activeSelf;
+            mainUI.gameObject.SetActive(isMoveUI);
 
             //表示音
             if (isMoveUI) audioSource.PlayOneShot(Sound[0]);
@@ -441,25 +424,8 @@ namespace UniLiveViewer
         public void SwitchHandUI()
         {
             //UI表示の切り替え
-            isHandUI = !isHandUI;
-            handUI.gameObject.SetActive(isHandUI);
-
-            if (isHandUI)
-            {
-                textMesh_CamHei.text = $"{charaCam.HeightOffset:0.00}";
-                //移動を無効化
-                simpleCapsuleWithStickMovement.EnableLinearMovement = false;
-            }
-            else
-            {
-                //移動を無効化
-                simpleCapsuleWithStickMovement.EnableLinearMovement = true;
-            }
-
-            //表示音
-            if (isHandUI) audioSource.PlayOneShot(Sound[0]);
-            //非表示音
-            else audioSource.PlayOneShot(Sound[1]);
+            handUIController.SwitchPlayerHeightUI();
+            MovementRestrictions();
         }
 
         /// <summary>
@@ -481,7 +447,7 @@ namespace UniLiveViewer
         private void Click_SummonCircle()
         {
             //いずれかの召喚陣が出現しているか？
-            isSummonCircle = false;
+            bool isSummonCircle = false;
             foreach (var e in ovrGrabber)
             {
                 if (e.IsSummonCircle)
@@ -492,8 +458,29 @@ namespace UniLiveViewer
             }
             //ガイドの表示を切り替える
             timeline.SetCharaMeshGuide(isSummonCircle);
+            MovementRestrictions();
         }
 
+        /// <summary>
+        /// 何れかのHandUIが表示中は制限を課す
+        /// </summary>
+        private void MovementRestrictions()
+        {
+            bool b = handUIController.IsShow_HandUI();
+
+            if (b)
+            {
+                //移動と方向転換の無効化
+                simpleCapsuleWithStickMovement.EnableRotation = false;
+                simpleCapsuleWithStickMovement.EnableLinearMovement = false;
+            }
+            else
+            {
+                //移動と方向転換の有効化
+                simpleCapsuleWithStickMovement.EnableRotation = true;
+                if (!handUIController.handUI_PlayerHeight.Show) simpleCapsuleWithStickMovement.EnableLinearMovement = true;
+            }
+        }
 
         /// <summary>
         /// Playerインスタンスにコントローラー振動を指示
@@ -507,16 +494,6 @@ namespace UniLiveViewer
             if (!SystemInfo.isControllerVibration) return;
 
             if (instance) instance.UniTask_ControllerVibration(touch, frequency, amplitude, time);
-
-            //Task.Run(async () =>
-            //{
-            //    //振動開始
-            //    OVRInput.SetControllerVibration(frequency, amplitude, touch);
-            //    //指定時間待機
-            //    await Task.Delay(milliseconds);
-            //    //振動停止
-            //    OVRInput.SetControllerVibration(frequency, 0, touch);
-            //});
         }
 
         /// <summary>
@@ -551,4 +528,22 @@ namespace UniLiveViewer
         }
     }
 
+    [System.Serializable]
+    public class KeyConfig
+    {
+        [Header("アナログスティック")]
+        public OVRInput.RawAxis2D thumbstick;
+        [Header("プレイヤーや魔法陣の回転")]
+        public OVRInput.RawButton rotate_L;
+        public OVRInput.RawButton rotate_R;
+        [Header("キャラのリサイズ")]
+        public OVRInput.RawButton resize_D;
+        public OVRInput.RawButton resize_U;
+        [Header("アクション(ラインセレクターなど)")]
+        public OVRInput.RawButton action;
+        [Header("メイン・サブUI")]
+        public OVRInput.RawButton menuUI;
+        [Header("アタッチなど")]
+        public OVRInput.RawButton trigger;
+    }
 }
