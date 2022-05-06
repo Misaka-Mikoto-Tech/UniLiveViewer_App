@@ -61,7 +61,7 @@ namespace UniLiveViewer
             }
             catch
             {
-                throw new Exception("Attacher initialize");
+                throw new Exception("Attacher Initialize");
             }
         }
 

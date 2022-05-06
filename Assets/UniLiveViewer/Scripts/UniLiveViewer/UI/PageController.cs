@@ -67,6 +67,16 @@ namespace UniLiveViewer
         }
 
         /// <summary>
+        /// ページを切り替える
+        /// </summary>
+        /// <param name="btn"></param>
+        public void ButtonShow_Passthrough(bool isEnable)
+        {
+            if (btnTab[5].gameObject.activeSelf == isEnable) return;
+            btnTab[5].gameObject.SetActive(isEnable);
+        }
+
+        /// <summary>
         /// カレントページに切り替える
         /// </summary>
         private void SwitchPages()

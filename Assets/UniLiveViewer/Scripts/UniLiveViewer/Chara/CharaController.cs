@@ -53,7 +53,7 @@ namespace UniLiveViewer
         {
             set
             {
-                reScalar = Mathf.Clamp(value, 0.25f, 5.0f);
+                reScalar = Mathf.Clamp(value, 0.25f, 20.0f);
                 transform.localScale = Vector3.one * reScalar;
             }
             get
@@ -131,7 +131,8 @@ namespace UniLiveViewer
             }
             else transform.parent = null;
 
-            transform.localScale = globalScale * CustomScalar;
+            if(charaState == CHARASTATE.MINIATURE) transform.localScale = globalScale;
+            else transform.localScale = globalScale * CustomScalar;
         }
 
         // Update is called once per frame

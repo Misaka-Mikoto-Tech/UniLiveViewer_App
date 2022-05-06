@@ -9,6 +9,7 @@ namespace UniLiveViewer
         {
             public int LanguageCode = 0;
             public float InitCharaSize = 1.0f;
+            public float VMDScale = 0.75f;
 
             public bool scene_crs_particle = true;
             public bool scene_crs_laser = true;

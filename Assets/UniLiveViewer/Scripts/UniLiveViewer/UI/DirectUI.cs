@@ -5,19 +5,21 @@ namespace UniLiveViewer
 { 
     public class DirectUI : MonoBehaviour
     {
-        PlayerStateManager playerStateManager;
+        private PlayerStateManager playerStateManager;
         private Vector3 EndPoint = new Vector3(0, 0.7f, 5);
         private bool isInit = false;
         private Vector3 keepDistance;
 
         private void Awake()
         {
-            playerStateManager = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerStateManager>();
+            
         }
 
         // Start is called before the first frame update
         void Start()
         {
+            playerStateManager = PlayerStateManager.instance;
+
             switch (SystemInfo.sceneMode)
             {
                 case SceneMode.CANDY_LIVE:

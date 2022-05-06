@@ -33,7 +33,7 @@ namespace UniLiveViewer
         Front
     }
 
-    //ちゃんとURP用shader作ったら不要
+    //TODO:突貫工事、作りかけ雑
     public class MaterialConverter : MonoBehaviour
     {
 
@@ -100,7 +100,7 @@ namespace UniLiveViewer
             }
             catch
             {
-                throw new Exception("VRM matConversion");
+                throw new Exception("VRM Material Conversion");
             }
         }
 

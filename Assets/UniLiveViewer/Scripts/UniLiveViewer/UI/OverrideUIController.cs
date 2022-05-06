@@ -64,7 +64,7 @@ namespace UniLiveViewer
 
         private void Start()
         {
-            
+
         }
 
         public static void LoadNextScene(string sceneName)

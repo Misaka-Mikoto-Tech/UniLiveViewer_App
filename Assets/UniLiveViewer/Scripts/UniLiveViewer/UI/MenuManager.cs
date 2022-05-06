@@ -18,13 +18,11 @@ namespace UniLiveViewer
 
         public TimelineController timeline => _timeline;
         public GeneratorPortal generatorPortal  => _generatorPortal;
-        public PlayerStateManager playerStateManager => _playerStateManager;
         public VRMSwitchController vrmSelectUI => _vrmSelectUI;
         public FileAccessManager fileAccess => _fileAccess;
 
         private TimelineController _timeline = null;
         [SerializeField] private GeneratorPortal _generatorPortal = null;
-        private PlayerStateManager _playerStateManager = null;
         [SerializeField] private VRMSwitchController _vrmSelectUI = null;
         private FileAccessManager _fileAccess;
 
@@ -38,7 +36,6 @@ namespace UniLiveViewer
             audioSource.volume = SystemInfo.soundVolume_SE;
 
             _timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
-            _playerStateManager = GameObject.FindGameObjectWithTag("Player").gameObject.GetComponent<PlayerStateManager>();
             _fileAccess = GameObject.FindGameObjectWithTag("AppConfig").gameObject.GetComponent<FileAccessManager>();
 
             pageController.onSwitchPage += () =>

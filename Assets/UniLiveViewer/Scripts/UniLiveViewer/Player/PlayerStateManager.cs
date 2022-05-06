@@ -44,8 +44,8 @@ namespace UniLiveViewer
         [SerializeField] private AudioClip[] Sound;//UI開く,UI閉じる
         private AudioSource audioSource;
 
+        public static PlayerStateManager instance;
         private CancellationToken cancellation_token;
-        private static PlayerStateManager instance = null;
 
         [SerializeField] private AnimationCurve FadeCurve;
         private float curveTimer;
@@ -68,6 +68,10 @@ namespace UniLiveViewer
             bothHandsCenterAnchor = new GameObject("BothHandsCenter").transform;
 
             cancellation_token = this.GetCancellationTokenOnDestroy();
+
+            myCamera.clearFlags = CameraClearFlags.Skybox;
+            myOVRManager.isInsightPassthroughEnabled = false;
+
             instance = this;
         }
 
@@ -126,6 +130,7 @@ namespace UniLiveViewer
                             handUIController.handUI_CharaAdjustment[(int)handType].Show = true;
                         }
                         CharaResize(0);
+                        MovementRestrictions();
                     }
                     break;
 
@@ -166,7 +171,9 @@ namespace UniLiveViewer
                         {
                             handUIController.handUI_CharaAdjustment[(int)handType].Show = false;
                         }
+                        MovementRestrictions();
                     }
+                    
                     break;
                 case HandState.GRABBED_ITEM:
 
@@ -458,7 +465,6 @@ namespace UniLiveViewer
             }
             //ガイドの表示を切り替える
             timeline.SetCharaMeshGuide(isSummonCircle);
-            MovementRestrictions();
         }
 
         /// <summary>
@@ -478,7 +484,7 @@ namespace UniLiveViewer
             {
                 //移動と方向転換の有効化
                 simpleCapsuleWithStickMovement.EnableRotation = true;
-                if (!handUIController.handUI_PlayerHeight.Show) simpleCapsuleWithStickMovement.EnableLinearMovement = true;
+                simpleCapsuleWithStickMovement.EnableLinearMovement = true;
             }
         }
 

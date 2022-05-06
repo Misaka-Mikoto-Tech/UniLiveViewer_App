@@ -135,6 +135,9 @@ namespace UniLiveViewer
             };
             generatorPortal.onEmptyCurrent += () =>
             {
+                //VRM選択画面を非表示(開いたまま別キャラは確認できない仕様)
+                vrmSelectUI.UIShow(false);
+
                 textMeshs[0].text = "VRM Load";
                 textMeshs[0].fontSize = textMeshs[0].text.FontSizeMatch(600, 30, 50);
 

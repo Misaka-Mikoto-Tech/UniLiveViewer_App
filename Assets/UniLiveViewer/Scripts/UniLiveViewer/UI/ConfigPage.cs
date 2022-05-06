@@ -7,30 +7,39 @@ namespace UniLiveViewer
 {
     public class ConfigPage : MonoBehaviour
     {
+        public static bool isSmoothVMD = false;
         private MenuManager menuManager;
 
         [Header("＜マニュアル＞")]
         [SerializeField] private Sprite[] sprManualPrefab = new Sprite[4];
         [SerializeField] private SpriteRenderer[] sprManual = new SpriteRenderer[2];
 
-        [Header("＜その他＞")]
+        [Header("＜シーン別＞")]
         [SerializeField] private Transform[] sceneAnchor;
-        [SerializeField] private Button_Switch[] btnE_SecenChange = new Button_Switch[3];
-        [Space(20)]
         private Button_Base[] btnE = new Button_Base[5];
         [SerializeField] private Transform[] btnE_ActionParent;
-        [SerializeField] private TextMesh[] textMeshs = new TextMesh[2];
+
+        [Header("＜KAGURALive専用＞")]
+        [SerializeField] private SliderGrabController slider_Fog = null;
+
+        [Header("＜ViewerScene専用＞")]
+        [SerializeField] private TextMesh[] textMeshs_Viewer = new TextMesh[3];
+
+        [Header("＜共用＞")]
+        [SerializeField] private Button_Base[] btn_General = null;
+        [SerializeField] private Button_Switch[] btnE_SecenChange = new Button_Switch[3];
+        [SerializeField] private TextMesh[] textMeshs = new TextMesh[3];
+        [SerializeField] private SliderGrabController slider_OutLine;
+        [SerializeField] private SliderGrabController slider_InitCharaSize;
+        [SerializeField] private SliderGrabController slider_VMDScale;
+        [SerializeField] private SliderGrabController slider_FixedFoveated;
+        [Space(10)]
+        [SerializeField] private ScriptableRendererFeature outlineRender;
         [SerializeField] private Material material_OutLine;
         [SerializeField] private UniversalRendererData frd;
-        [SerializeField] private ScriptableRendererFeature outlineRender;
-        [SerializeField] private SliderGrabController slider_OutLine = null;
-        [SerializeField] private SliderGrabController slider_InitCharaSize = null;
-        [SerializeField] private SliderGrabController slider_FixedFoveated = null;
-        [SerializeField] private SliderGrabController slider_Fog = null;
-        [SerializeField] private Button_Base[] btn_passthrough = null;
 
         private TimelineController timeline = null;
-        private PlayerStateManager playerStateManager = null;
+        private PlayerStateManager playerStateManager;
 
         private Material matMirrore;//LiveScene用
         private BackGroundController backGroundCon;
@@ -39,10 +48,7 @@ namespace UniLiveViewer
         private void Awake()
         {
             menuManager = transform.root.GetComponent<MenuManager>();
-
             timeline = menuManager.timeline;
-            playerStateManager = menuManager.playerStateManager;
-
             cancellation_token = this.GetCancellationTokenOnDestroy();
 
             slider_OutLine.ValueUpdate += () =>
@@ -60,18 +66,25 @@ namespace UniLiveViewer
                 SystemInfo.userProfile.data.InitCharaSize = float.Parse(slider_InitCharaSize.Value.ToString("f2"));
                 SystemInfo.userProfile.WriteJson();
             };
+            slider_VMDScale.ValueUpdate += Update_VMDScale;
+            slider_VMDScale.UnControled += () =>
+            {
+                SystemInfo.userProfile.data.VMDScale = float.Parse(slider_VMDScale.Value.ToString("f3"));
+                SystemInfo.userProfile.WriteJson();
+            };
             slider_FixedFoveated.ValueUpdate += Update_FixedFoveated;
             slider_Fog.ValueUpdate += () => { RenderSettings.fogDensity = slider_Fog.Value; };
 
-            playerStateManager.myCamera.clearFlags = CameraClearFlags.Skybox;
-            playerStateManager.myOVRManager.isInsightPassthroughEnabled = false;
-            for (int i = 0; i < btn_passthrough.Length; i++)
+            for (int i = 0; i < btn_General.Length; i++)
             {
-                btn_passthrough[i].onTrigger += PassthroughAction;
+                btn_General[i].onTrigger += Click_Action;
             }
+            btn_General[0].isEnable = isSmoothVMD;//スムースは毎回無効化
         }
         private void OnEnable()
         {
+            if(!playerStateManager) playerStateManager = PlayerStateManager.instance;
+
             Init().Forget();
         }
 
@@ -79,7 +92,7 @@ namespace UniLiveViewer
         void Start()
         {
             int current = (int)SystemInfo.sceneMode;
-
+            
             //シーン応じて有効化を切り替える
             for (int i = 0; i < sceneAnchor.Length; i++)
             {
@@ -147,7 +160,7 @@ namespace UniLiveViewer
             else if (SystemInfo.sceneMode == SceneMode.VIEWER)
             {
                 //シーン別専用ボタンの割り当て
-                for (int i = 0; i < 4; i++)
+                for (int i = 0; i < 1; i++)
                 {
                     btnE[i] = sceneAnchor[current].GetChild(i).GetComponent<Button_Base>();
                 }
@@ -210,11 +223,16 @@ namespace UniLiveViewer
                 //各種有効化状態にボタンを合わせる
                 btnE[0].isEnable = btnE_ActionParent[0].gameObject.activeSelf;
             }
-            btn_passthrough[0].isEnable = playerStateManager.myOVRManager.isInsightPassthroughEnabled;
+
+            //共用
+            btn_General[1].isEnable = playerStateManager.myOVRManager.isInsightPassthroughEnabled;
 
             //キャラサイズ
             slider_InitCharaSize.Value = SystemInfo.userProfile.data.InitCharaSize;
             Update_InitCharaSize();
+            //VMD拡縮
+            slider_VMDScale.Value = SystemInfo.userProfile.data.VMDScale;
+            Update_VMDScale();
             //固定中心窩レンダリング初期化
             Update_FixedFoveated();
         }
@@ -228,28 +246,34 @@ namespace UniLiveViewer
 #endif
         }
 
-        private void PassthroughAction(Button_Base btn)
+        private void Click_Action(Button_Base btn)
         {
-            if (btn == btn_passthrough[0])
+            //スムース
+            if (btn == btn_General[0])
             {
-                //if (!b.gameObject.activeSelf) return;
+                isSmoothVMD = btn.isEnable;
+            }
+            //パススルー
+            else if (btn == btn_General[1])
+            {
                 if (btn.isEnable)
                 {
                     playerStateManager.myCamera.clearFlags = CameraClearFlags.Color;
-                    //backGroundCon.Clear_CubemapTex();
-                    //DynamicGI.UpdateEnvironment();
+                    playerStateManager.myOVRManager.isInsightPassthroughEnabled = true;
                 }
                 else
                 {
                     playerStateManager.myCamera.clearFlags = CameraClearFlags.Skybox;
-                    //string str;
-                    //backGroundCon.SetCubemap(0, out str);
-                    //DynamicGI.UpdateEnvironment();
+                    playerStateManager.myOVRManager.isInsightPassthroughEnabled = false;
                 }
             }
+            //コントローラー振動
+            else if (btn == btn_General[2])
+            {
 
-            if (btn.isEnable) playerStateManager.myOVRManager.isInsightPassthroughEnabled = true;
-            else playerStateManager.myOVRManager.isInsightPassthroughEnabled = false;
+            }
+
+            menuManager.PlayOneShot(SoundType.BTN_CLICK);
         }
 
         /// <summary>
@@ -380,34 +404,70 @@ namespace UniLiveViewer
                         SystemInfo.userProfile.WriteJson();
                     }
                     break;
-                //SkyBoxを差し替える
+                ////SkyBoxを差し替える
+                //case 1:
+                //    if (backGroundCon)
+                //    {
+                //        string str;
+                //        backGroundCon.SetCubemap(1, out str);
+                //        btnE[i].collisionChecker.colorSetting[0].textMesh.text = "SkyBox_" + str;
+                //    }
+                //    break;
+                ////ワームホールを差し替える
+                //case 2:
+                //    if (backGroundCon)
+                //    {
+                //        string str;
+                //        backGroundCon.SetWormHole(1, out str);
+                //        btnE[i].collisionChecker.colorSetting[0].textMesh.text = "WormHole_" + str;
+                //    }
+                //    break;
+                ////エフェクトを差し替える
+                //case 3:
+                //    if (backGroundCon)
+                //    {
+                //        string str;
+                //        backGroundCon.SetParticle(1, out str);
+                //        btnE[i].collisionChecker.colorSetting[0].textMesh.text = "Particle_" + str;
+                //    }
+                //    break;
+            }
+        }
+
+        public void Click_ChangeEffect(int i)
+        {
+            if (!backGroundCon) return;
+            string str;
+
+            switch (i)
+            {
+                case 0:
+                    backGroundCon.SetCubemap(-1, out str);
+                    textMeshs_Viewer[0].text = "SkyBox_" + str;
+                    break;
                 case 1:
-                    if (backGroundCon)
-                    {
-                        string str;
-                        backGroundCon.SetCubemap(1, out str);
-                        btnE[i].collisionChecker.colorSetting[0].textMesh.text = "SkyBox_" + str;
-                    }
+                    backGroundCon.SetCubemap(1, out str);
+                    textMeshs_Viewer[0].text = "SkyBox_" + str;
                     break;
-                //ワームホールを差し替える
                 case 2:
-                    if (backGroundCon)
-                    {
-                        string str;
-                        backGroundCon.SetWormHole(1, out str);
-                        btnE[i].collisionChecker.colorSetting[0].textMesh.text = "WormHole_" + str;
-                    }
+                    backGroundCon.SetWormHole(-1, out str);
+                    textMeshs_Viewer[1].text = "WormHole_" + str;
                     break;
-                //エフェクトを差し替える
                 case 3:
-                    if (backGroundCon)
-                    {
-                        string str;
-                        backGroundCon.SetParticle(1, out str);
-                        btnE[i].collisionChecker.colorSetting[0].textMesh.text = "Particle_" + str;
-                    }
+                    backGroundCon.SetWormHole(1, out str);
+                    textMeshs_Viewer[1].text = "WormHole_" + str;
+                    break;
+                case 4:
+                    backGroundCon.SetParticle(-1, out str);
+                    textMeshs_Viewer[2].text = "Particle_" + str;
+                    break;
+                case 5:
+                    backGroundCon.SetParticle(1, out str);
+                    textMeshs_Viewer[2].text = "Particle_" + str;
                     break;
             }
+
+            menuManager.PlayOneShot(SoundType.BTN_CLICK);
         }
 
         public void Click_SceneChange(int i)
@@ -464,6 +524,13 @@ namespace UniLiveViewer
         }
 
 
+        private void Update_VMDScale()
+        {
+            //スライダーに反映
+            slider_VMDScale.Value = Mathf.Clamp(slider_VMDScale.Value, 0.3f, 1.0f);
+            textMeshs[1].text = $"{slider_VMDScale.Value:0.000}";
+        }
+
         /// <summary>
         /// 固定中心窩レンダリングのスライダー
         /// </summary>
@@ -472,8 +539,7 @@ namespace UniLiveViewer
             //スライダーに反映
             slider_FixedFoveated.Value = Mathf.Clamp(slider_FixedFoveated.Value, 2, 4);
 #if UNITY_EDITOR
-            //textMesh_Page3[1].text = "noQuest:" + slider_FixedFoveated.Value;
-            textMeshs[1].text = $"noQuest:{slider_FixedFoveated.Value}";
+            textMeshs[2].text = $"noQuest:{slider_FixedFoveated.Value}";
 #elif UNITY_ANDROID
         //反映し直す
         OVRManager.fixedFoveatedRenderingLevel = (OVRManager.FixedFoveatedRenderingLevel)slider_FixedFoveated.Value;

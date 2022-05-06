@@ -22,7 +22,7 @@ namespace UniLiveViewer
         [SerializeField] private Button_Base[] btnS_AudioLoad = new Button_Base[2];
 
         private TimelineController timeline = null;
-        private PlayerStateManager playerStateManager = null;
+        private PlayerStateManager playerStateManager;
         private FileAccessManager fileAccess = null;
 
         private CancellationToken cancellation_token;
@@ -32,7 +32,6 @@ namespace UniLiveViewer
             menuManager = transform.root.GetComponent<MenuManager>();
 
             timeline = menuManager.timeline;
-            playerStateManager = menuManager.playerStateManager;
             fileAccess = menuManager.fileAccess;
 
             cancellation_token = this.GetCancellationTokenOnDestroy();
@@ -93,6 +92,8 @@ namespace UniLiveViewer
         {
             //再生スライダーに最大値を設定
             slider_Playback.maxValuel = (float)timeline.playableDirector.duration;
+
+            playerStateManager = PlayerStateManager.instance;
         }
 
         private async UniTaskVoid Init()

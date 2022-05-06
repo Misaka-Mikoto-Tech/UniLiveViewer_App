@@ -1,6 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
 using System;
-using System.Linq;
 using System.Threading;
 using UnityEngine;
 using VRM.FirstPersonSample;
@@ -8,7 +7,6 @@ using VRM.FirstPersonSample;
 
 namespace UniLiveViewer
 {
-    //[RequireComponent(typeof(FileAccessManager))]
     public class VRMSwitchController : MonoBehaviour
     {
         public static int loadVRMID = 0;
@@ -27,8 +25,6 @@ namespace UniLiveViewer
         [Header("＜2ページ＞")]
         [SerializeField] private PrefabEditor prefabEditor;
         [SerializeField] private Button_Base btn_Apply;
-        //private MaterialConverter matConverter;
-
 
         [Space(1)]
         [Header("＜3ページ＞")]
@@ -63,7 +59,7 @@ namespace UniLiveViewer
             audioSource.volume = SystemInfo.soundVolume_SE;
 
             //コールバック登録・・・2ページ目
-            btn_Apply.onTrigger += MaterialSetting_SetOK;
+            btn_Apply.onTrigger += (btn) => PrefabApply(btn).Forget();
             prefabEditor.onCurrentUpdate += () => { audioSource.PlayOneShot(Sound[0]); };//クリック音
             cancellation_token = this.GetCancellationTokenOnDestroy();
 
@@ -233,19 +229,36 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// マテリアル設定の確定
+        /// 設定の確定
         /// </summary>
         /// <param name="btn"></param>
-        private void MaterialSetting_SetOK(Button_Base btn)
+        private async UniTask PrefabApply(Button_Base btn)
         {
             //クリック音
             audioSource.PlayOneShot(Sound[0]);
 
             var vrm = prefabEditor.EditTarget;
+
+            if (vrm.animationMode == CharaController.ANIMATIONMODE.VMD)
+            {
+                var vmdPlayer = vrm.GetComponent<VMDPlayer_Custom>();
+                vmdPlayer.Clear();
+            }
+            else if(vrm.animationMode == CharaController.ANIMATIONMODE.CLIP)
+            {
+                vrm.GetComponent<Animator>().enabled = false;
+            }
             vrm.SetState(CharaController.CHARASTATE.NULL, null);
             vrm.transform.parent = runtimeLoader.transform;
             vrm.transform.localPosition = Vector3.zero;
             vrm.transform.localRotation = Quaternion.identity;
+            await UniTask.Delay(1000, cancellationToken: cancellation_token);
+
+            vrm.SetEnabelSpringBones(false);//Prefab化で値が残ってしまうので無効化
+            vrm.GetComponent<Animator>().enabled = true;
+            vrm.animationMode = CharaController.ANIMATIONMODE.CLIP;
+            vrm.gameObject.SetActive(false);
+            await UniTask.Yield(cancellation_token);
 
             onSetupComplete?.Invoke(vrm);
 

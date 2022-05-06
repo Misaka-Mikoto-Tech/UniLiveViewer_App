@@ -31,6 +31,7 @@ namespace UniLiveViewer
         [SerializeField] private Transform itemMaterialAnchor;
 
         [SerializeField] private PageController pageController;
+        private PlayerStateManager playerStateManager;
 
         [Header("＜各ページに相当＞")]
         [SerializeField] private DecorationItems[] decorationItems;
@@ -79,12 +80,14 @@ namespace UniLiveViewer
         // Start is called before the first frame update
         void Start()
         {
-
+            playerStateManager = PlayerStateManager.instance;
         }
 
         private async UniTaskVoid Init()
         {
+            pageController.ButtonShow_Passthrough(playerStateManager.myOVRManager.isInsightPassthroughEnabled);
             await UniTask.Yield(cancellation_token);
+
 
             //アイテム数に応じてサブページ送りボタンの表示切替
             int itemLength = decorationItems[pageController.current].ItemPrefab.Length;

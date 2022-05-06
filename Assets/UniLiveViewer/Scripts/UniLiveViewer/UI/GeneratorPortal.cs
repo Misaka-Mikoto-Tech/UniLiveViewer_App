@@ -104,10 +104,6 @@ namespace UniLiveViewer
             if (listChara[currentChara].charaInfoData.formatType
                 != CharaInfoData.FORMATTYPE.VRM) return;
             
-            //Prefab化で値が残ってしまうので無効化
-            charaCon_vrm.SetEnabelSpringBones(false);
-
-            charaCon_vrm.gameObject.SetActive(false);
             //オリジナル以外は削除可
             if(listChara[currentChara].name.Contains("(Clone)"))
             {
@@ -250,15 +246,15 @@ namespace UniLiveViewer
                 //VMD
                 if (GetNowAnimeInfo().formatType == DanceInfoData.FORMATTYPE.VMD)
                 {
-                    //ポータル上のキャラにアニメーション設定
-                    timeline.SetAnimationClip(timeline.sPortalBaseAniTrack, danceAniClipInfo[currentAnime], transform.position, Vector3.zero);
-                    await UniTask.Yield(PlayerLoopTiming.Update, cts.Token);
-
                     //animatorを停止、VMDを再生
                     string folderPath = FileAccessManager.GetFullPath(FOLDERTYPE.MOTION);//VMDのパスを取得
                     portalChara.GetComponent<Animator>().enabled = false;//Animatorが競合するので無効  
                     portalChara.animationMode = CharaController.ANIMATIONMODE.VMD;
                     await VMDPlay(vmdPlayer, folderPath, GetNowAnimeInfo().viewName, cts.Token);
+
+                    //ポータル上のキャラにアニメーション設定
+                    timeline.SetAnimationClip(timeline.sPortalBaseAniTrack, danceAniClipInfo[currentAnime], transform.position, Vector3.zero);
+                    await UniTask.Yield(PlayerLoopTiming.Update, cts.Token);
                 }
                 //プリセットアニメーション 
                 else
@@ -297,12 +293,14 @@ namespace UniLiveViewer
             if (dic_VMDReader.ContainsKey(fileName))
             {
                 //使いまわしてVMDプレイヤースタート
-                await vmdPlayer.Starter(dic_VMDReader[fileName], folderPath, fileName, token);
+                await vmdPlayer.Starter(dic_VMDReader[fileName], folderPath, fileName, 
+                    SystemInfo.userProfile.data.VMDScale,ConfigPage.isSmoothVMD, token);
             }
             else
             {
                 //新規なら読み込んでVMDプレイヤースタート
-                var newVMD = await vmdPlayer.Starter(null, folderPath, fileName, token);
+                var newVMD = await vmdPlayer.Starter(null, folderPath, fileName, 
+                    SystemInfo.userProfile.data.VMDScale, ConfigPage.isSmoothVMD, token);
                 //新規VMDを登録
                 dic_VMDReader.Add(fileName, newVMD);
             }

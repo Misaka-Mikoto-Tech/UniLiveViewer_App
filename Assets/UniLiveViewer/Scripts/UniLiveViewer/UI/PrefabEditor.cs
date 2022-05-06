@@ -7,6 +7,7 @@ using System.Linq;
 
 namespace UniLiveViewer 
 {
+    //TODO:UI使いにくいので改善する
     public class PrefabEditor : MonoBehaviour
     {
         [SerializeField] private Transform vrmPresetAnchor;//マテリアル調整時用のキャラ座標アンカー
