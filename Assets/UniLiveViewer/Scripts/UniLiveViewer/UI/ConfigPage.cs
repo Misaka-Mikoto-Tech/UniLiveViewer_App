@@ -23,7 +23,7 @@ namespace UniLiveViewer
         [SerializeField] private SliderGrabController slider_Fog = null;
 
         [Header("＜ViewerScene専用＞")]
-        [SerializeField] private TextMesh[] textMeshs_Viewer = new TextMesh[3];
+        [SerializeField] private TextMesh[] textMeshs_Viewer = new TextMesh[4];
 
         [Header("＜共用＞")]
         [SerializeField] private Button_Base[] btn_General = null;
@@ -31,6 +31,7 @@ namespace UniLiveViewer
         [SerializeField] private TextMesh[] textMeshs = new TextMesh[3];
         [SerializeField] private SliderGrabController slider_OutLine;
         [SerializeField] private SliderGrabController slider_InitCharaSize;
+        [SerializeField] private SliderGrabController slider_CharaShadow;
         [SerializeField] private SliderGrabController slider_VMDScale;
         [SerializeField] private SliderGrabController slider_FixedFoveated;
         [Space(10)]
@@ -39,6 +40,7 @@ namespace UniLiveViewer
         [SerializeField] private UniversalRendererData frd;
 
         private TimelineController timeline = null;
+        private QuasiShadow quasiShadow;
         private PlayerStateManager playerStateManager;
 
         private Material matMirrore;//LiveScene用
@@ -49,6 +51,7 @@ namespace UniLiveViewer
         {
             menuManager = transform.root.GetComponent<MenuManager>();
             timeline = menuManager.timeline;
+            quasiShadow = timeline.GetComponent<QuasiShadow>();
             cancellation_token = this.GetCancellationTokenOnDestroy();
 
             slider_OutLine.ValueUpdate += () =>
@@ -64,6 +67,12 @@ namespace UniLiveViewer
             slider_InitCharaSize.UnControled += () =>
             {
                 SystemInfo.userProfile.data.InitCharaSize = float.Parse(slider_InitCharaSize.Value.ToString("f2"));
+                SystemInfo.userProfile.WriteJson();
+            };
+            slider_CharaShadow.ValueUpdate += Update_CharaShadow;
+            slider_CharaShadow.UnControled += () =>
+            {
+                SystemInfo.userProfile.data.CharaShadow = float.Parse(slider_CharaShadow.Value.ToString("f2"));
                 SystemInfo.userProfile.WriteJson();
             };
             slider_VMDScale.ValueUpdate += Update_VMDScale;
@@ -230,6 +239,11 @@ namespace UniLiveViewer
             //キャラサイズ
             slider_InitCharaSize.Value = SystemInfo.userProfile.data.InitCharaSize;
             Update_InitCharaSize();
+
+            //キャラ影
+            slider_CharaShadow.Value = SystemInfo.userProfile.data.CharaShadow;
+            Update_CharaShadow();
+
             //VMD拡縮
             slider_VMDScale.Value = SystemInfo.userProfile.data.VMDScale;
             Update_VMDScale();
@@ -271,6 +285,16 @@ namespace UniLiveViewer
             else if (btn == btn_General[2])
             {
 
+            }
+            //キャラ影デクリ
+            else if (btn == btn_General[3])
+            {
+                textMeshs[3].text = $"FootShadow:\n{quasiShadow.GetTypeName(-1)}";
+            }
+            //キャラ影インクリ
+            else if (btn == btn_General[4])
+            {
+                textMeshs[3].text = $"FootShadow:\n{quasiShadow.GetTypeName(1)}";
             }
 
             menuManager.PlayOneShot(SoundType.BTN_CLICK);
@@ -404,33 +428,6 @@ namespace UniLiveViewer
                         SystemInfo.userProfile.WriteJson();
                     }
                     break;
-                ////SkyBoxを差し替える
-                //case 1:
-                //    if (backGroundCon)
-                //    {
-                //        string str;
-                //        backGroundCon.SetCubemap(1, out str);
-                //        btnE[i].collisionChecker.colorSetting[0].textMesh.text = "SkyBox_" + str;
-                //    }
-                //    break;
-                ////ワームホールを差し替える
-                //case 2:
-                //    if (backGroundCon)
-                //    {
-                //        string str;
-                //        backGroundCon.SetWormHole(1, out str);
-                //        btnE[i].collisionChecker.colorSetting[0].textMesh.text = "WormHole_" + str;
-                //    }
-                //    break;
-                ////エフェクトを差し替える
-                //case 3:
-                //    if (backGroundCon)
-                //    {
-                //        string str;
-                //        backGroundCon.SetParticle(1, out str);
-                //        btnE[i].collisionChecker.colorSetting[0].textMesh.text = "Particle_" + str;
-                //    }
-                //    break;
             }
         }
 
@@ -521,6 +518,16 @@ namespace UniLiveViewer
         private void Update_InitCharaSize()
         {
             textMeshs[0].text = $"{slider_InitCharaSize.Value:0.00}";
+        }
+
+        /// <summary>
+        /// 更新中
+        /// </summary>
+        private void Update_CharaShadow()
+        {
+            if (!quasiShadow) return;
+            quasiShadow.shadowScale = slider_CharaShadow.Value;
+            textMeshs[3].text = $"{slider_CharaShadow.Value:0.00}";
         }
 
 

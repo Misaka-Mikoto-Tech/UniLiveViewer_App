@@ -52,13 +52,12 @@ namespace UniLiveViewer
         
         public double AudioClip_StartTime = 0;//セットされたaudioクリップの開始再生位置
         private double motionClip_StartTime = 3;//モーションクリップの開始再生位置(デフォルト)
-        private float _timelineSpeed = 1.0f;
+        [Header("確認用露出(readonly)")]
+        [SerializeField] private float _timelineSpeed = 1.0f;
+        [SerializeField] private double _PlaybackTime = 0.0f;
         public float timelineSpeed
         {
-            get
-            {
-                return _timelineSpeed;
-            }
+            get { return _timelineSpeed; }
             set
             {
                 _timelineSpeed = Mathf.Clamp(value, 0.0f, 3.0f);
@@ -68,17 +67,13 @@ namespace UniLiveViewer
 
         public double AudioClip_PlaybackTime
         {
-            get
-            {
-                //音楽クリップ内での再生時間を算出
-                return playableDirector.time - AudioClip_StartTime;
-            }
+            //音楽クリップ内での再生時間を算出
+            get { return _PlaybackTime; }
             set
             {
-                //上限以上ならMaX値に丸める
-                if (value > playableDirector.duration) value = playableDirector.duration;
-                //タイムラインに反映
-                playableDirector.time = AudioClip_StartTime + value;
+                _PlaybackTime = value;
+                if (_PlaybackTime > playableDirector.duration) _PlaybackTime = playableDirector.duration;
+                playableDirector.time = AudioClip_StartTime + _PlaybackTime;//タイムラインに反映
             }
         }
 

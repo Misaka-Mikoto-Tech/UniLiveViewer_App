@@ -16,7 +16,6 @@ namespace UniLiveViewer
         [SerializeField] private GameObject FaceSyncPrefab = null;
         [SerializeField] private CharaInfoData charaInfoDataPrefab;
         [SerializeField] private AttachPoint attachPointPrefab;
-        [SerializeField] private GameObject lowShadowPrefab;
         [SerializeField] private GameObject guidePrefab;
         private MaterialConverter matConverter;
         private MaterialManager matManager;
@@ -106,12 +105,6 @@ namespace UniLiveViewer
                 animator.updateMode = AnimatorUpdateMode.Normal;
                 animator.cullingMode = AnimatorCullingMode.CullUpdateTransforms;
                 animator.applyRootMotion = true;
-
-                //影オブジェの追加
-                var lowShadow = Instantiate(lowShadowPrefab);
-                lowShadow.transform.parent = animator.GetBoneTransform(HumanBodyBones.Hips);
-                lowShadow.transform.localPosition = Vector3.zero;
-                lowShadow = null;
 
                 //コライダーの追加
                 var capcol = targetVRM.gameObject.AddComponent<CapsuleCollider>();

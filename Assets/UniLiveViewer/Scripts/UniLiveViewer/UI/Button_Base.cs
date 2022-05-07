@@ -8,13 +8,9 @@ namespace UniLiveViewer
 {
     public class Button_Base : MonoBehaviour
     {
-        [SerializeField] protected bool _isEnable = true;
         public bool isEnable
         {
-            get
-            {
-                return _isEnable;
-            }
+            get { return _isEnable; }
             set
             {
                 _isEnable = value;
@@ -36,6 +32,9 @@ namespace UniLiveViewer
         //Parameter
         public CollisionChecker collisionChecker = null;
         [SerializeField] private Transform neutralAnchor = null;
+
+        [Header("確認用露出(readonly)")]
+        [SerializeField] protected bool _isEnable = true;
 
         protected Rigidbody myRb;
         protected BoxCollider myCol;

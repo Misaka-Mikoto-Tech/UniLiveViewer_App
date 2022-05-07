@@ -8,8 +8,9 @@ namespace UniLiveViewer
         public class Data
         {
             public int LanguageCode = 0;
-            public float InitCharaSize = 1.0f;
-            public float VMDScale = 0.75f;
+            public float InitCharaSize = 1.00f;
+            public float CharaShadow = 1.00f;
+            public float VMDScale = 0.750f;
 
             public bool scene_crs_particle = true;
             public bool scene_crs_laser = true;

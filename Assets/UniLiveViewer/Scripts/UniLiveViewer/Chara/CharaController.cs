@@ -26,7 +26,6 @@ namespace UniLiveViewer
         public ANIMATIONMODE animationMode = ANIMATIONMODE.CLIP;
         public LipSyncController lipSync;
         public FacialSyncController facialSync;
-        [SerializeField] private GameObject lowShadowPrefab;//簡易影
         public List<VRMSpringBone> springBoneList = new List<VRMSpringBone>();//揺れもの接触判定用
         [HideInInspector]public LookAtController lookAtCon;
         public CharaInfoData charaInfoData;
@@ -69,10 +68,6 @@ namespace UniLiveViewer
             //Presetキャラのみ
             if (charaInfoData && charaInfoData.formatType == CharaInfoData.FORMATTYPE.FBX)
             {
-                var shadowObj = Instantiate(lowShadowPrefab, transform.position, Quaternion.identity);
-                shadowObj.transform.parent = animator.GetBoneTransform(HumanBodyBones.Hips);
-                shadowObj.transform.localPosition = Vector3.zero;
-
                 if (GetComponent<LookAtController>() != null) lookAtCon = GetComponent<LookAtController>();
             }
         }
@@ -99,11 +94,11 @@ namespace UniLiveViewer
                     lookAtCon.SetEnable_VRMLookAtEye(false);
                     break;
                 case CHARASTATE.MINIATURE:
-                    globalScale = new Vector3(0.25f, 0.25f, 0.25f);
+                    globalScale = new Vector3(0.26f, 0.26f, 0.26f);
                     gameObject.layer = SystemInfo.layerNo_GrabObject;
                     break;
                 case CHARASTATE.HOLD:
-                    globalScale = new Vector3(0.25f, 0.25f, 0.25f);
+                    globalScale = new Vector3(0.26f, 0.26f, 0.26f);
                     break;
                 case CHARASTATE.ON_CIRCLE:
                     globalScale = new Vector3(1.0f, 1.0f, 1.0f);
@@ -131,7 +126,7 @@ namespace UniLiveViewer
             }
             else transform.parent = null;
 
-            if(charaState == CHARASTATE.MINIATURE) transform.localScale = globalScale;
+            if(charaState == CHARASTATE.MINIATURE || charaState == CHARASTATE.HOLD) transform.localScale = globalScale;
             else transform.localScale = globalScale * CustomScalar;
         }
 
