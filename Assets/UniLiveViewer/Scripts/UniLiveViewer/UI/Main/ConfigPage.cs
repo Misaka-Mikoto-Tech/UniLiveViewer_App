@@ -1,4 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
+using System;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
@@ -28,7 +29,7 @@ namespace UniLiveViewer
         [Header("＜共用＞")]
         [SerializeField] private Button_Base[] btn_General = null;
         [SerializeField] private Button_Switch[] btnE_SecenChange = new Button_Switch[3];
-        [SerializeField] private TextMesh[] textMeshs = new TextMesh[3];
+        [SerializeField] private TextMesh[] textMeshs = new TextMesh[5];
         [SerializeField] private SliderGrabController slider_OutLine;
         [SerializeField] private SliderGrabController slider_InitCharaSize;
         [SerializeField] private SliderGrabController slider_CharaShadow;
@@ -201,7 +202,7 @@ namespace UniLiveViewer
 
         private async UniTaskVoid Init()
         {
-            await UniTask.Yield(cancellation_token);
+            await UniTask.Yield(PlayerLoopTiming.Update,cancellation_token);//一応
 
             //sceneボタン初期化
             foreach (var e in btnE_SecenChange)
@@ -235,14 +236,17 @@ namespace UniLiveViewer
 
             //共用
             btn_General[1].isEnable = playerStateManager.myOVRManager.isInsightPassthroughEnabled;
+            btn_General[2].isEnable = SystemInfo.userProfile.data.TouchVibration;
 
             //キャラサイズ
             slider_InitCharaSize.Value = SystemInfo.userProfile.data.InitCharaSize;
             Update_InitCharaSize();
 
             //キャラ影
-            slider_CharaShadow.Value = SystemInfo.userProfile.data.CharaShadow;
+            slider_CharaShadow.Value = quasiShadow.shadowScale;
             Update_CharaShadow();
+
+            textMeshs[3].text = $"FootShadow:\n{quasiShadow.ShadowType}";
 
             //VMD拡縮
             slider_VMDScale.Value = SystemInfo.userProfile.data.VMDScale;
@@ -270,31 +274,29 @@ namespace UniLiveViewer
             //パススルー
             else if (btn == btn_General[1])
             {
-                if (btn.isEnable)
-                {
-                    playerStateManager.myCamera.clearFlags = CameraClearFlags.Color;
-                    playerStateManager.myOVRManager.isInsightPassthroughEnabled = true;
-                }
-                else
-                {
-                    playerStateManager.myCamera.clearFlags = CameraClearFlags.Skybox;
-                    playerStateManager.myOVRManager.isInsightPassthroughEnabled = false;
-                }
+                playerStateManager.EnablePassthrough(btn.isEnable);
             }
             //コントローラー振動
             else if (btn == btn_General[2])
             {
-
+                SystemInfo.userProfile.data.TouchVibration = btn.isEnable;
+                SystemInfo.userProfile.WriteJson();
             }
             //キャラ影デクリ
             else if (btn == btn_General[3])
             {
-                textMeshs[3].text = $"FootShadow:\n{quasiShadow.GetTypeName(-1)}";
+                quasiShadow.ShadowType -= 1;
+                textMeshs[3].text = $"FootShadow:\n{quasiShadow.ShadowType}";
+                SystemInfo.userProfile.data.CharaShadowType = (int)quasiShadow.ShadowType;
+                SystemInfo.userProfile.WriteJson();
             }
             //キャラ影インクリ
             else if (btn == btn_General[4])
             {
-                textMeshs[3].text = $"FootShadow:\n{quasiShadow.GetTypeName(1)}";
+                quasiShadow.ShadowType += 1;
+                textMeshs[3].text = $"FootShadow:\n{quasiShadow.ShadowType}";
+                SystemInfo.userProfile.data.CharaShadowType = (int)quasiShadow.ShadowType;
+                SystemInfo.userProfile.WriteJson();
             }
 
             menuManager.PlayOneShot(SoundType.BTN_CLICK);
@@ -480,6 +482,7 @@ namespace UniLiveViewer
         /// <summary>
         /// シーン遷移処理
         /// </summary>
+        /// <param name="sceneName"></param>
         /// <returns></returns>
         private async UniTaskVoid SceneChange(string sceneName)
         {
@@ -490,30 +493,11 @@ namespace UniLiveViewer
             await UniTask.Delay(400, cancellationToken: cancellation_token);//音の分だけ待つ
 
             //音が割れるので止める
-            timeline.TimelineManualMode();
+            timeline.TimelineManualMode().Forget();
         }
 
         /// <summary>
-        /// アウトライン
-        /// </summary>
-        private void Update_OutLine()
-        {
-            if (slider_OutLine.Value > 0)
-            {
-                //有効化
-                outlineRender.SetActive(true);
-                //値の更新
-                material_OutLine.SetFloat("_Edge", slider_OutLine.Value);
-            }
-            else
-            {
-                //無効化
-                outlineRender.SetActive(false);
-            }
-        }
-
-        /// <summary>
-        /// 更新中
+        /// キャラ初期サイズ
         /// </summary>
         private void Update_InitCharaSize()
         {
@@ -521,19 +505,19 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// 更新中
+        /// キャラの影サイズ
         /// </summary>
         private void Update_CharaShadow()
         {
-            if (!quasiShadow) return;
             quasiShadow.shadowScale = slider_CharaShadow.Value;
-            textMeshs[3].text = $"{slider_CharaShadow.Value:0.00}";
+            textMeshs[4].text = $"{slider_CharaShadow.Value:0.00}";
         }
 
-
+        /// <summary>
+        /// VMD範囲
+        /// </summary>
         private void Update_VMDScale()
         {
-            //スライダーに反映
             slider_VMDScale.Value = Mathf.Clamp(slider_VMDScale.Value, 0.3f, 1.0f);
             textMeshs[1].text = $"{slider_VMDScale.Value:0.000}";
         }
@@ -543,15 +527,13 @@ namespace UniLiveViewer
         /// </summary>
         private void Update_FixedFoveated()
         {
-            //スライダーに反映
             slider_FixedFoveated.Value = Mathf.Clamp(slider_FixedFoveated.Value, 2, 4);
 #if UNITY_EDITOR
             textMeshs[2].text = $"noQuest:{slider_FixedFoveated.Value}";
 #elif UNITY_ANDROID
-        //反映し直す
-        OVRManager.fixedFoveatedRenderingLevel = (OVRManager.FixedFoveatedRenderingLevel)slider_FixedFoveated.Value;
-        //テキストに反映
-        textMesh_Page3[1].text = Enum.GetName(typeof(OVRManager.FixedFoveatedRenderingLevel),OVRManager.fixedFoveatedRenderingLevel);
+            //反映し直す
+            OVRManager.fixedFoveatedRenderingLevel = (OVRManager.FixedFoveatedRenderingLevel)slider_FixedFoveated.Value;
+            textMeshs[2].text = Enum.GetName(typeof(OVRManager.FixedFoveatedRenderingLevel),OVRManager.fixedFoveatedRenderingLevel);
 #endif
         }
         private void DebugInput()

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,171 +10,206 @@ namespace UniLiveViewer
         {
             NONE,
             CIRCLE,
-            CIRCLE_TWIN,
             CROSS,
-            CROSS_TWIN,
+            NONE_CIRCLE,
+            NONE_CROSS,
+            CIRCLE_CIRCLE,
+            CROSS_CROSS,
+            CIRCLE_CROSS,
+            CROSS_CIRCLE,
         }
+        public SHADOWTYPE ShadowType
+        {
+            get { return shadowType; }
+            set
+            {
+                shadowType = value;
+                if ((int)shadowType >= typeLength) shadowType = 0;
+                else if ((int)shadowType < 0) shadowType = (SHADOWTYPE)(typeLength - 1);
 
-        [SerializeField] private SpriteRenderer[] spritePrefab;
+                Update_MeshRenderers();
+            }
+        }
+        [SerializeField] private MeshRenderer meshRendererPrefab;
         public float shadowScale = 1.0f;
-        private const float SINGLE_SHADOW = 0.2f;
-        private const float TWIN_SHADOW = 0.1f;
+
+        [SerializeField] private Preset[] preset;
 
         [Header("確認用露出(readonly)")]
         [SerializeField] private SHADOWTYPE shadowType = SHADOWTYPE.NONE;
-        public SHADOWTYPE ShadowType
-        { 
-            get { return shadowType; } 
-            set 
-            { 
-                shadowType = value;
-                Update_ShadowSpriteRenderer();
-            } 
-        }
-        private TimelineController timeline;
-        private AnimatorData[] animators;
 
+        private const string TEXTURE_NAME = "_MainTex";
         private int typeLength = Enum.GetNames(typeof(SHADOWTYPE)).Length;
+        private TimelineController timeline;
+        private ShadowData[] shadowDatas;
 
         // Start is called before the first frame update
         void Start()
         {
             timeline = GetComponent<TimelineController>();
-            if(timeline)
+            GameObject anchor = new GameObject("Shadows");
+
+            if (timeline)
             {
-                timeline.FieldCharaAdded += Update_AnimatorData;
-                timeline.FieldCharaDeleted += Update_AnimatorData;
+                timeline.FieldCharaAdded += Update_BodyData;
+                timeline.FieldCharaDeleted += Update_BodyData;
+
+                shadowDatas = new ShadowData[timeline.trackBindChara.Length];
+                for (int i = 0; i < shadowDatas.Length; i++)
+                {
+                    shadowDatas[i] = new ShadowData();
+                    shadowDatas[i].Init(meshRendererPrefab, anchor.transform);
+                    shadowDatas[i].SetMeshRenderers(false, null, null);
+                }
             }
 
-            animators = new AnimatorData[timeline.trackBindChara.Length];
-            for (int i = 0; i < animators.Length; i++)
-            {
-                animators[i] = new AnimatorData();
-            }
+            shadowScale = SystemInfo.userProfile.data.CharaShadow;
+            ShadowType = (SHADOWTYPE)SystemInfo.userProfile.data.CharaShadowType;
         }
 
-        public string GetTypeName(int moveIndex)
+        private void Update_BodyData()
         {
-            if ((int)shadowType + moveIndex >= typeLength) ShadowType = 0;
-            else if ((int)shadowType + moveIndex < 0) ShadowType = (SHADOWTYPE)(typeLength - 1);
-            else ShadowType += moveIndex;
-
-            return shadowType.ToString();
-        }
-
-        private void Update_AnimatorData()
-        {
-            for (int i = 0;i< timeline.trackBindChara.Length;i++)
+            for (int i = 0; i < shadowDatas.Length; i++)
             {
                 if (i == TimelineController.PORTAL_ELEMENT) continue;
-                if (!timeline.trackBindChara[i]) animators[i].ClearAnimator();
-                else animators[i].SetAnimator(timeline.trackBindChara[i].GetComponent<Animator>());
+                if (!timeline.trackBindChara[i]) shadowDatas[i].SetBodyData(null);
+                else shadowDatas[i].SetBodyData(timeline.trackBindChara[i]);
             }
+            Update_MeshRenderers();
         }
 
-        private void Update_ShadowSpriteRenderer()
+        private void Update_MeshRenderers()
         {
-            SpriteRenderer target = null;
-            if (shadowType == SHADOWTYPE.CIRCLE || shadowType == SHADOWTYPE.CIRCLE_TWIN) target = spritePrefab[0];
-            if (shadowType == SHADOWTYPE.CROSS || shadowType == SHADOWTYPE.CROSS_TWIN) target = spritePrefab[1];
-
-
-            if (shadowType == SHADOWTYPE.CIRCLE || shadowType == SHADOWTYPE.CROSS)
+            bool isEnable;
+            int index = (int)shadowType;
+            for (int i = 0; i < shadowDatas.Length; i++)
             {
-                for (int i = 0; i < timeline.trackBindChara.Length; i++)
-                {
-                    if (i == TimelineController.PORTAL_ELEMENT) continue;
-                    animators[i].SetSpriteRenderer(Instantiate(target));
-                }
-            }
-            else if (shadowType == SHADOWTYPE.CIRCLE_TWIN || shadowType == SHADOWTYPE.CROSS_TWIN)
-            {
-                for (int i = 0; i < timeline.trackBindChara.Length; i++)
-                {
-                    if (i == TimelineController.PORTAL_ELEMENT) continue;
-                    animators[i].SetSpriteRenderer(Instantiate(target), Instantiate(target));
-                }
+                if (i == TimelineController.PORTAL_ELEMENT) continue;
+                if (timeline.trackBindChara[i] && shadowType != SHADOWTYPE.NONE) isEnable = true;
+                else isEnable = false;
+                shadowDatas[i].SetMeshRenderers(isEnable, preset[index].texture_Body, preset[index].texture_Foot);
             }
         }
 
         // Update is called once per frame
         void Update()
         {
-            Vector3 scale;
-
-            if (shadowType == SHADOWTYPE.CIRCLE || shadowType == SHADOWTYPE.CROSS)
+            if (shadowType == SHADOWTYPE.NONE) return;
+            int index = (int)shadowType;
+            for (int i = 0; i < shadowDatas.Length; i++)
             {
-                scale = Vector3.one * SINGLE_SHADOW * shadowScale;
-                for (int i = 0; i < animators.Length; i++)
+                if (shadowDatas[i].charaCon)
                 {
-                    if (!animators[i].anime) continue;
-                    animators[i].spriteRenderers[0].transform.position = animators[i].anime.transform.position;
-                    animators[i].spriteRenderers[0].transform.localScale = scale;
-                }
-            }
-            else if (shadowType == SHADOWTYPE.CIRCLE_TWIN || shadowType == SHADOWTYPE.CROSS_TWIN)
-            {
-                Vector3 pos = Vector3.zero;
-                scale = Vector3.one * TWIN_SHADOW * shadowScale;
-                for (int i = 0; i < animators.Length; i++)
-                {
-                    if (!animators[i].anime) continue;
-
-                    pos = animators[i].leftFoot.position;
-                    pos.y = animators[i].anime.transform.position.y;
-                    animators[i].spriteRenderers[0].transform.position = pos;
-                    animators[i].spriteRenderers[0].transform.localScale = scale;
-
-                    pos = animators[i].rightFoot.position;
-                    pos.y = animators[i].anime.transform.position.y;
-                    animators[i].spriteRenderers[1].transform.position = pos;
-                    animators[i].spriteRenderers[1].transform.localScale = scale;
+                    Transforming(shadowDatas[i].charaCon, shadowDatas[i].spine, shadowDatas[i].meshRenderer_c, preset[index].scala_Body);
+                    Transforming(shadowDatas[i].charaCon, shadowDatas[i].leftFoot, shadowDatas[i].meshRenderer_l, preset[index].scala_Foot);
+                    Transforming(shadowDatas[i].charaCon, shadowDatas[i].rightFoot, shadowDatas[i].meshRenderer_r, preset[index].scala_Foot);
                 }
             }
         }
 
-        public class AnimatorData
+        private void Transforming(CharaController charaCon, Transform targetBone, MeshRenderer targetMesh, float presetScale)
         {
-            public Animator anime;
+            Vector3 pos = Vector3.zero;
+            float scale;
+            float distance;
+
+            distance = (targetBone.position.y - charaCon.transform.position.y) / charaCon.CustomScalar;
+            pos = targetBone.position;
+            pos.y = charaCon.transform.position.y;
+            scale = presetScale * shadowScale * charaCon.CustomScalar;
+
+            targetMesh.material.SetVector("_Position", pos);
+            targetMesh.material.SetFloat("_Scale", scale * (1 - (distance * 0.35f)));
+            targetMesh.material.SetFloat("_Alpha", (1 - (distance * 0.4f)));
+        }
+
+        private void OnDestroy()
+        {
+            for (int i = 0; i < shadowDatas.Length; i++)
+            {
+                shadowDatas[i].Dispose();
+                shadowDatas[i] = null;
+            }
+        }
+
+        [Serializable]
+        public class Preset
+        {
+            public SHADOWTYPE shadowType;
+            public Texture2D texture_Body;
+            public Texture2D texture_Foot;
+            public float scala_Body;
+            public float scala_Foot;
+        }
+
+        public class ShadowData
+        {
+            public CharaController charaCon;
+            public Transform spine;
             public Transform leftFoot;
             public Transform rightFoot;
-            public SpriteRenderer[] spriteRenderers = new SpriteRenderer[2];
 
-            public void SetAnimator(Animator _anime)
-            {
-                anime = _anime;
-                leftFoot = anime.GetBoneTransform(HumanBodyBones.LeftFoot);
-                rightFoot = anime.GetBoneTransform(HumanBodyBones.RightFoot);
+            public MeshRenderer meshRenderer_c = new MeshRenderer();
+            public MeshRenderer meshRenderer_l = new MeshRenderer();
+            public MeshRenderer meshRenderer_r = new MeshRenderer();
 
-                if (spriteRenderers[0]) spriteRenderers[0].enabled = true;
-                if (spriteRenderers[1]) spriteRenderers[1].enabled = true;
-            }
-            public void ClearAnimator()
+            public void Init(MeshRenderer prefab,Transform parent)
             {
-                anime = null;
-                leftFoot = null;
-                rightFoot = null;
+                meshRenderer_c = Instantiate(prefab);
+                meshRenderer_l = Instantiate(prefab);
+                meshRenderer_r = Instantiate(prefab);
 
-                if (spriteRenderers[0]) spriteRenderers[0].enabled = false;
-                if (spriteRenderers[1]) spriteRenderers[1].enabled = false;
-            }
-            public void SetSpriteRenderer(SpriteRenderer single)
-            {
-                Dispose();
-                spriteRenderers[0] = single;
-                spriteRenderers[1] = null;
-            }
-            public void SetSpriteRenderer(SpriteRenderer leftFoot, SpriteRenderer rightFoot)
-            {
-                Dispose();
-                spriteRenderers[0] = leftFoot;
-                spriteRenderers[1] = rightFoot;
+                meshRenderer_c.transform.parent = parent;
+                meshRenderer_l.transform.parent = parent;
+                meshRenderer_r.transform.parent = parent;
             }
 
-            private void Dispose()
+            public void SetBodyData(CharaController _charaCon)
             {
-                if (spriteRenderers[0]) Destroy(spriteRenderers[0].gameObject);
-                if (spriteRenderers[1]) Destroy(spriteRenderers[1].gameObject);
+                if (_charaCon)
+                {
+                    charaCon = _charaCon;
+                    spine = charaCon.GetAnimator.GetBoneTransform(HumanBodyBones.Spine);
+                    leftFoot = charaCon.GetAnimator.GetBoneTransform(HumanBodyBones.LeftFoot);
+                    rightFoot = charaCon.GetAnimator.GetBoneTransform(HumanBodyBones.RightFoot);
+                }
+                else
+                {
+                    charaCon = null;
+                    spine = null;
+                    leftFoot = null;
+                    rightFoot = null;
+                }
+            }
+
+            public void SetMeshRenderers(bool isEnable, Texture2D tex_body, Texture2D tex_foot)
+            {
+                meshRenderer_c.material.SetTexture(TEXTURE_NAME, tex_body);
+                meshRenderer_l.material.SetTexture(TEXTURE_NAME, tex_foot);
+                meshRenderer_r.material.SetTexture(TEXTURE_NAME, tex_foot);
+
+                meshRenderer_c.enabled = tex_body == null ? false : isEnable;
+                meshRenderer_l.enabled = tex_foot == null ? false : isEnable;
+                meshRenderer_r.enabled = tex_foot == null ? false : isEnable;
+            }
+
+            public void Dispose()
+            {
+                if (meshRenderer_c)
+                {
+                    Destroy(meshRenderer_c.material);
+                    Destroy(meshRenderer_c.gameObject);
+                }
+                if (meshRenderer_l)
+                {
+                    Destroy(meshRenderer_l.material);
+                    Destroy(meshRenderer_l.gameObject);
+                }
+                if (meshRenderer_r)
+                {
+                    Destroy(meshRenderer_r.material);
+                    Destroy(meshRenderer_r.gameObject);
+                }
             }
         }
     }

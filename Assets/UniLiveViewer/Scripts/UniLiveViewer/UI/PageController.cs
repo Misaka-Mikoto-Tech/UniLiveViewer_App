@@ -11,6 +11,7 @@ namespace UniLiveViewer
         [Header("＜ページ・タブボタン＞")]
         [SerializeField] private Button_Switch[] btnTab;
         [SerializeField] private Transform[] pageAnchor;
+        public Button_Switch[] BtnTab => btnTab;
         public Transform[] GetPageAnchor => pageAnchor;
 
         private CancellationToken cancellation_token;
@@ -67,20 +68,23 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// ページを切り替える
-        /// </summary>
-        /// <param name="btn"></param>
-        public void ButtonShow_Passthrough(bool isEnable)
-        {
-            if (btnTab[5].gameObject.activeSelf == isEnable) return;
-            btnTab[5].gameObject.SetActive(isEnable);
-        }
-
-        /// <summary>
         /// カレントページに切り替える
         /// </summary>
         private void SwitchPages()
         {
+            //カレントページのタブボタンが非表示の場合別ページへ
+            if (!btnTab[current].gameObject.activeSelf)
+            {
+                for (int i = 0; i < btnTab.Length; i++)
+                {
+                    if (!btnTab[i]) continue;
+                    if (!btnTab[i].gameObject.activeSelf) continue;
+                    current = i;
+                    break;
+                }
+            }
+
+            //ページ切り替え
             bool b = false;
             for (int i = 0; i < btnTab.Length; i++)
             {

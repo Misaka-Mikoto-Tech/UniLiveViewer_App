@@ -1,16 +1,14 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace UniLiveViewer
-{
+{   
+    //TODO:一括管理に変える
     public class PassthroughProjection : MonoBehaviour
     {
         private OVRPassthroughLayer passthroughLayer;
         [SerializeField] private MeshFilter projectionObject;
 
-        // Start is called before the first frame update
-        void Start()
+        private void Awake()
         {
             GameObject ovrCameraRig = GameObject.Find("PassthroughProjection");
             if (ovrCameraRig == null)
@@ -24,19 +22,20 @@ namespace UniLiveViewer
             {
                 Debug.LogError("OVRCameraRig does not contain an OVRPassthroughLayer component");
             }
-
-            passthroughLayer.AddSurfaceGeometry(projectionObject.gameObject, true);
         }
 
-        // Update is called once per frame
-        void Update()
+        private void OnEnable()
         {
-
+            if (PlayerStateManager.instance.myOVRManager.isInsightPassthroughEnabled)
+            {
+                passthroughLayer.AddSurfaceGeometry(projectionObject.gameObject, true);
+            }
         }
 
-        private void OnDestroy()
+        private void OnDisable()
         {
             passthroughLayer.RemoveSurfaceGeometry(projectionObject.gameObject);
         }
+
     }
 }
