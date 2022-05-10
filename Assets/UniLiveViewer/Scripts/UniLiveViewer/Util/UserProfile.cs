@@ -10,7 +10,9 @@ namespace UniLiveViewer
             public int LanguageCode = 0;
             public float InitCharaSize = 1.00f;
             public float CharaShadow = 1.00f;
+            public int CharaShadowType = 1;
             public float VMDScale = 0.750f;
+            public bool TouchVibration = true;
 
             public bool scene_crs_particle = true;
             public bool scene_crs_laser = true;
@@ -35,9 +37,9 @@ namespace UniLiveViewer
         {
             string datastr = "";
             StreamReader reader = null;
-            if (File.Exists(Application.persistentDataPath + "/System.json"))
+            if (File.Exists(FileAccessManager.folderPath_Persistent + "System.json"))
             {
-                using (reader = new StreamReader(Application.persistentDataPath + "/System.json"))
+                using (reader = new StreamReader(FileAccessManager.folderPath_Persistent + "System.json"))
                 {
                     datastr = reader.ReadToEnd();
                     //reader.Close();
@@ -59,9 +61,10 @@ namespace UniLiveViewer
         /// <param name="lang"></param>
         public void WriteJson()
         {
+
             //Json形式に変換
-            string jsonstr = JsonUtility.ToJson(data);
-            using (StreamWriter writer = new StreamWriter(Application.persistentDataPath + "/System.json", false))
+            string jsonstr = JsonUtility.ToJson(data,true);
+            using (StreamWriter writer = new StreamWriter(FileAccessManager.folderPath_Persistent + "System.json", false))
             {
                 writer.Write(jsonstr);
                 //writer.Flush();

@@ -24,12 +24,14 @@ namespace UniLiveViewer
         public CHARASTATE GetCharaState => charaState;
         [SerializeField] private CHARASTATE charaState = CHARASTATE.NULL;
         public ANIMATIONMODE animationMode = ANIMATIONMODE.CLIP;
+        public Animator GetAnimator => animator;
+
         public LipSyncController lipSync;
         public FacialSyncController facialSync;
         public List<VRMSpringBone> springBoneList = new List<VRMSpringBone>();//揺れもの接触判定用
         [HideInInspector]public LookAtController lookAtCon;
         public CharaInfoData charaInfoData;
-        private float reScalar = 0;
+        private float customScalar = 0;
         //現状VRM専用
         public IReadOnlyList<SkinnedMeshRenderer> GetSkinnedMeshRenderers;
         public IReadOnlyList<SkinnedMeshRenderer> GetMorphSkinnedMeshRenderers;
@@ -38,7 +40,6 @@ namespace UniLiveViewer
             GetSkinnedMeshRenderers = skins;
             GetMorphSkinnedMeshRenderers = skins.GetMorphSkinnedMeshRenderer();
         }
-
 
         [Header("＜TimeLine自動管理＞")]
         public string bindTrackName = "";
@@ -50,15 +51,11 @@ namespace UniLiveViewer
 
         public float CustomScalar
         {
+            get { return customScalar; }
             set
             {
-                reScalar = Mathf.Clamp(value, 0.25f, 20.0f);
-                transform.localScale = Vector3.one * reScalar;
-            }
-            get
-            {
-                if (reScalar == 0) reScalar = SystemInfo.userProfile.data.InitCharaSize;
-                return reScalar;
+                customScalar = Mathf.Clamp(value, 0.25f, 20.0f);
+                transform.localScale = Vector3.one * customScalar;
             }
         }
 
@@ -70,6 +67,7 @@ namespace UniLiveViewer
             {
                 if (GetComponent<LookAtController>() != null) lookAtCon = GetComponent<LookAtController>();
             }
+            customScalar = SystemInfo.userProfile.data.InitCharaSize;
         }
 
 

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Cysharp.Threading.Tasks;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -19,6 +20,7 @@ namespace UniLiveViewer
         private AudioSource audioSource;
         [SerializeField] private AudioClip[] Sound;//ボタン音
 
+        private CancellationToken cancellation_Token;
         private void Awake()
         {
             for (int i = 0; i < btn_Language.Length; i++)
@@ -30,6 +32,8 @@ namespace UniLiveViewer
 
             manualHand.SetActive(false);
             transform.GetChild(0).gameObject.SetActive(false);
+
+            cancellation_Token = this.GetCancellationTokenOnDestroy();
         }
 
         // Start is called before the first frame update
@@ -50,19 +54,16 @@ namespace UniLiveViewer
             {
                 //2回目以降
                 sprRender.gameObject.SetActive(false);
-                StartCoroutine(SceneChange());
+                SceneChange().Forget();
             }
-            else
-            {
-                StartCoroutine(InitHand());
-            }
+            else InitHand().Forget();
         }
 
-        private IEnumerator InitHand()
+        private async UniTask InitHand()
         {
-            yield return new WaitForSeconds(2.0f);
+            await UniTask.Delay(2000, cancellationToken: cancellation_Token);
             transform.GetChild(0).gameObject.SetActive(true);
-            yield return new WaitForSeconds(1.0f);
+            await UniTask.Delay(1000, cancellationToken: cancellation_Token);
             manualHand.SetActive(true);
         }
 
@@ -88,19 +89,18 @@ namespace UniLiveViewer
             //Handを消す
             manualHand.SetActive(false);
 
-            StartCoroutine(SceneChange());
+            SceneChange().Forget();
         }
 
-        private IEnumerator SceneChange()
+        private async UniTask SceneChange()
         {
-            yield return new WaitForSeconds(0.5f);
+            await UniTask.Delay(500, cancellationToken: cancellation_Token);
             if (transform.GetChild(0).gameObject.activeSelf) transform.GetChild(0).gameObject.SetActive(false);
 
-            yield return new WaitForSeconds(1.0f);
+            await UniTask.Delay(1000, cancellationToken: cancellation_Token);
             fade.FadeOut();
-            yield return new WaitForSeconds(2.0f);
-            SceneManager.LoadSceneAsync("LiveScene");
-            yield return null;
+            await UniTask.Delay(2000, cancellationToken: cancellation_Token);
+            await SceneManager.LoadSceneAsync("LiveScene");
         }
     }
 

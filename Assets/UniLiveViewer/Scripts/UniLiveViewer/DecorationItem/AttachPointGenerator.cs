@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace UniLiveViewer
 {
+    //TODO:キャラ側→一括中央管理に変える
     //ちびキャラ、人以外などに対応しきれていない
     public class AttachPointGenerator : MonoBehaviour
     {

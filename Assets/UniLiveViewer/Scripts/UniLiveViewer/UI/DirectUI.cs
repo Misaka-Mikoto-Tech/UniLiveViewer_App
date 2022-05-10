@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Cysharp.Threading.Tasks;
+using System.Collections;
 using UnityEngine;
 
 namespace UniLiveViewer
@@ -37,13 +38,13 @@ namespace UniLiveViewer
                     transform.position = EndPoint + (Vector3.up * 2);
                     transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
                     break;
-            }
-            StartCoroutine(Init());
+            }            
+            Init().Forget();
         }
 
-        IEnumerator Init()
+        private async UniTask Init()
         {
-            yield return new WaitForSeconds(0.5f);
+            await UniTask.Delay(500);
 
             int split = 50;
             Vector3 moveSpeed = (EndPoint - transform.position) / split;
@@ -51,10 +52,10 @@ namespace UniLiveViewer
             for (int i = 0; i < split; i++)
             {
                 transform.position += moveSpeed;
-                yield return null;
+                await UniTask.Yield();
             }
 
-            yield return new WaitForSeconds(0.5f);
+            await UniTask.Delay(500);
 
             //UIを表示する
             playerStateManager.SwitchUI();

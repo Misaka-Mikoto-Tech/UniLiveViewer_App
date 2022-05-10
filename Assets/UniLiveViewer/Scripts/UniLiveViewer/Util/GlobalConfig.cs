@@ -24,7 +24,6 @@ namespace UniLiveViewer
         public static UserProfile userProfile;
         public static SceneMode sceneMode;
         public static float soundVolume_SE = 0.3f;//SE音量
-        public static bool isControllerVibration = true;//controller振動
         public static OVRManager.FixedFoveatedRenderingLevel levelFFR;
         public static string folderPath_Persistent;//システム設定値など
         public static Dictionary<string, int> dicVMD_offset = new Dictionary<string, int>();

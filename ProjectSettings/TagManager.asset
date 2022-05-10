@@ -22,6 +22,7 @@ TagManager:
   - FloorMirror
   - BackGroundController
   - FxTemporaire
+  - Passthrough
   layers:
   - Default
   - TransparentFX

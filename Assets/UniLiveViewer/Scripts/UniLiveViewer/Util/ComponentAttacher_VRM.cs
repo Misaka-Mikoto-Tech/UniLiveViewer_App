@@ -16,7 +16,6 @@ namespace UniLiveViewer
         [SerializeField] private GameObject FaceSyncPrefab = null;
         [SerializeField] private CharaInfoData charaInfoDataPrefab;
         [SerializeField] private AttachPoint attachPointPrefab;
-        [SerializeField] private GameObject guidePrefab;
         private MaterialConverter matConverter;
         private MaterialManager matManager;
 
@@ -124,8 +123,6 @@ namespace UniLiveViewer
                 targetVRM.AddComponent<MeshRenderer>();
                 targetVRM.AddComponent<OVRGrabbable_Custom>();
 
-                //ガイドの追加
-                targetVRM.AddComponent<MeshGuide>().guidePrefab = guidePrefab;
 
                 //アタッチポイントの追加
                 targetVRM.AddComponent<AttachPointGenerator>().anchorPointPrefab = attachPointPrefab;

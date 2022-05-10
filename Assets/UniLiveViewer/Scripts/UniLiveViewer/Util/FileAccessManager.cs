@@ -1,6 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -23,6 +22,7 @@ namespace UniLiveViewer
     public class FileAccessManager : MonoBehaviour
     {
         public static string folderPath_Custom;//VMDやmp3など
+        public static string folderPath_Persistent;//VMDやmp3など
         public string sMssage;//デバッグ用
 
         public static string[] folderName = { "Chara/", "Motion/", "BGM/", "Setting/" };
@@ -77,8 +77,8 @@ namespace UniLiveViewer
             sMssage = "Questとして認識しています";
             maxAudioCount = SystemInfo.MAXAUDIO_QUEST;
 #endif
-            //folderPath_Custom = Application.persistentDataPath + "/";
-            //folderPath_Custom = Application.temporaryCachePath + "/";
+            folderPath_Persistent = Application.persistentDataPath + "/";
+            //folderPath_Persistent = Application.temporaryCachePath + "/";
 
             cancellation_token = this.GetCancellationTokenOnDestroy();
 
@@ -90,7 +90,7 @@ namespace UniLiveViewer
                 audioList.Add(presetAudioClip[i]);
             }
             //アプリフォルダの作成
-            StartCoroutine(CreateFolder());
+            CreateFolder();
         }
 
         public static string GetFullPath(FOLDERTYPE type)
@@ -111,7 +111,7 @@ namespace UniLiveViewer
         /// <summary>
         /// アプリフォルダとreadme.txtを作成する
         /// </summary>
-        private IEnumerator CreateFolder()
+        private void CreateFolder()
         {
             string sFullPath = "";
 
@@ -143,24 +143,28 @@ namespace UniLiveViewer
                 {
                     onVMDLoadError?.Invoke();
                     isSuccess = false;
-                    yield break;
+                    return;
                 }
                 //GetAllVMDLipSyncNames();
 
                 isSuccess = true;
+                CreateData(sFullPath).Forget();
             }
             catch
             {
                 isSuccess = false;
             }
+        }
 
-            if (isSuccess)
+        private async UniTask CreateData(string sFullPath)
+        {
+            try
             {
                 sFullPath = folderPath_Custom + "readme_ja.txt";
-                yield return StartCoroutine(ResourcesLoadText("readme_ja", sFullPath));
+                await ResourcesLoadText("readme_ja", sFullPath);
 
                 sFullPath = folderPath_Custom + "readme_en.txt";
-                yield return StartCoroutine(ResourcesLoadText("readme_en", sFullPath));
+                await ResourcesLoadText("readme_en", sFullPath);
 
                 sFullPath = folderPath_Custom + "不具合・Defect.txt";
                 DeleteFile(sFullPath);
@@ -168,10 +172,14 @@ namespace UniLiveViewer
                 //完了した
                 onFolderCheckCompleted?.Invoke();
 
-                yield return new WaitForSeconds(0.5f);
+                await UniTask.Delay(500, cancellationToken: cancellation_token);
 
                 //VRMのサムネイル画像をキャッシュする
                 CacheThumbnail().Forget();
+            }
+            catch(OperationCanceledException)
+            {
+                throw;
             }
         }
 
@@ -194,14 +202,13 @@ namespace UniLiveViewer
                 throw;
             }
         }
-        public IEnumerator ResourcesLoadText(string fileName, string path)
+        public async UniTask ResourcesLoadText(string fileName, string path)
         {
-            var resourceFile = Resources.Load<TextAsset>(fileName);
+            var resourceFile = (await Resources.LoadAsync<TextAsset>(fileName)) as TextAsset;
             using (StreamWriter writer = new StreamWriter(path, false, System.Text.Encoding.UTF8))
             {
                 writer.Write(resourceFile.text);
             }
-            yield return null;
         }
 
         public void DeleteFile(string path)
@@ -355,7 +362,7 @@ namespace UniLiveViewer
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public IEnumerator AudioLoad()
+        public async UniTask AudioLoad()
         {
             //全く呼ばれていなければ呼ぶ
             if (mp3_path.Count == 0 && wav_path.Count == 0)
@@ -390,7 +397,7 @@ namespace UniLiveViewer
                 {
                     ((DownloadHandlerAudioClip)www.downloadHandler).streamAudio = true;
 
-                    yield return www.SendWebRequest();
+                    await www.SendWebRequest();
 
                     if (www.result == UnityWebRequest.Result.ConnectionError)
                     {
@@ -414,7 +421,7 @@ namespace UniLiveViewer
                         //Debug.Log(clip.frequency);//周波数
 
                     }
-                    yield return null;
+                    await UniTask.Yield(cancellation_token);
                 }
             }
 
@@ -427,7 +434,7 @@ namespace UniLiveViewer
                 {
                     ((DownloadHandlerAudioClip)www.downloadHandler).streamAudio = true;
 
-                    yield return www.SendWebRequest();
+                    await www.SendWebRequest();
 
                     if (www.result == UnityWebRequest.Result.ConnectionError)
                     {
@@ -439,7 +446,7 @@ namespace UniLiveViewer
                         clip.name = str.Replace(folderPath_Custom + folderName[(int)FOLDERTYPE.BGM], "");
                         audioList.Add(clip);
                     }
-                    yield return null;
+                    await UniTask.Yield(cancellation_token);
                 }
             }
 
@@ -610,8 +617,9 @@ namespace UniLiveViewer
             //Texture mainTexture = _renderer.material.mainTexture;
             //RenderTexture currentRT = RenderTexture.active;
             RenderTexture renderTexture = new RenderTexture(texture2D.width, texture2D.height, 0);//第三デプス
+            //Linear→Gamma
             Graphics.Blit(texture2D, renderTexture, _renderer.sharedMaterial);//デプス無効化したマテリアル
-
+            //RenderTexture情報→texture2Dへ
             RenderTexture.active = renderTexture;
             texture2D.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
             texture2D.Apply();

@@ -1,13 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace UniLiveViewer
 {
     public class HandUIController : MonoBehaviour
     {
-        public handUI[] handUI_CharaAdjustment;
-        public handUI[] handUI_ItemMatSelecter;
+        public handUI[] handUI_CharaAdjustment;//キャラ拡縮用
+        public handUI[] handUI_ItemMatSelecter;//アイテム着色用
         private ItemMaterialSelector[] itemMaterialSelector = new ItemMaterialSelector[2];
 
         public handUI handUI_PlayerHeight;
@@ -58,27 +56,32 @@ namespace UniLiveViewer
 
         private void LateUpdate()
         {
+            //表示中は全てカメラに向く
             if(handUI_PlayerHeight.Show)
             {
                 handUI_PlayerHeight.instance.transform.LookAt(lookTarget);
             }
             for (int i = 0; i < handUI_CharaAdjustment.Length; i++)
             {
+                if (!handUI_CharaAdjustment[i].Show) continue;
                 handUI_CharaAdjustment[i].instance.transform.LookAt(lookTarget);
             }
             for (int i = 0; i < handUI_ItemMatSelecter.Length; i++)
             {
+                if (!handUI_ItemMatSelecter[i].Show) continue;
                 handUI_ItemMatSelecter[i].instance.transform.LookAt(lookTarget);
             }
         }
 
-        public void SetCurrent_ItemMaterial(int handType, int current)
+        /// <summary>
+        /// 指定Currentからテクスチャを取得
+        /// </summary>
+        /// <param name="handType"></param>
+        /// <param name="current"></param>
+        /// <returns></returns>
+        public Texture GetItemTexture(int handType, int current)
         {
-            itemMaterialSelector[handType].Current = current;
-        }
-        public Texture GetTexture_ItemMaterial(int handType)
-        {
-            return itemMaterialSelector[handType].GetCurrentTex();
+            return itemMaterialSelector[handType].TryGetTexture(current);
         }
 
         public void InitItemMaterialSelector(int handType, DecorationItemInfo decorationItemInfo)

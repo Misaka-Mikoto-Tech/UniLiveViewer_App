@@ -55,13 +55,13 @@ namespace UniLiveViewer
         public List<UnityChan_Morphs> UniMorphs = new List<UnityChan_Morphs>();//使用するモーフ情報
 
         public Dictionary<BlendShapePreset, FACIALTYPE> dicVMRMorph = new Dictionary<BlendShapePreset, FACIALTYPE>()
-    {
-        {BlendShapePreset.Blink ,FACIALTYPE.BLINK},
-        {BlendShapePreset.Joy ,FACIALTYPE.JOY},
-        {BlendShapePreset.Angry ,FACIALTYPE.ANGRY},
-        {BlendShapePreset.Sorrow ,FACIALTYPE.SORROW},
-        {BlendShapePreset.Fun ,FACIALTYPE.FUN}
-    };
+        {
+            {BlendShapePreset.Blink ,FACIALTYPE.BLINK},
+            {BlendShapePreset.Joy ,FACIALTYPE.JOY},
+            {BlendShapePreset.Angry ,FACIALTYPE.ANGRY},
+            {BlendShapePreset.Sorrow ,FACIALTYPE.SORROW},
+            {BlendShapePreset.Fun ,FACIALTYPE.FUN}
+        };
 
         public static void Instantiate(GameObject prefab, CharaController charaController, VRMBlendShapeProxy proxy)
         {

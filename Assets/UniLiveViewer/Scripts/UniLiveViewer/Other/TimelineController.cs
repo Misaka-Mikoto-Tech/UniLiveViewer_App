@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Cysharp.Threading.Tasks;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
@@ -52,10 +54,12 @@ namespace UniLiveViewer
         
         public double AudioClip_StartTime = 0;//セットされたaudioクリップの開始再生位置
         private double motionClip_StartTime = 3;//モーションクリップの開始再生位置(デフォルト)
+        private CancellationToken cancellation_Token;
+
         [Header("確認用露出(readonly)")]
         [SerializeField] private float _timelineSpeed = 1.0f;
         [SerializeField] private double _PlaybackTime = 0.0f;
-        public float timelineSpeed
+        public float TimelineSpeed
         {
             get { return _timelineSpeed; }
             set
@@ -65,10 +69,14 @@ namespace UniLiveViewer
             }
         }
 
+        //AudioClip基準の再生時間を算出
         public double AudioClip_PlaybackTime
         {
-            //音楽クリップ内での再生時間を算出
-            get { return _PlaybackTime; }
+            get
+            {
+                _PlaybackTime = playableDirector.time - AudioClip_StartTime;//参考用
+                return _PlaybackTime;
+            }
             set
             {
                 _PlaybackTime = value;
@@ -81,6 +89,8 @@ namespace UniLiveViewer
         {
             if (timeLineAsset == null) timeLineAsset = playableDirector.playableAsset as TimelineAsset;
             fileManager = GameObject.FindGameObjectWithTag("AppConfig").GetComponent<FileAccessManager>();
+
+            cancellation_Token = this.GetCancellationTokenOnDestroy();
         }
 
         private void Start()
@@ -104,9 +114,9 @@ namespace UniLiveViewer
             else
             {
                 Debug.Log("メインオーディオが見つかりません");
-
             }
-
+            //開幕は停止しておく
+            TimelineBaseReturn();
 
             byte current = (byte)SystemInfo.sceneMode;
 #if UNITY_EDITOR
@@ -115,22 +125,6 @@ namespace UniLiveViewer
             if (UnityEngine.SystemInfo.deviceName == "Oculus Quest 2") maxFieldChara = SystemInfo.MAXCHARA_QUEST2[current];
             else if (UnityEngine.SystemInfo.deviceName == "Oculus Quest") maxFieldChara = SystemInfo.MAXCHARA_QUEST1[current];
 #endif
-        }
-
-        private void Update()
-        {
-            //初期位置
-            if (AudioClip_PlaybackTime < 0)
-            {
-                //マニュアルモード
-                TimelineManualMode();
-
-                //停止状態にする(UIにトリガーを送る為)
-                playableDirector.Stop();
-
-                //クリップ開始位置まで進める(重複予防)
-                AudioClip_PlaybackTime = 0;
-            }
         }
 
         public void DestoryPortalChara()
@@ -151,51 +145,41 @@ namespace UniLiveViewer
         public void SetMouthUpdate_Portal(bool isFace, bool isEnable)
         {
             var bindChara = trackBindChara[PORTAL_ELEMENT];
+            if (!bindChara) return;
 
-            if (bindChara)
+            var vmdPlayer = trackBindChara[PORTAL_ELEMENT].GetComponent<VMDPlayer_Custom>();
+            if (bindChara.charaInfoData.formatType != CharaInfoData.FORMATTYPE.VRM) return;
+
+            //VMD再生中
+            if (vmdPlayer.morphPlayer_vrm != null)
             {
-                var vmdPlayer = trackBindChara[PORTAL_ELEMENT].GetComponent<VMDPlayer_Custom>();
-
-                if (bindChara.charaInfoData.formatType == CharaInfoData.FORMATTYPE.VRM)
+                //表情
+                if (isFace)
                 {
-                    //VMD再生中
-                    if (vmdPlayer.morphPlayer_vrm != null)
-                    {
-                        //表情
-                        if (isFace)
-                        {
-                            vmdPlayer.morphPlayer_vrm.isUpdateFace = isEnable;
-
-                            //停止の場合は表情を初期化しておく
-                            if (!isEnable) bindChara.facialSync.AllClear_BlendShape();
-                        }
-                        //口パク
-                        else
-                        {
-                            vmdPlayer.morphPlayer_vrm.isUpdateMouth = isEnable;
-
-                            //停止の場合は口を初期化しておく
-                            if (!isEnable) bindChara.lipSync.AllClear_BlendShape();
-                        }
-                    }
-                    //プリセット中
-                    else
-                    {
-                        //表情
-                        if (isFace)
-                        {
-                            //停止の場合は表情を初期化しておく
-                            if (!isEnable) bindChara.facialSync.AllClear_BlendShape();
-                            bindChara.facialSync.enabled = isEnable;
-                        }
-                        //口パク
-                        else
-                        {
-                            //停止の場合は口を初期化しておく
-                            if (!isEnable) bindChara.lipSync.AllClear_BlendShape();
-                            bindChara.lipSync.enabled = isEnable;
-                        }
-                    }
+                    vmdPlayer.morphPlayer_vrm.isUpdateFace = isEnable;
+                    if (!isEnable) bindChara.facialSync.AllClear_BlendShape();//初期化しておく
+                }
+                //口パク
+                else
+                {
+                    vmdPlayer.morphPlayer_vrm.isUpdateMouth = isEnable;
+                    if (!isEnable) bindChara.lipSync.AllClear_BlendShape();//初期化しておく
+                }
+            }
+            //プリセット中
+            else
+            {
+                //表情
+                if (isFace)
+                {
+                    if (!isEnable) bindChara.facialSync.AllClear_BlendShape();//初期化しておく
+                    bindChara.facialSync.enabled = isEnable;
+                }
+                //口パク
+                else
+                {
+                    if (!isEnable) bindChara.lipSync.AllClear_BlendShape();//初期化しておく
+                    bindChara.lipSync.enabled = isEnable;
                 }
             }
         }
@@ -243,7 +227,7 @@ namespace UniLiveViewer
             if (playableDirector.timeUpdateMode == DirectorUpdateMode.Manual)
             {
                 //アニメーターコントローラーを解除しておく
-                StartCoroutine(RemoveCharasAniCon());
+                RemoveCharasAniCon().Forget();
             }
 
             return true;//成功
@@ -812,16 +796,16 @@ namespace UniLiveViewer
         /// <summary>
         /// マニュアル状態にする
         /// </summary>
-        public void TimelineManualMode()
+        public async UniTask TimelineManualMode()
         {
             //マニュアルモードに
             playableDirector.timeUpdateMode = DirectorUpdateMode.Manual;
 
             //AnimatorControllerを解除しておく
-            StartCoroutine(RemoveCharasAniCon());
+            await RemoveCharasAniCon();
 
             //マニュアルモードでの更新を開始
-            StartCoroutine(ManualUpdate());
+            ManualUpdate().Forget();
 
             //playableDirector.Pause();
             //playableDirector.Resume();
@@ -837,20 +821,18 @@ namespace UniLiveViewer
         /// </summary>
         public void TimelineBaseReturn()
         {
-            playableDirector.time = 0;
-            //TimelinePlay();
+            TimelineManualMode().Forget();//マニュアルモード
+            playableDirector.Stop();//停止状態にする(UIにトリガーを送る為)
+            AudioClip_PlaybackTime = 0;
         }
 
         /// <summary>
         /// 一定間隔でマニュアルモードで更新を行う
         /// </summary>
         /// <returns></returns>
-        private IEnumerator ManualUpdate()
+        private async UniTask ManualUpdate()
         {
             double keepVal = AudioClip_PlaybackTime;
-            //1回状態を反映させる
-            playableDirector.Evaluate();
-            yield return null;
 
             while (playableDirector.timeUpdateMode == DirectorUpdateMode.Manual)
             {
@@ -863,7 +845,7 @@ namespace UniLiveViewer
                     //キープの更新
                     keepVal = AudioClip_PlaybackTime;
                 }
-                yield return new WaitForSeconds(0.1f);
+                await UniTask.Delay(100,cancellationToken: cancellation_Token);
             }
 
             //AnimatorControllerを戻す
@@ -894,12 +876,12 @@ namespace UniLiveViewer
         /// <summary>
         /// キャラのAnimatorControllerを解除する(timelineのanimatorと競合するため)
         /// </summary>
-        private IEnumerator RemoveCharasAniCon()
+        private async UniTask RemoveCharasAniCon()
         {
             //マニュアルモードでなければ処理しない
-            if (playableDirector.timeUpdateMode != DirectorUpdateMode.Manual) yield break;
+            if (playableDirector.timeUpdateMode != DirectorUpdateMode.Manual) return;
 
-            yield return null;//必要、VRMのAwakeが間に合わない
+            await UniTask.Yield(PlayerLoopTiming.Update, cancellation_Token);//必要、VRMのAwakeが間に合わない
 
             //TimeLineと競合っぽいのでAnimatorControllerを解除しておく 
             for (int i = 0; i < trackBindChara.Length; i++)
@@ -909,24 +891,8 @@ namespace UniLiveViewer
             }
 
             //ワンフレーム後にアニメーションの状態を1回だけ更新
-            yield return null;
+            await UniTask.Yield(PlayerLoopTiming.Update, cancellation_Token);
             playableDirector.Evaluate();
-        }
-
-        /// <summary>
-        /// バインドキャラのガイドを一括で切り替える
-        /// </summary>
-        /// <param name="isEnable"></param>
-        public void SetCharaMeshGuide(bool isEnable)
-        {
-            foreach (var chara in trackBindChara)
-            {
-                if (!chara) continue;
-                if (chara != trackBindChara[PORTAL_ELEMENT])
-                {
-                    chara.GetComponent<MeshGuide>().SetGuide(isEnable);
-                }
-            }
         }
     }
 }

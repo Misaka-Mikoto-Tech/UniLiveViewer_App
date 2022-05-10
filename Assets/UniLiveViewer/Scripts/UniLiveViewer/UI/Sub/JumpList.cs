@@ -14,7 +14,6 @@ namespace UniLiveViewer
             ANIME,
             VMD_LIPSYNC,
             AUDIO,
-            ITEM
         }
 
         public event Action<int> onSelect;
@@ -161,32 +160,6 @@ namespace UniLiveViewer
             }
 
             target = TARGET.AUDIO;
-        }
-
-        /// <summary>
-        /// ボタンにアニメーション名を設定する
-        /// </summary>
-        /// <param name="danceInfoData"></param>
-        public void SetItemData(DecorationItemInfo[] ItemInfo)
-        {
-            //必要ならボタンを生成
-            BtnInstanceCheck(ItemInfo.Length);
-
-            for (int i = 0; i < btnList.Count; i++)
-            {
-                if (i < ItemInfo.Length)
-                {
-                    if (SystemInfo.userProfile.data.LanguageCode == (int)USE_LANGUAGE.JP) btnList[i].SetTextMesh(ItemInfo[i].itemName[1]);
-                    else if (SystemInfo.userProfile.data.LanguageCode == (int)USE_LANGUAGE.EN) btnList[i].SetTextMesh(ItemInfo[i].itemName[0]);
-                    if (!btnList[i].gameObject.activeSelf) btnList[i].gameObject.SetActive(true);
-                }
-                else if (ItemInfo.Length <= i)
-                {
-                    if (btnList[i].gameObject.activeSelf) btnList[i].gameObject.SetActive(false);
-                }
-            }
-
-            target = TARGET.ITEM;
         }
 
         /// <summary>
