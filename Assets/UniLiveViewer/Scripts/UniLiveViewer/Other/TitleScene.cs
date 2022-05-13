@@ -16,6 +16,8 @@ namespace UniLiveViewer
         [SerializeField] private GameObject manualHand;
         [SerializeField] private Transform[] Chara = new Transform[3];
 
+        [SerializeField] private string nextSceneName = "LiveScene";
+
         //クリックSE
         private AudioSource audioSource;
         [SerializeField] private AudioClip[] Sound;//ボタン音
@@ -99,8 +101,12 @@ namespace UniLiveViewer
 
             await UniTask.Delay(1000, cancellationToken: cancellation_Token);
             fade.FadeOut();
+
+            //ロードが早すぎても最低演出分は待機する
+            var async = SceneManager.LoadSceneAsync(nextSceneName);
+            async.allowSceneActivation = false;
             await UniTask.Delay(2000, cancellationToken: cancellation_Token);
-            await SceneManager.LoadSceneAsync("LiveScene");
+            async.allowSceneActivation = true;
         }
     }
 

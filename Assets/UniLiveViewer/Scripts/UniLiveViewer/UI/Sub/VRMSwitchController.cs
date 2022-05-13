@@ -44,7 +44,6 @@ namespace UniLiveViewer
         public event Action<CharaController> onSetupComplete;
         //ファイルアクセスとサムネの管理
         private FileAccessManager fileManager;
-        //private Dictionary<string, Sprite> dicVRMSprite = new Dictionary<string, Sprite>();
         //当たり判定
         private VRMTouchColliders touchCollider = null;
 

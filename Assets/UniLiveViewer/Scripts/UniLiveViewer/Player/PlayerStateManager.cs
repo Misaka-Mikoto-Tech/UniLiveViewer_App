@@ -245,10 +245,8 @@ namespace UniLiveViewer
                         float degree = rad * Mathf.Rad2Deg;
                         if (degree < 0 - ( PIECE_ANGLE / 2) ) degree += 360;
                         int current = (int)System.Math.Round(degree / PIECE_ANGLE);//Mathfは四捨五入ではない→.NET使用
-                        var tex = handUIController.GetItemTexture((int)handType, current);
-                        if (tex)
+                        if (handUIController.TrySetItemTexture((int)handType, current))
                         {
-                            hand.grabbedObject.GetComponent<DecorationItemInfo>().SetTexture(tex);
                             audioSource.PlayOneShot(Sound[2]);
                         }
                     }

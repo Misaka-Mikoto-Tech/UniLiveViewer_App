@@ -12,10 +12,12 @@ namespace UniLiveViewer
         private int current = 0;
         private int limitTex;
 
-        // Start is called before the first frame update
-        void Start()
-        {
+        private DecorationItemInfo itemInfo;
+        private int languageCode;
 
+        private void Awake()
+        {
+            languageCode = SystemInfo.userProfile.data.LanguageCode;
         }
 
         /// <summary>
@@ -24,43 +26,61 @@ namespace UniLiveViewer
         /// <param name="info"></param>
         public void Init(DecorationItemInfo info)
         {
-            current = 0;
-            textMesh.text = info.itemName[(int)SystemInfo.userProfile.data.LanguageCode];
+            itemInfo = info;
+            textMesh.text = itemInfo.ItemName[languageCode];
 
-            limitTex = info.texs.Length;
-
-            for (int i = 0; i < Quads.Length; i++)
+            if (info.RenderInfo.Length == 0)
             {
-                if (i < limitTex)
-                {
-                    if(!Quads[i].gameObject.activeSelf)Quads[i].gameObject.SetActive(true);
-                    Quads[i].material.SetTexture("_BaseMap", info.texs[i]);
-                }
-                else
+                current = 0;
+                for (int i = 0; i < Quads.Length; i++)
                 {
                     if (Quads[i].gameObject.activeSelf) Quads[i].gameObject.SetActive(false);
-                } 
+                }
             }
+            else
+            {
+                current = itemInfo.RenderInfo[0].data.textureCurrent;
+                limitTex = itemInfo.RenderInfo[0].data.chooseableTexture.Length;
 
+                for (int i = 0; i < Quads.Length; i++)
+                {
+                    if (i < limitTex)
+                    {
+                        if (!Quads[i].gameObject.activeSelf) Quads[i].gameObject.SetActive(true);
+                        Quads[i].material.SetTexture("_BaseMap", itemInfo.RenderInfo[0].data.chooseableTexture[i]);
+                    }
+                    else
+                    {
+                        if (Quads[i].gameObject.activeSelf) Quads[i].gameObject.SetActive(false);
+                    }
+                }
+            }
             //カーソル移動
-            currentQuad.parent = Quads[current].transform;
-            currentQuad.transform.localPosition = currentQuadOffset;
-            currentQuad.transform.localRotation = Quaternion.identity;
+            UpdateCursor();
         }
 
-        public Texture TryGetTexture(int nextCurrent)
+        public bool TrySetTexture(int nextCurrent)
         {
-            Texture result = null;
             if (nextCurrent < limitTex && current != nextCurrent)
             {
                 current = nextCurrent;
-                currentQuad.parent = Quads[current].transform;
-                currentQuad.transform.localPosition = currentQuadOffset;
-                currentQuad.transform.localRotation = Quaternion.identity;
+                itemInfo.SetTexture(0, current);//現状は0しかないので固定
 
-                result = Quads[current].material.GetTexture("_BaseMap");
+                //カーソル移動
+                UpdateCursor();
+                return true;
             }
-            return result;
+            return false;
+        }
+
+        /// <summary>
+        /// Currentへカーソル画像を移動する
+        /// </summary>
+        private void UpdateCursor()
+        {
+            currentQuad.parent = Quads[current].transform;
+            currentQuad.transform.localPosition = currentQuadOffset;
+            currentQuad.transform.localRotation = Quaternion.identity;
         }
     }
 }

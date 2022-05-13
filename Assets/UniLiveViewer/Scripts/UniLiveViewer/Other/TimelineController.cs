@@ -1,6 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -13,6 +12,7 @@ namespace UniLiveViewer
     public class TimelineController : MonoBehaviour
     {
         public readonly string sPortalBaseAniTrack = "Animation Track_Portal";
+
         private const string ANITRACK1 = "Animation Track1";
         private const string ANITRACK2 = "Animation Track2";
         private const string ANITRACK3 = "Animation Track3";
@@ -42,6 +42,7 @@ namespace UniLiveViewer
 
         //バインドキャラを管理するクラス
         public CharaController[] trackBindChara = new CharaController[6];
+
 
         public int FieldCharaCount { get; private set; } = 0;//フィールドのキャラカウント
         public event Action FieldCharaAdded;//設置キャラ数の更新時
@@ -632,8 +633,10 @@ namespace UniLiveViewer
         /// トラックバインドキャラを削除する
         /// </summary>
         /// <param name="chara"></param>
-        public void DeletebindAsset(CharaController chara)
+        public void DeleteBindAsset(CharaController chara)
         {
+            if (!chara) return;
+
             for (int i = 0; i < trackBindChara.Length; i++)
             {
                 if (chara == trackBindChara[i])

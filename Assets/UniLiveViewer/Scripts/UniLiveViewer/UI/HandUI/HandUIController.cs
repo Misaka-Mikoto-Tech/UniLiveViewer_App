@@ -73,21 +73,21 @@ namespace UniLiveViewer
             }
         }
 
+        public void InitItemMaterialSelector(int handType, DecorationItemInfo decorationItemInfo)
+        {
+            itemMaterialSelector[handType] = handUI_ItemMatSelecter[handType].instance.GetComponent<ItemMaterialSelector>();
+            itemMaterialSelector[handType].Init(decorationItemInfo);
+        }
+
         /// <summary>
         /// 指定Currentからテクスチャを取得
         /// </summary>
         /// <param name="handType"></param>
         /// <param name="current"></param>
         /// <returns></returns>
-        public Texture GetItemTexture(int handType, int current)
+        public bool TrySetItemTexture(int handType, int current)
         {
-            return itemMaterialSelector[handType].TryGetTexture(current);
-        }
-
-        public void InitItemMaterialSelector(int handType, DecorationItemInfo decorationItemInfo)
-        {
-            itemMaterialSelector[handType] = handUI_ItemMatSelecter[handType].instance.GetComponent<ItemMaterialSelector>();
-            itemMaterialSelector[handType].Init(decorationItemInfo);
+            return itemMaterialSelector[handType].TrySetTexture(current);
         }
 
         public bool IsShow_HandUI()

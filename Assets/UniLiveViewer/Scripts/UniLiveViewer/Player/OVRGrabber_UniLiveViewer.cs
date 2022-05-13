@@ -155,7 +155,7 @@ namespace UniLiveViewer
                     if (!lineSelector.hitCollider.collider) return;
 
                     //対象オブジェクトをフィールドから削除する
-                    timeline.DeletebindAsset(lineSelector.hitCollider.transform.GetComponent<CharaController>());
+                    timeline.DeleteBindAsset(lineSelector.hitCollider.transform.GetComponent<CharaController>());
 
                     //色更新
                     lineSelector.SetMaterial(true);

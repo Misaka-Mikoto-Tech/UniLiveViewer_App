@@ -129,11 +129,11 @@ namespace UniLiveViewer
                 //言語確認が欲しいので最優先
                 if (SystemInfo.userProfile == null) SystemInfo.userProfile = new UserProfile();
                 SystemInfo.userProfile.ReadJson();
-
+#if UNITY_EDITOR
                 //キャッシュフォルダ
-                //sFullPath = folderPath_Custom + folderName[(int)FOLDERTYPE.CHARA] + cachePath;
-                //CreateFolder(sFullPath);
-
+                sFullPath = folderPath_Custom + folderName[(int)FOLDERTYPE.CHARA] + cachePath;
+                CreateFolder(sFullPath);
+#endif
                 //リップシンクフォルダ
                 //sFullPath = folderPath_Custom + folderName[(int)FOLDERTYPE.MOTION] + lipSyncPath;
                 //CreateFolder(sFullPath);
@@ -473,43 +473,44 @@ namespace UniLiveViewer
                 //キャッシュ画像確認
                 //texture = cacheThumbnails.FirstOrDefault(x => x.Key == vrmNames[i]).Value;
                 spr = cacheThumbnails.FirstOrDefault(x => x.Key == vrmNames[i]).Value;
+                if (spr != null) return;
 
-                if (spr == null)
+                try
                 {
-                    try
-                    {
-                        //VRMファイルからサムネイルを抽出する
-                        texture = await vrmRuntimeLoader.GetThumbnail(folderPath_Chara + vrmNames[i], cancellation_token);
+                    //VRMファイルからサムネイルを抽出する
+                    texture = await vrmRuntimeLoader.GetThumbnail(folderPath_Chara + vrmNames[i], cancellation_token);
 
-                        if (texture)
-                        {
-                            //テクスチャ→スプライトに変換
-                            spr = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-                            //リストに追加
-                            cacheThumbnails.Add(vrmNames[i], spr);
-                        }
-                        else
-                        {
-                            //ダミー画像生成
-                            //texture = new Texture2D(1, 1, TextureFormat.RGB24, false);
-                            texture = Instantiate(texDummy);
-                            //テクスチャ→スプライトに変換
-                            spr = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-                            //リストに追加
-                            cacheThumbnails.Add(vrmNames[i], spr);
-
-                        }
-                    }
-                    catch (System.OperationCanceledException)
+                    if (texture)
                     {
-                        Debug.Log("サムネイルキャッシュ中に中断");
-                        throw;
+                        //テクスチャ→スプライトに変換
+                        spr = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+                        //リストに追加
+                        cacheThumbnails.Add(vrmNames[i], spr);
                     }
+                    else
+                    {
+                        //ダミー画像生成
+                        //texture = new Texture2D(1, 1, TextureFormat.RGB24, false);
+                        texture = Instantiate(texDummy);
+                        //テクスチャ→スプライトに変換
+                        spr = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+                        //リストに追加
+                        cacheThumbnails.Add(vrmNames[i], spr);
+                    }
+
+                    //エディタのみキャッシュ用を出力
+#if UNITY_EDITOR
+                    if (texture) texture = GetColorInfo(ResizeTexture(texture, 256, 256));
+                    else texture = new Texture2D(1, 1, TextureFormat.RGB24, false);
+                    File.WriteAllBytes(GetFullPath_ThumbnailCache() + vrmNames[i] + ".png", texture.EncodeToPNG());
+#endif
                 }
-                else
+                catch (System.OperationCanceledException)
                 {
-
+                    Debug.Log("サムネイルキャッシュ中に中断");
+                    throw;
                 }
+
                 await UniTask.Yield(PlayerLoopTiming.Update, cancellation_token);
             }
 
@@ -624,7 +625,8 @@ namespace UniLiveViewer
             texture2D.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
             texture2D.Apply();
 
-            RenderTexture.ReleaseTemporary(renderTexture);
+            //RenderTexture.ReleaseTemporary(renderTexture);
+
 
             //Color[] pixels = texture2D.GetPixels();
             //RenderTexture.active = currentRT;

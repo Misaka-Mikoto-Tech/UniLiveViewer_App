@@ -33,6 +33,7 @@ namespace UniLiveViewer
         private PlayerStateManager playerStateManager;
         private MenuManager menuManager;
         private CancellationToken cancellation_token;
+        private int languageCurrent;
 
         private void Awake()
         {
@@ -41,6 +42,8 @@ namespace UniLiveViewer
 
             currentSubPage = new int[decorationItems.Length];
             playerStateManager = PlayerStateManager.instance;
+
+            languageCurrent = (int)SystemInfo.userProfile.data.LanguageCode - 1;
 
             //その他
             for (int i = 0; i < btn_Item.Length; i++)
@@ -158,7 +161,6 @@ namespace UniLiveViewer
             var currentItems = decorationItems[pageController.current];
 
             int index = 0;
-            int languageCurrent = (int)SystemInfo.userProfile.data.LanguageCode - 1;
             string currentName;
 
             for (int i = 0;i < SUBPAGE_ITEMS_MAX; i++)
@@ -167,7 +169,7 @@ namespace UniLiveViewer
                 if (index >= currentItems.ItemPrefab.Length) return;
 
                 //重複生成しない
-                currentName = currentItems.ItemPrefab[index].itemName[languageCurrent];                
+                currentName = currentItems.ItemPrefab[index].ItemName[languageCurrent];                
                 if (CheckGenerated(currentName)) continue;
 
                 var instance = Instantiate(currentItems.ItemPrefab[index]).transform;

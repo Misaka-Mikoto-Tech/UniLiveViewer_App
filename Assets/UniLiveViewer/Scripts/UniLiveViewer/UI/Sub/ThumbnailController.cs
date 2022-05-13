@@ -86,12 +86,9 @@ namespace UniLiveViewer
             randomBox = Shuffle(randomBox);
             await UniTask.Delay(10, cancellationToken: cancellation_token);
 
-            //Button_Base baseButton;
-            Sprite spr = null;
-            //Texture2D texture = null;
             int index = 0;
             int r = UnityEngine.Random.Range(0, 3);
-
+            
             //必要なボタンのみ有効化して設定する
             for (int i = 0; i < btns.Length; i++)
             {
@@ -101,67 +98,49 @@ namespace UniLiveViewer
                     index = randomBox[i];
 
                     if (!btns[index].gameObject.activeSelf) btns[index].gameObject.SetActive(true);
-                    //オブジェクト名を変更
+                    //ボタン情報更新
                     btns[index].name = vrmNames[index];
-                    //ボタンの表示名を変更
                     btnTexts[index].text = vrmNames[index];
-                    //文字サイズを調整する
                     btnTexts[index].fontSize = btnTexts[index].text.FontSizeMatch(500, 25, 40);
+                    UpdateSprite(index);
+                }
 
-                    //サムネイルを取得
-                    try
-                    {
-                        spr = FileAccessManager.cacheThumbnails[vrmNames[index]];
+                if (i % GENERATE_COUNT[r] == GENERATE_COUNT[r] - 1)
+                {
+                    onGenerated?.Invoke();
+                    await UniTask.Delay(GENERATE_INTERVAL[r], cancellationToken: cancellation_token);
+                }
 
-                        if (spr)
-                        {
-                            //サムネの容量で有無を判定
-                            //float size = texture.GetRawTextureData().LongLength;
-                            //サムネイル無し判定
-                            //if (size < 10)
-                            //    {
-                            //        //defaultのまま
-                            //    }
-                            //    //サムネイル有り判定
-                            //    else
-                            //    {
-                            //    }
+            }
+        }
 
-                            //スプライトをセット
-                            btns[index].transform.GetChild(0).GetChild(0).GetComponent<SpriteRenderer>().sprite = spr;
-                            //baseButton.transform.GetChild(0).GetChild(0).GetComponent<MeshRenderer>().materials[0].SetTexture("_MainTex", texture);
-                        }
-                        else
-                        {
-                            //defaultのまま
-                        }
-                    }
-                    catch
-                    {
-                        if (!spr)
-                        {
-                            //Debug.Log("ロジックエラー。アプリを立ち上げ後にキャッシュ画像を削除した？");
-                            //対策としてボタンを非表示
-                            if (btnTexts[index].transform.parent.gameObject.activeSelf)
-                            {
-                                btnTexts[index].transform.parent.gameObject.SetActive(false);
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        spr = null;
-                    }
-
-                    if (i % GENERATE_COUNT[r] == 0)
-                    {
-                        onGenerated?.Invoke();
-                        await UniTask.Delay(GENERATE_INTERVAL[r], cancellationToken: cancellation_token);
-                    }
+        /// <summary>
+        /// 表示するサムネを更新
+        /// </summary>
+        /// <param name="index"></param>
+        private void UpdateSprite(int index)
+        {
+            try
+            {
+                //サムネイル無しはデフォ画像を流用する仕様
+                Sprite spr = FileAccessManager.cacheThumbnails[vrmNames[index]];
+                if (spr) btns[index].collisionChecker.colorSetting[0].targetSprite.sprite = spr;
+            }
+            catch
+            {
+                //Debug.Log("ロジックエラー。アプリを立ち上げ後にキャッシュ画像を削除した？");
+                //対策としてボタンを非表示
+                if (btnTexts[index].transform.parent.gameObject.activeSelf)
+                {
+                    btnTexts[index].transform.parent.gameObject.SetActive(false);
                 }
             }
         }
 
+        /// <summary>
+        /// 一括表示変更
+        /// </summary>
+        /// <param name="isEnabel"></param>
         private void ThumbnailShow(bool isEnabel)
         {
             for (int i = 0; i < btnTexts.Count; i++)
