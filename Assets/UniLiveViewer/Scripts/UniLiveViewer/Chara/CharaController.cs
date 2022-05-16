@@ -67,7 +67,7 @@ namespace UniLiveViewer
             {
                 if (GetComponent<LookAtController>() != null) lookAtCon = GetComponent<LookAtController>();
             }
-            customScalar = SystemInfo.userProfile.data.InitCharaSize;
+            customScalar = SystemInfo.userProfile.InitCharaSize;
         }
 
 

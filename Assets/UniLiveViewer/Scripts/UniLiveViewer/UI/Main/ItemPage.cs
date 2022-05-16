@@ -11,6 +11,7 @@ namespace UniLiveViewer
         {
             public DecorationItemInfo[] ItemPrefab;
         }
+        [SerializeField] private MenuManager menuManager;
         private const int SUBPAGE_ITEMS_ROW = 2;
         private const int SUBPAGE_ITEMS_COL = 3;
         private int SUBPAGE_ITEMS_MAX = SUBPAGE_ITEMS_ROW * SUBPAGE_ITEMS_COL;
@@ -31,25 +32,22 @@ namespace UniLiveViewer
         [SerializeField] private DecorationItems[] decorationItems;
 
         private PlayerStateManager playerStateManager;
-        private MenuManager menuManager;
         private CancellationToken cancellation_token;
         private int languageCurrent;
 
         private void Awake()
         {
-            menuManager = transform.root.GetComponent<MenuManager>();
             cancellation_token = this.GetCancellationTokenOnDestroy();
-
-            currentSubPage = new int[decorationItems.Length];
-            playerStateManager = PlayerStateManager.instance;
-
-            languageCurrent = (int)SystemInfo.userProfile.data.LanguageCode - 1;
 
             //その他
             for (int i = 0; i < btn_Item.Length; i++)
             {
                 btn_Item[i].onTrigger += MoveIndex_Item;
             }
+
+            languageCurrent = (int)SystemInfo.userProfile.LanguageCode - 1;
+            currentSubPage = new int[decorationItems.Length];
+            playerStateManager = PlayerStateManager.instance;
 
             EnablePassthrough(playerStateManager.myOVRManager.isInsightPassthroughEnabled);
 
@@ -169,7 +167,7 @@ namespace UniLiveViewer
                 if (index >= currentItems.ItemPrefab.Length) return;
 
                 //重複生成しない
-                currentName = currentItems.ItemPrefab[index].ItemName[languageCurrent];                
+                currentName = currentItems.ItemPrefab[index].ItemName[languageCurrent];
                 if (CheckGenerated(currentName)) continue;
 
                 var instance = Instantiate(currentItems.ItemPrefab[index]).transform;

@@ -63,8 +63,8 @@ namespace UniLiveViewer
                 }
             }
 
-            shadowScale = SystemInfo.userProfile.data.CharaShadow;
-            ShadowType = (SHADOWTYPE)SystemInfo.userProfile.data.CharaShadowType;
+            shadowScale = SystemInfo.userProfile.CharaShadow;
+            ShadowType = (SHADOWTYPE)SystemInfo.userProfile.CharaShadowType;
         }
 
         private void Update_BodyData()

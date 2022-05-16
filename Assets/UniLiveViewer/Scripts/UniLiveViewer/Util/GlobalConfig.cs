@@ -1,21 +1,22 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
+using Cysharp.Threading.Tasks;
 
 namespace UniLiveViewer 
 {
     public static class SystemInfo
     {
         //レイヤー
-        public static int layerNo_Default;
-        public static int layerNo_VirtualHead;
-        public static int layerNo_UI;
-        public static int layerNo_FieldObject;
-        public static int layerNo_GrabObject;
-        public static int layerMask_Default;
-        public static int layerMask_VirtualHead;
-        public static int layerMask_StageFloor;
-        public static int layerMask_FieldObject;
+        public static int layerNo_Default = LayerMask.NameToLayer("Default");
+        public static int layerNo_VirtualHead = LayerMask.NameToLayer("VirtualHead");
+        public static int layerNo_UI = LayerMask.NameToLayer("UI");
+        public static int layerNo_FieldObject = LayerMask.NameToLayer("FieldObject");
+        public static int layerNo_GrabObject = LayerMask.NameToLayer("GrabObject");
+        public static int layerMask_Default = LayerMask.GetMask("Default");
+        public static int layerMask_VirtualHead = LayerMask.GetMask("VirtualHead");
+        public static int layerMask_StageFloor = LayerMask.GetMask("Stage_Floor");
+        public static int layerMask_FieldObject = LayerMask.GetMask("FieldObject");
         //タグ
         public static readonly string tag_ItemMaterial = "ItemMaterial";
         public static readonly string tag_GrabChara = "Grab_Chara";
@@ -24,7 +25,7 @@ namespace UniLiveViewer
         public static UserProfile userProfile;
         public static SceneMode sceneMode;
         public static float soundVolume_SE = 0.3f;//SE音量
-        public static OVRManager.FixedFoveatedRenderingLevel levelFFR;
+        public static OVRManager.FixedFoveatedRenderingLevel levelFFR = OVRManager.FixedFoveatedRenderingLevel.Medium;//中心窩レンダリング
         public static string folderPath_Persistent;//システム設定値など
         public static Dictionary<string, int> dicVMD_offset = new Dictionary<string, int>();
 
@@ -39,6 +40,16 @@ namespace UniLiveViewer
 
         public static readonly byte MAXAUDIO_EDITOR = 30;
         public static readonly byte MAXAUDIO_QUEST = 10;
+
+        public static void Init()
+        {
+            string sName = SceneManager.GetActiveScene().name;
+            if (sName == "LiveScene") sceneMode = SceneMode.CANDY_LIVE;
+            else if (sName == "KAGURAScene") sceneMode = SceneMode.KAGURA_LIVE;
+            else if (sName == "ViewerScene") sceneMode = SceneMode.VIEWER;
+
+            userProfile = FileAccessManager.ReadJson();
+        }
     }
 
     public enum SceneMode
@@ -62,44 +73,14 @@ namespace UniLiveViewer
         [SerializeField] private int shaderLOD = 1000;
         [Header("＜Debug.Log()を一括で切り替える＞")]
         [SerializeField] private bool isDebug = true;
-        [Header("＜オキュラス固有＞")]
-        [SerializeField] private OVRManager.FixedFoveatedRenderingLevel _levelFFR = OVRManager.FixedFoveatedRenderingLevel.Medium;
-
         private TimelineController timeline = null;
-
-        public static void CheckNowScene()
-        {
-            string sName = SceneManager.GetActiveScene().name;
-            if (sName == "LiveScene") SystemInfo.sceneMode = SceneMode.CANDY_LIVE;
-            else if (sName == "KAGURAScene") SystemInfo.sceneMode = SceneMode.KAGURA_LIVE;
-            else if (sName == "ViewerScene") SystemInfo.sceneMode = SceneMode.VIEWER;
-        }
 
         private void Awake()
         {
-            SystemInfo.layerNo_Default = LayerMask.NameToLayer("Default");
-            SystemInfo.layerNo_VirtualHead = LayerMask.NameToLayer("VirtualHead");
-            SystemInfo.layerNo_UI = LayerMask.NameToLayer("UI");
-            SystemInfo.layerNo_FieldObject = LayerMask.NameToLayer("FieldObject");
-            SystemInfo.layerNo_GrabObject = LayerMask.NameToLayer("GrabObject");
-
-            SystemInfo.layerMask_Default = LayerMask.GetMask("Default");
-            //Parameters.layerask_VirtualHead = 1 << Parameters.layerNo_VirtualHead;// ビットシフトでもいい
-            SystemInfo.layerMask_VirtualHead = LayerMask.GetMask("VirtualHead");
-            SystemInfo.layerMask_StageFloor = LayerMask.GetMask("Stage_Floor");
-            SystemInfo.layerMask_FieldObject = LayerMask.GetMask("FieldObject");
+            SystemInfo.Init();
 
             if (targetFrameRate > 0) Application.targetFrameRate = targetFrameRate;
-
             Shader.globalMaximumLOD = shaderLOD;
-
-            //Cursor.visible = false;
-            //中心以外の描画のレベルを下げる(最大値)
-            SystemInfo.levelFFR = _levelFFR;
-            OVRManager.fixedFoveatedRenderingLevel = _levelFFR;
-
-            //描画負荷に応じてfixedFoveatedRenderingLevelを自動的に調整する
-            OVRManager.useDynamicFixedFoveatedRendering = true;
 
 #if UNITY_EDITOR
             //デバッグログを一括で有効・無効化
@@ -107,24 +88,34 @@ namespace UniLiveViewer
 #elif UNITY_ANDROID
             //デバッグログを一括で無効化
             Debug.unityLogger.logEnabled = false;
+
+            //中心以外の描画のレベルを下げる(最大値)
+            OVRManager.fixedFoveatedRenderingLevel = SystemInfo.levelFFR;
+            //描画負荷に応じてfixedFoveatedRenderingLevelを自動的に調整する
+            OVRManager.useDynamicFixedFoveatedRendering = true;
 #endif
         }
 
         void Start()
         {
+            if (GetActiveSceneName() == "TitleScene") return;
+
+            timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
             //オキュラスのホームボタントリガーの対応
             OVRManager.InputFocusLost += HomePause;
             OVRManager.InputFocusAcquired += HomeReStart;
-            //HMDが外された
-            OVRManager.HMDUnmounted += HomePause;
-            //HMDが付けられた
-            OVRManager.HMDMounted += HomeReStart;
+            OVRManager.HMDUnmounted += HomePause;//HMDが外された
+            OVRManager.HMDMounted += HomeReStart;//HMDが付けられた
+        }
+
+        public static string GetActiveSceneName()
+        {
+            return SceneManager.GetActiveScene().name;
         }
 
         private void HomePause()
         {
-            timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
-            timeline.TimelineManualMode();
+            timeline.TimelineManualMode().Forget();
             Time.timeScale = 0;
         }
 

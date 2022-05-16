@@ -9,7 +9,7 @@ namespace UniLiveViewer
 {
     public class AudioPlaybackPage : MonoBehaviour
     {
-        private MenuManager menuManager;
+        [SerializeField] private MenuManager menuManager;
         [SerializeField] private Button_Base[] btn_jumpList;
 
         [SerializeField] private Button_Base[] btn_Audio = new Button_Base[2];
@@ -29,10 +29,23 @@ namespace UniLiveViewer
 
         private void Awake()
         {
-            menuManager = transform.root.GetComponent<MenuManager>();
+            
+        }
 
+        private void OnEnable()
+        {
+            Init();
+        }
+
+        // Start is called before the first frame update
+        void Start()
+        {
+            playerStateManager = PlayerStateManager.instance;
             timeline = menuManager.timeline;
             fileAccess = menuManager.fileAccess;
+
+            //再生スライダーに最大値を設定
+            slider_Playback.maxValuel = (float)timeline.playableDirector.duration;
 
             //ジャンプリスト
             foreach (var e in btn_jumpList)
@@ -78,24 +91,12 @@ namespace UniLiveViewer
             {
                 btnS_AudioLoad[i].onTrigger += Click_AudioLoad;
             }
-        }
-
-        private void OnEnable()
-        {
             Init();
-        }
-
-        // Start is called before the first frame update
-        void Start()
-        {
-            //再生スライダーに最大値を設定
-            slider_Playback.maxValuel = (float)timeline.playableDirector.duration;
-
-            playerStateManager = PlayerStateManager.instance;
         }
 
         private void Init()
         {
+            if (!timeline) return;
             if (timeline.playableDirector.timeUpdateMode == DirectorUpdateMode.Manual)
             {
                 btnS_Stop.gameObject.SetActive(false);
@@ -159,7 +160,7 @@ namespace UniLiveViewer
             if (btn == btnS_Stop)
             {
                 //マニュアル開始
-                timeline.TimelineManualMode();
+                timeline.TimelineManualMode().Forget();
                 //再生・停止ボタンの状態更新
                 btnS_Stop.gameObject.SetActive(false);
                 btnS_Play.gameObject.SetActive(true);
@@ -193,7 +194,7 @@ namespace UniLiveViewer
                 //重複防止で無効化しておく
                 btnS_AudioLoad[0].gameObject.SetActive(false);
                 var text = btnS_AudioLoad[1].transform.GetChild(0).GetChild(0).GetComponent<TextMesh>();
-                if (SystemInfo.userProfile.data.LanguageCode == (int)USE_LANGUAGE.JP)
+                if (SystemInfo.userProfile.LanguageCode == (int)USE_LANGUAGE.JP)
                 {
                     text.text = $"{fileAccess.GetAudioFileCount()}件あります、よろしいですか?";
                 }
@@ -210,7 +211,6 @@ namespace UniLiveViewer
             //最終確認ボタン
             else if (btn == btnS_AudioLoad[1])
             {
-                //コルーチンを止める
                 cts.Cancel();
                 //重複防止で無効化しておく
                 btnS_AudioLoad[1].gameObject.SetActive(false);
@@ -232,7 +232,7 @@ namespace UniLiveViewer
 
         private async UniTask LoadCheck()
         {
-            int moveIndex = fileAccess.presetCount - fileAccess.CurrentAudio;
+            int moveIndex = fileAccess.PresetCount - fileAccess.CurrentAudio;
 
             //完了街ち
             await fileAccess.AudioLoad();
@@ -299,12 +299,12 @@ namespace UniLiveViewer
 
         private void ManualStart()
         {
-            //マニュアルモードにする
-            timeline.TimelineManualMode();
-
             //ボタンの状態を制御
             btnS_Stop.gameObject.SetActive(false);
             btnS_Play.gameObject.SetActive(true);
+
+            //マニュアルモードにする
+            timeline.TimelineManualMode().Forget();
         }
 
         private void DebugInput()

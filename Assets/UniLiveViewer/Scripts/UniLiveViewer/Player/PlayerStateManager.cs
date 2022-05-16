@@ -30,8 +30,7 @@ namespace UniLiveViewer
         public OVRGrabbable_Custom[] bothHandsCandidate = new OVRGrabbable_Custom[2];
 
         [Header("UI関係")]
-        [SerializeField] private MoveUI mainUI;
-        private bool isMoveUI = false;
+        private bool isMoveUI = true;
         public HandUIController handUIController;
 
         [Header("使用キー")]
@@ -46,6 +45,7 @@ namespace UniLiveViewer
         private AudioSource audioSource;
 
         public static PlayerStateManager instance;
+        public event Action<bool> onSwitchMainUI;
         public event Action<bool> onPassthrough;
         private CancellationToken cancellation_token;
 
@@ -289,7 +289,7 @@ namespace UniLiveViewer
             //メインメニューかサブメニューの表示をスイッチ
             if (OVRInput.GetDown(key.menuUI))
             {
-                if (hand == ovrGrabber[1]) SwitchUI();
+                if (hand == ovrGrabber[1]) SwitchMainUI();
                 else if (hand == ovrGrabber[0]) SwitchHandUI();
             }
         }
@@ -341,7 +341,7 @@ namespace UniLiveViewer
 
         private void DebugInput()
         {
-            if (Input.GetKeyDown(uiKey_win)) SwitchUI();
+            if (Input.GetKeyDown(uiKey_win)) SwitchMainUI();
         }
 
         private void LateUpdate()
@@ -497,11 +497,11 @@ namespace UniLiveViewer
             }
         }
 
-        public void SwitchUI()
+        private void SwitchMainUI()
         {
             //UI表示の切り替え
-            isMoveUI = !mainUI.gameObject.activeSelf;
-            mainUI.gameObject.SetActive(isMoveUI);
+            isMoveUI = !isMoveUI;
+            onSwitchMainUI?.Invoke(isMoveUI);
 
             //表示音
             if (isMoveUI) audioSource.PlayOneShot(Sound[0]);
@@ -545,7 +545,7 @@ namespace UniLiveViewer
         /// <param name="time">振動時間、上限2秒らしい</param>
         public static void ControllerVibration(OVRInput.Controller touch, float frequency, float amplitude, float time)
         {
-            if (!SystemInfo.userProfile.data.TouchVibration) return;
+            if (!SystemInfo.userProfile.TouchVibration) return;
 
             if (instance) instance.UniTask_ControllerVibration(touch, frequency, amplitude, time);
         }

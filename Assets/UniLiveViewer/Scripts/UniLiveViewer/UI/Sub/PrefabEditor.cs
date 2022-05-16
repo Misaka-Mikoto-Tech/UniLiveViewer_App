@@ -118,7 +118,7 @@ namespace UniLiveViewer
         private void MaterialInfoUpdate()
         {
             currentMatName = rollSelector.GetCurrentMatName();
-            localOffset = matManager.matLocation[currentMatName] * SystemInfo.userProfile.data.InitCharaSize;
+            localOffset = matManager.matLocation[currentMatName] * SystemInfo.userProfile.InitCharaSize;
 
             onCurrentUpdate?.Invoke();
 

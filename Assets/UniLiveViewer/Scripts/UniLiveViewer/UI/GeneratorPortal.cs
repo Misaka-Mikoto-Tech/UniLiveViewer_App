@@ -47,39 +47,66 @@ namespace UniLiveViewer
 
         void Awake()
         {
-            if (!timeline) timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
-            fileManager = GameObject.FindGameObjectWithTag("AppConfig").GetComponent<FileAccessManager>();
-
             //キャラリストに空枠を追加(空をVRM読み込み枠として扱う、雑仕様)
             listChara.Add(null);
         }
 
+        private void OnDisable()
+        {
+            cts.Cancel();
+            cts = new CancellationTokenSource();
+        }
+
+        private void OnEnable()
+        {
+            //リトライ処理
+            if (retryVMD)
+            {
+                retryVMD = false;
+                SetAnimation(0).Forget();
+            }
+            else
+            {
+                //キャラが存在していなければ生成しておく
+                if (timeline && !timeline.isPortalChara())//初回は生成しない仕様
+                {
+                    SetChara(0).Forget();
+                }
+            }
+        }
+
         private void Start()
         {
-            //VMD枠はダミーアニメーションを追加しておく
-            if (fileManager.vmdList.Count > 0)
-            {
-                vmdDanceClipInfo = new DanceInfoData[fileManager.vmdList.Count];
+            timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
+            fileManager = GameObject.FindGameObjectWithTag("AppConfig").GetComponent<FileAccessManager>();
 
-                for (int i = 0; i < vmdDanceClipInfo.Length; i++)
+            fileManager.onLoadSuccess += () =>
+            {
+                //VMD枠はダミーアニメーションを追加しておく
+                if (fileManager.vmdList.Count > 0)
                 {
-                    vmdDanceClipInfo[i] = Instantiate(DanceInfoData_VMDPrefab);
+                    vmdDanceClipInfo = new DanceInfoData[fileManager.vmdList.Count];
 
-                    vmdDanceClipInfo[i].motionOffsetTime = 0;
-                    vmdDanceClipInfo[i].strBeforeName = fileManager.vmdList[i];
-                    vmdDanceClipInfo[i].viewName = fileManager.vmdList[i];
+                    for (int i = 0; i < vmdDanceClipInfo.Length; i++)
+                    {
+                        vmdDanceClipInfo[i] = Instantiate(DanceInfoData_VMDPrefab);
+
+                        vmdDanceClipInfo[i].motionOffsetTime = 0;
+                        vmdDanceClipInfo[i].strBeforeName = fileManager.vmdList[i];
+                        vmdDanceClipInfo[i].viewName = fileManager.vmdList[i];
+                    }
+                    danceAniClipInfo = danceAniClipInfo.Concat(vmdDanceClipInfo).ToArray();
                 }
-                danceAniClipInfo = danceAniClipInfo.Concat(vmdDanceClipInfo).ToArray();
-            }
-            //口パクVMD
-            if (fileManager.vmdLipSyncList.Count > 0)
-            {
-                string[] lipSyncs = new string[fileManager.vmdLipSyncList.Count];
-                lipSyncs = fileManager.vmdLipSyncList.ToArray();
+                //口パクVMD
+                if (fileManager.vmdLipSyncList.Count > 0)
+                {
+                    string[] lipSyncs = new string[fileManager.vmdLipSyncList.Count];
+                    lipSyncs = fileManager.vmdLipSyncList.ToArray();
 
-                string[] dummy = { LIPSYNC_NONAME };
-                vmdLipSync = dummy.Concat(lipSyncs).ToArray();
-            }
+                    string[] dummy = { LIPSYNC_NONAME };
+                    vmdLipSync = dummy.Concat(lipSyncs).ToArray();
+                }
+            };
         }
 
         /// <summary>
@@ -151,8 +178,6 @@ namespace UniLiveViewer
                 //Current移動制限
                 if (currentChara < 0) currentChara = listChara.Count - 1;
                 else if (currentChara >= listChara.Count) currentChara = 0;
-
-                if (!timeline) timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
 
                 //既存のポータルキャラを削除
                 timeline.DestoryPortalChara();
@@ -247,7 +272,7 @@ namespace UniLiveViewer
                 if (GetNowAnimeInfo().formatType == DanceInfoData.FORMATTYPE.VMD)
                 {
                     //animatorを停止、VMDを再生
-                    string folderPath = FileAccessManager.GetFullPath(FOLDERTYPE.MOTION);//VMDのパスを取得
+                    string folderPath = FileAccessManager.GetFullPath(FileAccessManager.FOLDERTYPE.MOTION) + "/";//VMDのパスを取得
                     portalChara.GetComponent<Animator>().enabled = false;//Animatorが競合するので無効  
                     portalChara.animationMode = CharaController.ANIMATIONMODE.VMD;
                     await VMDPlay(vmdPlayer, folderPath, GetNowAnimeInfo().viewName, cts.Token);
@@ -294,13 +319,13 @@ namespace UniLiveViewer
             {
                 //使いまわしてVMDプレイヤースタート
                 await vmdPlayer.Starter(dic_VMDReader[fileName], folderPath, fileName, 
-                    SystemInfo.userProfile.data.VMDScale,ConfigPage.isSmoothVMD, token);
+                    SystemInfo.userProfile.VMDScale,ConfigPage.isSmoothVMD, token);
             }
             else
             {
                 //新規なら読み込んでVMDプレイヤースタート
                 var newVMD = await vmdPlayer.Starter(null, folderPath, fileName, 
-                    SystemInfo.userProfile.data.VMDScale, ConfigPage.isSmoothVMD, token);
+                    SystemInfo.userProfile.VMDScale, ConfigPage.isSmoothVMD, token);
                 //新規VMDを登録
                 dic_VMDReader.Add(fileName, newVMD);
             }
@@ -359,30 +384,5 @@ namespace UniLiveViewer
             if (result == LIPSYNC_NONAME) result = LIPSYNC_VIEWNAME;
             return vmdLipSync[currentVMDLipSync];
         }
-
-        private void OnDisable()
-        {
-            cts.Cancel();
-            cts = new CancellationTokenSource();
-        }
-
-        private void OnEnable()
-        {
-            //リトライ処理
-            if (retryVMD)
-            {
-                retryVMD = false;
-                SetAnimation(0).Forget();
-            }
-            else
-            {
-                //キャラが存在していなければ生成しておく
-                if (!timeline.isPortalChara())
-                {
-                    SetChara(0).Forget();
-                }
-            }
-        }
-
     }
 }

@@ -1617,7 +1617,7 @@
     "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
     "m_ObjectId": "c496639bd7b24425b31153588968a8f4",
     "m_Id": 0,
-    "m_DisplayName": "alphaClip",
+    "m_DisplayName": "AlphaClip",
     "m_SlotType": 1,
     "m_Hidden": false,
     "m_ShaderOutputName": "Out",
@@ -2041,10 +2041,10 @@
     "m_Guid": {
         "m_GuidSerialized": "e8aa7664-fb00-4eb9-8a5b-fd2689c805d9"
     },
-    "m_Name": "alphaClip",
+    "m_Name": "AlphaClip",
     "m_DefaultRefNameVersion": 1,
-    "m_RefNameGeneratedByDisplayName": "alphaClip",
-    "m_DefaultReferenceName": "_alphaClip",
+    "m_RefNameGeneratedByDisplayName": "AlphaClip",
+    "m_DefaultReferenceName": "_AlphaClip",
     "m_OverrideReferenceName": "",
     "m_GeneratePropertyBlock": true,
     "m_UseCustomSlotLabel": false,

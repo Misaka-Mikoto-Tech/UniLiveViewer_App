@@ -17,7 +17,7 @@ namespace UniLiveViewer
 
         private void Awake()
         {
-            languageCode = SystemInfo.userProfile.data.LanguageCode;
+            languageCode = SystemInfo.userProfile.LanguageCode;
         }
 
         /// <summary>

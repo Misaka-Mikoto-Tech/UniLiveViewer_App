@@ -20,7 +20,7 @@ namespace UniLiveViewer
             hitLayer = LayerMask.NameToLayer("Ignore Raycast");
 
             //言語で差し替える
-            if (SystemInfo.userProfile.data.LanguageCode == (int)USE_LANGUAGE.JP)
+            if (SystemInfo.userProfile.LanguageCode == (int)USE_LANGUAGE.JP)
             {
                 sprRender.sprite = sprPrefab[1];
             }

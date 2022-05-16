@@ -9,7 +9,7 @@ namespace UniLiveViewer
     public class ConfigPage : MonoBehaviour
     {
         public static bool isSmoothVMD = false;
-        private MenuManager menuManager;
+        [SerializeField] private MenuManager menuManager;
 
         [Header("＜マニュアル＞")]
         [SerializeField] private Sprite[] sprManualPrefab = new Sprite[4];
@@ -50,7 +50,6 @@ namespace UniLiveViewer
 
         private void Awake()
         {
-            menuManager = transform.root.GetComponent<MenuManager>();
             timeline = menuManager.timeline;
             quasiShadow = timeline.GetComponent<QuasiShadow>();
             cancellation_token = this.GetCancellationTokenOnDestroy();
@@ -67,20 +66,20 @@ namespace UniLiveViewer
             slider_InitCharaSize.ValueUpdate += Update_InitCharaSize;
             slider_InitCharaSize.UnControled += () =>
             {
-                SystemInfo.userProfile.data.InitCharaSize = float.Parse(slider_InitCharaSize.Value.ToString("f2"));
-                SystemInfo.userProfile.WriteJson();
+                SystemInfo.userProfile.InitCharaSize = float.Parse(slider_InitCharaSize.Value.ToString("f2"));
+                FileAccessManager.WriteJson(SystemInfo.userProfile);
             };
             slider_CharaShadow.ValueUpdate += Update_CharaShadow;
             slider_CharaShadow.UnControled += () =>
             {
-                SystemInfo.userProfile.data.CharaShadow = float.Parse(slider_CharaShadow.Value.ToString("f2"));
-                SystemInfo.userProfile.WriteJson();
+                SystemInfo.userProfile.CharaShadow = float.Parse(slider_CharaShadow.Value.ToString("f2"));
+                FileAccessManager.WriteJson(SystemInfo.userProfile);
             };
             slider_VMDScale.ValueUpdate += Update_VMDScale;
             slider_VMDScale.UnControled += () =>
             {
-                SystemInfo.userProfile.data.VMDScale = float.Parse(slider_VMDScale.Value.ToString("f3"));
-                SystemInfo.userProfile.WriteJson();
+                SystemInfo.userProfile.VMDScale = float.Parse(slider_VMDScale.Value.ToString("f3"));
+                FileAccessManager.WriteJson(SystemInfo.userProfile);
             };
             slider_FixedFoveated.ValueUpdate += Update_FixedFoveated;
             slider_Fog.ValueUpdate += () => { RenderSettings.fogDensity = slider_Fog.Value; };
@@ -116,7 +115,7 @@ namespace UniLiveViewer
                 sprManual[0] = manualAnchor.GetChild(0).GetComponent<SpriteRenderer>();
                 sprManual[1] = manualAnchor.GetChild(1).GetComponent<SpriteRenderer>();
 
-                if (SystemInfo.userProfile.data.LanguageCode == (int)USE_LANGUAGE.JP)
+                if (SystemInfo.userProfile.LanguageCode == (int)USE_LANGUAGE.JP)
                 {
                     sprManual[0].sprite = sprManualPrefab[1];
                     sprManual[1].sprite = sprManualPrefab[3];
@@ -143,11 +142,11 @@ namespace UniLiveViewer
 
                 matMirrore = btnE_ActionParent[2].GetComponent<MeshRenderer>().material;
 
-                btnE_ActionParent[0].gameObject.SetActive(SystemInfo.userProfile.data.scene_crs_particle);
-                btnE_ActionParent[1].gameObject.SetActive(SystemInfo.userProfile.data.scene_crs_laser);
-                matMirrore.SetFloat("_Smoothness", SystemInfo.userProfile.data.scene_crs_reflection ? 1 : 0);
-                btnE_ActionParent[3].gameObject.SetActive(SystemInfo.userProfile.data.scene_crs_sonic);
-                btnE_ActionParent[4].gameObject.SetActive(SystemInfo.userProfile.data.scene_crs_manual);
+                btnE_ActionParent[0].gameObject.SetActive(SystemInfo.userProfile.scene_crs_particle);
+                btnE_ActionParent[1].gameObject.SetActive(SystemInfo.userProfile.scene_crs_laser);
+                matMirrore.SetFloat("_Smoothness", SystemInfo.userProfile.scene_crs_reflection ? 1 : 0);
+                btnE_ActionParent[3].gameObject.SetActive(SystemInfo.userProfile.scene_crs_sonic);
+                btnE_ActionParent[4].gameObject.SetActive(SystemInfo.userProfile.scene_crs_manual);
             }
             else if (SystemInfo.sceneMode == SceneMode.KAGURA_LIVE)
             {
@@ -163,9 +162,9 @@ namespace UniLiveViewer
                 btnE_ActionParent[1] = GameObject.FindGameObjectWithTag("ReflectionProbe").transform;
                 btnE_ActionParent[2] = GameObject.FindGameObjectWithTag("WaterAnchor").transform;
 
-                btnE_ActionParent[0].gameObject.SetActive(SystemInfo.userProfile.data.scene_kagura_particle);
-                btnE_ActionParent[1].gameObject.SetActive(SystemInfo.userProfile.data.scene_kagura_sea);
-                btnE_ActionParent[2].transform.GetChild(0).gameObject.SetActive(SystemInfo.userProfile.data.scene_kagura_reflection);
+                btnE_ActionParent[0].gameObject.SetActive(SystemInfo.userProfile.scene_kagura_particle);
+                btnE_ActionParent[1].gameObject.SetActive(SystemInfo.userProfile.scene_kagura_sea);
+                btnE_ActionParent[2].transform.GetChild(0).gameObject.SetActive(SystemInfo.userProfile.scene_kagura_reflection);
             }
             else if (SystemInfo.sceneMode == SceneMode.VIEWER)
             {
@@ -180,7 +179,7 @@ namespace UniLiveViewer
                 btnE_ActionParent[0] = GameObject.FindGameObjectWithTag("FloorLED").transform;
                 backGroundCon = GameObject.FindGameObjectWithTag("BackGroundController").GetComponent<BackGroundController>();
 
-                btnE_ActionParent[0].gameObject.SetActive(SystemInfo.userProfile.data.scene_view_led);
+                btnE_ActionParent[0].gameObject.SetActive(SystemInfo.userProfile.scene_view_led);
             }
 
             //レンダーパイプラインからoutlineオブジェクトを取得
@@ -236,10 +235,10 @@ namespace UniLiveViewer
 
             //共用
             btn_General[1].isEnable = playerStateManager.myOVRManager.isInsightPassthroughEnabled;
-            btn_General[2].isEnable = SystemInfo.userProfile.data.TouchVibration;
+            btn_General[2].isEnable = SystemInfo.userProfile.TouchVibration;
 
             //キャラサイズ
-            slider_InitCharaSize.Value = SystemInfo.userProfile.data.InitCharaSize;
+            slider_InitCharaSize.Value = SystemInfo.userProfile.InitCharaSize;
             Update_InitCharaSize();
 
             //キャラ影
@@ -249,7 +248,7 @@ namespace UniLiveViewer
             textMeshs[3].text = $"FootShadow:\n{quasiShadow.ShadowType}";
 
             //VMD拡縮
-            slider_VMDScale.Value = SystemInfo.userProfile.data.VMDScale;
+            slider_VMDScale.Value = SystemInfo.userProfile.VMDScale;
             Update_VMDScale();
             //固定中心窩レンダリング初期化
             Update_FixedFoveated();
@@ -279,24 +278,24 @@ namespace UniLiveViewer
             //コントローラー振動
             else if (btn == btn_General[2])
             {
-                SystemInfo.userProfile.data.TouchVibration = btn.isEnable;
-                SystemInfo.userProfile.WriteJson();
+                SystemInfo.userProfile.TouchVibration = btn.isEnable;
+                FileAccessManager.WriteJson(SystemInfo.userProfile);
             }
             //キャラ影デクリ
             else if (btn == btn_General[3])
             {
                 quasiShadow.ShadowType -= 1;
                 textMeshs[3].text = $"FootShadow:\n{quasiShadow.ShadowType}";
-                SystemInfo.userProfile.data.CharaShadowType = (int)quasiShadow.ShadowType;
-                SystemInfo.userProfile.WriteJson();
+                SystemInfo.userProfile.CharaShadowType = (int)quasiShadow.ShadowType;
+                FileAccessManager.WriteJson(SystemInfo.userProfile);
             }
             //キャラ影インクリ
             else if (btn == btn_General[4])
             {
                 quasiShadow.ShadowType += 1;
                 textMeshs[3].text = $"FootShadow:\n{quasiShadow.ShadowType}";
-                SystemInfo.userProfile.data.CharaShadowType = (int)quasiShadow.ShadowType;
-                SystemInfo.userProfile.WriteJson();
+                SystemInfo.userProfile.CharaShadowType = (int)quasiShadow.ShadowType;
+                FileAccessManager.WriteJson(SystemInfo.userProfile);
             }
 
             menuManager.PlayOneShot(SoundType.BTN_CLICK);
@@ -318,7 +317,7 @@ namespace UniLiveViewer
                     if (btnE_ActionParent[0])
                     {
                         btnE_ActionParent[0].gameObject.SetActive(result);
-                        SystemInfo.userProfile.data.scene_crs_particle = result;
+                        SystemInfo.userProfile.scene_crs_particle = result;
                     }
                     break;
                 //レーザーガン
@@ -326,7 +325,7 @@ namespace UniLiveViewer
                     if (btnE_ActionParent[1])
                     {
                         btnE_ActionParent[1].gameObject.SetActive(result);
-                        SystemInfo.userProfile.data.scene_crs_laser = result;
+                        SystemInfo.userProfile.scene_crs_laser = result;
                     }
                     break;
                 //ミラー
@@ -334,7 +333,7 @@ namespace UniLiveViewer
                     if (matMirrore)
                     {
                         matMirrore.SetFloat("_Smoothness", (result == true ? 1 : 0));
-                        SystemInfo.userProfile.data.scene_crs_reflection = result;
+                        SystemInfo.userProfile.scene_crs_reflection = result;
                     }
                     break;
                 //ソニックブーム
@@ -342,7 +341,7 @@ namespace UniLiveViewer
                     if (btnE_ActionParent[3])
                     {
                         btnE_ActionParent[3].gameObject.SetActive(result);
-                        SystemInfo.userProfile.data.scene_crs_sonic = result;
+                        SystemInfo.userProfile.scene_crs_sonic = result;
                     }
                     break;
                 //マニュアル
@@ -350,13 +349,13 @@ namespace UniLiveViewer
                     if (btnE_ActionParent[4])
                     {
                         btnE_ActionParent[4].gameObject.SetActive(result);
-                        SystemInfo.userProfile.data.scene_crs_manual = result;
+                        SystemInfo.userProfile.scene_crs_manual = result;
                     }
                     break;
             }
 
             //保存する
-            SystemInfo.userProfile.WriteJson();
+            FileAccessManager.WriteJson(SystemInfo.userProfile);
         }
 
         /// <summary>
@@ -375,7 +374,7 @@ namespace UniLiveViewer
                     if (btnE_ActionParent[0])
                     {
                         btnE_ActionParent[0].gameObject.SetActive(result);
-                        SystemInfo.userProfile.data.scene_kagura_particle = result;
+                        SystemInfo.userProfile.scene_kagura_particle = result;
                     }
                     break;
                 //リフレクション
@@ -383,7 +382,7 @@ namespace UniLiveViewer
                     if (btnE_ActionParent[1])
                     {
                         btnE_ActionParent[1].gameObject.SetActive(result);
-                        SystemInfo.userProfile.data.scene_kagura_reflection = result;
+                        SystemInfo.userProfile.scene_kagura_reflection = result;
                     }
                     break;
                 //海切り替えテスト
@@ -400,12 +399,12 @@ namespace UniLiveViewer
                             btnE_ActionParent[2].GetChild(1).gameObject.SetActive(false);
                             btnE_ActionParent[2].GetChild(0).gameObject.SetActive(true);
                         }
-                        SystemInfo.userProfile.data.scene_kagura_sea = result;
+                        SystemInfo.userProfile.scene_kagura_sea = result;
                     }
                     break;
             }
             //保存する
-            SystemInfo.userProfile.WriteJson();
+            FileAccessManager.WriteJson(SystemInfo.userProfile);
         }
 
         /// <summary>
@@ -424,10 +423,10 @@ namespace UniLiveViewer
                     if (btnE_ActionParent[0])
                     {
                         btnE_ActionParent[0].gameObject.SetActive(result);
-                        SystemInfo.userProfile.data.scene_view_led = result;
+                        SystemInfo.userProfile.scene_view_led = result;
 
                         //保存する
-                        SystemInfo.userProfile.WriteJson();
+                        FileAccessManager.WriteJson(SystemInfo.userProfile);
                     }
                     break;
             }
@@ -484,16 +483,19 @@ namespace UniLiveViewer
         /// </summary>
         /// <param name="sceneName"></param>
         /// <returns></returns>
-        private async UniTaskVoid SceneChange(string sceneName)
+        private async UniTask SceneChange(string sceneName)
         {
             await UniTask.Delay(100, cancellationToken: cancellation_token);
 
-            OverrideUIController.LoadNextScene(sceneName);
-
-            await UniTask.Delay(400, cancellationToken: cancellation_token);//音の分だけ待つ
+            BlackoutCurtain.instance.StartBlackout(sceneName).Forget();
+            await UniTask.Delay(200, cancellationToken: cancellation_token);
 
             //音が割れるので止める
             timeline.TimelineManualMode().Forget();
+            await UniTask.Delay(200, cancellationToken: cancellation_token);
+
+            //UIが透けて見えるので隠す
+            menuManager.gameObject.SetActive(false);
         }
 
         /// <summary>

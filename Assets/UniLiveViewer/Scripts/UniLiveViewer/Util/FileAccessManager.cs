@@ -10,41 +10,53 @@ using VRM.FirstPersonSample;
 
 namespace UniLiveViewer 
 {
-    public enum FOLDERTYPE
-    {
-        CHARA,
-        MOTION,
-        BGM,
-        SETTING
-    }
-
     [RequireComponent(typeof(SpriteRenderer))]
     public class FileAccessManager : MonoBehaviour
     {
-        public static string folderPath_Custom;//VMDやmp3など
-        public static string folderPath_Persistent;//VMDやmp3など
-        public string sMssage;//デバッグ用
+        public enum FOLDERTYPE
+        {
+            CHARA,
+            MOTION,
+            BGM,
+            SETTING
+        }
 
-        public static string[] folderName = { "Chara/", "Motion/", "BGM/", "Setting/" };
-        public static string cachePath = "Cache/";
-        public static string lipSyncPath = "Lip-sync/";
+        //path
+        private static string folderPath_Custom;
+        private static string folderPath_Persistent;
+        private static string[] folderName = { "Chara", "Motion", "BGM", "Setting" };
+        private static string cachePath = "Cache";
+        private static string lipSyncPath = "Lip-sync";
 
         public bool isSuccess { get; private set; } = false;
+        public int PresetCount { get; private set; } = 0;
+        private int currentAudio = 0;
+        public int CurrentAudio
+        {
+            get
+            {
+                return currentAudio;
+            }
+            set
+            {
+                currentAudio = value;
+                if(currentAudio < 0) currentAudio = audioList.Count - 1;
+                else if (CurrentAudio >= audioList.Count) CurrentAudio = 0;
+            }
+        }
+        public int AudioCount { get; private set; } = 0;
+        private byte maxAudioCount = 0;
 
         public AudioClip[] presetAudioClip = new AudioClip[3];
-        public int presetCount = 0;
         public List<AudioClip> audioList = new List<AudioClip>();
-        public int CurrentAudio = 0;
-
+        
         public List<string> vmdList = new List<string>();
         public List<string> vmdLipSyncList = new List<string>();
 
-        public int CurrentMotion = 0;
+        [SerializeField] private VRMRuntimeLoader_Custom vrmRuntimeLoader;
 
         private List<string> mp3_path = new List<string>();
         private List<string> wav_path = new List<string>();
-        private int AudioCount = 0;
-
         private CancellationToken cancellation_token;
 
         //サムネイルキャッシュ用
@@ -53,136 +65,168 @@ namespace UniLiveViewer
         [SerializeField] private Texture2D texDummy;
         private static SpriteRenderer _renderer;
 
-        private byte maxAudioCount = 0;
-
         public event Action onLoadStart;
-        public event Action onFolderCheckCompleted;
+        public event Action onLoadSuccess;
+        public event Action onLoadFail;
         public event Action onAudioCompleted;
-        public event Action onThumbnailCompleted;
         public event Action onVMDLoadError;
+        public event Action onLoadEnd;
 
-        [SerializeField] VRMRuntimeLoader_Custom vrmRuntimeLoader;
-
+        [SerializeField] private string sMssage;//デバッグ用
 
         private void Awake()
         {
+            cancellation_token = this.GetCancellationTokenOnDestroy();
+            _renderer = GetComponent<SpriteRenderer>();
+            PresetCount = presetAudioClip.Length;
 
-        //Linkだと両方反応するのでelif必須→PLATFORM_OCULUSってのがあるみたい
+            //Linkだと両方反応するのでelif必須→PLATFORM_OCULUSってのがあるみたい
 #if UNITY_EDITOR
-        folderPath_Custom = "D:/User/UniLiveViewer/";
+            folderPath_Custom = "D:/User/UniLiveViewer";
             sMssage = "windowsとして認識しています";
             maxAudioCount = SystemInfo.MAXAUDIO_EDITOR;
 #elif UNITY_ANDROID
-            folderPath_Custom = "/storage/emulated/0/" + "UniLiveViewer/";
+            folderPath_Custom = "/storage/emulated/0/UniLiveViewer";
             sMssage = "Questとして認識しています";
             maxAudioCount = SystemInfo.MAXAUDIO_QUEST;
 #endif
-            folderPath_Persistent = Application.persistentDataPath + "/";
-            //folderPath_Persistent = Application.temporaryCachePath + "/";
+            folderPath_Persistent = Application.persistentDataPath;
+            //folderPath_Persistent = Application.temporaryCachePath;
 
-            cancellation_token = this.GetCancellationTokenOnDestroy();
-
-            _renderer = GetComponent<SpriteRenderer>();
-            presetCount = presetAudioClip.Length;
-
-            for (int i = 0; i < presetCount; i++)
+            for (int i = 0; i < PresetCount; i++)
             {
                 audioList.Add(presetAudioClip[i]);
             }
-            //アプリフォルダの作成
-            CreateFolder();
         }
+
+        private void Start()
+        {
+            Init().Forget();
+        }
+
+        private async UniTask Init()
+        {
+            await UniTask.Delay(100, cancellationToken:cancellation_token);//他の初期化を待つ
+            try
+            {
+                onLoadStart?.Invoke();//ロード開始
+
+                TryCreateCustomFolder();//アプリフォルダ
+                await TryCreateFile();//アプリファイル
+
+                if (GlobalConfig.GetActiveSceneName() != "TitleScene")
+                {
+                    //VMDのファイルを確認
+                    if (!CheckOffsetFile())
+                    {
+                        onVMDLoadError?.Invoke();//フォーマットエラー
+                        throw new Exception("CheckOffsetFile");
+                    }
+                    //VRMのサムネイル画像をキャッシュする
+                    await CacheThumbnail();
+                }
+                isSuccess = true;
+                onLoadSuccess?.Invoke();//成功
+            }
+            catch
+            {
+                onLoadFail?.Invoke();//失敗
+            }
+            onLoadEnd?.Invoke();
+        }
+
 
         public static string GetFullPath(FOLDERTYPE type)
         {
-            return folderPath_Custom + folderName[(int)type];
+            return Path.Combine(folderPath_Custom + "/",folderName[(int)type]);
         }
 
         public static string GetFullPath_ThumbnailCache()
         {
-            return folderPath_Custom + folderName[(int)FOLDERTYPE.CHARA] + cachePath;
+            return Path.Combine(folderPath_Custom + "/", folderName[(int)FOLDERTYPE.CHARA], cachePath);
         }
 
         public static string GetFullPath_LipSync()
         {
-            return folderPath_Custom + folderName[(int)FOLDERTYPE.MOTION] + lipSyncPath;
+            return Path.Combine(folderPath_Custom + "/", folderName[(int)FOLDERTYPE.MOTION], lipSyncPath);
         }
 
         /// <summary>
-        /// アプリフォルダとreadme.txtを作成する
+        /// Jsonファイルを読み込んでクラスに変換
         /// </summary>
-        private void CreateFolder()
+        /// <returns></returns>
+        public static UserProfile ReadJson()
+        {
+            UserProfile result;
+
+            string path = Path.Combine(folderPath_Persistent + "/", "System.json");
+            string datastr = "";
+            StreamReader reader = null;
+            if (File.Exists(path))
+            {
+                using (reader = new StreamReader(path))
+                {
+                    datastr = reader.ReadToEnd();
+                    //reader.Close();
+                }
+                result = JsonUtility.FromJson<UserProfile>(datastr);
+            }
+            else
+            {
+                //新規作成して読み込み直す
+                result = new UserProfile();
+                WriteJson(result);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Jsonファイルに書き込む
+        /// </summary>
+        /// <param name="lang"></param>
+        public static void WriteJson(UserProfile data)
+        {
+            //Json形式に変換
+            string path = Path.Combine(folderPath_Persistent + "/", "System.json");
+            string jsonstr = JsonUtility.ToJson(data, true);
+            using (StreamWriter writer = new StreamWriter(path, false))
+            {
+                writer.Write(jsonstr);
+                //writer.Flush();
+                //writer.Close();
+            }
+        }
+
+
+        /// <summary>
+        /// アプリ専用フォルダ作成
+        /// </summary>
+        private void TryCreateCustomFolder()
         {
             string sFullPath = "";
-
             try
             {
-                //無ければ毎回作成
+                //無ければ各種フォルダ生成
                 for (int i = 0; i < folderName.Length; i++)
                 {
-                    sFullPath = folderPath_Custom + folderName[i];
+                    sFullPath = GetFullPath((FOLDERTYPE)i) + "/";
                     CreateFolder(sFullPath);
                 }
-
-                onLoadStart?.Invoke();
-
-                //言語確認が欲しいので最優先
-                if (SystemInfo.userProfile == null) SystemInfo.userProfile = new UserProfile();
-                SystemInfo.userProfile.ReadJson();
 #if UNITY_EDITOR
                 //キャッシュフォルダ
-                sFullPath = folderPath_Custom + folderName[(int)FOLDERTYPE.CHARA] + cachePath;
+                sFullPath = GetFullPath_ThumbnailCache() + "/";
                 CreateFolder(sFullPath);
 #endif
                 //リップシンクフォルダ
-                //sFullPath = folderPath_Custom + folderName[(int)FOLDERTYPE.MOTION] + lipSyncPath;
-                //CreateFolder(sFullPath);
-
-                //VMDのファイル名を取得
-                if (!GetAllVMDNames())
-                {
-                    onVMDLoadError?.Invoke();
-                    isSuccess = false;
-                    return;
-                }
-                //GetAllVMDLipSyncNames();
-
-                isSuccess = true;
-                CreateData(sFullPath).Forget();
+                //sFullPath = GetFullPath_LipSync() + "/";
+                //CreateFolder(sFullPath);         
             }
             catch
             {
-                isSuccess = false;
+                throw new Exception("CreateCustomFolder");
             }
         }
-
-        private async UniTask CreateData(string sFullPath)
-        {
-            try
-            {
-                sFullPath = folderPath_Custom + "readme_ja.txt";
-                await ResourcesLoadText("readme_ja", sFullPath);
-
-                sFullPath = folderPath_Custom + "readme_en.txt";
-                await ResourcesLoadText("readme_en", sFullPath);
-
-                sFullPath = folderPath_Custom + "不具合・Defect.txt";
-                DeleteFile(sFullPath);
-
-                //完了した
-                onFolderCheckCompleted?.Invoke();
-
-                await UniTask.Delay(500, cancellationToken: cancellation_token);
-
-                //VRMのサムネイル画像をキャッシュする
-                CacheThumbnail().Forget();
-            }
-            catch(OperationCanceledException)
-            {
-                throw;
-            }
-        }
-
+        
         private void CreateFolder(string fullPath)
         {
             try
@@ -202,9 +246,37 @@ namespace UniLiveViewer
                 throw;
             }
         }
-        public async UniTask ResourcesLoadText(string fileName, string path)
+
+        /// <summary>
+        /// デフォルトファイル作成
+        /// </summary>
+        /// <returns></returns>
+        private async UniTask TryCreateFile()
         {
-            var resourceFile = (await Resources.LoadAsync<TextAsset>(fileName)) as TextAsset;
+            string sFullPath;
+            try
+            {
+                //テキストファイル
+                
+                sFullPath = Path.Combine(folderPath_Custom + "/", "readme_ja.txt");
+                await ResourcesLoadText("readme_ja", sFullPath);
+
+                sFullPath = Path.Combine(folderPath_Custom + "/", "readme_en.txt");
+                await ResourcesLoadText("readme_en", sFullPath);
+
+                sFullPath = Path.Combine(folderPath_Custom + "/", "不具合・Defect.txt"); 
+                DeleteFile(sFullPath);
+            }
+            catch
+            {
+                throw new Exception("CreateFile");
+            }
+        }
+
+
+        private static async UniTask ResourcesLoadText(string fileName, string path)
+        {
+            TextAsset resourceFile = (TextAsset)await Resources.LoadAsync<TextAsset>(fileName);
             using (StreamWriter writer = new StreamWriter(path, false, System.Text.Encoding.UTF8))
             {
                 writer.Write(resourceFile.text);
@@ -222,7 +294,7 @@ namespace UniLiveViewer
         /// <returns></returns>
         public string[] GetAllVRMNames()
         {
-            string sFolderPath = folderPath_Custom + folderName[(int)FOLDERTYPE.CHARA];
+            string sFolderPath = GetFullPath(FOLDERTYPE.CHARA) + "/";
 
             string[] sResult = null;
             try
@@ -233,11 +305,13 @@ namespace UniLiveViewer
                 //ファイルパスからファイル名の抽出
                 for (int i = 0; i < sResult.Length; i++)
                 {
-                    int j = sResult[i].LastIndexOf("/");//末尾から文字サーチ、先頭から何番目か
-                    int maxStr = sResult[i].Length;
+                    sResult[i] = Path.GetFileName(sResult[i]);
 
-                    sResult[i] = sResult[i].Substring(j, maxStr - j);
-                    sResult[i] = sResult[i].Replace("/", "");
+                    //int j = sResult[i].LastIndexOf("/");//末尾から文字サーチ、先頭から何番目か
+                    //int maxStr = sResult[i].Length;
+
+                    //sResult[i] = sResult[i].Substring(j, maxStr - j);
+                    //sResult[i] = sResult[i].Replace("/", "");
                 }
             }
             catch
@@ -252,7 +326,7 @@ namespace UniLiveViewer
         /// アプリフォルダ内のVMDファイル名を取得
         /// </summary>
         /// <returns></returns>
-        private bool GetAllVMDNames()
+        private bool CheckOffsetFile()
         {
             //初期化
             if (SystemInfo.dicVMD_offset.Count != 0)
@@ -261,10 +335,10 @@ namespace UniLiveViewer
             }
 
             //offset情報ファイルがあれば読み込む
-            string path = GetFullPath(FOLDERTYPE.SETTING);
-            if (File.Exists(path + "MotionOffset.txt"))
+            string path = GetFullPath(FOLDERTYPE.SETTING) + "/MotionOffset.txt";
+            if (File.Exists(path))
             {
-                foreach (string line in File.ReadLines(path + "MotionOffset.txt"))
+                foreach (string line in File.ReadLines(path))
                 {
                     string[] spl = line.Split(',');
                     if (spl.Length != 2) return false;
@@ -274,10 +348,10 @@ namespace UniLiveViewer
             }
 
             //VMDファイル名を取得
-            string sFolderPath = GetFullPath(FOLDERTYPE.MOTION);
+            string sFolderPath = GetFullPath(FOLDERTYPE.MOTION) + "/";
             try
             {
-                //VRMファイルのみ検索
+                //VMDファイルのみ検索
                 var names = Directory.GetFiles(sFolderPath, "*.vmd", SearchOption.TopDirectoryOnly);
 
                 //ファイルパスからファイル名の抽出
@@ -300,7 +374,7 @@ namespace UniLiveViewer
                 }
 
                 //一旦保存
-                SystemInfo.userProfile.SaveOffset();
+                SaveOffset();
             }
             catch
             {
@@ -311,13 +385,29 @@ namespace UniLiveViewer
         }
 
         /// <summary>
+        /// ダンスモーションの再生位置書き込み
+        /// </summary>
+        public static void SaveOffset()
+        {
+            //書き込み
+            string path = GetFullPath(FOLDERTYPE.SETTING) + "/";
+            using (StreamWriter writer = new StreamWriter(path + "MotionOffset.txt", false, System.Text.Encoding.UTF8))
+            {
+                foreach (var e in SystemInfo.dicVMD_offset)
+                {
+                    writer.WriteLine(e.Key + "," + e.Value);
+                }
+            }
+        }
+
+        /// <summary>
         /// アプリフォルダ内のVMDファイル名を取得
         /// </summary>
         /// <returns></returns>
         private void GetAllVMDLipSyncNames()
         {
             //VMDファイル名を取得
-            string sFolderPath = GetFullPath(FOLDERTYPE.MOTION) + lipSyncPath;
+            string sFolderPath = GetFullPath_LipSync() + "/";
             try
             {
                 //VRMファイルのみ検索
@@ -342,7 +432,7 @@ namespace UniLiveViewer
         /// <returns></returns>
         public int GetAudioFileCount()
         {
-            string sFolderPath = folderPath_Custom + folderName[(int)FOLDERTYPE.BGM];
+            string sFolderPath = GetFullPath(FOLDERTYPE.BGM) + "/";
 
             //初期化
             if (mp3_path.Count > 0) mp3_path.Clear();
@@ -371,7 +461,7 @@ namespace UniLiveViewer
             }
 
             //リスト初期化
-            if (audioList.Count > presetCount)
+            if (audioList.Count > PresetCount)
             {
                 //ClipはリストClearだけだと消えないので個別に消す
                 for (int i = 0; i < audioList.Count; i++)
@@ -381,12 +471,14 @@ namespace UniLiveViewer
 
                 audioList.Clear();
                 audioList = new List<AudioClip>();
-                for (int i = 0; i < presetCount; i++)
+                for (int i = 0; i < PresetCount; i++)
                 {
                     audioList.Add(presetAudioClip[i]);
                 }
                 AudioCount = 0;
             }
+
+            string oldPath = GetFullPath(FOLDERTYPE.BGM) + "/";
 
             foreach (string str in mp3_path)
             {
@@ -406,7 +498,7 @@ namespace UniLiveViewer
                     else
                     {
                         AudioClip clip = DownloadHandlerAudioClip.GetContent(www);
-                        clip.name = str.Replace(folderPath_Custom + folderName[(int)FOLDERTYPE.BGM], "");
+                        clip.name = str.Replace(oldPath, "");
                         audioList.Add(clip);
 
                         //Debug.Log("--------------------------------------");
@@ -443,7 +535,7 @@ namespace UniLiveViewer
                     else
                     {
                         AudioClip clip = DownloadHandlerAudioClip.GetContent(www);
-                        clip.name = str.Replace(folderPath_Custom + folderName[(int)FOLDERTYPE.BGM], "");
+                        clip.name = str.Replace(oldPath, "");
                         audioList.Add(clip);
                     }
                     await UniTask.Yield(cancellation_token);
@@ -457,23 +549,29 @@ namespace UniLiveViewer
         /// <summary>
         /// 暫定
         /// </summary>
-        private async UniTaskVoid CacheThumbnail()
+        private async UniTask CacheThumbnail()
         {
-            string folderPath_Chara = GetFullPath(FOLDERTYPE.CHARA);
+
+            if (!vrmRuntimeLoader) return;
+
+            string folderPath_Chara = GetFullPath(FOLDERTYPE.CHARA) + "/";
             Texture2D texture = null;
             Sprite spr = null;
             await UniTask.Yield(PlayerLoopTiming.Update, cancellation_token);
 
             //全ファイル名を取得
             var vrmNames = GetAllVRMNames();
+
             for (int i = 0; i < vrmNames.Length; i++)
             {
                 if (spr) spr = null;
                 if (texture) texture = null;
+
                 //キャッシュ画像確認
                 //texture = cacheThumbnails.FirstOrDefault(x => x.Key == vrmNames[i]).Value;
+
                 spr = cacheThumbnails.FirstOrDefault(x => x.Key == vrmNames[i]).Value;
-                if (spr != null) return;
+                if (spr != null) continue;
 
                 try
                 {
@@ -502,7 +600,7 @@ namespace UniLiveViewer
 #if UNITY_EDITOR
                     if (texture) texture = GetColorInfo(ResizeTexture(texture, 256, 256));
                     else texture = new Texture2D(1, 1, TextureFormat.RGB24, false);
-                    File.WriteAllBytes(GetFullPath_ThumbnailCache() + vrmNames[i] + ".png", texture.EncodeToPNG());
+                    File.WriteAllBytes(Path.Combine(GetFullPath_ThumbnailCache() + "/", $"{vrmNames[i]}.png"), texture.EncodeToPNG());
 #endif
                 }
                 catch (System.OperationCanceledException)
@@ -510,12 +608,8 @@ namespace UniLiveViewer
                     Debug.Log("サムネイルキャッシュ中に中断");
                     throw;
                 }
-
                 await UniTask.Yield(PlayerLoopTiming.Update, cancellation_token);
             }
-
-            //完了した
-            onThumbnailCompleted?.Invoke();
         }
 
         /// <summary>
@@ -641,7 +735,7 @@ namespace UniLiveViewer
         /// <returns></returns>
         private static Texture2D GetCacheThumbnail(string fileName)
         {
-            string filePath = GetFullPath_ThumbnailCache() + fileName + ".png";
+            string filePath = Path.Combine(GetFullPath_ThumbnailCache() + "/", $"{fileName}.png");
             byte[] bytes = File.ReadAllBytes(filePath);
             Texture2D texture = new Texture2D(64, 64);
             texture.LoadImage(bytes);

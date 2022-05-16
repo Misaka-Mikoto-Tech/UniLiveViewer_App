@@ -43,7 +43,6 @@ namespace UniLiveViewer
         //バインドキャラを管理するクラス
         public CharaController[] trackBindChara = new CharaController[6];
 
-
         public int FieldCharaCount { get; private set; } = 0;//フィールドのキャラカウント
         public event Action FieldCharaAdded;//設置キャラ数の更新時
         public event Action FieldCharaDeleted;//設置キャラ数の更新時
@@ -116,6 +115,9 @@ namespace UniLiveViewer
             {
                 Debug.Log("メインオーディオが見つかりません");
             }
+
+            NextAudioClip(0);
+
             //開幕は停止しておく
             TimelineBaseReturn();
 
@@ -356,9 +358,6 @@ namespace UniLiveViewer
         {
             fileManager.CurrentAudio += moveCurrent;
 
-            //Current移動制限
-            if (fileManager.CurrentAudio < 0) fileManager.CurrentAudio = fileManager.audioList.Count - 1;
-            else if (fileManager.CurrentAudio >= fileManager.audioList.Count) fileManager.CurrentAudio = 0;
             //クリップ決定
             AudioClip newAudioClip = fileManager.audioList[fileManager.CurrentAudio];
 

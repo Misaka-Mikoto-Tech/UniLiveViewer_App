@@ -6,15 +6,18 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/UniLiveViewer/_GitIgnore/Scene/ViewerScene.unity
-    guid: ad9584c435602b246a18468fe20047ef
-  - enabled: 1
     path: Assets/UniLiveViewer/_GitIgnore/Scene/TitleScene.unity
     guid: 4789cc37c60d4f94c837f1f1e4447a2d
+  - enabled: 0
+    path: Assets/UniLiveViewer/_GitIgnore/Scene/TestScene.unity
+    guid: ed64203ca168b654ea56427fcf446018
   - enabled: 1
+    path: Assets/UniLiveViewer/_GitIgnore/Scene/ViewerScene.unity
+    guid: ad9584c435602b246a18468fe20047ef
+  - enabled: 0
     path: Assets/UniLiveViewer/_GitIgnore/Scene/LiveScene.unity
     guid: b132e99634c0a9e4dbc3abe437d5dbfb
-  - enabled: 1
+  - enabled: 0
     path: Assets/UniLiveViewer/_GitIgnore/Scene/KAGURAScene.unity
     guid: 03c318050d2017f4682eb1089003839f
   m_configObjects:

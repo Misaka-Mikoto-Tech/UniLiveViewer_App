@@ -31,23 +31,6 @@ namespace UniLiveViewer
             SetParticle(0, out str);
         }
 
-        public void SetInit()
-        {
-            currntMaster = 0;
-            currntCubemap = 0;
-            currntHole = 0;
-            currntParticle = 0;
-
-            //キューブマップを初期化
-            cubemap_Mat.SetTexture("_Tex", cubemapList[currntCubemap]);
-
-            //トンネルは無効化
-            if (tunnelAnchor.gameObject.activeSelf) tunnelAnchor.gameObject.SetActive(false);
-
-            //パーティクル無効化
-
-        }
-
         /// <summary>
         /// passthrough用
         /// </summary>

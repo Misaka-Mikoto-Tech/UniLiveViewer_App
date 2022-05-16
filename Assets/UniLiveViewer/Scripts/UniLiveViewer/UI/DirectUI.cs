@@ -6,20 +6,29 @@ namespace UniLiveViewer
 { 
     public class DirectUI : MonoBehaviour
     {
+        [SerializeField] private Transform guideParent;
+        [SerializeField] private Transform guideTarget;
+
+        private FileAccessManager fileManager;
         private PlayerStateManager playerStateManager;
+        private Renderer _renderer;
         private Vector3 EndPoint = new Vector3(0, 0.7f, 5);
-        private bool isInit = false;
         private Vector3 keepDistance;
+
+        private bool isInit = false;
 
         private void Awake()
         {
-            
+            _renderer = GetComponent<Renderer>();
         }
 
         // Start is called before the first frame update
         void Start()
         {
+            fileManager = GameObject.FindGameObjectWithTag("AppConfig").gameObject.GetComponent<FileAccessManager>();
+
             playerStateManager = PlayerStateManager.instance;
+            playerStateManager.onSwitchMainUI += SwitchEnable;
 
             switch (SystemInfo.sceneMode)
             {
@@ -38,42 +47,37 @@ namespace UniLiveViewer
                     transform.position = EndPoint + (Vector3.up * 2);
                     transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
                     break;
-            }            
-            Init().Forget();
+            }
+
+            fileManager.onLoadEnd += () => Init().Forget();
+        }
+
+        private void Update()
+        {
+            if (!isInit) return;
+            guideTarget.position = guideParent.position;
+            guideTarget.rotation = guideParent.rotation;
+        }
+
+        private void SwitchEnable(bool isEnable)
+        {
+            if (guideParent.gameObject.activeSelf != isEnable) guideParent.gameObject.SetActive(isEnable);
+            if (guideTarget.gameObject.activeSelf != isEnable) guideTarget.gameObject.SetActive(isEnable);
+            _renderer.enabled = isEnable;
+
+            if(isEnable) transform.position = (playerStateManager.transform.position - keepDistance);
+            else keepDistance = playerStateManager.transform.position - transform.position;
         }
 
         private async UniTask Init()
         {
-            await UniTask.Delay(500);
+            transform.position = EndPoint;
 
-            int split = 50;
-            Vector3 moveSpeed = (EndPoint - transform.position) / split;
-
-            for (int i = 0; i < split; i++)
-            {
-                transform.position += moveSpeed;
-                await UniTask.Yield();
-            }
-
-            await UniTask.Delay(500);
-
-            //UIを表示する
-            playerStateManager.SwitchUI();
+            SwitchEnable(false);
+            await UniTask.Delay(800);
+            SwitchEnable(true);
 
             isInit = true;
         }
-
-        private void OnEnable()
-        {
-            if (!playerStateManager) return;
-            if (isInit) transform.position = (playerStateManager.transform.position - keepDistance);
-        }
-
-        private void OnDisable()
-        {
-            if (!playerStateManager) return;
-            if (isInit) keepDistance = playerStateManager.transform.position - transform.position;
-        }
     }
-
 }

@@ -31,19 +31,21 @@ namespace UniLiveViewer
         private Transform VRMOptionAnchor;
 
         private TimelineController timeline = null;
-        private GeneratorPortal generatorPortal = null;
+        [SerializeField] private GeneratorPortal generatorPortal = null;
         private VRMSwitchController vrmSelectUI = null;
         private CancellationToken cancellation_token;
 
         private void Awake()
         {
             menuManager = transform.root.GetComponent<MenuManager>();
+            cancellation_token = this.GetCancellationTokenOnDestroy();
+        }
 
-            generatorPortal = menuManager.generatorPortal;
+        // Start is called before the first frame update
+        void Start()
+        {
             timeline = menuManager.timeline;
             vrmSelectUI = menuManager.vrmSelectUI;
-
-            cancellation_token = this.GetCancellationTokenOnDestroy();
 
             //ジャンプリスト
             foreach (var e in btn_jumpList)
@@ -95,7 +97,7 @@ namespace UniLiveViewer
                 timeline.SetVMD_MotionOffset(generatorPortal.GetNowAnimeInfo().viewName, (int)slider_Offset.Value);
                 textMeshs[3].text = $"{slider_Offset.Value:0000}";
             };
-            slider_Offset.UnControled += () => { SystemInfo.userProfile.SaveOffset(); };
+            slider_Offset.UnControled += () => { FileAccessManager.SaveOffset(); };
             offsetAnchor = slider_Offset.transform.parent;
             slider_EyeLook.ValueUpdate += () =>
             {
@@ -147,21 +149,12 @@ namespace UniLiveViewer
             };
             generatorPortal.onGeneratedChara += DrawCharaInfo;
             generatorPortal.onGeneratedAnime += DrawAnimeInfo;
-        }
 
-        // Start is called before the first frame update
-        void Start()
-        {
             //VRMロードの画面とボタンを非表示
             btn_VRMLoad.gameObject.SetActive(false);
 
             if (offsetAnchor.gameObject.activeSelf) offsetAnchor.gameObject.SetActive(false);
             if (VRMOptionAnchor.gameObject.activeSelf) VRMOptionAnchor.gameObject.SetActive(false);
-        }
-
-        private void Init()
-        {
-            
         }
 
         // Update is called once per frame
@@ -267,7 +260,7 @@ namespace UniLiveViewer
                     break;
                 }
             }
-            SystemInfo.userProfile.SaveOffset();
+            FileAccessManager.SaveOffset();
         }
 
         /// <summary>
@@ -316,11 +309,10 @@ namespace UniLiveViewer
             var vrm = timeline.trackBindChara[TimelineController.PORTAL_ELEMENT];
             if (vrm && vrm.charaInfoData.formatType == CharaInfoData.FORMATTYPE.VRM)
             {
-                //マニュアル開始
-                timeline.TimelineManualMode();
-
                 //コピーをVRM設定画面に渡す
                 vrmSelectUI.VRMEditing(vrm);
+                //マニュアル開始
+                timeline.TimelineManualMode().Forget();
             }
             menuManager.PlayOneShot(SoundType.BTN_CLICK);
         }

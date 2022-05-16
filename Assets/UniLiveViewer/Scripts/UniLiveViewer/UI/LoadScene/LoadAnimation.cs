@@ -12,7 +12,6 @@ namespace UniLiveViewer
         private void Awake()
         {
             anime = GetComponent<Animator>();
-            current = Random.Range(0, 2);
         }
 
         private void OnDisable()
@@ -21,22 +20,6 @@ namespace UniLiveViewer
         }
 
         private void OnEnable()
-        {
-            //シーンロード時のみの処理
-            SceneLoad();
-
-            //ローディングアニメーションをランダム設定
-            current = Random.Range(0, 2);
-
-            //ローディングアニメーション開始
-            anime.gameObject.SetActive(true);
-            anime.SetBool(sLoadAnime[current], true);
-        }
-
-        /// <summary>
-        /// シーンロード時のみ
-        /// </summary>
-        private void SceneLoad()
         {
             if (sceneName)
             {
@@ -48,7 +31,13 @@ namespace UniLiveViewer
                     _ => "",
                 };
             }
+
+            //ローディングアニメーションをランダム設定
+            current = Random.Range(0, 2);
+
+            //ローディングアニメーション開始
+            anime.gameObject.SetActive(true);
+            anime.SetBool(sLoadAnime[current], true);
         }
     }
-
 }

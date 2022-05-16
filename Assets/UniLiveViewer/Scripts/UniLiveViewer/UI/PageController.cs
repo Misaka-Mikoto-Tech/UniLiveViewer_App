@@ -27,6 +27,15 @@ namespace UniLiveViewer
         {
             audioSource = GetComponent<AudioSource>();
             audioSource.volume = SystemInfo.soundVolume_SE;
+            audioSource.enabled = false;
+
+            DelayAudioSource().Forget();
+        }
+
+        private async UniTask DelayAudioSource()
+        {
+            await UniTask.Delay(1000);
+            audioSource.enabled = true;
         }
 
         // Start is called before the first frame update

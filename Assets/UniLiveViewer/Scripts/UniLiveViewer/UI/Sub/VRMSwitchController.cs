@@ -49,11 +49,8 @@ namespace UniLiveViewer
 
         private CancellationToken cancellation_token;
 
-        private async void Awake()
+        private void Awake()
         {
-            fileManager = GameObject.FindGameObjectWithTag("AppConfig").GetComponent<FileAccessManager>();
-            touchCollider = GameObject.FindGameObjectWithTag("Player").GetComponent<VRMTouchColliders>();
-
             audioSource = GetComponent<AudioSource>();
             audioSource.volume = SystemInfo.soundVolume_SE;
 
@@ -61,16 +58,21 @@ namespace UniLiveViewer
             btn_Apply.onTrigger += (btn) => PrefabApply(btn).Forget();
             prefabEditor.onCurrentUpdate += () => { audioSource.PlayOneShot(Sound[0]); };//クリック音
             cancellation_token = this.GetCancellationTokenOnDestroy();
+        }
 
+        private async void Start()
+        {
+            fileManager = GameObject.FindGameObjectWithTag("AppConfig").GetComponent<FileAccessManager>();
+            touchCollider = GameObject.FindGameObjectWithTag("Player").GetComponent<VRMTouchColliders>();
 
             //サムネ用ボタンの生成
             Button_Base[] btns = await thumbnailCon.CreateThumbnailButtons();
-            for (int i = 0;i< btns.Length;i++)
+            for (int i = 0; i < btns.Length; i++)
             {
                 btns[i].onTrigger += (b) => LoadVRM(b).Forget();
             }
 
-            thumbnailCon.onGenerated += async() => 
+            thumbnailCon.onGenerated += async () =>
             {
                 await UniTask.Delay(500, cancellationToken: cancellation_token);
                 audioSource.PlayOneShot(Sound[1]);
@@ -113,20 +115,18 @@ namespace UniLiveViewer
             switch (currentPage)
             {
                 case 0:
-                    if (fileManager.isSuccess)
-                    {
-                        //フォルダパスの表示を更新
-                        textDirectory.text = $"({FileAccessManager.folderPath_Custom})";
+                    if (!fileManager.isSuccess) return;
+                    //フォルダパスの表示を更新
+                    textDirectory.text = $"({FileAccessManager.GetFullPath(FileAccessManager.FOLDERTYPE.CHARA)}/)";
 
-                        //ローディングアニメーションを無効状態
-                        anime_Loading.gameObject.SetActive(false);
+                    //ローディングアニメーションを無効状態
+                    anime_Loading.gameObject.SetActive(false);
 
-                        //サムネボタンアンカーを有効状態
-                        thumbnailCon.gameObject.SetActive(true);
+                    //サムネボタンアンカーを有効状態
+                    thumbnailCon.gameObject.SetActive(true);
 
-                        //VRM選択ボタンを生成する
-                        thumbnailCon.SetThumbnail(fileManager.GetAllVRMNames()).Forget();
-                    }
+                    //VRM選択ボタンを生成する
+                    thumbnailCon.SetThumbnail(fileManager.GetAllVRMNames()).Forget();
                     break;
                 case 1:
                     //prefabEditor.Init();
@@ -164,7 +164,7 @@ namespace UniLiveViewer
 
                 //指定パスのVRMのみ読み込む
                 string fileName = btn.transform.name;
-                string fullPath = FileAccessManager.GetFullPath(FOLDERTYPE.CHARA) + fileName;
+                string fullPath = FileAccessManager.GetFullPath(FileAccessManager.FOLDERTYPE.CHARA) + "/" + fileName;
 
                 var instance = await runtimeLoader.OnOpenClicked_VRM(fullPath, cancellation_token);
 

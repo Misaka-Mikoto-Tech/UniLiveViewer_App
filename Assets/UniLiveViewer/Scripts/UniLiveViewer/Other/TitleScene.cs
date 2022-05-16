@@ -36,11 +36,7 @@ namespace UniLiveViewer
             transform.GetChild(0).gameObject.SetActive(false);
 
             cancellation_Token = this.GetCancellationTokenOnDestroy();
-        }
 
-        // Start is called before the first frame update
-        void Start()
-        {
             audioSource = GetComponent<AudioSource>();
             audioSource.volume = SystemInfo.soundVolume_SE;
 
@@ -52,13 +48,23 @@ namespace UniLiveViewer
                 else Chara[i].gameObject.SetActive(false);
             }
 
-            if (SystemInfo.userProfile.data.LanguageCode != (int)USE_LANGUAGE.NULL)
+        }
+
+        // Start is called before the first frame update
+        void Start()
+        {
+            var fileManager = GameObject.FindGameObjectWithTag("AppConfig").gameObject.GetComponent<FileAccessManager>();
+
+            fileManager.onLoadEnd += () =>
             {
-                //2回目以降
-                sprRender.gameObject.SetActive(false);
-                SceneChange().Forget();
-            }
-            else InitHand().Forget();
+                if (SystemInfo.userProfile.LanguageCode != (int)USE_LANGUAGE.NULL)
+                {
+                    //2回目以降
+                    sprRender.gameObject.SetActive(false);
+                    SceneChange().Forget();
+                }
+                else InitHand().Forget();
+            };
         }
 
         private async UniTask InitHand()
@@ -73,15 +79,15 @@ namespace UniLiveViewer
         {
             if (btn.name.Contains("_JP"))
             {
-                SystemInfo.userProfile.data.LanguageCode = (int)USE_LANGUAGE.JP;
-                SystemInfo.userProfile.WriteJson();
+                SystemInfo.userProfile.LanguageCode = (int)USE_LANGUAGE.JP;
+                FileAccessManager.WriteJson(SystemInfo.userProfile);
                 //差し替える
                 sprRender.sprite = sprPrefab[1];
             }
             else
             {
-                SystemInfo.userProfile.data.LanguageCode = (int)USE_LANGUAGE.EN;
-                SystemInfo.userProfile.WriteJson();
+                SystemInfo.userProfile.LanguageCode = (int)USE_LANGUAGE.EN;
+                FileAccessManager.WriteJson(SystemInfo.userProfile);
                 //差し替える
                 sprRender.sprite = sprPrefab[0];
             }
@@ -102,7 +108,7 @@ namespace UniLiveViewer
             await UniTask.Delay(1000, cancellationToken: cancellation_Token);
             fade.FadeOut();
 
-            //ロードが早すぎても最低演出分は待機する
+            //完全非同期は無理
             var async = SceneManager.LoadSceneAsync(nextSceneName);
             async.allowSceneActivation = false;
             await UniTask.Delay(2000, cancellationToken: cancellation_Token);
