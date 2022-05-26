@@ -47,6 +47,11 @@ namespace UniLiveViewer
                     transform.position = EndPoint + (Vector3.up * 2);
                     transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
                     break;
+                case SceneMode.GYMNASIUM:
+                    EndPoint = new Vector3(0, 1.0f, 4);
+                    transform.position = EndPoint + (Vector3.up * 2);
+                    transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
+                    break;
             }
 
             fileManager.onLoadEnd += () => Init().Forget();

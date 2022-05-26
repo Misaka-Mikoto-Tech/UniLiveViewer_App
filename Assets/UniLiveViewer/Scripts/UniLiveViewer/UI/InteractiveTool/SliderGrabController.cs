@@ -11,14 +11,11 @@ namespace UniLiveViewer
         [SerializeField] private Transform[] handMesh = new Transform[2];
 
         [Header("VisibleHandleの子オブジェクトを指定")]
-        [SerializeField]
-        private OVRGrabbable_Custom unVisibleHandler = null;
+        [SerializeField] private OVRGrabbable_Custom unVisibleHandler = null;
         private Vector3 nextHandllocalPos;
         private float handleMaxRangeX = 0;
-        private float _value = 0;
         public float maxValuel = 1.0f;//スライダーの最大値
         public float minStepValuel = 0.1f;//スライダーを動かす間隔
-                                          //private float StepValue = 0.0f;
         [HideInInspector] public bool isControl = false;//操作中フラグ
         private Vector3 axis = Vector3.zero;
 
@@ -29,6 +26,9 @@ namespace UniLiveViewer
         public event Action Controled;
         public event Action UnControled;
         public event Action ValueUpdate;
+
+        [Header("確認用(readonly)")]
+        [SerializeField] private float _value = 0;
 
         /// <summary>
         /// ハンドルに指定したオブジェクトを範囲内で制御する(0～1)

@@ -14,6 +14,7 @@ namespace UniLiveViewer
             textMeshes_maxChara[0].text = GetMaxChara(SceneMode.CANDY_LIVE).ToString();
             textMeshes_maxChara[1].text = GetMaxChara(SceneMode.KAGURA_LIVE).ToString();
             textMeshes_maxChara[2].text = GetMaxChara(SceneMode.VIEWER).ToString();
+            textMeshes_maxChara[3].text = GetMaxChara(SceneMode.GYMNASIUM).ToString();
         }
 
         private byte GetMaxChara(SceneMode mode)

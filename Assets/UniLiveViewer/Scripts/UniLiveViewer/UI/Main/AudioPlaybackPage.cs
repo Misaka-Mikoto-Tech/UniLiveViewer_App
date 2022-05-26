@@ -155,7 +155,7 @@ namespace UniLiveViewer
             menuManager.PlayOneShot(SoundType.BTN_CLICK);
 
             //スライダー操作中は受け付けない
-            if (playerStateManager.CheckGrabbing()) return;
+            if (playerStateManager.IsSliderGrabbing()) return;
 
             if (btn == btnS_Stop)
             {

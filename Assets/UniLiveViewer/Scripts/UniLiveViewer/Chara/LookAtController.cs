@@ -18,32 +18,33 @@ namespace UniLiveViewer
         [Header("＜共有(自動管理)＞")]
         public Transform virtualEye;//正面用
         public Transform virtualHead;//正面用
-        public Transform virtualRoot;//正面用
+        public Transform virtualChest;//正面用
 
         //各種ボーンAnchorを取得
-        [HideInInspector] public Transform hipAnchor;
-        [HideInInspector] public Transform headAnchor;
-        [HideInInspector] public Transform chestAnchor;
-        [HideInInspector] public Transform lEyeAnchor;
-        [HideInInspector] public Transform rEyeAnchor;
+        //[HideInInspector] public Transform hipAnchor;
+        private Transform headAnchor;
+        private Transform chestAnchor;
+        private Transform lEyeAnchor;
+        private Transform rEyeAnchor;
 
         public Transform lookTarget;
+        private Transform lookTarget_limit;
         private Animator animator;
         private CharaController charaCon;
         //private HeadRigController headRigCon;
 
+        private float searchAngle_max = 70;//limitターゲット用(差分が視線の遊び)
+        private float searchAngle_Head = 55;//胸ベース
+        private float searchAngle_Eye = 40;//顔ベース
+
         [Header("＜パラメーター頭用＞")]
         public float inputWeight_Head = 0.0f;
-        [SerializeField] private float searchAngle_Head = 60;
         [SerializeField] private float leapVal_Head = 0;
-        private float leapSpeed_head = 0;
         private float angle_head;
 
         [Header("＜パラメーター目用＞")]
         public float inputWeight_Eye = 0.0f;
-        [SerializeField] private float searchAngle_Eye = 70;
         [SerializeField] private float leapVal_Eye = 0;
-        private float leapSpeed_eye = 0;
         private float angle_eye;
 
         [Tooltip("目の感度係数"), SerializeField] private Vector2 eye_Amplitude;
@@ -54,13 +55,12 @@ namespace UniLiveViewer
 
         void Awake()
         {
-            if (!charaCon) charaCon = GetComponent<CharaController>();
-            if (!animator) animator = GetComponent<Animator>();
-            if (!lookTarget) lookTarget = GameObject.FindGameObjectWithTag("MainCamera").gameObject.transform;
-
+            charaCon = GetComponent<CharaController>();
+            animator = GetComponent<Animator>();
+            lookTarget = GameObject.FindGameObjectWithTag("MainCamera").gameObject.transform;
 
             //各種ボーンからアンカーを取得
-            hipAnchor = animator.GetBoneTransform(HumanBodyBones.Hips);
+
             headAnchor = animator.GetBoneTransform(HumanBodyBones.Head);
             chestAnchor = animator.GetBoneTransform(HumanBodyBones.UpperChest);
             if (!chestAnchor) chestAnchor = animator.GetBoneTransform(HumanBodyBones.Chest);
@@ -74,44 +74,26 @@ namespace UniLiveViewer
             }
         }
 
-        /// <summary>
-        /// VRM用のコンポーネント参照設定
-        /// </summary>
-        /// <param name="anime"></param>
-        /// <param name="charaController"></param>
-        /// <param name="lookAtTarget"></param>
-        public void SetVRMComponent(Animator anime, CharaController charaController, Transform lookAtTarget)
-        {
-            animator = anime;
-            charaCon = charaController;
-            charaCon.lookAtCon = this;
-            lookTarget = lookAtTarget;
-        }
-
-
         // Start is called before the first frame update
         void Start()
         {
-            if (virtualRoot) return;//Prefab対策
-
             //仮想ルートを生成(頭の正面用)
-            virtualRoot = new GameObject("VirtualRoot").transform;
-            virtualRoot.parent = hipAnchor;
-            virtualRoot.gameObject.layer = SystemInfo.layerNo_VirtualHead;
-            //virtualRoot.gameObject.layer = Parameters.layer_VirtualHead;
-            virtualRoot.localPosition = Vector3.zero;
-            virtualRoot.rotation = transform.rotation;
+            virtualChest = new GameObject("virtualChest").transform;
+            virtualChest.forward = transform.forward;
+            virtualChest.parent = chestAnchor;
+            virtualChest.localPosition = Vector3.zero;
+            virtualChest.gameObject.layer = SystemInfo.layerNo_VirtualHead;
 
             //仮想ヘッドを生成(目の正面用)
             virtualHead = new GameObject("VirtualHead").transform;
-            virtualHead.parent = headAnchor.parent;
+            virtualHead.forward = transform.forward;
+            virtualHead.parent = headAnchor;
+            virtualHead.localPosition = Vector3.zero;
             virtualHead.gameObject.layer = SystemInfo.layerNo_VirtualHead;
             virtualHead.gameObject.AddComponent(typeof(SphereCollider));
             var col = virtualHead.GetComponent<SphereCollider>();
             col.radius = 0.06f;
             col.isTrigger = true;
-            virtualHead.localPosition = Vector3.zero;
-            virtualHead.rotation = transform.rotation;
 
             //仮想アイを生成(いる？)
             virtualEye = new GameObject("VirtualEye").transform;
@@ -119,6 +101,10 @@ namespace UniLiveViewer
             virtualEye.gameObject.layer = SystemInfo.layerNo_VirtualHead;
             virtualEye.localPosition = Vector3.zero;
             virtualEye.rotation = transform.rotation;
+
+            lookTarget_limit = new GameObject("lookTarget_limit").transform;
+            lookTarget_limit.parent = transform;
+            lookTarget_limit.position = virtualHead.position + virtualHead.forward;
         }
 
         private void LateUpdate()
@@ -127,7 +113,6 @@ namespace UniLiveViewer
             if (Time.timeScale == 0) return;
 
             LookAt_Head();
-
             LookAt_Eye();
         }
 
@@ -139,27 +124,16 @@ namespace UniLiveViewer
             //入力があるか
             if (0.0f < inputWeight_Head)
             {
-                //水平上のターゲットとの角度を取得
-                angle_head = GetHorizontalAngle(lookTarget, virtualRoot);
+                //胸ベース
+                angle_head = Vector3.Angle(virtualChest.forward.GetHorizontalDirection(), (lookTarget.position - virtualChest.position).GetHorizontalDirection());
+                //頭の限界用、角度を維持できないので仕方ない..
+                lookTarget_limit.position = Vector3.Lerp(virtualChest.position + virtualChest.forward, lookTarget.position, searchAngle_Head / angle_head);
 
-                //正面に近いほど速度を上げる
-                leapSpeed_head = Time.deltaTime * Mathf.Clamp((searchAngle_Head / angle_head), 0, 1);
-
-                //視覚内なら徐々に1へ(対象の方を向く)
-                if (searchAngle_Head > angle_head)
-                {
-                    leapVal_Head = Mathf.Clamp(leapVal_Head + leapSpeed_head, 0.0f, inputWeight_Head);
-                }
-                //視覚外なら徐々に0へ(正面を向く)
-                else
-                {
-                    leapVal_Head = Mathf.Clamp(leapVal_Head - leapSpeed_head, 0.0f, inputWeight_Head);
-                }
+                if (searchAngle_max > angle_head) leapVal_Head += Time.deltaTime;
+                else leapVal_Head -= Time.deltaTime;
+                leapVal_Head = Mathf.Clamp(leapVal_Head, 0.0f, inputWeight_Head);
             }
-            else
-            {
-                leapVal_Head = 0;//初期化
-            }
+            else leapVal_Head = 0;//初期化
         }
 
         /// <summary>
@@ -167,30 +141,16 @@ namespace UniLiveViewer
         /// </summary>
         private void LookAt_Eye()
         {
-            //入力があるか
             if (0.0f < inputWeight_Eye)
             {
-                //水平上のターゲットとの角度を取得
-                angle_eye = GetHorizontalAngle(lookTarget, virtualHead);
+                //顔ベース
+                angle_eye = Vector3.Angle(virtualHead.forward.GetHorizontalDirection(), (lookTarget.position - virtualChest.position).GetHorizontalDirection());
 
-                //正面に近いほど速度を上げる
-                leapSpeed_eye = Time.deltaTime * Mathf.Clamp((searchAngle_Eye / angle_eye), 0, 1);
-
-                //視覚内なら徐々に1へ(対象の方を向く)
-                if (searchAngle_Head > angle_head)
-                {
-                    leapVal_Eye = Mathf.Clamp(leapVal_Eye + leapSpeed_eye, 0.0f, inputWeight_Eye);
-                }
-                //視覚外なら徐々に0へ(正面を向く)
-                else
-                {
-                    leapVal_Eye = Mathf.Clamp(leapVal_Eye - leapSpeed_eye, 0.0f, inputWeight_Eye);
-                }
+                if (searchAngle_Eye > angle_eye) leapVal_Eye += Time.deltaTime * 2.0f;
+                else leapVal_Eye -= Time.deltaTime * 2.0f;
+                leapVal_Eye = Mathf.Clamp(leapVal_Eye, 0.0f, inputWeight_Eye);
             }
-            else
-            {
-                leapVal_Eye = 0;//初期化
-            }
+            else leapVal_Eye = 0;//初期化
 
             //銀の弾ないの？
             Vector3 v;
@@ -263,7 +223,6 @@ namespace UniLiveViewer
                     }
                     break;
             }
-
         }
 
         public void SetEnable_VRMLookAtEye(bool isEnable)
@@ -316,6 +275,7 @@ namespace UniLiveViewer
         {
             switch (charaCon.charaInfoData.charaType)
             {
+                //lookTargetが異なる点に注意
                 case CharaInfoData.CHARATYPE.UnityChanSSU:
                     //全体、体、頭、目
                     animator.SetLookAtWeight(1.0f, 0.0f, leapVal_Head, result_EyeLook.x);
@@ -329,7 +289,7 @@ namespace UniLiveViewer
                 default:
                     //全体、体、頭、目
                     animator.SetLookAtWeight(1.0f, 0.0f, leapVal_Head, 0.0f);
-                    animator.SetLookAtPosition(lookTarget.position);
+                    animator.SetLookAtPosition(lookTarget_limit.position);
                     break;
             }
         }

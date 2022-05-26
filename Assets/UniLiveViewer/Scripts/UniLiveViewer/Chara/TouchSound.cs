@@ -50,7 +50,7 @@ namespace UniLiveViewer
 
         private void OnTriggerEnter(Collider other)
         {
-            if (!this.enabled) return;
+            if (!this.enabled || other.gameObject.layer != SystemInfo.layerNo_IgnoreRaycats) return;
             //タッチ音をランダムにならす
             int i = Random.Range(0, Sound.Length);
             audioSource.PlayOneShot(Sound[i]);

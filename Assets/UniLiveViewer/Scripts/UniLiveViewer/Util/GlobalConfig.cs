@@ -10,9 +10,11 @@ namespace UniLiveViewer
         //レイヤー
         public static int layerNo_Default = LayerMask.NameToLayer("Default");
         public static int layerNo_VirtualHead = LayerMask.NameToLayer("VirtualHead");
+        public static int layerNo_IgnoreRaycats = LayerMask.NameToLayer("Ignore Raycast");
         public static int layerNo_UI = LayerMask.NameToLayer("UI");
         public static int layerNo_FieldObject = LayerMask.NameToLayer("FieldObject");
         public static int layerNo_GrabObject = LayerMask.NameToLayer("GrabObject");
+        public static int layerNo_UnRendererFeature = LayerMask.NameToLayer("UnRendererFeature");
         public static int layerMask_Default = LayerMask.GetMask("Default");
         public static int layerMask_VirtualHead = LayerMask.GetMask("VirtualHead");
         public static int layerMask_StageFloor = LayerMask.GetMask("Stage_Floor");
@@ -33,10 +35,10 @@ namespace UniLiveViewer
         public static readonly Color btnColor_Ena_sky = new Color(0, 1, 1, 1);
         public static readonly Color btnColor_Dis = new Color(0.4f, 0.4f, 0.4f, 1);
 
-        //召喚上限(CRS/KAGURA/VIEW)
-        public static readonly byte[] MAXCHARA_QUEST1 = { 2, 2, 4 };
-        public static readonly byte[] MAXCHARA_QUEST2 = { 3, 2, 5 };
-        public static readonly byte[] MAXCHARA_EDITOR = { 5, 5, 5 };
+        //召喚上限(CRS/KAGURA/VIEW/GYM)
+        public static readonly byte[] MAXCHARA_QUEST1 = { 2, 2, 4, 2 };
+        public static readonly byte[] MAXCHARA_QUEST2 = { 3, 2, 5, 3 };
+        public static readonly byte[] MAXCHARA_EDITOR = { 5, 5, 5, 5 };
 
         public static readonly byte MAXAUDIO_EDITOR = 30;
         public static readonly byte MAXAUDIO_QUEST = 10;
@@ -47,6 +49,7 @@ namespace UniLiveViewer
             if (sName == "LiveScene") sceneMode = SceneMode.CANDY_LIVE;
             else if (sName == "KAGURAScene") sceneMode = SceneMode.KAGURA_LIVE;
             else if (sName == "ViewerScene") sceneMode = SceneMode.VIEWER;
+            else if (sName == "GymnasiumScene") sceneMode = SceneMode.GYMNASIUM;
 
             userProfile = FileAccessManager.ReadJson();
         }
@@ -57,6 +60,7 @@ namespace UniLiveViewer
         CANDY_LIVE,
         KAGURA_LIVE,
         VIEWER,
+        GYMNASIUM,
     }
     
     public enum USE_LANGUAGE  

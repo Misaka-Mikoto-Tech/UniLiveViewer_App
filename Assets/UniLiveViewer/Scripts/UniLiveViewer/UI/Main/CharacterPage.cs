@@ -325,8 +325,19 @@ namespace UniLiveViewer
         {
             if (btn == btn_VRMDelete && timeline.isPortalChara())
             {
-                //VRMを削除する
+                var chara = timeline.trackBindChara[TimelineController.PORTAL_ELEMENT];
+                if (chara.charaInfoData.formatType != CharaInfoData.FORMATTYPE.VRM) return;
+
+                int id = chara.charaInfoData.vrmID;
+                //フィールド上に存在すれば削除
+                timeline.DeletebindAsset_CleanUp(id);
+                //ポータル上のVRMを削除する
                 generatorPortal.DeleteCurrenVRM();
+                //Prefabから削除
+                vrmSelectUI.ClearVRMPrefab(id);
+
+                //未使用アセット削除
+                Resources.UnloadUnusedAssets();
             }
             else if (btn == btn_DeleteAll)
             {

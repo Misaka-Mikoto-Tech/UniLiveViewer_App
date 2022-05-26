@@ -181,8 +181,13 @@ namespace UniLiveViewer
 
                 btnE_ActionParent[0].gameObject.SetActive(SystemInfo.userProfile.scene_view_led);
             }
+            else if (SystemInfo.sceneMode == SceneMode.GYMNASIUM)
+            { 
+            
+            }
 
-            //レンダーパイプラインからoutlineオブジェクトを取得
+                
+            //レンダーパイプラインからoutlineオブジェクトを取得    
             foreach (var renderObj in frd.rendererFeatures)
             {
                 if (renderObj.name == "Outline")
@@ -474,7 +479,7 @@ namespace UniLiveViewer
 
             if (!btnE_SecenChange[i]) return;
 
-            string[] str = new string[] { "LiveScene", "KAGURAScene", "ViewerScene" };
+            string[] str = new string[] { "LiveScene", "KAGURAScene", "ViewerScene", "GymnasiumScene" };
             SceneChange(str[i]).Forget();
         }
 

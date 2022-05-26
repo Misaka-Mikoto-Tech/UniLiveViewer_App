@@ -11,7 +11,8 @@ namespace UniLiveViewer
         [SerializeField] private string[] itemName = new string[2] { "アイテム名","ItemName" };
         [SerializeField] private string[] flavorText = new string[2] { "何の変哲もないアイテム", "Unremarkable item" };//未使用
         [SerializeField] private RenderInfo[] renderInfo = new RenderInfo[0];
-
+        private OVRGrabbable_Custom ovrGrab;
+        public bool isAttached;
 
         /// <summary>
         /// 指定テクスチャに変更
@@ -33,8 +34,21 @@ namespace UniLiveViewer
             }
         }
 
+        public bool TryAttachment()
+        {
+            if (!ovrGrab) ovrGrab = GetComponent<OVRGrabbable_Custom>();
+            if(!ovrGrab || !ovrGrab.hitCollider) return false;
+            //アタッチする
+            ovrGrab.transform.parent = ovrGrab.hitCollider.transform;
+            transform.GetComponent<MeshRenderer>().enabled = false;
+            isAttached = true;
+            return true;
+        }
+
         private void OnDestroy()
         {
+            if (isAttached) return;
+
             for (int i = 0; i < renderInfo.Length; i++)
             {
                 for (int j = 0; j < renderInfo[i]._renderers.Length; j++)

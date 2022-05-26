@@ -23,6 +23,7 @@ namespace UniLiveViewer
 
         //path
         private static string folderPath_Custom;
+        private static string folderPath_Download;
         private static string folderPath_Persistent;
         private static string[] folderName = { "Chara", "Motion", "BGM", "Setting" };
         private static string cachePath = "Cache";
@@ -83,10 +84,12 @@ namespace UniLiveViewer
             //Linkだと両方反応するのでelif必須→PLATFORM_OCULUSってのがあるみたい
 #if UNITY_EDITOR
             folderPath_Custom = "D:/User/UniLiveViewer";
+            folderPath_Download = "D:/User/Download";
             sMssage = "windowsとして認識しています";
             maxAudioCount = SystemInfo.MAXAUDIO_EDITOR;
 #elif UNITY_ANDROID
             folderPath_Custom = "/storage/emulated/0/UniLiveViewer";
+            folderPath_Download = "/storage/emulated/0/Download";
             sMssage = "Questとして認識しています";
             maxAudioCount = SystemInfo.MAXAUDIO_QUEST;
 #endif
@@ -123,7 +126,7 @@ namespace UniLiveViewer
                         throw new Exception("CheckOffsetFile");
                     }
                     //VRMのサムネイル画像をキャッシュする
-                    await CacheThumbnail();
+                    await CacheThumbnail("");
                 }
                 isSuccess = true;
                 onLoadSuccess?.Invoke();//成功
@@ -149,6 +152,10 @@ namespace UniLiveViewer
         public static string GetFullPath_LipSync()
         {
             return Path.Combine(folderPath_Custom + "/", folderName[(int)FOLDERTYPE.MOTION], lipSyncPath);
+        }
+        public static string GetFullPath_Download()
+        {
+            return folderPath_Download;
         }
 
         /// <summary>
@@ -273,7 +280,7 @@ namespace UniLiveViewer
             }
         }
 
-
+        //TODO:わざわざ書き込む必要ないし解放必要では
         private static async UniTask ResourcesLoadText(string fileName, string path)
         {
             TextAsset resourceFile = (TextAsset)await Resources.LoadAsync<TextAsset>(fileName);
@@ -292,10 +299,8 @@ namespace UniLiveViewer
         /// アプリフォルダ内のVRMファイル名を取得
         /// </summary>
         /// <returns></returns>
-        public string[] GetAllVRMNames()
+        public string[] GetAllVRMNames(string sFolderPath)
         {
-            string sFolderPath = GetFullPath(FOLDERTYPE.CHARA) + "/";
-
             string[] sResult = null;
             try
             {
@@ -306,20 +311,44 @@ namespace UniLiveViewer
                 for (int i = 0; i < sResult.Length; i++)
                 {
                     sResult[i] = Path.GetFileName(sResult[i]);
-
-                    //int j = sResult[i].LastIndexOf("/");//末尾から文字サーチ、先頭から何番目か
-                    //int maxStr = sResult[i].Length;
-
-                    //sResult[i] = sResult[i].Substring(j, maxStr - j);
-                    //sResult[i] = sResult[i].Replace("/", "");
                 }
             }
             catch
             {
                 sMssage = "VRMファイル読み込みに失敗しました";
             }
-
             return sResult;
+        }
+
+        public int CountVRM(string path)
+        {
+            return GetAllVRMNames(path).Length;
+        }
+
+        /// <summary>
+        /// VRMファイルをコピー(download→Chara)
+        /// </summary>
+        /// <param name="pathMy"></param>
+        /// <returns></returns>
+        public async UniTask CopyVRMtoCharaFolder(string pathMy)
+        {
+            string[] names = GetAllVRMNames(pathMy);
+            try
+            {
+                string pathDest = GetFullPath(FOLDERTYPE.CHARA) + "/";
+                //ファイルコピー
+                for (int i = 0; i < names.Length; i++)
+                {
+                    File.Copy(pathMy + names[i], pathDest + names[i], true);//上書き保存
+                }
+
+                //VRMのサムネイル画像をキャッシュする
+                await CacheThumbnail(pathDest);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -549,18 +578,19 @@ namespace UniLiveViewer
         /// <summary>
         /// 暫定
         /// </summary>
-        private async UniTask CacheThumbnail()
+        private async UniTask CacheThumbnail(string folderPath_Chara)
         {
 
             if (!vrmRuntimeLoader) return;
 
-            string folderPath_Chara = GetFullPath(FOLDERTYPE.CHARA) + "/";
+            if(folderPath_Chara=="") folderPath_Chara = GetFullPath(FOLDERTYPE.CHARA) + "/";
+
             Texture2D texture = null;
             Sprite spr = null;
             await UniTask.Yield(PlayerLoopTiming.Update, cancellation_token);
 
             //全ファイル名を取得
-            var vrmNames = GetAllVRMNames();
+            var vrmNames = GetAllVRMNames(folderPath_Chara);
 
             for (int i = 0; i < vrmNames.Length; i++)
             {

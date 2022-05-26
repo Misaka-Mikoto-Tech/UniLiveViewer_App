@@ -111,6 +111,7 @@ namespace UniLiveViewer
                         handState = HandState.GRABBED_ITEM;
                         grabbedObject.GetComponent<MeshRenderer>().enabled = true;
                         grabbedObject.transform.parent = transform;
+                        grabbedObject.GetComponent<DecorationItemInfo>().isAttached = false;
                         timeline.SetActive_AttachPoint(true);
 
                         //item掴んだ

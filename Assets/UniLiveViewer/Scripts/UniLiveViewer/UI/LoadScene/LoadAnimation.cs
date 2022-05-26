@@ -28,6 +28,7 @@ namespace UniLiveViewer
                     SceneMode.CANDY_LIVE => "★CRS Live★",
                     SceneMode.KAGURA_LIVE => "★KAGURA Live★",
                     SceneMode.VIEWER => "★ViewerScene★",
+                    SceneMode.GYMNASIUM => "★Gymnasium★",
                     _ => "",
                 };
             }

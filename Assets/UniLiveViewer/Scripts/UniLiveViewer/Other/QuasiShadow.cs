@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using NanaCiel;
 
 namespace UniLiveViewer
 {
@@ -54,13 +55,22 @@ namespace UniLiveViewer
                 timeline.FieldCharaAdded += Update_BodyData;
                 timeline.FieldCharaDeleted += Update_BodyData;
 
+                //メッシュ消え対策
+                var prefab = Instantiate(meshRendererPrefab);
+                var meshFilter = prefab.GetComponent<MeshFilter>();
+                var bounds = meshFilter.mesh.bounds;
+                bounds.Expand(100);
+                meshFilter.mesh.bounds = bounds;
+
                 shadowDatas = new ShadowData[timeline.trackBindChara.Length];
                 for (int i = 0; i < shadowDatas.Length; i++)
                 {
                     shadowDatas[i] = new ShadowData();
-                    shadowDatas[i].Init(meshRendererPrefab, anchor.transform);
+                    shadowDatas[i].Init(prefab, anchor.transform);
                     shadowDatas[i].SetMeshRenderers(false, null, null);
                 }
+
+                Destroy(prefab.gameObject);
             }
 
             shadowScale = SystemInfo.userProfile.CharaShadow;
@@ -109,18 +119,14 @@ namespace UniLiveViewer
 
         private void Transforming(CharaController charaCon, Transform targetBone, MeshRenderer targetMesh, float presetScale)
         {
-            Vector3 pos = Vector3.zero;
-            float scale;
-            float distance;
-
-            distance = (targetBone.position.y - charaCon.transform.position.y) / charaCon.CustomScalar;
-            pos = targetBone.position;
-            pos.y = charaCon.transform.position.y;
-            scale = presetScale * shadowScale * charaCon.CustomScalar;
-
-            targetMesh.material.SetVector("_Position", pos);
-            targetMesh.material.SetFloat("_Scale", scale * (1 - (distance * 0.35f)));
-            targetMesh.material.SetFloat("_Alpha", (1 - (distance * 0.4f)));
+            float scale = presetScale * shadowScale * charaCon.CustomScalar;
+            Vector3 offset = targetBone.position;
+            offset.y = charaCon.transform.position.y;
+            float distance = (targetBone.position.y - charaCon.transform.position.y) / charaCon.CustomScalar;
+            
+            targetMesh.material.SetVector("_Position", offset);
+            targetMesh.material.SetFloat("_Scale", scale * (1 - (distance * 0.4f)));
+            targetMesh.material.SetFloat("_Alpha", 1 - (distance * 0.5f));
         }
 
         private void OnDestroy()

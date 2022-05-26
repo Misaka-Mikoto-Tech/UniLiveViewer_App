@@ -16,7 +16,7 @@ namespace UniLiveViewer
 
         [Space(1)]
         [Header("＜1ページ＞")]
-        [SerializeField] private TextMesh textDirectory;
+        [SerializeField] private TextMesh[] textDirectory;
         [SerializeField] private VRMRuntimeLoader_Custom runtimeLoader;//サンプルをそのまま利用する
         [SerializeField] private LoadAnimation anime_Loading;
         [SerializeField] private ThumbnailController thumbnailCon;
@@ -117,7 +117,8 @@ namespace UniLiveViewer
                 case 0:
                     if (!fileManager.isSuccess) return;
                     //フォルダパスの表示を更新
-                    textDirectory.text = $"({FileAccessManager.GetFullPath(FileAccessManager.FOLDERTYPE.CHARA)}/)";
+                    textDirectory[0].text = $"({FileAccessManager.GetFullPath(FileAccessManager.FOLDERTYPE.CHARA)}/)";
+                    textDirectory[1].text = $"/Download...[{fileManager.CountVRM(FileAccessManager.GetFullPath_Download() + "/")} VRMs]";
 
                     //ローディングアニメーションを無効状態
                     anime_Loading.gameObject.SetActive(false);
@@ -126,7 +127,9 @@ namespace UniLiveViewer
                     thumbnailCon.gameObject.SetActive(true);
 
                     //VRM選択ボタンを生成する
-                    thumbnailCon.SetThumbnail(fileManager.GetAllVRMNames()).Forget();
+                    string sFolderPath = FileAccessManager.GetFullPath(FileAccessManager.FOLDERTYPE.CHARA) + "/";
+                    string[] names = fileManager.GetAllVRMNames(sFolderPath);
+                    thumbnailCon.SetThumbnail(names).Forget();
                     break;
                 case 1:
                     //prefabEditor.Init();
@@ -263,7 +266,39 @@ namespace UniLiveViewer
 
             //UIを非表示にする
             UIShow(false);
+        }
 
+        public void ClearVRMPrefab(int id)
+        {
+            var charas = runtimeLoader.GetComponentsInChildren<CharaController>(true);//引数非アクティブ込み
+            int count = charas.Length;
+            Debug.Log($"削除対象:{count}");
+
+            int index;
+            for (int i = 0; i < count; i++)
+            {
+                index = count - i - 1;
+                if (charas[index].charaInfoData.vrmID == id)
+                {
+                    Destroy(charas[index].gameObject);
+                }
+            }
+        }
+
+        /// <summary>
+        /// ダウンロードフォルダからVRMをコピーしてくる
+        /// </summary>
+        public async void OnClick_VRMCopy()
+        {
+            try
+            {
+                await fileManager.CopyVRMtoCharaFolder(FileAccessManager.GetFullPath_Download() + "/");
+                InitPage(0);//開き直して反映
+            }
+            catch
+            {
+                textDirectory[1].text = "VRM Copy Error...";
+            }
         }
     }
 }

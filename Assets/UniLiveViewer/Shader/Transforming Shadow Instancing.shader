@@ -75,7 +75,6 @@ Shader "UniLiveViewer/Transforming Shadow Instancing"
 
                 v.vertex = mul(moveMatrix, mul(scaleMatrix, v.vertex));
                 o.vertex = TransformObjectToHClip(v.vertex.xyz);
-                
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 return o;
             }

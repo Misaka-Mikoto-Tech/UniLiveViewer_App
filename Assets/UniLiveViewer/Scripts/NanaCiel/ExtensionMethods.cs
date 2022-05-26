@@ -47,6 +47,17 @@ namespace NanaCiel
             }
             return result.ToArray();
         }
+
+        public static T Also<T>(this T self, System.Action<T>action)
+        {
+            action(self);
+            return self;
+        }
+
+        public static R Let<T, R>(this T self, System.Func<T,R> action)
+        {
+            return action(self);
+        }
     }
 
 }

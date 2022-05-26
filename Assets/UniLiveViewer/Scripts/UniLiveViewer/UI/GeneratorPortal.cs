@@ -130,7 +130,7 @@ namespace UniLiveViewer
         {
             if (listChara[currentChara].charaInfoData.formatType
                 != CharaInfoData.FORMATTYPE.VRM) return;
-            
+
             //オリジナル以外は削除可
             if(listChara[currentChara].name.Contains("(Clone)"))
             {
@@ -138,6 +138,8 @@ namespace UniLiveViewer
             }
             listChara[currentChara] = charaCon_vrm;
 
+            //未使用アセット削除
+            Resources.UnloadUnusedAssets();
         }
 
         /// <summary>
@@ -145,22 +147,10 @@ namespace UniLiveViewer
         /// </summary>
         public void DeleteCurrenVRM()
         {
-            if (listChara[currentChara].charaInfoData.formatType
-                != CharaInfoData.FORMATTYPE.VRM) return;
-
-            int id = listChara[currentChara].charaInfoData.vrmID;
-
-            //Prefabから削除
+            //UI上から削除
             Destroy(listChara[currentChara].gameObject);
-
             listChara.RemoveAt(currentChara);
-            currentChara--;
-
-            //フィールド上に存在すれば削除
-            timeline.DeletebindAsset_CleanUp(id);
-
-            //未使用アセットサーチが走り、不要なものを削除
-            Resources.UnloadUnusedAssets();
+            currentChara++;
         }
 
         /// <summary>

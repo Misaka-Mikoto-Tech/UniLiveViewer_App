@@ -39,7 +39,6 @@ namespace UniLiveViewer
 
         public List<Material> materials { get; private set; } = new List<Material>();
         public List<Material> materials_Base { get; private set; } = new List<Material>();//リセット用に取得
-        public static int layer_Default;
 
         [SerializeField]
         private Dictionary<BlendMode_MToon, BlendMode> replaceBlendmode = new Dictionary<BlendMode_MToon, BlendMode>()
@@ -76,8 +75,6 @@ namespace UniLiveViewer
             fallbackShader.Add("Universal Render Pipeline/Unlit", fallbackShader_default);
             fallbackShader.Add("Universal Render Pipeline/Lit", fallbackShader_default);
             fallbackShader.Add("Universal Render Pipeline/Simple Lit", fallbackShader_default);
-
-            layer_Default = SystemInfo.layerNo_Default;
 
             //replaceShader.Add(Shader.Find("Shader Graphs/Simple MToon"));
             //replaceShader.Add(Shader.Find("Shader Graphs/Simple Standard"));
@@ -126,13 +123,10 @@ namespace UniLiveViewer
                     if (mesh.transform.name.Contains("eye", StringComparison.OrdinalIgnoreCase) 
                         || mesh.transform.name.Contains("face", StringComparison.OrdinalIgnoreCase))
                     {
-                        //目や顔にアウトラインは残念な感じになりやすいので設定しない
-                        mesh.gameObject.layer = layer_Default;
+                        //目や顔にアウトラインは残念な感じになりやすいので
+                        mesh.gameObject.layer = SystemInfo.layerNo_UnRendererFeature;
                     }
-                    else
-                    {
-                        mesh.gameObject.layer = gameObject.layer;
-                    }
+                    else mesh.gameObject.layer = gameObject.layer;
 
                     //マテリアル取得
                     foreach (var mat in mesh.materials)

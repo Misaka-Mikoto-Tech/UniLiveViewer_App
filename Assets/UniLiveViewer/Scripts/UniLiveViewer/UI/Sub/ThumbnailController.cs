@@ -34,7 +34,6 @@ namespace UniLiveViewer
             cancellation_token = this.GetCancellationTokenOnDestroy();
             btnParent = transform;
 
-            Vector2 btnPos;
             int index = 0;
 
             for (int i = 0; i < 3; i++)
@@ -43,27 +42,18 @@ namespace UniLiveViewer
                 {
                     index = (i * 5) + j;
 
-                    //座標調整
-                    btnPos.x = -0.3f + (j * 0.15f);
-                    btnPos.y = 0 - (i * 0.15f);
-
                     //生成
                     btns[index] = Instantiate(btnPrefab);
-
-                    //親設定
-                    btns[index].transform.parent = btnParent;
-                    btns[index].transform.localPosition = new Vector3(btnPos.x, btnPos.y, 0);
-                    btns[index].transform.localRotation = Quaternion.identity;
-
-                    //コールバック登録
-                    //btns.onTrigger += (b) => LoadVRM(b).Forget();
-
-                    //テキストメッシュをリストに加える
-                    btnTexts.Add(btns[index].transform.GetChild(1).GetComponent<TextMesh>());
+                    btns[index].transform.Also((it) =>
+                    {
+                        it.parent = btnParent;
+                        it.localPosition = new Vector3(-0.3f + (j * 0.15f), 0 - (i * 0.15f));
+                        it.localRotation = Quaternion.identity;
+                        btnTexts.Add(it.GetChild(1).GetComponent<TextMesh>());
+                    });
                 }
                 await UniTask.Yield(PlayerLoopTiming.Update, cancellation_token);
             }
-
             return btns;
         }
 
@@ -103,14 +93,10 @@ namespace UniLiveViewer
                     btnTexts[index].text = vrmNames[index];
                     btnTexts[index].fontSize = btnTexts[index].text.FontSizeMatch(500, 25, 40);
                     UpdateSprite(index);
-                }
 
-                if (i % GENERATE_COUNT[r] == GENERATE_COUNT[r] - 1)
-                {
-                    onGenerated?.Invoke();
-                    await UniTask.Delay(GENERATE_INTERVAL[r], cancellationToken: cancellation_token);
+                    if (i % GENERATE_COUNT[r] == 0) onGenerated?.Invoke();
+                    if (i % GENERATE_COUNT[r] == GENERATE_COUNT[r] - 1) await UniTask.Delay(GENERATE_INTERVAL[r], cancellationToken: cancellation_token);
                 }
-
             }
         }
 
@@ -168,6 +154,4 @@ namespace UniLiveViewer
             return inputArray;
         }
     }
-
-
 }

@@ -95,6 +95,10 @@ namespace UniLiveViewer
                     transform.position = new Vector3(0, 0.5f, 5.5f);
                     transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
                     break;
+                case SceneMode.GYMNASIUM:
+                    transform.position = new Vector3(0, 0.5f, 5.5f);
+                    transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
+                    break;
             }
             this.enabled = false;
         }
@@ -307,10 +311,10 @@ namespace UniLiveViewer
             var grabObj = hand.grabbedObject;
             if (grabObj && grabObj.isBothHandsGrab)
             {
-                hand.FoeceGrabEnd();
+                hand.FoeceGrabEnd();//強制離す
 
-                //アタッチ対象ありかつマニュアルモード
-                if (grabObj.hitCollider && timeline.isManualMode())
+                //アタッチ成功かつマニュアルモード
+                if (timeline.isManualMode() && grabObj.GetComponent<DecorationItemInfo>().TryAttachment())
                 {
                     //手なら握らせる
                     if (grabObj.hitCollider.name.Contains("Hand"))
@@ -318,12 +322,8 @@ namespace UniLiveViewer
                         var targetChara = grabObj.hitCollider.GetComponent<AttachPoint>().myCharaCon;
                         timeline.SwitchHandType(targetChara, true, grabObj.hitCollider.name.Contains("Left"));
                     }
-
-                    //アタッチする
-                    grabObj.AttachToHitCollider();
                     audioSource.PlayOneShot(Sound[3]);
                 }
-                //アタッチ先がなければ削除
                 else
                 {
                     Destroy(grabObj.gameObject);
@@ -520,9 +520,9 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// どちらかの手で対象タグのオブジェクトを掴んでいるか
+        /// どちらかの手でスライダーをつかんでいるか
         /// </summary>
-        public bool CheckGrabbing()
+        public bool IsSliderGrabbing()
         {
             for (int i = 0; i < ovrGrabber.Length; i++)
             {

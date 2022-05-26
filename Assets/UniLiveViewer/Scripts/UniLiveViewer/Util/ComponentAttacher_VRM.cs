@@ -175,21 +175,11 @@ namespace UniLiveViewer
                 await UniTask.Yield(PlayerLoopTiming.Update, token);
 
                 //注視関連の調整
-                var lookAtHead = targetVRM.GetComponent<VRMLookAtHead_Custom>();
                 var lookAtCon = targetVRM.AddComponent<LookAtController>();
-                lookAtHead.Target = GameObject.FindGameObjectWithTag("MainCamera").transform;
-                lookAtCon.SetVRMComponent(animator, CharaCon, lookAtHead.Target);
+                var lookAtHead = targetVRM.GetComponent<VRMLookAtHead_Custom>();
+                lookAtHead.Target = lookAtCon.lookTarget;
                 lookAtHead.UpdateType = UpdateType.LateUpdate;
-                if (targetVRM.GetComponent<VRMLookAtBoneApplyer_Custom>() != null)
-                {
-                    CharaCon.charaInfoData.charaType = CharaInfoData.CHARATYPE.VRM_Bone;
-                    lookAtCon.VRMLookAtEye_Bone = targetVRM.GetComponent<VRMLookAtBoneApplyer_Custom>();
-                }
-                if (targetVRM.GetComponent<VRMLookAtBlendShapeApplyer_Custom>() != null)
-                {
-                    CharaCon.charaInfoData.charaType = CharaInfoData.CHARATYPE.VRM_BlendShape;
-                    lookAtCon.VRMLookAtEye_UV = targetVRM.GetComponent<VRMLookAtBlendShapeApplyer_Custom>();
-                }
+                CharaCon.InitLookAtController();//初期化
 
                 string name = meta.Meta.Title;
                 CharaCon.charaInfoData.vrmID = VRMSwitchController.loadVRMID;

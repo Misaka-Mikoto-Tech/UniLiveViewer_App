@@ -62,14 +62,26 @@ namespace UniLiveViewer
         void Awake()
         {
             animator = transform.GetComponent<Animator>();
-            //Presetキャラのみ
-            if (charaInfoData && charaInfoData.formatType == CharaInfoData.FORMATTYPE.FBX)
-            {
-                if (GetComponent<LookAtController>() != null) lookAtCon = GetComponent<LookAtController>();
-            }
+            InitLookAtController();
             customScalar = SystemInfo.userProfile.InitCharaSize;
         }
 
+        public void InitLookAtController()
+        {
+            if (GetComponent<LookAtController>() == null) return;
+            lookAtCon = GetComponent<LookAtController>();
+
+            if (GetComponent<VRMLookAtBoneApplyer_Custom>() != null)
+            {
+                charaInfoData.charaType = CharaInfoData.CHARATYPE.VRM_Bone;
+                lookAtCon.VRMLookAtEye_Bone = GetComponent<VRMLookAtBoneApplyer_Custom>();
+            }
+            else if (GetComponent<VRMLookAtBlendShapeApplyer_Custom>() != null)
+            {
+                charaInfoData.charaType = CharaInfoData.CHARATYPE.VRM_BlendShape;
+                lookAtCon.VRMLookAtEye_UV = GetComponent<VRMLookAtBlendShapeApplyer_Custom>();
+            }
+        }
 
         /// <summary>
         /// 状態設定
@@ -85,6 +97,7 @@ namespace UniLiveViewer
             switch (charaState)
             {
                 case CHARASTATE.NULL:
+                    //VRMとPrefab用
                     globalScale = Vector3.one;
                     gameObject.layer = SystemInfo.layerNo_Default;
                     lookAtCon.enabled = false;
@@ -113,14 +126,9 @@ namespace UniLiveViewer
                 transform.parent = overrideAnchor;
 
                 //親Scaleの影響を無視する為に算出
-                Vector3 scr = overrideAnchor.lossyScale;
-                scr.x = 1 / scr.x;
-                scr.y = 1 / scr.y;
-                scr.z = 1 / scr.z;
-
-                globalScale.x *= scr.x;
-                globalScale.y *= scr.y;
-                globalScale.z *= scr.z;
+                globalScale.x *= 1 / overrideAnchor.lossyScale.x;
+                globalScale.y *= 1 / overrideAnchor.lossyScale.y;
+                globalScale.z *= 1 / overrideAnchor.lossyScale.z;
             }
             else transform.parent = null;
 
