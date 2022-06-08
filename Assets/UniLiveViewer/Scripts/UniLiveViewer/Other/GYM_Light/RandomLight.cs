@@ -4,9 +4,8 @@ using UnityEngine;
 
 namespace UniLiveViewer
 {
-    public class RandomLight : StageCharaObserver
+    public class RandomLight : LightBase
     {
-        [SerializeField] private Transform[] lights;
         [SerializeField] private readonly float MAX_INTERVAL = 0.25f;
         [SerializeField] private float MAXLIFETIME = 1.00f;
         private float interval;
@@ -23,7 +22,7 @@ namespace UniLiveViewer
         }
 
         // Update is called once per frame
-        void Update()
+        protected override void Update()
         {
             interval -= Time.deltaTime;
             if (interval < 0)
@@ -32,7 +31,19 @@ namespace UniLiveViewer
 
                 int index = Random.Range(0, lights.Length);
                 if (!lights[index].gameObject.activeSelf) lights[index].gameObject.SetActive(true);
-                lights[index].localRotation = Quaternion.Euler(new Vector3(0,0,Random.Range(-205,-155)));
+                lights[index].transform.localRotation = Quaternion.Euler(new Vector3(0,0,Random.Range(-205,-155)));
+
+                if(!isWhitelight)
+                {
+                    lights[index].sharedMaterial.SetColor
+                            (propertyName,
+                            new Color(
+                                Random.Range(0, 1.0f),
+                                Random.Range(0, 1.0f),
+                                Random.Range(0, 1.0f)
+                                )
+                            );
+                }                
             }
 
             for (int i = 0;i< lights.Length; i++)
@@ -47,7 +58,6 @@ namespace UniLiveViewer
                     }
                 }
             }
-
         }
     }
 }

@@ -129,6 +129,9 @@ namespace UniLiveViewer
                 globalScale.x *= 1 / overrideAnchor.lossyScale.x;
                 globalScale.y *= 1 / overrideAnchor.lossyScale.y;
                 globalScale.z *= 1 / overrideAnchor.lossyScale.z;
+
+                transform.position = overrideAnchor.position;
+                transform.localRotation = Quaternion.Euler(Vector3.zero);
             }
             else transform.parent = null;
 

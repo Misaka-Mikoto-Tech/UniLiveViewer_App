@@ -88,7 +88,7 @@ namespace UniLiveViewer
                     transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
                     break;
                 case SceneMode.KAGURA_LIVE:
-                    transform.position = new Vector3(0, 1, 4);
+                    transform.position = new Vector3(0, 1, 5);
                     transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
                     break;
                 case SceneMode.VIEWER:
@@ -251,7 +251,7 @@ namespace UniLiveViewer
                         int current = (int)System.Math.Round(degree / PIECE_ANGLE);//Mathfは四捨五入ではない→.NET使用
                         if (handUIController.TrySetItemTexture((int)handType, current))
                         {
-                            audioSource.PlayOneShot(Sound[2]);
+                            audioSource.PlayOneShot(Sound[5]);
                         }
                     }
                 }

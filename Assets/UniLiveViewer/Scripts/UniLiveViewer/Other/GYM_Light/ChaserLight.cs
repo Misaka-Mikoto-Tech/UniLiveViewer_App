@@ -2,9 +2,8 @@
 
 namespace UniLiveViewer
 {
-    public class ChaserLight : StageCharaObserver
+    public class ChaserLight : LightBase
     {
-        [SerializeField] private Transform[] lights;
         private Vector3 pos;
 
         protected override void Init()
@@ -19,14 +18,16 @@ namespace UniLiveViewer
         }
 
         // Update is called once per frame
-        void Update()
+        protected override void Update()
         {
+            base.Update();
+
             for (int i = 0; i < targets.Length; i++)
             {
                 if (!targets[i]) continue;
                 pos = targets[i].position;
-                pos.y = lights[i].position.y;
-                lights[i].position = pos;
+                pos.y = lights[i].transform.position.y;
+                lights[i].transform.position = pos;
             }
         }
     }

@@ -44,7 +44,6 @@ namespace UniLiveViewer
 
         //読み込み済みVMD情報
         private static Dictionary<string, VMD> dic_VMDReader = new Dictionary<string, VMD>();
-
         void Awake()
         {
             //キャラリストに空枠を追加(空をVRM読み込み枠として扱う、雑仕様)
@@ -150,7 +149,6 @@ namespace UniLiveViewer
             //UI上から削除
             Destroy(listChara[currentChara].gameObject);
             listChara.RemoveAt(currentChara);
-            currentChara++;
         }
 
         /// <summary>
@@ -184,6 +182,9 @@ namespace UniLiveViewer
 
                 //キャラを生成
                 charaCon = Instantiate(listChara[currentChara]);
+                charaCon.transform.position = transform.position;
+                charaCon.transform.localRotation = Quaternion.identity;
+
                 if (listChara[currentChara].GetComponent<MaterialManager>())
                 {
                     var matManager_f = listChara[currentChara].GetComponent<MaterialManager>();
@@ -231,6 +232,7 @@ namespace UniLiveViewer
                 }
 
                 onGeneratedChara?.Invoke();
+
                 SetAnimation(0).Forget();//キャラにアニメーション情報をセットする
 
             }
@@ -268,8 +270,8 @@ namespace UniLiveViewer
                     await VMDPlay(vmdPlayer, folderPath, GetNowAnimeInfo().viewName, cts.Token);
 
                     //ポータル上のキャラにアニメーション設定
-                    timeline.SetAnimationClip(timeline.sPortalBaseAniTrack, danceAniClipInfo[currentAnime], transform.position, Vector3.zero);
-                    await UniTask.Yield(PlayerLoopTiming.Update, cts.Token);
+                    //timeline.SetAnimationClip(timeline.sPortalBaseAniTrack, danceAniClipInfo[currentAnime], transform.position, Vector3.zero);
+                    timeline.SetAnimationClip(timeline.sPortalBaseAniTrack, danceAniClipInfo[currentAnime]);
                 }
                 //プリセットアニメーション 
                 else
@@ -283,11 +285,15 @@ namespace UniLiveViewer
                     portalChara.animationMode = CharaController.ANIMATIONMODE.CLIP;
 
                     //ポータル上のキャラにアニメーション設定
-                    timeline.SetAnimationClip(timeline.sPortalBaseAniTrack, danceAniClipInfo[currentAnime], transform.position, Vector3.zero);
-                    await UniTask.Yield(PlayerLoopTiming.Update, cts.Token);
+                    //timeline.SetAnimationClip(timeline.sPortalBaseAniTrack, danceAniClipInfo[currentAnime], transform.position, Vector3.zero);
+                    timeline.SetAnimationClip(timeline.sPortalBaseAniTrack, danceAniClipInfo[currentAnime]);
                 }
-
                 onGeneratedAnime?.Invoke();
+
+                //最後に表情系をリセットしておく
+                await UniTask.Yield(PlayerLoopTiming.Update, cts.Token);
+                portalChara.facialSync.AllClear_BlendShape();
+                portalChara.lipSync.AllClear_BlendShape();
             }
             catch (OperationCanceledException)
             {

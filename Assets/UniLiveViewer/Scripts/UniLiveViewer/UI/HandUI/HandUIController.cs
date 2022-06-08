@@ -17,7 +17,7 @@ namespace UniLiveViewer
             get { return _playerHeight; }
             set 
             {
-                _playerHeight = Mathf.Clamp(value, 0, 1.5f);
+                _playerHeight = Mathf.Clamp(value, 0, 2.0f);
                 charaCam.HeightOffset = _playerHeight;
                 handUI_PlayerHeight.textMesh.text = $"{_playerHeight:0.00}";
             }

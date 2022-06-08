@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using NanaCiel;
 
 namespace UniLiveViewer
 {
@@ -44,6 +43,15 @@ namespace UniLiveViewer
         private TimelineController timeline;
         private ShadowData[] shadowDatas;
 
+        private RaycastHit hitCollider;
+        private Collider[] hitCollider_L = new Collider[5], hitCollider_R = new Collider[5];
+        [SerializeField] private float footRay = 0.05f;
+        public bool isStepSE = false;
+
+        [Space(10), Header("サウンド")]
+        [SerializeField] private AudioClip[] Sound;//UI開く,UI閉じる
+        [SerializeField] private AudioSource[] audioSource = new AudioSource[5];
+
         // Start is called before the first frame update
         void Start()
         {
@@ -73,6 +81,7 @@ namespace UniLiveViewer
                 Destroy(prefab.gameObject);
             }
 
+            isStepSE = SystemInfo.userProfile.StepSE;
             shadowScale = SystemInfo.userProfile.CharaShadow;
             ShadowType = (SHADOWTYPE)SystemInfo.userProfile.CharaShadowType;
         }
@@ -113,6 +122,37 @@ namespace UniLiveViewer
                     Transforming(shadowDatas[i].charaCon, shadowDatas[i].spine, shadowDatas[i].meshRenderer_c, preset[index].scala_Body);
                     Transforming(shadowDatas[i].charaCon, shadowDatas[i].leftFoot, shadowDatas[i].meshRenderer_l, preset[index].scala_Foot);
                     Transforming(shadowDatas[i].charaCon, shadowDatas[i].rightFoot, shadowDatas[i].meshRenderer_r, preset[index].scala_Foot);
+                }
+            }
+
+            if (SystemInfo.sceneMode == SceneMode.GYMNASIUM && isStepSE) FootSound();
+        }
+
+        private void FootSound()
+        {
+            for (int i = 0; i < shadowDatas.Length; i++)
+            {
+                if (!shadowDatas[i].charaCon) continue;
+                //床に向かってrayを飛ばす
+                Physics.Raycast(shadowDatas[i].leftFoot.position, Vector3.down, out hitCollider, footRay, SystemInfo.layerMask_StageFloor);
+                if (hitCollider.collider != hitCollider_L[i])
+                {
+                    hitCollider_L[i] = hitCollider.collider;
+                    if (hitCollider_L[i])
+                    {
+                        audioSource[i].transform.position = shadowDatas[i].leftFoot.position;
+                        audioSource[i].PlayOneShot(Sound[UnityEngine.Random.Range(0, Sound.Length)]);
+                    }
+                }
+                Physics.Raycast(shadowDatas[i].rightFoot.position, Vector3.down, out hitCollider, footRay, SystemInfo.layerMask_StageFloor);
+                if (hitCollider.collider != hitCollider_R[i])
+                {
+                    hitCollider_R[i] = hitCollider.collider;
+                    if (hitCollider_R[i])
+                    {
+                        audioSource[i].transform.position = shadowDatas[i].rightFoot.position;
+                        audioSource[i].PlayOneShot(Sound[UnityEngine.Random.Range(0, Sound.Length)]);
+                    }
                 }
             }
         }

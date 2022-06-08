@@ -244,7 +244,8 @@ namespace UniLiveViewer
         /// <param name="overrideAniClips"></param>
         /// <param name="initPos"></param>
         /// <param name="initEulerAngles"></param>
-        public void SetAnimationClip(string baseAniTrackName, DanceInfoData danceInfoData, Vector3 initPos, Vector3 initEulerAngles)
+        //public void SetAnimationClip(string baseAniTrackName, DanceInfoData danceInfoData, Vector3 initPos, Vector3 initEulerAngles)
+        public void SetAnimationClip(string baseAniTrackName, DanceInfoData danceInfoData)
         {
             // タイムライン内のトラック一覧を取得
             if (timeLineAsset == null) timeLineAsset = playableDirector.playableAsset as TimelineAsset;
@@ -266,13 +267,15 @@ namespace UniLiveViewer
                 AnimationPlayableAsset animationPlayableAsset = danceClip.asset as AnimationPlayableAsset;
                 if (!danceInfoData.isReverse) animationPlayableAsset.clip = danceInfoData.baseDanceClip;
                 else animationPlayableAsset.clip = danceInfoData.baseDanceClip_reverse;
-                animationPlayableAsset.position = initPos;
-                animationPlayableAsset.rotation = Quaternion.Euler(initEulerAngles);
+
+                //animationPlayableAsset.position = initPos;
+                //animationPlayableAsset.rotation = Quaternion.Euler(initEulerAngles);
+
                 //(danceClip.asset as AnimationPlayableAsset).clip = animationClip;
 
                 //オーバーライドアニメーションを登録する
                 SetAnimationClip_Override(track, danceInfoData);
-                
+
                 //反映の為にディレクターをリスタートする
                 TimeLineReStart();
             }
@@ -557,6 +560,10 @@ namespace UniLiveViewer
                 }
             }
 
+            //表情系をリセットしておく
+            trackBindChara[PORTAL_ELEMENT].facialSync.AllClear_BlendShape();
+            trackBindChara[PORTAL_ELEMENT].lipSync.AllClear_BlendShape();
+
             //##### ここから転送先処理 #####
             IEnumerable<PlayableBinding> outputs = playableDirector.playableAsset.outputs;
             //移行元のPlayableBindingをnullバインドで解除しておく
@@ -610,16 +617,17 @@ namespace UniLiveViewer
             }
 
             //アニメーションを移行(取得した転送元アニメーションで新規登録)
-            SetAnimationClip(toTrackName, danceInfoData, initPos, initEulerAngles);
+            //SetAnimationClip(toTrackName, danceInfoData, initPos, initEulerAngles);
+            SetAnimationClip(toTrackName, danceInfoData);
 
             //RootMotionの解除
             //掴んで自由に移動させる為に必要だったが、設置後は移動モーションにカクツキが生じてしまうため解除
             //設置座標設定後に解除しないと位置が反映されないので注意(またこの変更はアニメーターの再初期化が走る)
             transferChara.GetComponent<Animator>().applyRootMotion = false;
 
-            //表情系をリセットしておく
-            transferChara.facialSync.AllClear_BlendShape();
-            transferChara.lipSync.AllClear_BlendShape();
+            //座標系はRootMotion変更後
+            transferChara.transform.position = initPos;
+            transferChara.transform.rotation = Quaternion.Euler(initEulerAngles);
 
             //フィールドカウンター
             FieldCharaCount++;

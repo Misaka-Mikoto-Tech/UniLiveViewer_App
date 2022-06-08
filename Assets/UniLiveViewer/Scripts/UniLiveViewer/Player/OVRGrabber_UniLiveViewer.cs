@@ -231,7 +231,7 @@ namespace UniLiveViewer
 
                         //セレクターの座標と角度を取得
                         Vector3 pos = lineSelector.LineEndAnchor.position;
-                        Vector3 eulerAngles = lineSelector.LineEndAnchor.localRotation.eulerAngles;
+                        Vector3 eulerAngles = lineSelector.LineEndAnchor.rotation.eulerAngles;
 
                         //移行に失敗ならPortalに戻す
                         if (!timeline.TransferPlayableAsset(keepChara, freeTrack, pos, eulerAngles))

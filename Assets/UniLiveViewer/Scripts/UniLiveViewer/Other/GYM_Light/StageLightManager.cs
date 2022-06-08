@@ -6,6 +6,7 @@ namespace UniLiveViewer
 {
     public class StageLightManager : MonoBehaviour
     {
+        [SerializeField] private Material[] shadowMat = new Material[5];
         [SerializeField] private int currnt = 0;
         private Transform[] targets;
 
@@ -17,11 +18,12 @@ namespace UniLiveViewer
             {
                 targets[i] = transform.GetChild(i);
             }
-            SetStageLight(0, out string str);
+
+            SetStageLight(0, SystemInfo.userProfile.scene_gym_whitelight, out string str);
         }
 
         // Update is called once per frame
-        public void SetStageLight(int moveIndex, out string resultName)
+        public void SetStageLight(int moveIndex, bool isWhite, out string resultName)
         {
             resultName = "";
             currnt += moveIndex;
@@ -35,7 +37,13 @@ namespace UniLiveViewer
                 if (targets[i].gameObject.activeSelf != isEnabel) targets[i].gameObject.SetActive(isEnabel);
                 if(isEnabel) resultName = targets[currnt].name;
             }
+            SetLightColor(isWhite);
+        }
+
+        public void SetLightColor(bool isWhite)
+        {
+            var lightBase = targets[currnt].GetComponent<LightBase>();
+            if (lightBase) lightBase.SetLightCollar(isWhite);
         }
     }
-
 }

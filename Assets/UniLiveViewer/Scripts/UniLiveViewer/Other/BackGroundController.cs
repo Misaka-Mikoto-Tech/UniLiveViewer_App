@@ -85,7 +85,7 @@ namespace UniLiveViewer
         /// パーティクルを変更
         /// </summary>
         /// <param name="moveIndex"></param>
-        public void SetParticle(int moveIndex, out string resultCurrent)
+        public void SetParticle(int moveIndex, out string resultName)
         {
             currntParticle += moveIndex;
             if (particleAnchors.Length <= currntParticle) currntParticle = 0;
@@ -98,8 +98,8 @@ namespace UniLiveViewer
                 if (particleAnchors[i].gameObject.activeSelf != setFlag) particleAnchors[i].gameObject.SetActive(setFlag);
             }
 
-            if (currntParticle == 0) resultCurrent = "None";
-            else resultCurrent = particleAnchors[currntParticle].name;
+            if (currntParticle == 0) resultName = "None";
+            else resultName = particleAnchors[currntParticle].name;
         }
     }
 }
