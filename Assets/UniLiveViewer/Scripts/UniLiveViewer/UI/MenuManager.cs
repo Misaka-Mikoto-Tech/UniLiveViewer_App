@@ -7,6 +7,7 @@ namespace UniLiveViewer
         BTN_CLICK,
         BTN_TAB_CLICK,
         BTN_SPRING,
+        BTN_CLICK_LIGHT,
     }
 
     public class MenuManager : MonoBehaviour
@@ -31,15 +32,15 @@ namespace UniLiveViewer
         private void Awake()
         {
             audioSource = GetComponent<AudioSource>();
-            audioSource.volume = SystemInfo.soundVolume_SE; 
+            audioSource.volume = SystemInfo.soundVolume_SE;
+
+            _timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
+            _fileAccess = GameObject.FindGameObjectWithTag("AppConfig").gameObject.GetComponent<FileAccessManager>();
         }
 
         // Start is called before the first frame update
         void Start()
         {
-            _timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
-            _fileAccess = GameObject.FindGameObjectWithTag("AppConfig").gameObject.GetComponent<FileAccessManager>();
-
             pageController.onSwitchPage += () =>
             {
                 if (jumpList.gameObject.activeSelf) jumpList.gameObject.SetActive(false);

@@ -4,11 +4,13 @@ namespace UniLiveViewer
     public class UserProfile
     {
         public int LanguageCode = 0;
-        public float InitCharaSize = 1.00f;
-        public float CharaShadow = 1.00f;
+        public string LastSceneName = "LiveScene";
+        public float InitCharaSize = 1.15f;
+        public float CharaShadow = 1.25f;
         public int CharaShadowType = 1;
         public float VMDScale = 0.750f;
         public bool TouchVibration = true;
+        public bool StepSE = true;
 
         public bool scene_crs_particle = true;
         public bool scene_crs_laser = true;
@@ -21,5 +23,7 @@ namespace UniLiveViewer
         public bool scene_kagura_reflection = true;
 
         public bool scene_view_led = true;
+
+        public bool scene_gym_whitelight = true;
     }
 }

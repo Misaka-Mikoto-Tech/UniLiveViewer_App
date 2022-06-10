@@ -98,6 +98,8 @@ namespace UniLiveViewer
             var async = SceneManager.LoadSceneAsync(sceneName);
             async.allowSceneActivation = false;
             await UniTask.Delay(1000, cancellationToken: cancellation_Token);
+            SystemInfo.userProfile.LastSceneName = sceneName;
+            FileAccessManager.WriteJson(SystemInfo.userProfile);
             async.allowSceneActivation = true;
         }
 

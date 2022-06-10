@@ -1,75 +1,35 @@
-﻿using UnityEngine;
+﻿using Cysharp.Threading.Tasks;
+using System;
+using UnityEngine;
 
 namespace UniLiveViewer
 {
-    //TODO：1タブ1?に整理したい
     public class PopUpDetail : MonoBehaviour
     {
-        [SerializeField] private Sprite[] sprPrefab = new Sprite[2];
-        [SerializeField] private SpriteRenderer sprRender;
-
-        private Animator anime;
+        public event Action OnHit;
         private int hitLayer = 0;
-        private bool isPopUp = false;
-        private int cnt = 0;
+        private bool touchable = true;
 
         // Start is called before the first frame update
         void Awake()
         {
-            anime = GetComponent<Animator>();
-            hitLayer = LayerMask.NameToLayer("Ignore Raycast");
+            hitLayer = SystemInfo.layerNo_IgnoreRaycats;
+        }
 
-            //言語で差し替える
-            if (SystemInfo.userProfile.LanguageCode == (int)USE_LANGUAGE.JP)
+        private void OnTriggerEnter(Collider other)
+        {
+            if (touchable && other.gameObject.layer == hitLayer)
             {
-                sprRender.sprite = sprPrefab[1];
-            }
-            else
-            {
-                sprRender.sprite = sprPrefab[0];
+                Interval().Forget();
+                OnHit?.Invoke();
             }
         }
 
-        private void OnEnable()
+        private async UniTaskVoid Interval()
         {
-            cnt = 0;
-            isPopUp = false;
-
-            anime.enabled = true;
-        }
-
-        private void OnDisable()
-        {
-            anime.enabled = false;
-            sprRender.enabled = false;
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-            if (isPopUp)
-            {
-                cnt++;
-                if (cnt > 30)
-                {
-                    isPopUp = false;
-                    anime.SetBool("isDisplay", false);
-                }
-            }
-        }
-
-        private void OnTriggerStay(Collider other)
-        {
-            if (other.gameObject.layer == hitLayer)
-            {
-                cnt = 0;
-                if (!isPopUp)
-                {
-                    isPopUp = true;
-                    anime.SetBool("isDisplay", true);
-                }
-            }
+            touchable = false;
+            await UniTask.Delay(1000);
+            touchable = true;
         }
     }
-
 }

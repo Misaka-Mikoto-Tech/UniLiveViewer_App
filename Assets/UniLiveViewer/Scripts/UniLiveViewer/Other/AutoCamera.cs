@@ -31,8 +31,11 @@ namespace UniLiveViewer
             timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
             cancellationToken = this.GetCancellationTokenOnDestroy();
 
-            timeline.FieldCharaAdded += Init;
-            timeline.FieldCharaDeleted += Init;
+            if(switchType != SWITCHTYPE.ALL)
+            {
+                timeline.FieldCharaAdded += Init;
+                timeline.FieldCharaDeleted += Init;
+            }
 
             foreach (var e in _camera)
             {

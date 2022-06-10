@@ -27,6 +27,10 @@ namespace UniLiveViewer
         [SerializeField] private Button_Base btn_FaceUpdate = null;
         [SerializeField] private Button_Base btn_MouthUpdate = null;
 
+        [Header("＜マニュアル用＞")]
+        [SerializeField] private GameObject[] bookPrefab;
+        [SerializeField] private GameObject bookGrabAnchor;
+
         private Transform offsetAnchor;
         private Transform VRMOptionAnchor;
 
@@ -87,6 +91,7 @@ namespace UniLiveViewer
                 btn_Offset[i].onTrigger += ChangeOffset_Anime;
             }
             btn_Reverse.onTrigger += (b) => ChangeReverse_Anime(b).Forget();
+            btn_Reverse.isEnable = false;
             timeline.FieldCharaAdded += () => { Add_FieldChara().Forget(); };
             timeline.FieldCharaDeleted += () => { Add_FieldChara().Forget(); };
             slider_Offset.ValueUpdate += () =>
@@ -155,6 +160,9 @@ namespace UniLiveViewer
 
             if (offsetAnchor.gameObject.activeSelf) offsetAnchor.gameObject.SetActive(false);
             if (VRMOptionAnchor.gameObject.activeSelf) VRMOptionAnchor.gameObject.SetActive(false);
+
+            //マニュアル生成
+            Instantiate(bookPrefab[SystemInfo.userProfile.LanguageCode - 1], bookGrabAnchor.transform);
         }
 
         // Update is called once per frame
@@ -277,8 +285,8 @@ namespace UniLiveViewer
             {
                 //キャラを生成して反転を反映させる
                 await generatorPortal.SetChara(0);
-                textMeshs[0].text = generatorPortal.GetNowAnimeInfo().viewName;
-                textMeshs[0].fontSize = textMeshs[0].text.FontSizeMatch(600, 30, 50);
+                textMeshs[1].text = generatorPortal.GetNowAnimeInfo().viewName;
+                textMeshs[1].fontSize = textMeshs[1].text.FontSizeMatch(600, 30, 50);
 
                 //スライダーの値を反映
                 bindChara.lookAtCon.inputWeight_Head = slider_HeadLook.Value;
@@ -453,6 +461,12 @@ namespace UniLiveViewer
                 //LipSyncボタンを表示(今回は実装しない)
                 //if(!btn_jumpList[2].gameObject.activeSelf) btn_jumpList[2].gameObject.SetActive(true);
             }
+        }
+
+        public void OnClickManualBook()
+        {
+            menuManager.PlayOneShot(SoundType.BTN_CLICK);
+            bookGrabAnchor.SetActive(!bookGrabAnchor.activeSelf);
         }
 
         private void DebugInput()

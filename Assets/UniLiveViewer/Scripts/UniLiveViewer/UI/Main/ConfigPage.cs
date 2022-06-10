@@ -11,10 +11,6 @@ namespace UniLiveViewer
         public static bool isSmoothVMD = false;
         [SerializeField] private MenuManager menuManager;
 
-        [Header("＜マニュアル＞")]
-        [SerializeField] private Sprite[] sprManualPrefab = new Sprite[4];
-        [SerializeField] private SpriteRenderer[] sprManual = new SpriteRenderer[2];
-
         [Header("＜シーン別＞")]
         [SerializeField] private Transform[] sceneAnchor;
         private Button_Base[] btnE = new Button_Base[5];
@@ -26,9 +22,12 @@ namespace UniLiveViewer
         [Header("＜ViewerScene専用＞")]
         [SerializeField] private TextMesh[] textMeshs_Viewer = new TextMesh[4];
 
+        [Header("＜Gym専用＞")]
+        [SerializeField] private TextMesh[] textMeshs_Gym = new TextMesh[1];
+
         [Header("＜共用＞")]
         [SerializeField] private Button_Base[] btn_General = null;
-        [SerializeField] private Button_Switch[] btnE_SecenChange = new Button_Switch[3];
+        [SerializeField] private Button_Switch[] btnE_SecenChange = new Button_Switch[4];
         [SerializeField] private TextMesh[] textMeshs = new TextMesh[5];
         [SerializeField] private SliderGrabController slider_OutLine;
         [SerializeField] private SliderGrabController slider_InitCharaSize;
@@ -46,6 +45,7 @@ namespace UniLiveViewer
 
         private Material matMirrore;//LiveScene用
         private BackGroundController backGroundCon;
+        private StageLightManager stageLightManager;
         private CancellationToken cancellation_token;
 
         private void Awake()
@@ -101,31 +101,22 @@ namespace UniLiveViewer
         void Start()
         {
             int current = (int)SystemInfo.sceneMode;
-            
+
             //シーン応じて有効化を切り替える
             for (int i = 0; i < sceneAnchor.Length; i++)
             {
-                if (i == current && !sceneAnchor[i].gameObject.activeSelf) sceneAnchor[i].gameObject.SetActive(true);
-                else if (sceneAnchor[i].gameObject.activeSelf) sceneAnchor[i].gameObject.SetActive(false);
+                if (i == current)
+                {
+                    if(!sceneAnchor[i].gameObject.activeSelf) sceneAnchor[i].gameObject.SetActive(true);
+                }
+                else if (sceneAnchor[i].gameObject.activeSelf)
+                {
+                    sceneAnchor[i].gameObject.SetActive(false);
+                }
             }
 
             if (SystemInfo.sceneMode == SceneMode.CANDY_LIVE)
             {
-                var manualAnchor = GameObject.FindGameObjectWithTag("ManualUI").transform;
-                sprManual[0] = manualAnchor.GetChild(0).GetComponent<SpriteRenderer>();
-                sprManual[1] = manualAnchor.GetChild(1).GetComponent<SpriteRenderer>();
-
-                if (SystemInfo.userProfile.LanguageCode == (int)USE_LANGUAGE.JP)
-                {
-                    sprManual[0].sprite = sprManualPrefab[1];
-                    sprManual[1].sprite = sprManualPrefab[3];
-                }
-                else
-                {
-                    sprManual[0].sprite = sprManualPrefab[0];
-                    sprManual[1].sprite = sprManualPrefab[2];
-                }
-
                 //シーン別専用ボタンの割り当て
                 for (int i = 0; i < 5; i++)
                 {
@@ -182,8 +173,13 @@ namespace UniLiveViewer
                 btnE_ActionParent[0].gameObject.SetActive(SystemInfo.userProfile.scene_view_led);
             }
             else if (SystemInfo.sceneMode == SceneMode.GYMNASIUM)
-            { 
-            
+            {
+                //シーン別専用ボタンの割り当て
+                for (int i = 0; i < 2; i++)
+                {
+                    btnE[i] = sceneAnchor[current].GetChild(i).GetComponent<Button_Base>();
+                }
+                stageLightManager = GameObject.FindGameObjectWithTag("BackGroundController").GetComponent<StageLightManager>();
             }
 
                 
@@ -236,6 +232,19 @@ namespace UniLiveViewer
             {
                 //各種有効化状態にボタンを合わせる
                 btnE[0].isEnable = btnE_ActionParent[0].gameObject.activeSelf;
+            }
+            else if (SystemInfo.sceneMode == SceneMode.VIEWER)
+            {
+                //各種有効化状態にボタンを合わせる
+                btnE[0].isEnable = btnE_ActionParent[0].gameObject.activeSelf;
+            }
+            else if (SystemInfo.sceneMode == SceneMode.GYMNASIUM)
+            {
+                //各種有効化状態にボタンを合わせる
+                btnE[0].isEnable = SystemInfo.userProfile.scene_gym_whitelight;
+                btnE[1].isEnable = SystemInfo.userProfile.StepSE;
+
+                Click_Setting_Gym(0);
             }
 
             //共用
@@ -354,7 +363,7 @@ namespace UniLiveViewer
                     if (btnE_ActionParent[4])
                     {
                         btnE_ActionParent[4].gameObject.SetActive(result);
-                        SystemInfo.userProfile.scene_crs_manual = result;
+                        btnE_ActionParent[4].GetComponent<ManualSwitch>().SetEnable(result);
                     }
                     break;
             }
@@ -473,6 +482,46 @@ namespace UniLiveViewer
             menuManager.PlayOneShot(SoundType.BTN_CLICK);
         }
 
+        public void Click_ChangeStageLight(int i)
+        {
+            if (!stageLightManager) return;
+            string str;
+
+            switch (i)
+            {
+                case 0:
+                    stageLightManager.SetStageLight(-1, btnE[0].isEnable, out str);
+                    textMeshs_Gym[0].text = "SpotLight_" + str;
+                    break;
+                case 1:
+                    stageLightManager.SetStageLight(1, btnE[0].isEnable, out str);
+                    textMeshs_Gym[0].text = "SpotLight_" + str;
+                    break;
+            }
+
+            menuManager.PlayOneShot(SoundType.BTN_CLICK_LIGHT);
+        }
+
+        public void Click_Setting_Gym(int i)
+        {
+            switch (i)
+            {
+                case 0:
+                    stageLightManager.SetLightColor(btnE[0].isEnable);
+                    SystemInfo.userProfile.scene_gym_whitelight = btnE[0].isEnable;
+                    break;
+                case 1:
+                    timeline.GetComponent<QuasiShadow>().isStepSE = btnE[1].isEnable;
+                    SystemInfo.userProfile.StepSE = btnE[1].isEnable;
+                    break;
+            }
+
+            //保存する
+            FileAccessManager.WriteJson(SystemInfo.userProfile);
+
+            menuManager.PlayOneShot(SoundType.BTN_CLICK);
+        }
+
         public void Click_SceneChange(int i)
         {
             menuManager.PlayOneShot(SoundType.BTN_CLICK);
@@ -549,6 +598,4 @@ namespace UniLiveViewer
             if (Input.GetKeyDown(KeyCode.K)) Click_Setting_Viewer(3);//パーティクル
         }
     }
-
-
 }

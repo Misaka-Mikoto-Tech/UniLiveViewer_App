@@ -10,12 +10,6 @@ namespace UniLiveViewer
         {
             base.Init();
 
-            for (int i = 0; i < targets.Length; i++)
-            {
-                if (lights[i].gameObject.activeSelf == targets[i]) continue;
-                lights[i].gameObject.SetActive(targets[i]);
-            }
-
             for (int i = 0; i < lights.Length; i++)
             {
                 if (i < targetList.Count)
