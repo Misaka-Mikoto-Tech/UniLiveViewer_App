@@ -13,22 +13,6 @@ namespace UniLiveViewer
     [RequireComponent(typeof(SpriteRenderer))]
     public class FileAccessManager : MonoBehaviour
     {
-        public enum FOLDERTYPE
-        {
-            CHARA,
-            MOTION,
-            BGM,
-            SETTING
-        }
-
-        //path
-        private static string folderPath_Custom;
-        private static string folderPath_Download;
-        private static string folderPath_Persistent;
-        private static string[] folderName = { "Chara", "Motion", "BGM", "Setting" };
-        private static string cachePath = "Cache";
-        private static string lipSyncPath = "Lip-sync";
-
         public bool isSuccess { get; private set; } = false;
         public int PresetCount { get; private set; } = 0;
         private int currentAudio = 0;
@@ -83,18 +67,12 @@ namespace UniLiveViewer
 
             //Linkだと両方反応するのでelif必須→PLATFORM_OCULUSってのがあるみたい
 #if UNITY_EDITOR
-            folderPath_Custom = "D:/User/UniLiveViewer";
-            folderPath_Download = "D:/User/Download";
             sMssage = "windowsとして認識しています";
             maxAudioCount = SystemInfo.MAXAUDIO_EDITOR;
 #elif UNITY_ANDROID
-            folderPath_Custom = "/storage/emulated/0/UniLiveViewer";
-            folderPath_Download = "/storage/emulated/0/Download";
             sMssage = "Questとして認識しています";
             maxAudioCount = SystemInfo.MAXAUDIO_QUEST;
 #endif
-            folderPath_Persistent = Application.persistentDataPath;
-            //folderPath_Persistent = Application.temporaryCachePath;
 
             for (int i = 0; i < PresetCount; i++)
             {
@@ -138,26 +116,6 @@ namespace UniLiveViewer
             onLoadEnd?.Invoke();
         }
 
-
-        public static string GetFullPath(FOLDERTYPE type)
-        {
-            return Path.Combine(folderPath_Custom + "/",folderName[(int)type]);
-        }
-
-        public static string GetFullPath_ThumbnailCache()
-        {
-            return Path.Combine(folderPath_Custom + "/", folderName[(int)FOLDERTYPE.CHARA], cachePath);
-        }
-
-        public static string GetFullPath_LipSync()
-        {
-            return Path.Combine(folderPath_Custom + "/", folderName[(int)FOLDERTYPE.MOTION], lipSyncPath);
-        }
-        public static string GetFullPath_Download()
-        {
-            return folderPath_Download;
-        }
-
         /// <summary>
         /// Jsonファイルを読み込んでクラスに変換
         /// </summary>
@@ -166,7 +124,7 @@ namespace UniLiveViewer
         {
             UserProfile result;
 
-            string path = Path.Combine(folderPath_Persistent + "/", "System.json");
+            string path = PathsInfo.GetFullPath_JSON();
             string datastr = "";
             StreamReader reader = null;
             if (File.Exists(path))
@@ -194,7 +152,7 @@ namespace UniLiveViewer
         public static void WriteJson(UserProfile data)
         {
             //Json形式に変換
-            string path = Path.Combine(folderPath_Persistent + "/", "System.json");
+            string path = PathsInfo.GetFullPath_JSON();
             string jsonstr = JsonUtility.ToJson(data, true);
             using (StreamWriter writer = new StreamWriter(path, false))
             {
@@ -203,7 +161,6 @@ namespace UniLiveViewer
                 //writer.Close();
             }
         }
-
 
         /// <summary>
         /// アプリ専用フォルダ作成
@@ -214,16 +171,15 @@ namespace UniLiveViewer
             try
             {
                 //無ければ各種フォルダ生成
-                for (int i = 0; i < folderName.Length; i++)
+                for (int i = 0; i < PathsInfo.folder_length; i++)
                 {
-                    sFullPath = GetFullPath((FOLDERTYPE)i) + "/";
+                    sFullPath = PathsInfo.GetFullPath((FOLDERTYPE)i) + "/";
                     CreateFolder(sFullPath);
                 }
-#if UNITY_EDITOR
                 //キャッシュフォルダ
-                sFullPath = GetFullPath_ThumbnailCache() + "/";
+                sFullPath = PathsInfo.GetFullPath_ThumbnailCache() + "/";
                 CreateFolder(sFullPath);
-#endif
+
                 //リップシンクフォルダ
                 //sFullPath = GetFullPath_LipSync() + "/";
                 //CreateFolder(sFullPath);         
@@ -260,19 +216,11 @@ namespace UniLiveViewer
         /// <returns></returns>
         private async UniTask TryCreateFile()
         {
-            string sFullPath;
             try
             {
-                //テキストファイル
-                
-                sFullPath = Path.Combine(folderPath_Custom + "/", "readme_ja.txt");
-                await ResourcesLoadText("readme_ja", sFullPath);
-
-                sFullPath = Path.Combine(folderPath_Custom + "/", "readme_en.txt");
-                await ResourcesLoadText("readme_en", sFullPath);
-
-                sFullPath = Path.Combine(folderPath_Custom + "/", "不具合・Defect.txt"); 
-                DeleteFile(sFullPath);
+                await ResourcesLoadText("readme_ja", PathsInfo.GetFullPath_README(USE_LANGUAGE.JP));
+                await ResourcesLoadText("readme_en", PathsInfo.GetFullPath_README(USE_LANGUAGE.EN));
+                DeleteFile(PathsInfo.GetFullPath_DEFECT());
             }
             catch
             {
@@ -335,7 +283,7 @@ namespace UniLiveViewer
             string[] names = GetAllVRMNames(pathMy);
             try
             {
-                string pathDest = GetFullPath(FOLDERTYPE.CHARA) + "/";
+                string pathDest = PathsInfo.GetFullPath(FOLDERTYPE.CHARA) + "/";
                 //ファイルコピー
                 for (int i = 0; i < names.Length; i++)
                 {
@@ -364,7 +312,7 @@ namespace UniLiveViewer
             }
 
             //offset情報ファイルがあれば読み込む
-            string path = GetFullPath(FOLDERTYPE.SETTING) + "/MotionOffset.txt";
+            string path = PathsInfo.GetFullPath(FOLDERTYPE.SETTING) + "/MotionOffset.txt";
             if (File.Exists(path))
             {
                 foreach (string line in File.ReadLines(path))
@@ -377,7 +325,7 @@ namespace UniLiveViewer
             }
 
             //VMDファイル名を取得
-            string sFolderPath = GetFullPath(FOLDERTYPE.MOTION) + "/";
+            string sFolderPath = PathsInfo.GetFullPath(FOLDERTYPE.MOTION) + "/";
             try
             {
                 //VMDファイルのみ検索
@@ -419,7 +367,7 @@ namespace UniLiveViewer
         public static void SaveOffset()
         {
             //書き込み
-            string path = GetFullPath(FOLDERTYPE.SETTING) + "/";
+            string path = PathsInfo.GetFullPath(FOLDERTYPE.SETTING) + "/";
             using (StreamWriter writer = new StreamWriter(path + "MotionOffset.txt", false, System.Text.Encoding.UTF8))
             {
                 foreach (var e in SystemInfo.dicVMD_offset)
@@ -436,7 +384,7 @@ namespace UniLiveViewer
         private void GetAllVMDLipSyncNames()
         {
             //VMDファイル名を取得
-            string sFolderPath = GetFullPath_LipSync() + "/";
+            string sFolderPath = PathsInfo.GetFullPath_LipSync() + "/";
             try
             {
                 //VRMファイルのみ検索
@@ -461,7 +409,7 @@ namespace UniLiveViewer
         /// <returns></returns>
         public int GetAudioFileCount()
         {
-            string sFolderPath = GetFullPath(FOLDERTYPE.BGM) + "/";
+            string sFolderPath = PathsInfo.GetFullPath(FOLDERTYPE.BGM) + "/";
 
             //初期化
             if (mp3_path.Count > 0) mp3_path.Clear();
@@ -507,7 +455,7 @@ namespace UniLiveViewer
                 AudioCount = 0;
             }
 
-            string oldPath = GetFullPath(FOLDERTYPE.BGM) + "/";
+            string oldPath = PathsInfo.GetFullPath(FOLDERTYPE.BGM) + "/";
 
             foreach (string str in mp3_path)
             {
@@ -583,7 +531,7 @@ namespace UniLiveViewer
 
             if (!vrmRuntimeLoader) return;
 
-            if(folderPath_Chara=="") folderPath_Chara = GetFullPath(FOLDERTYPE.CHARA) + "/";
+            if(folderPath_Chara=="") folderPath_Chara = PathsInfo.GetFullPath(FOLDERTYPE.CHARA) + "/";
 
             Texture2D texture = null;
             Sprite spr = null;
@@ -605,6 +553,7 @@ namespace UniLiveViewer
 
                 try
                 {
+                    // TODO: 直バイナリパースに置き換えたい
                     //VRMファイルからサムネイルを抽出する
                     texture = await vrmRuntimeLoader.GetThumbnail(folderPath_Chara + vrmNames[i], cancellation_token);
 
@@ -612,25 +561,31 @@ namespace UniLiveViewer
                     {
                         //テクスチャ→スプライトに変換
                         spr = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-                        //リストに追加
-                        cacheThumbnails.Add(vrmNames[i], spr);
                     }
                     else
                     {
                         //ダミー画像生成
-                        //texture = new Texture2D(1, 1, TextureFormat.RGB24, false);
                         texture = Instantiate(texDummy);
                         //テクスチャ→スプライトに変換
                         spr = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-                        //リストに追加
-                        cacheThumbnails.Add(vrmNames[i], spr);
+                        texture = new Texture2D(1, 1, TextureFormat.RGB24, false);
                     }
-
-                    //エディタのみキャッシュ用を出力
+                    //リストに追加
+                    cacheThumbnails.Add(vrmNames[i], spr);
 #if UNITY_EDITOR
-                    if (texture) texture = GetColorInfo(ResizeTexture(texture, 256, 256));
-                    else texture = new Texture2D(1, 1, TextureFormat.RGB24, false);
-                    File.WriteAllBytes(Path.Combine(GetFullPath_ThumbnailCache() + "/", $"{vrmNames[i]}.png"), texture.EncodeToPNG());
+                    texture = TextureFormatter.Resize(texture);
+                    //PNG保存
+                    var binary = texture.EncodeToPNG();
+                    var path = Path.Combine(PathsInfo.GetFullPath_ThumbnailCache() + "/", $"{vrmNames[i]}.png");
+                    File.WriteAllBytes(path, binary);
+#elif UNITY_ANDROID
+                    // NOTE: この処理Quesstキツイ
+                    //texture = TextureFormatter.Resize(texture);
+
+                    //PNG保存
+                    var binary = texture.EncodeToPNG();
+                    var path = Path.Combine(PathsInfo.GetFullPath_ThumbnailCache() + "/", $"{vrmNames[i]}.png");
+                    File.WriteAllBytes(path, binary);
 #endif
                 }
                 catch (System.OperationCanceledException)
@@ -723,13 +678,13 @@ namespace UniLiveViewer
         /// <param name="newWidth"></param>
         /// <param name="newHeight"></param>
         /// <returns></returns>
-        public static Texture2D ResizeTexture(Texture2D srcTexture, int newWidth, int newHeight)
-        {
-            //指定しないとRGBA32になってしまったので一応
-            var resizedTexture = new Texture2D(newWidth, newHeight, TextureFormat.ARGB32, false);
-            Graphics.ConvertTexture(srcTexture, resizedTexture);
-            return resizedTexture;
-        }
+        //public static Texture2D ResizeTexture(Texture2D srcTexture, int newWidth, int newHeight)
+        //{
+        //    //指定しないとRGBA32になってしまったので一応
+        //    var resizedTexture = new Texture2D(newWidth, newHeight, TextureFormat.ARGB32, false);
+        //    Graphics.ConvertTexture(srcTexture, resizedTexture);
+        //    return resizedTexture;
+        //}
 
         /// <summary>
         /// シェーダー側で描画してテクスチャに書き込むたぶん（大体コピペ）
@@ -737,40 +692,40 @@ namespace UniLiveViewer
         /// </summary>
         /// <param name="texture2D"></param>
         /// <returns></returns>
-        public static Texture2D GetColorInfo(Texture2D texture2D)
-        {
-            //Texture mainTexture = _renderer.material.mainTexture;
-            //RenderTexture currentRT = RenderTexture.active;
-            RenderTexture renderTexture = new RenderTexture(texture2D.width, texture2D.height, 0);//第三デプス
-            //Linear→Gamma
-            Graphics.Blit(texture2D, renderTexture, _renderer.sharedMaterial);//デプス無効化したマテリアル
-            //RenderTexture情報→texture2Dへ
-            RenderTexture.active = renderTexture;
-            texture2D.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
-            texture2D.Apply();
+        //public static Texture2D GetColorInfo(Texture2D texture2D)
+        //{
+        //    //Texture mainTexture = _renderer.material.mainTexture;
+        //    //RenderTexture currentRT = RenderTexture.active;
+        //    RenderTexture renderTexture = new RenderTexture(texture2D.width, texture2D.height, 0);//第三デプス
+        //    //Linear→Gamma
+        //    Graphics.Blit(texture2D, renderTexture, _renderer.sharedMaterial);//デプス無効化したマテリアル
+        //    //RenderTexture情報→texture2Dへ
+        //    RenderTexture.active = renderTexture;
+        //    texture2D.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
+        //    texture2D.Apply();
 
-            //RenderTexture.ReleaseTemporary(renderTexture);
+        //    //RenderTexture.ReleaseTemporary(renderTexture);
 
 
-            //Color[] pixels = texture2D.GetPixels();
-            //RenderTexture.active = currentRT;
+        //    //Color[] pixels = texture2D.GetPixels();
+        //    //RenderTexture.active = currentRT;
 
-            return texture2D;
-        }
+        //    return texture2D;
+        //}
 
         /// <summary>
         /// キャッシュしたサムネイルを取得
         /// </summary>
         /// <param name="filePath">.png</param>
         /// <returns></returns>
-        private static Texture2D GetCacheThumbnail(string fileName)
-        {
-            string filePath = Path.Combine(GetFullPath_ThumbnailCache() + "/", $"{fileName}.png");
-            byte[] bytes = File.ReadAllBytes(filePath);
-            Texture2D texture = new Texture2D(64, 64);
-            texture.LoadImage(bytes);
-            return texture;
-        }
+        //private static Texture2D GetCacheThumbnail(string fileName)
+        //{
+        //    string filePath = Path.Combine(GetFullPath_ThumbnailCache() + "/", $"{fileName}.png");
+        //    byte[] bytes = File.ReadAllBytes(filePath);
+        //    Texture2D texture = new Texture2D(64, 64);
+        //    texture.LoadImage(bytes);
+        //    return texture;
+        //}
     }
 
 }

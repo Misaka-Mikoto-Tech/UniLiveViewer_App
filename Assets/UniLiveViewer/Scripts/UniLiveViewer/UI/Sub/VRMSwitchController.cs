@@ -117,8 +117,8 @@ namespace UniLiveViewer
                 case 0:
                     if (!fileManager.isSuccess) return;
                     //フォルダパスの表示を更新
-                    textDirectory[0].text = $"({FileAccessManager.GetFullPath(FileAccessManager.FOLDERTYPE.CHARA)}/)";
-                    textDirectory[1].text = $"/Download...[{fileManager.CountVRM(FileAccessManager.GetFullPath_Download() + "/")} VRMs]";
+                    textDirectory[0].text = $"({PathsInfo.GetFullPath(FOLDERTYPE.CHARA)}/)";
+                    textDirectory[1].text = $"/Download...[{fileManager.CountVRM(PathsInfo.GetFullPath_Download() + "/")} VRMs]";
 
                     //ローディングアニメーションを無効状態
                     anime_Loading.gameObject.SetActive(false);
@@ -127,7 +127,7 @@ namespace UniLiveViewer
                     thumbnailCon.gameObject.SetActive(true);
 
                     //VRM選択ボタンを生成する
-                    string sFolderPath = FileAccessManager.GetFullPath(FileAccessManager.FOLDERTYPE.CHARA) + "/";
+                    string sFolderPath = PathsInfo.GetFullPath(FOLDERTYPE.CHARA) + "/";
                     string[] names = fileManager.GetAllVRMNames(sFolderPath);
                     thumbnailCon.SetThumbnail(names).Forget();
                     break;
@@ -167,7 +167,7 @@ namespace UniLiveViewer
 
                 //指定パスのVRMのみ読み込む
                 string fileName = btn.transform.name;
-                string fullPath = FileAccessManager.GetFullPath(FileAccessManager.FOLDERTYPE.CHARA) + "/" + fileName;
+                string fullPath = PathsInfo.GetFullPath(FOLDERTYPE.CHARA) + "/" + fileName;
 
                 var instance = await runtimeLoader.OnOpenClicked_VRM(fullPath, cancellation_token);
 
@@ -292,7 +292,7 @@ namespace UniLiveViewer
         {
             try
             {
-                await fileManager.CopyVRMtoCharaFolder(FileAccessManager.GetFullPath_Download() + "/");
+                await fileManager.CopyVRMtoCharaFolder(PathsInfo.GetFullPath_Download() + "/");
                 InitPage(0);//開き直して反映
             }
             catch
