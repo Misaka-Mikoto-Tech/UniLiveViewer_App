@@ -166,7 +166,7 @@ namespace UniLiveViewer
                 else
                 {
                     vmdPlayer.morphPlayer_vrm.isUpdateMouth = isEnable;
-                    if (!isEnable) bindChara.lipSync.AllClear_BlendShape();//初期化しておく
+                    if (!isEnable) bindChara._lipSync.MorphReset();//初期化しておく
                 }
             }
             //プリセット中
@@ -181,8 +181,8 @@ namespace UniLiveViewer
                 //口パク
                 else
                 {
-                    if (!isEnable) bindChara.lipSync.AllClear_BlendShape();//初期化しておく
-                    bindChara.lipSync.enabled = isEnable;
+                    if (!isEnable) bindChara._lipSync.MorphReset();
+                    bindChara._lipSync.enabled = isEnable;
                 }
             }
         }
@@ -562,7 +562,7 @@ namespace UniLiveViewer
 
             //表情系をリセットしておく
             trackBindChara[PORTAL_ELEMENT].facialSync.AllClear_BlendShape();
-            trackBindChara[PORTAL_ELEMENT].lipSync.AllClear_BlendShape();
+            trackBindChara[PORTAL_ELEMENT]._lipSync.MorphReset();
 
             //##### ここから転送先処理 #####
             IEnumerable<PlayableBinding> outputs = playableDirector.playableAsset.outputs;
@@ -784,7 +784,7 @@ namespace UniLiveViewer
             {
                 if (!chara) continue;
                 chara.facialSync.AllClear_BlendShape();
-                chara.lipSync.AllClear_BlendShape();
+                chara._lipSync.MorphReset();
             }
 
             //モードをマニュアルからゲームタイマーへ

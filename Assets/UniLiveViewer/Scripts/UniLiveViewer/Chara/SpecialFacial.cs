@@ -185,13 +185,13 @@ namespace UniLiveViewer
             faceChanging = true;
 
             //競合するのでリップシンクを止める
-            charaCon.lipSync.enabled = false;
+            charaCon._lipSync.enabled = false;
             yield return null;
 
             //既存表情を全て初期化しておく
             charaCon.facialSync.AllClear_BlendShape();
             //既存表情を全て初期化しておく
-            charaCon.lipSync.AllClear_BlendShape();
+            charaCon._lipSync.MorphReset();
             yield return null;
 
             float weight = 0;
@@ -242,7 +242,7 @@ namespace UniLiveViewer
             }
 
             //リップシンクを戻す
-            charaCon.lipSync.enabled = true;
+            charaCon._lipSync.enabled = true;
             isShockSound = false;
             faceChanging = false;
         }
@@ -265,7 +265,7 @@ namespace UniLiveViewer
             faceChanging = true;
 
             //競合するのでリップシンクを止める
-            charaCon.lipSync.enabled = false;
+            charaCon._lipSync.enabled = false;
             yield return null;
 
             //表情変更をするのでマニュアルmodeにする
@@ -308,7 +308,7 @@ namespace UniLiveViewer
             }
 
             //リップシンクを戻す
-            charaCon.lipSync.enabled = true;
+            charaCon._lipSync.enabled = true;
             isShockSound = false;
             faceChanging = false;
 

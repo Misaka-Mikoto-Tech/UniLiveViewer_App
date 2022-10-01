@@ -12,7 +12,7 @@ namespace UniLiveViewer
     public class ComponentAttacher_VRM : MonoBehaviour
     {
         [SerializeField] private RuntimeAnimatorController aniConPrefab = null;
-        [SerializeField] private GameObject LipSyncPrefab = null;
+        [SerializeField] private LipSyncBase LipSyncPrefab = null;
         [SerializeField] private GameObject FaceSyncPrefab = null;
         [SerializeField] private CharaInfoData charaInfoDataPrefab;
         [SerializeField] private AttachPoint attachPointPrefab;
@@ -164,7 +164,10 @@ namespace UniLiveViewer
                 CharaCon.charaInfoData = Instantiate(charaInfoDataPrefab);
 
                 //リップシンクの追加(ScriptableObject後)
-                LipSyncController.Instantiate(LipSyncPrefab, CharaCon, blendShapeProxy);
+                CharaCon._lipSync = Instantiate(LipSyncPrefab);
+                CharaCon._lipSync.name = "LipSyncController";
+                CharaCon._lipSync.transform.parent = CharaCon.gameObject.transform;
+                ((LipSync_VRM)CharaCon._lipSync).vrmBlendShape = blendShapeProxy;
 
                 //フェイスシンクの追加(ScriptableObject後)
                 FacialSyncController.Instantiate(FaceSyncPrefab, CharaCon, blendShapeProxy);

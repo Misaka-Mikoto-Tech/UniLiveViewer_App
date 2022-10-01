@@ -26,7 +26,8 @@ namespace UniLiveViewer
         public ANIMATIONMODE animationMode = ANIMATIONMODE.CLIP;
         public Animator GetAnimator => animator;
 
-        public LipSyncController lipSync;
+
+        public LipSyncBase _lipSync;
         public FacialSyncController facialSync;
         public List<VRMSpringBone> springBoneList = new List<VRMSpringBone>();//揺れもの接触判定用
         [HideInInspector]public LookAtController lookAtCon;
@@ -61,6 +62,8 @@ namespace UniLiveViewer
 
         void Awake()
         {
+            _lipSync = transform.GetComponentInChildren<LipSyncBase>();
+
             animator = transform.GetComponent<Animator>();
             InitLookAtController();
             customScalar = SystemInfo.userProfile.InitCharaSize;
