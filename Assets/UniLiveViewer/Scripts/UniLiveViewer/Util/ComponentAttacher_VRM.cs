@@ -13,7 +13,7 @@ namespace UniLiveViewer
     {
         [SerializeField] private RuntimeAnimatorController aniConPrefab = null;
         [SerializeField] private LipSyncBase LipSyncPrefab = null;
-        [SerializeField] private GameObject FaceSyncPrefab = null;
+        [SerializeField] private FacialSyncBase FaceSyncPrefab = null;
         [SerializeField] private CharaInfoData charaInfoDataPrefab;
         [SerializeField] private AttachPoint attachPointPrefab;
         private MaterialConverter matConverter;
@@ -170,7 +170,11 @@ namespace UniLiveViewer
                 ((LipSync_VRM)CharaCon._lipSync).vrmBlendShape = blendShapeProxy;
 
                 //フェイスシンクの追加(ScriptableObject後)
-                FacialSyncController.Instantiate(FaceSyncPrefab, CharaCon, blendShapeProxy);
+                CharaCon._facialSync = Instantiate(FaceSyncPrefab);
+                CharaCon._facialSync.name = "FaceSyncController";
+                CharaCon._facialSync.transform.parent = CharaCon.gameObject.transform;
+                ((FacialSync_VRM)CharaCon._facialSync).vrmBlendShape = blendShapeProxy;
+
 
                 //VMDプレイヤー追加(各Sync系の後)
                 targetVRM.AddComponent<VMDPlayer_Custom>();

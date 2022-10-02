@@ -269,6 +269,7 @@ namespace UniLiveViewer
                     portalChara.GetComponent<Animator>().enabled = false;//Animatorが競合するので無効  
                     portalChara.animationMode = CharaController.ANIMATIONMODE.VMD;
                     portalChara._lipSync.enabled = false;
+                    portalChara._facialSync.enabled = false;
                     await VMDPlay(vmdPlayer, folderPath, GetNowAnimeInfo().viewName, cts.Token);
 
                     //ポータル上のキャラにアニメーション設定
@@ -286,7 +287,7 @@ namespace UniLiveViewer
                     portalChara.GetComponent<Animator>().enabled = true;
                     portalChara.animationMode = CharaController.ANIMATIONMODE.CLIP;
                     portalChara._lipSync.enabled = true;
-
+                    portalChara._facialSync.enabled = true;
                     //ポータル上のキャラにアニメーション設定
                     //timeline.SetAnimationClip(timeline.sPortalBaseAniTrack, danceAniClipInfo[currentAnime], transform.position, Vector3.zero);
                     timeline.SetAnimationClip(timeline.sPortalBaseAniTrack, danceAniClipInfo[currentAnime]);
@@ -295,7 +296,7 @@ namespace UniLiveViewer
 
                 //最後に表情系をリセットしておく
                 await UniTask.Yield(PlayerLoopTiming.Update, cts.Token);
-                portalChara.facialSync.AllClear_BlendShape();
+                portalChara._facialSync.MorphReset();
                 portalChara._lipSync.MorphReset();
             }
             catch (OperationCanceledException)

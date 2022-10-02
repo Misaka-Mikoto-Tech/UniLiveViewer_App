@@ -189,7 +189,7 @@ namespace UniLiveViewer
             yield return null;
 
             //既存表情を全て初期化しておく
-            charaCon.facialSync.AllClear_BlendShape();
+            charaCon._facialSync.MorphReset();
             //既存表情を全て初期化しておく
             charaCon._lipSync.MorphReset();
             yield return null;
@@ -200,14 +200,14 @@ namespace UniLiveViewer
             {
                 weight = 5 * i;
                 //EYE_DEF_C
-                charaCon.facialSync.uniSkin[0].SetBlendShapeWeight(listFaceID[0], weight);
-                //EL_DEF_C
-                charaCon.facialSync.uniSkin[1].SetBlendShapeWeight(listFaceTransID[0], weight);
+                //charaCon.facialSync.uniSkin[0].SetBlendShapeWeight(listFaceID[0], weight);
+                ////EL_DEF_C
+                //charaCon.facialSync.uniSkin[1].SetBlendShapeWeight(listFaceTransID[0], weight);
 
-                weight = 10 * i;
-                //random
-                charaCon.facialSync.uniSkin[0].SetBlendShapeWeight(faceID, weight);
-                charaCon.facialSync.uniSkin[1].SetBlendShapeWeight(faceTransID, weight);
+                //weight = 10 * i;
+                ////random
+                //charaCon.facialSync.uniSkin[0].SetBlendShapeWeight(faceID, weight);
+                //charaCon.facialSync.uniSkin[1].SetBlendShapeWeight(faceTransID, weight);
 
                 yield return new WaitForSeconds(0.05f);
             }
@@ -229,14 +229,14 @@ namespace UniLiveViewer
             {
                 weight = 50 - (10 * i);
                 //EYE_DEF_C
-                charaCon.facialSync.uniSkin[0].SetBlendShapeWeight(listFaceID[0], weight);
-                //EL_DEF_C
-                charaCon.facialSync.uniSkin[1].SetBlendShapeWeight(listFaceTransID[0], weight);
+                //charaCon.facialSync.uniSkin[0].SetBlendShapeWeight(listFaceID[0], weight);
+                ////EL_DEF_C
+                //charaCon.facialSync.uniSkin[1].SetBlendShapeWeight(listFaceTransID[0], weight);
 
                 weight = 100 - (20 * i);
                 //random
-                charaCon.facialSync.uniSkin[0].SetBlendShapeWeight(faceID, weight);
-                charaCon.facialSync.uniSkin[1].SetBlendShapeWeight(faceTransID, weight);
+                //charaCon.facialSync.uniSkin[0].SetBlendShapeWeight(faceID, weight);
+                //charaCon.facialSync.uniSkin[1].SetBlendShapeWeight(faceTransID, weight);
 
                 yield return new WaitForSeconds(0.02f);
             }
@@ -269,7 +269,7 @@ namespace UniLiveViewer
             yield return null;
 
             //表情変更をするのでマニュアルmodeにする
-            charaCon.facialSync.isManualControl = true;
+            //charaCon.facialSync.isManualControl = true;
 
             //既存表情を全て初期化しておく
             //charaCon.facialSync.AllClear_BlendShape();
@@ -281,7 +281,7 @@ namespace UniLiveViewer
             {
                 weight = 0.1f * i;
                 //random
-                charaCon.facialSync.SetBlendShape(preset, weight);
+                //charaCon.facialSync.SetBlendShape(preset, weight);
                 yield return new WaitForSeconds(0.05f);
             }
 
@@ -302,7 +302,7 @@ namespace UniLiveViewer
             {
                 weight = 1 - (0.2f * i);
                 //random
-                charaCon.facialSync.SetBlendShape(preset, weight);
+                //charaCon.facialSync.SetBlendShape(preset, weight);
 
                 yield return new WaitForSeconds(0.02f);
             }
@@ -313,7 +313,7 @@ namespace UniLiveViewer
             faceChanging = false;
 
             //表情変更モードを戻す
-            charaCon.facialSync.isManualControl = false;
+            //charaCon.facialSync.isManualControl = false;
         }
     }
 

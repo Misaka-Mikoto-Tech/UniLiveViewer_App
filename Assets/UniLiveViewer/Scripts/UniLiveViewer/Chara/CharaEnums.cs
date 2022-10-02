@@ -10,4 +10,14 @@ namespace UniLiveViewer
         E,
         O
     }
+
+    public enum FACIALTYPE
+    {
+        BLINK = 0,
+        JOY,
+        ANGRY,
+        SORROW,
+        SUP,
+        FUN
+    }
 }

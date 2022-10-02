@@ -28,7 +28,7 @@ namespace UniLiveViewer
 
 
         public LipSyncBase _lipSync;
-        public FacialSyncController facialSync;
+        public FacialSyncBase _facialSync;
         public List<VRMSpringBone> springBoneList = new List<VRMSpringBone>();//揺れもの接触判定用
         [HideInInspector]public LookAtController lookAtCon;
         public CharaInfoData charaInfoData;
@@ -63,6 +63,7 @@ namespace UniLiveViewer
         void Awake()
         {
             _lipSync = transform.GetComponentInChildren<LipSyncBase>();
+            _facialSync = transform.GetComponentInChildren<FacialSyncBase>();
 
             animator = transform.GetComponent<Animator>();
             InitLookAtController();

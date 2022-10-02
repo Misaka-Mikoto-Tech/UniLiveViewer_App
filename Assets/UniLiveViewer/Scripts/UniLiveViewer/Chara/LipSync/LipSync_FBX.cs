@@ -7,6 +7,7 @@ namespace UniLiveViewer
     public class LipSync_FBX : LipSyncBase
     {
         [SerializeField] SkinnedMeshRenderer _skinMesh;
+        const int BLENDSHAPE_WEIGHT = 100;
 
         protected override void Start()
         {
@@ -38,12 +39,12 @@ namespace UniLiveViewer
 
         void Morph()
         {
-            var total = 100.0f;
-            float w = 0;
+            var total = 1.0f;
+            var w = 0.0f;
             foreach (var e in _bindInfo)
             {
                 w = total * GetWeight(e.node);
-                _skinMesh.SetBlendShapeWeight(e.keyIndex, w);
+                _skinMesh.SetBlendShapeWeight(e.keyIndex, w * BLENDSHAPE_WEIGHT);
                 total -= w;
             }
         }

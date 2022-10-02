@@ -160,13 +160,13 @@ namespace UniLiveViewer
                 if (isFace)
                 {
                     vmdPlayer.morphPlayer_vrm.isUpdateFace = isEnable;
-                    if (!isEnable) bindChara.facialSync.AllClear_BlendShape();//初期化しておく
+                    if (!isEnable) bindChara._facialSync.MorphReset();
                 }
                 //口パク
                 else
                 {
                     vmdPlayer.morphPlayer_vrm.isUpdateMouth = isEnable;
-                    if (!isEnable) bindChara._lipSync.MorphReset();//初期化しておく
+                    if (!isEnable) bindChara._lipSync.MorphReset();
                 }
             }
             //プリセット中
@@ -175,8 +175,8 @@ namespace UniLiveViewer
                 //表情
                 if (isFace)
                 {
-                    if (!isEnable) bindChara.facialSync.AllClear_BlendShape();//初期化しておく
-                    bindChara.facialSync.enabled = isEnable;
+                    if (!isEnable) bindChara._facialSync.MorphReset();
+                    bindChara._facialSync.enabled = isEnable;
                 }
                 //口パク
                 else
@@ -561,7 +561,7 @@ namespace UniLiveViewer
             }
 
             //表情系をリセットしておく
-            trackBindChara[PORTAL_ELEMENT].facialSync.AllClear_BlendShape();
+            trackBindChara[PORTAL_ELEMENT]._lipSync.MorphReset();
             trackBindChara[PORTAL_ELEMENT]._lipSync.MorphReset();
 
             //##### ここから転送先処理 #####
@@ -783,7 +783,7 @@ namespace UniLiveViewer
             foreach (var chara in trackBindChara)
             {
                 if (!chara) continue;
-                chara.facialSync.AllClear_BlendShape();
+                chara._facialSync.MorphReset();
                 chara._lipSync.MorphReset();
             }
 

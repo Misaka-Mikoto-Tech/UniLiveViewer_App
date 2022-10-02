@@ -7,7 +7,7 @@ namespace UniLiveViewer
     {
         public VRMBlendShapeProxy vrmBlendShape;
 
-        public Dictionary<LIPTYPE, BlendShapePreset> dicVMRMorph = new Dictionary<LIPTYPE, BlendShapePreset>()
+        public readonly Dictionary<LIPTYPE, BlendShapePreset> dicVMRMorph = new Dictionary<LIPTYPE, BlendShapePreset>()
         {
             {LIPTYPE.A ,BlendShapePreset.A},
             {LIPTYPE.I ,BlendShapePreset.I},
@@ -37,7 +37,7 @@ namespace UniLiveViewer
         void Morph()
         {
             var total = 1.0f;
-            float w = 0;
+            var w = 0.0f;
             foreach (var e in _bindInfo)
             {
                 w = total * GetWeight(e.node);
