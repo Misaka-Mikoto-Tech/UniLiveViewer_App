@@ -26,9 +26,10 @@ namespace UniLiveViewer
         public ANIMATIONMODE animationMode = ANIMATIONMODE.CLIP;
         public Animator GetAnimator => animator;
 
-
-        public LipSyncBase _lipSync;
-        public FacialSyncBase _facialSync;
+        public bool isLipSyncUpdate = true;
+        public bool isFacialSyncUpdate = true;
+        public ILipSync _lipSync;
+        public IFacialSync _facialSync;
         public List<VRMSpringBone> springBoneList = new List<VRMSpringBone>();//揺れもの接触判定用
         [HideInInspector]public LookAtController lookAtCon;
         public CharaInfoData charaInfoData;
@@ -62,12 +63,25 @@ namespace UniLiveViewer
 
         void Awake()
         {
-            _lipSync = transform.GetComponentInChildren<LipSyncBase>();
-            _facialSync = transform.GetComponentInChildren<FacialSyncBase>();
+            _lipSync = transform.GetComponentInChildren<ILipSync>();
+            _facialSync = transform.GetComponentInChildren<IFacialSync>();
 
             animator = transform.GetComponent<Animator>();
             InitLookAtController();
             customScalar = SystemInfo.userProfile.InitCharaSize;
+        }
+
+        public void VRMSyncInit(LipSync_VRM lipSync, FacialSync_VRM facialSync, VRMBlendShapeProxy blendShapeProxy)
+        {
+            lipSync.transform.name = "LipSyncController";
+            lipSync.transform.parent = transform;
+            lipSync.vrmBlendShape = blendShapeProxy;
+            _lipSync = lipSync;
+
+            facialSync.transform.name = "FaceSyncController";
+            facialSync.transform.parent = transform;
+            facialSync.vrmBlendShape = blendShapeProxy;
+            _facialSync = facialSync;
         }
 
         public void InitLookAtController()
@@ -166,6 +180,13 @@ namespace UniLiveViewer
                     }
                 }
             }
+
+            if (isFacialSyncUpdate) _facialSync.MorphUpdate();
+        }
+
+        public void LateUpdate()
+        {
+            if (isLipSyncUpdate) _lipSync.MorphUpdate();
         }
 
         public void SetEnabelSpringBones(bool isEnabel)

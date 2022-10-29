@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Playables;
@@ -185,7 +185,7 @@ namespace UniLiveViewer
             faceChanging = true;
 
             //競合するのでリップシンクを止める
-            charaCon._lipSync.enabled = false;
+            //charaCon._lipSync.enabled = false;
             yield return null;
 
             //既存表情を全て初期化しておく
@@ -242,7 +242,7 @@ namespace UniLiveViewer
             }
 
             //リップシンクを戻す
-            charaCon._lipSync.enabled = true;
+            //charaCon._lipSync.enabled = true;
             isShockSound = false;
             faceChanging = false;
         }
@@ -265,7 +265,7 @@ namespace UniLiveViewer
             faceChanging = true;
 
             //競合するのでリップシンクを止める
-            charaCon._lipSync.enabled = false;
+            //charaCon._lipSync.enabled = false;
             yield return null;
 
             //表情変更をするのでマニュアルmodeにする
@@ -308,7 +308,7 @@ namespace UniLiveViewer
             }
 
             //リップシンクを戻す
-            charaCon._lipSync.enabled = true;
+            //charaCon._lipSync.enabled = true;
             isShockSound = false;
             faceChanging = false;
 

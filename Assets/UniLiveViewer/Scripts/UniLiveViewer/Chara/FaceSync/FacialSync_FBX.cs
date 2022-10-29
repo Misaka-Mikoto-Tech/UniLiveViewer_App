@@ -2,12 +2,15 @@
 
 namespace UniLiveViewer
 {
-    public class FacialSync_FBX : FacialSyncBase
+    public class FacialSync_FBX : MonoBehaviour, IFacialSync
     {
+        
+        [SerializeField] AnimationCurve _weightCurve;
+        [SerializeField] SkinBindInfo[] _skinBindInfo;
         const int BLENDSHAPE_WEIGHT = 100;
 
         // Start is called before the first frame update
-        protected override void Start()
+        void Start()
         {
             foreach (var e in _skinBindInfo)
             {
@@ -38,9 +41,34 @@ namespace UniLiveViewer
         }
 
         /// <summary>
+        /// シェイプキーを更新する
+        /// </summary>
+        public void MorphUpdate() 
+        {
+            foreach (var e in _skinBindInfo)
+            {
+                Morph(e);
+            }
+        }
+        void Morph(SkinBindInfo skinBindInfo)
+        {
+            var total = 1.0f;
+            var w = 0.0f;
+            for (int i = 0; i < skinBindInfo.bindInfo.Length; i++)
+            {
+                w = total * GetWeight(skinBindInfo.bindInfo[i].node);
+                for (int j = 0; j < skinBindInfo.bindInfo[i].keyPair.Length; j++)
+                {
+                    skinBindInfo.skinMesh.SetBlendShapeWeight(skinBindInfo.bindInfo[i].keyPair[j].index, w * BLENDSHAPE_WEIGHT);
+                }
+                total -= w;
+            }
+        }
+
+        /// <summary>
         /// シェイプキーを全て初期化する
         /// </summary>
-        public override void MorphReset()
+        public void MorphReset()
         {
             foreach (var e in _skinBindInfo)
             {
@@ -59,28 +87,17 @@ namespace UniLiveViewer
             }
         }
 
-        // Update is called once per frame
-        protected override void Update()
+        /// <summary>
+        /// モーフのバインド情報を返す
+        /// </summary>
+        public SkinBindInfo[] GetSkinBindInfo()
         {
-            foreach (var e in _skinBindInfo)
-            {
-                Morph(e);
-            }
+            return _skinBindInfo;
         }
 
-        void Morph(SkinBindInfo skinBindInfo)
+        float GetWeight(Transform tr)
         {
-            var total = 1.0f;
-            var w = 0.0f;
-            for (int i = 0; i < skinBindInfo.bindInfo.Length; i++)
-            {
-                w = total * GetWeight(skinBindInfo.bindInfo[i].node);
-                for (int j = 0; j < skinBindInfo.bindInfo[i].keyPair.Length; j++)
-                {
-                    skinBindInfo.skinMesh.SetBlendShapeWeight(skinBindInfo.bindInfo[i].keyPair[j].index, w * BLENDSHAPE_WEIGHT);
-                }
-                total -= w;
-            }
+            return _weightCurve.Evaluate(tr.localPosition.z);
         }
     }
 }

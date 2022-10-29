@@ -4,13 +4,18 @@ using UnityEngine;
 
 namespace UniLiveViewer
 {
-    public class LipSync_FBX : LipSyncBase
+    public class LipSync_FBX : MonoBehaviour, ILipSync
     {
         [SerializeField] SkinnedMeshRenderer _skinMesh;
+        [SerializeField] AnimationCurve _weightCurve;
         const int BLENDSHAPE_WEIGHT = 100;
 
-        protected override void Start()
+        [SerializeField] BindInfo[] _bindInfo;
+
+        void Start()
         {
+            transform.name = "LipSyncController";
+
             //シェイプキー名で紐づけ
             for (int i = 0; i < _skinMesh.sharedMesh.blendShapeCount; i++)
             {
@@ -24,20 +29,10 @@ namespace UniLiveViewer
             }
         }
 
-        public override void MorphReset()
-        {
-            foreach (var e in _bindInfo)
-            {
-                _skinMesh.SetBlendShapeWeight(e.keyIndex, 0);
-            }
-        }
-
-        protected override void LateUpdate()
-        {
-            Morph();
-        }
-
-        void Morph()
+        /// <summary>
+        /// シェイプキーを更新する
+        /// </summary>
+        public void MorphUpdate()
         {
             var total = 1.0f;
             var w = 0.0f;
@@ -47,6 +42,30 @@ namespace UniLiveViewer
                 _skinMesh.SetBlendShapeWeight(e.keyIndex, w * BLENDSHAPE_WEIGHT);
                 total -= w;
             }
+        }
+
+        /// <summary>
+        /// シェイプキーを全て初期化する
+        /// </summary>
+        public void MorphReset()
+        {
+            foreach (var e in _bindInfo)
+            {
+                _skinMesh.SetBlendShapeWeight(e.keyIndex, 0);
+            }
+        }
+
+        /// <summary>
+        /// モーフのバインド情報を返す
+        /// </summary>
+        public BindInfo[] GetBindInfo()
+        {
+            return _bindInfo;
+        }
+
+        float GetWeight(Transform tr)
+        {
+            return _weightCurve.Evaluate(tr.localPosition.z);
         }
     }
 

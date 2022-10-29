@@ -1,11 +1,16 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 using VRM;
 
 namespace UniLiveViewer
 {
-    public class LipSync_VRM : LipSyncBase
+    public class LipSync_VRM : MonoBehaviour, ILipSync
     {
         public VRMBlendShapeProxy vrmBlendShape;
+        [SerializeField] AnimationCurve _weightCurve;
+        
+        [Header("<keyName不要>")]
+        [SerializeField] BindInfo[] _bindInfo;
 
         public readonly Dictionary<LIPTYPE, BlendShapePreset> dicVMRMorph = new Dictionary<LIPTYPE, BlendShapePreset>()
         {
@@ -16,25 +21,10 @@ namespace UniLiveViewer
             {LIPTYPE.O ,BlendShapePreset.O}
         };
 
-        protected override void Start()
-        {
-            //VRMBlendShapeProxyの割り当てを利用するので特になし
-        }
-
-        public override void MorphReset()
-        {
-            foreach (var e in dicVMRMorph.Values)
-            {
-                vrmBlendShape.ImmediatelySetValue(BlendShapeKey.CreateFromPreset(e), 0);
-            }
-        }
-
-        protected override void LateUpdate()
-        {
-            Morph();
-        }
-
-        void Morph()
+        /// <summary>
+        /// シェイプキーを更新する
+        /// </summary>
+        public void MorphUpdate()
         {
             var total = 1.0f;
             var w = 0.0f;
@@ -46,6 +36,30 @@ namespace UniLiveViewer
                 vrmBlendShape.ImmediatelySetValue(blendShapeKey, w);
                 total -= w;
             }
+        }
+
+        /// <summary>
+        /// シェイプキーを全て初期化する
+        /// </summary>
+        public void MorphReset()
+        {
+            foreach (var e in dicVMRMorph.Values)
+            {
+                vrmBlendShape.ImmediatelySetValue(BlendShapeKey.CreateFromPreset(e), 0);
+            }
+        }
+
+        /// <summary>
+        /// モーフのバインド情報を返す
+        /// </summary>
+        public BindInfo[] GetBindInfo()
+        {
+            return _bindInfo;
+        }
+
+        float GetWeight(Transform tr)
+        {
+            return _weightCurve.Evaluate(tr.localPosition.z);
         }
     }
 }

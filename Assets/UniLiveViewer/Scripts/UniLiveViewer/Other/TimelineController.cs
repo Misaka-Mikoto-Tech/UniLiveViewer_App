@@ -176,13 +176,13 @@ namespace UniLiveViewer
                 if (isFace)
                 {
                     if (!isEnable) bindChara._facialSync.MorphReset();
-                    bindChara._facialSync.enabled = isEnable;
+                    bindChara.isFacialSyncUpdate = isEnable;
                 }
                 //口パク
                 else
                 {
                     if (!isEnable) bindChara._lipSync.MorphReset();
-                    bindChara._lipSync.enabled = isEnable;
+                    bindChara.isLipSyncUpdate = isEnable;
                 }
             }
         }

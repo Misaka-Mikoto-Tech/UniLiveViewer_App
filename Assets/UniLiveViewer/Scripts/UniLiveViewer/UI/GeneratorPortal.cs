@@ -268,8 +268,8 @@ namespace UniLiveViewer
                     string folderPath = PathsInfo.GetFullPath(FOLDERTYPE.MOTION) + "/";//VMDのパスを取得
                     portalChara.GetComponent<Animator>().enabled = false;//Animatorが競合するので無効  
                     portalChara.animationMode = CharaController.ANIMATIONMODE.VMD;
-                    portalChara._lipSync.enabled = false;
-                    portalChara._facialSync.enabled = false;
+                    portalChara.isLipSyncUpdate = false;
+                    portalChara.isFacialSyncUpdate = false;
                     await VMDPlay(vmdPlayer, folderPath, GetNowAnimeInfo().viewName, cts.Token);
 
                     //ポータル上のキャラにアニメーション設定
@@ -286,8 +286,8 @@ namespace UniLiveViewer
                     vmdPlayer.Clear();
                     portalChara.GetComponent<Animator>().enabled = true;
                     portalChara.animationMode = CharaController.ANIMATIONMODE.CLIP;
-                    portalChara._lipSync.enabled = true;
-                    portalChara._facialSync.enabled = true;
+                    portalChara.isLipSyncUpdate = true;
+                    portalChara.isFacialSyncUpdate = true;
                     //ポータル上のキャラにアニメーション設定
                     //timeline.SetAnimationClip(timeline.sPortalBaseAniTrack, danceAniClipInfo[currentAnime], transform.position, Vector3.zero);
                     timeline.SetAnimationClip(timeline.sPortalBaseAniTrack, danceAniClipInfo[currentAnime]);
