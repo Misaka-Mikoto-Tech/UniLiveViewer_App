@@ -109,14 +109,14 @@ namespace UniLiveViewer
                 //キャラが不在なら終了
                 if (!timeline.trackBindChara[TimelineController.PORTAL_ELEMENT]) return;
                 //目の向く量をセット
-                timeline.trackBindChara[TimelineController.PORTAL_ELEMENT].lookAtCon.inputWeight_Eye = slider_EyeLook.Value;
+                timeline.trackBindChara[TimelineController.PORTAL_ELEMENT]._lookAt.inputWeight_Eye = slider_EyeLook.Value;
             };
             slider_HeadLook.ValueUpdate += () =>
             {
                 //キャラが不在なら終了
                 if (!timeline.trackBindChara[TimelineController.PORTAL_ELEMENT]) return;
                 //顔の向く量をセット
-                timeline.trackBindChara[TimelineController.PORTAL_ELEMENT].lookAtCon.inputWeight_Head = slider_HeadLook.Value;
+                timeline.trackBindChara[TimelineController.PORTAL_ELEMENT]._lookAt.inputWeight_Head = slider_HeadLook.Value;
             };
             btn_VRMLoad.onTrigger += VRMLoad;
             btn_VRMSetting.onTrigger += VRMSetting;
@@ -289,8 +289,8 @@ namespace UniLiveViewer
                 textMeshs[1].fontSize = textMeshs[1].text.FontSizeMatch(600, 30, 50);
 
                 //スライダーの値を反映
-                bindChara.lookAtCon.inputWeight_Head = slider_HeadLook.Value;
-                bindChara.lookAtCon.inputWeight_Eye = slider_EyeLook.Value;
+                bindChara._lookAt.inputWeight_Head = slider_HeadLook.Value;
+                bindChara._lookAt.inputWeight_Eye = slider_EyeLook.Value;
             }
             menuManager.PlayOneShot(SoundType.BTN_CLICK);
         }
@@ -407,8 +407,8 @@ namespace UniLiveViewer
             textMeshs[2].text = $"{timeline.FieldCharaCount}/{timeline.maxFieldChara}";
 
             //スライダーの値を反映
-            bindChara.lookAtCon.inputWeight_Head = slider_HeadLook.Value;
-            bindChara.lookAtCon.inputWeight_Eye = slider_EyeLook.Value;
+            bindChara._lookAt.inputWeight_Head = slider_HeadLook.Value;
+            bindChara._lookAt.inputWeight_Eye = slider_EyeLook.Value;
 
             //モーフボタン初期化
             if (bindChara.charaInfoData.formatType == CharaInfoData.FORMATTYPE.FBX)

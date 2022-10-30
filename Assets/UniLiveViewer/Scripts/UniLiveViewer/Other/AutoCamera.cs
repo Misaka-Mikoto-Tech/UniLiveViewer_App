@@ -53,8 +53,8 @@ namespace UniLiveViewer
                 if (i == TimelineController.PORTAL_ELEMENT) continue;
                 if (timeline.trackBindChara[i])
                 {
-                    target = timeline.trackBindChara[i].lookAtCon.virtualHead;
-                    baseTransform = timeline.trackBindChara[i].lookAtCon.virtualChest;
+                    target = timeline.trackBindChara[i]._lookAt.test.virtualHead;
+                    baseTransform = timeline.trackBindChara[i]._lookAt.test.virtualChest;
                     break;
                 }
             }

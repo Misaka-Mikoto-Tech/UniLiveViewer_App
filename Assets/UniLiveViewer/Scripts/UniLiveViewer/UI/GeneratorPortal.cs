@@ -185,7 +185,9 @@ namespace UniLiveViewer
                 charaCon.transform.position = transform.position;
                 charaCon.transform.localRotation = Quaternion.identity;
 
-                if (listChara[currentChara].GetComponent<MaterialManager>())
+                await UniTask.Yield(PlayerLoopTiming.Update, cts.Token);
+
+                if (charaCon.charaInfoData.formatType == CharaInfoData.FORMATTYPE.VRM)
                 {
                     var matManager_f = listChara[currentChara].GetComponent<MaterialManager>();
                     var matManager_t = charaCon.GetComponent<MaterialManager>();
@@ -202,9 +204,17 @@ namespace UniLiveViewer
                 {
                     if (!charaCon.gameObject.activeSelf) charaCon.gameObject.SetActive(true);
 
+                    charaCon._lipSync = charaCon.GetComponentInChildren<ILipSync>();
+                    charaCon._facialSync = charaCon.GetComponentInChildren<IFacialSync>();
+                    charaCon._lookAt = charaCon.GetComponent<LookAtBase>();
+                    charaCon._headLookAt = charaCon.GetComponent<IHeadLookAt>();
+                    charaCon._eyeLookAt = charaCon.GetComponent<IEyeLookAt>();
+                    charaCon._lookAtVRM = charaCon.GetComponent<ILookAtVRM>();
+
                     //Prefab化経由は無効化されているので戻す
-                    charaCon.lookAtCon.enabled = true;
-                    charaCon.lookAtCon.SetEnable_VRMLookAtEye(true);
+                    charaCon._lookAtVRM.SetEnable(true);
+                    charaCon.isHeadLookAtUpdate = true;
+                    charaCon.isEyeLookAtUpdate = true;
 
                     //揺れ物の再稼働
                     charaCon.SetEnabelSpringBones(true);

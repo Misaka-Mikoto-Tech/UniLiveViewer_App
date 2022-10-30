@@ -26,12 +26,22 @@ namespace UniLiveViewer
         public ANIMATIONMODE animationMode = ANIMATIONMODE.CLIP;
         public Animator GetAnimator => animator;
 
-        public bool isLipSyncUpdate = true;
-        public bool isFacialSyncUpdate = true;
+        public List<VRMSpringBone> springBoneList = new List<VRMSpringBone>();//揺れもの接触判定用
+
+        //Sync
+        public bool isLipSyncUpdate = false;
+        public bool isFacialSyncUpdate = false;
         public ILipSync _lipSync;
         public IFacialSync _facialSync;
-        public List<VRMSpringBone> springBoneList = new List<VRMSpringBone>();//揺れもの接触判定用
-        [HideInInspector]public LookAtController lookAtCon;
+
+        //LookAt
+        public LookAtBase _lookAt;
+        public bool isHeadLookAtUpdate = false;
+        public bool isEyeLookAtUpdate = false;
+        public IHeadLookAt _headLookAt;
+        public IEyeLookAt _eyeLookAt;
+        public ILookAtVRM _lookAtVRM;
+
         public CharaInfoData charaInfoData;
         private float customScalar = 0;
         //現状VRM専用
@@ -63,15 +73,22 @@ namespace UniLiveViewer
 
         void Awake()
         {
-            _lipSync = transform.GetComponentInChildren<ILipSync>();
-            _facialSync = transform.GetComponentInChildren<IFacialSync>();
-
             animator = transform.GetComponent<Animator>();
-            InitLookAtController();
+
+            //VRMはまだcharaInfoData生成前
+            if (charaInfoData && charaInfoData.formatType == CharaInfoData.FORMATTYPE.FBX)
+            {
+                _lipSync = transform.GetComponentInChildren<ILipSync>();
+                _facialSync = transform.GetComponentInChildren<IFacialSync>();
+                _lookAt = transform.GetComponent<LookAtBase>();
+                _headLookAt = transform.GetComponent<IHeadLookAt>();
+                _eyeLookAt = transform.GetComponent<IEyeLookAt>();
+            }
+
             customScalar = SystemInfo.userProfile.InitCharaSize;
         }
 
-        public void VRMSyncInit(LipSync_VRM lipSync, FacialSync_VRM facialSync, VRMBlendShapeProxy blendShapeProxy)
+        public void InitVRMSync(LipSync_VRM lipSync, FacialSync_VRM facialSync, VRMBlendShapeProxy blendShapeProxy)
         {
             lipSync.transform.name = "LipSyncController";
             lipSync.transform.parent = transform;
@@ -86,18 +103,43 @@ namespace UniLiveViewer
 
         public void InitLookAtController()
         {
-            if (GetComponent<LookAtController>() == null) return;
-            lookAtCon = GetComponent<LookAtController>();
+            if (charaInfoData.formatType == CharaInfoData.FORMATTYPE.VRM)
+            {
+                gameObject.AddComponent<NormalizedBoneGenerator>();
 
-            if (GetComponent<VRMLookAtBoneApplyer_Custom>() != null)
-            {
-                charaInfoData.charaType = CharaInfoData.CHARATYPE.VRM_Bone;
-                lookAtCon.VRMLookAtEye_Bone = GetComponent<VRMLookAtBoneApplyer_Custom>();
-            }
-            else if (GetComponent<VRMLookAtBlendShapeApplyer_Custom>() != null)
-            {
-                charaInfoData.charaType = CharaInfoData.CHARATYPE.VRM_BlendShape;
-                lookAtCon.VRMLookAtEye_UV = GetComponent<VRMLookAtBlendShapeApplyer_Custom>();
+                //VRMボーン
+                if (GetComponent<VRMLookAtBoneApplyer_Custom>() != null)
+                {
+                    var lookAt = gameObject.AddComponent<LookAt_VRMBone>();
+                    _lookAt = transform.GetComponent<LookAtBase>();
+                    _headLookAt = transform.GetComponent<IHeadLookAt>();
+                    _eyeLookAt = transform.GetComponent<IEyeLookAt>();
+                    _lookAtVRM = transform.GetComponent<ILookAtVRM>();
+
+                    charaInfoData.charaType = CharaInfoData.CHARATYPE.VRM_Bone;
+                    ((LookAt_VRMBone)_lookAtVRM)._vrmEyeApplyer = GetComponent<VRMLookAtBoneApplyer_Custom>();
+
+                    var lookAtHead = transform.GetComponent<VRMLookAtHead_Custom>();
+                    lookAtHead.Target = lookAt.GetLookAtTarget();
+                    lookAtHead.UpdateType = UpdateType.LateUpdate;
+                }
+                //VRMブレンドシェイプ
+                else if (GetComponent<VRMLookAtBlendShapeApplyer_Custom>() != null)
+                {
+                    var lookAt = gameObject.AddComponent<LookAt_VRMBlendShape>();
+                    _lookAt = transform.GetComponent<LookAtBase>();
+                    _headLookAt = transform.GetComponent<IHeadLookAt>();
+                    _eyeLookAt = transform.GetComponent<IEyeLookAt>();
+                    _lookAtVRM = transform.GetComponent<ILookAtVRM>();
+
+                    charaInfoData.charaType = CharaInfoData.CHARATYPE.VRM_BlendShape;
+                    ((LookAt_VRMBlendShape)_lookAtVRM)._vrmEyeApplyer = GetComponent<VRMLookAtBlendShapeApplyer_Custom>();
+
+                    var lookAtHead = transform.GetComponent<VRMLookAtHead_Custom>();
+                    lookAtHead.Target = lookAt.GetLookAtTarget();
+                    lookAtHead.UpdateType = UpdateType.LateUpdate;
+                }
+                //UVはそもそも用意されて無いのだ
             }
         }
 
@@ -118,9 +160,11 @@ namespace UniLiveViewer
                     //VRMとPrefab用
                     globalScale = Vector3.one;
                     gameObject.layer = SystemInfo.layerNo_Default;
-                    lookAtCon.enabled = false;
-                    lookAtCon.Reset_VRMLookAtEye();
-                    lookAtCon.SetEnable_VRMLookAtEye(false);
+                    //リセットして無効化しておく
+                    _lookAtVRM.EyeReset();
+                    _lookAtVRM.SetEnable(false);
+                    isHeadLookAtUpdate = false;
+                    isEyeLookAtUpdate = false;
                     break;
                 case CHARASTATE.MINIATURE:
                     globalScale = new Vector3(0.26f, 0.26f, 0.26f);
@@ -184,9 +228,19 @@ namespace UniLiveViewer
             if (isFacialSyncUpdate) _facialSync.MorphUpdate();
         }
 
-        public void LateUpdate()
+        void LateUpdate()
         {
             if (isLipSyncUpdate) _lipSync.MorphUpdate();
+
+            //ポーズ中なら以下処理しない
+            if (Time.timeScale == 0) return;
+            if (isHeadLookAtUpdate) _headLookAt.HeadUpdate();
+            if (isEyeLookAtUpdate) _eyeLookAt.EyeUpdate();
+        }
+
+        void OnAnimatorIK()
+        {
+            if (isHeadLookAtUpdate) _headLookAt.HeadUpdate_OnAnimatorIK();
         }
 
         public void SetEnabelSpringBones(bool isEnabel)

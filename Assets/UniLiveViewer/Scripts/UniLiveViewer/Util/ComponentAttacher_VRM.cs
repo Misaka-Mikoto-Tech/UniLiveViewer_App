@@ -123,7 +123,6 @@ namespace UniLiveViewer
                 _targetVRM.AddComponent<MeshRenderer>();
                 _targetVRM.AddComponent<OVRGrabbable_Custom>();
 
-
                 //アタッチポイントの追加
                 _targetVRM.AddComponent<AttachPointGenerator>().anchorPointPrefab = _attachPointPrefab;
 
@@ -166,19 +165,12 @@ namespace UniLiveViewer
                 //シンク系の追加(ScriptableObject後)
                 var lipSyncVRM = Instantiate(_lipSyncPrefab);
                 var facialSyncVRM = Instantiate(_faceSyncPrefab);
-                CharaCon.VRMSyncInit(lipSyncVRM,facialSyncVRM, blendShapeProxy);
+                CharaCon.InitVRMSync(lipSyncVRM,facialSyncVRM, blendShapeProxy);
+                CharaCon.InitLookAtController();
 
                 //VMDプレイヤー追加(各Sync系の後)
                 _targetVRM.AddComponent<VMDPlayer_Custom>();
-
                 await UniTask.Yield(PlayerLoopTiming.Update, token);
-
-                //注視関連の調整
-                var lookAtCon = _targetVRM.AddComponent<LookAtController>();
-                var lookAtHead = _targetVRM.GetComponent<VRMLookAtHead_Custom>();
-                lookAtHead.Target = lookAtCon.lookTarget;
-                lookAtHead.UpdateType = UpdateType.LateUpdate;
-                CharaCon.InitLookAtController();//初期化
 
                 string name = _meta.Meta.Title;
                 CharaCon.charaInfoData.vrmID = VRMSwitchController.loadVRMID;
