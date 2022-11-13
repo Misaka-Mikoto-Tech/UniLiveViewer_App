@@ -21,8 +21,15 @@ namespace UniLiveViewer
         private int[] GENERATE_COUNT = { 1,3,5 };//一括表示数、1～15
 
         private int[] randomBox;
-        private string[] vrmNames;
+        private string[] _vrmNames;
         private CancellationToken cancellation_token;
+
+        private TextureAssetManager textureAssetManager;
+
+        public void Awake()
+        {
+            textureAssetManager = GameObject.FindGameObjectWithTag("AppConfig").GetComponent<TextureAssetManager>();
+        }
 
         /// <summary>
         /// サムネ用の空ボタン生成
@@ -60,18 +67,17 @@ namespace UniLiveViewer
         /// <summary>
         /// VRMの数だけサムネボタンを生成する
         /// </summary>
-        public async UniTask SetThumbnail(string[] _vrmNames)
+        public async UniTask SetThumbnail(string[] vrmNames)
         {
             //一旦全部非表示
             ThumbnailShow(false);
-
             //全VRMファイル名を取得
-            var array = _vrmNames;
+            var array = vrmNames;
             //最大15件に丸める
-            if (array.Length > 15) vrmNames = array.Take(15).ToArray();
-            else vrmNames = array;
+            if (array.Length > 15) _vrmNames = array.Take(15).ToArray();
+            else _vrmNames = array;
             //ランダム配列を設定
-            randomBox = new int[vrmNames.Length];
+            randomBox = new int[_vrmNames.Length];
             for (int i = 0; i < randomBox.Length; i++) randomBox[i] = i;
             randomBox = Shuffle(randomBox);
             await UniTask.Delay(10, cancellationToken: cancellation_token);
@@ -82,15 +88,15 @@ namespace UniLiveViewer
             //必要なボタンのみ有効化して設定する
             for (int i = 0; i < btns.Length; i++)
             {
-                if (i < vrmNames.Length)
+                if (i < _vrmNames.Length)
                 {
                     //ランダムなボタン順
                     index = randomBox[i];
 
                     if (!btns[index].gameObject.activeSelf) btns[index].gameObject.SetActive(true);
                     //ボタン情報更新
-                    btns[index].name = vrmNames[index];
-                    btnTexts[index].text = vrmNames[index];
+                    btns[index].name = _vrmNames[index];
+                    btnTexts[index].text = _vrmNames[index];
                     btnTexts[index].fontSize = btnTexts[index].text.FontSizeMatch(500, 25, 40);
                     UpdateSprite(index);
 
@@ -109,7 +115,7 @@ namespace UniLiveViewer
             try
             {
                 //サムネイル無しはデフォ画像を流用する仕様
-                Sprite spr = FileAccessManager.cacheThumbnails[vrmNames[index]];
+                Sprite spr = textureAssetManager.Thumbnails[_vrmNames[index]];
                 if (spr) btns[index].collisionChecker.colorSetting[0].targetSprite.sprite = spr;
             }
             catch

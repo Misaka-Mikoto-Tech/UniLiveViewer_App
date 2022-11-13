@@ -19,11 +19,10 @@ namespace UniLiveViewer
         [SerializeField] private TextMesh[] textMeshs = new TextMesh[4];
         [SerializeField] private SliderGrabController slider_Playback = null;
         [SerializeField] private SliderGrabController slider_Speed = null;
-        [SerializeField] private Button_Base[] btnS_AudioLoad = new Button_Base[2];
 
-        private TimelineController timeline = null;
-        private PlayerStateManager playerStateManager;
-        private FileAccessManager fileAccess = null;
+        TimelineController _timeline;
+        PlayerStateManager _playerStateManager;
+        AudioAssetManager _audioAssetManager;
 
         private CancellationTokenSource cts;
 
@@ -40,12 +39,14 @@ namespace UniLiveViewer
         // Start is called before the first frame update
         void Start()
         {
-            playerStateManager = PlayerStateManager.instance;
-            timeline = menuManager.timeline;
-            fileAccess = menuManager.fileAccess;
+            var appConfig = GameObject.FindGameObjectWithTag("AppConfig").transform;
+            _audioAssetManager = appConfig.GetComponent<AudioAssetManager>();
+
+            _playerStateManager = PlayerStateManager.instance;
+            _timeline = menuManager.timeline;
 
             //再生スライダーに最大値を設定
-            slider_Playback.maxValuel = (float)timeline.playableDirector.duration;
+            slider_Playback.maxValuel = (float)_timeline.playableDirector.duration;
 
             //ジャンプリスト
             foreach (var e in btn_jumpList)
@@ -58,7 +59,7 @@ namespace UniLiveViewer
                 switch (menuManager.jumpList.target)
                 {
                     case JumpList.TARGET.AUDIO:
-                        moveIndex = jumpCurrent - fileAccess.CurrentAudio;
+                        moveIndex = jumpCurrent - _audioAssetManager.CurrentCustom;
                         ChangeAuido(moveIndex);
                         break;
                 }
@@ -66,8 +67,8 @@ namespace UniLiveViewer
             };
 
             //その他
-            timeline.playableDirector.played += Director_Played;
-            timeline.playableDirector.stopped += Director_Stoped;
+            _timeline.playableDirector.played += Director_Played;
+            _timeline.playableDirector.stopped += Director_Stoped;
             for (int i = 0; i < btn_Audio.Length; i++)
             {
                 btn_Audio[i].onTrigger += MoveIndex_Auido;
@@ -76,28 +77,24 @@ namespace UniLiveViewer
             slider_Playback.ValueUpdate += () =>
             {
                 float sec = slider_Playback.Value;
-                timeline.AudioClip_PlaybackTime = sec;//timelineに時間を反映
+                _timeline.AudioClip_PlaybackTime = sec;//timelineに時間を反映
                 textMeshs[1].text = $"{((int)sec / 60):00}:{((int)sec % 60):00}";//テキストに反映
             };
             slider_Speed.ValueUpdate += () =>
             {
-                timeline.TimelineSpeed = slider_Speed.Value;//スライダーの値を反映
+                _timeline.TimelineSpeed = slider_Speed.Value;//スライダーの値を反映
                 textMeshs[3].text = $"{slider_Speed.Value:0.00}";//テキストに反映
             };
             btnS_Play.onTrigger += Click_AudioPlayer;
             btnS_Stop.onTrigger += Click_AudioPlayer;
             btnS_BaseReturn.onTrigger += Click_AudioPlayer;
-            for (int i = 0; i < btnS_AudioLoad.Length; i++)
-            {
-                btnS_AudioLoad[i].onTrigger += Click_AudioLoad;
-            }
             Init();
         }
 
-        private void Init()
+        private async void Init()
         {
-            if (!timeline) return;
-            if (timeline.playableDirector.timeUpdateMode == DirectorUpdateMode.Manual)
+            if (!_timeline) return;
+            if (_timeline.playableDirector.timeUpdateMode == DirectorUpdateMode.Manual)
             {
                 btnS_Stop.gameObject.SetActive(false);
                 btnS_Play.gameObject.SetActive(true);
@@ -107,13 +104,11 @@ namespace UniLiveViewer
                 btnS_Stop.gameObject.SetActive(true);
                 btnS_Play.gameObject.SetActive(false);
             }
-            //読み込み関係のボタンを初期化しておく
-            ReceptionTime(0).Forget();
             //オーディオの長さ
-            float sec = timeline.GetNowAudioLength();
+            float sec = await _timeline.GetNowAudioLength(false);
             textMeshs[2].text = $"{((int)sec / 60):00}:{((int)sec % 60):00}";
             //タイムラインの速度を表示
-            slider_Speed.Value = timeline.TimelineSpeed;
+            slider_Speed.Value = _timeline.TimelineSpeed;
             textMeshs[3].text = $"{slider_Speed.Value:0.00}";
         }
 
@@ -124,7 +119,7 @@ namespace UniLiveViewer
             if (!slider_Playback.isControl)
             {
                 //TimeLine再生時間をスライダーにセット
-                float sec = (float)timeline.AudioClip_PlaybackTime;
+                float sec = (float)_timeline.AudioClip_PlaybackTime;
                 slider_Playback.Value = sec;
                 //テキストに反映
                 textMeshs[1].text = $"{((int)sec / 60):00}:{((int)sec % 60):00}";
@@ -155,12 +150,12 @@ namespace UniLiveViewer
             menuManager.PlayOneShot(SoundType.BTN_CLICK);
 
             //スライダー操作中は受け付けない
-            if (playerStateManager.IsSliderGrabbing()) return;
+            if (_playerStateManager.IsSliderGrabbing()) return;
 
             if (btn == btnS_Stop)
             {
                 //マニュアル開始
-                timeline.TimelineManualMode().Forget();
+                _timeline.TimelineManualMode().Forget();
                 //再生・停止ボタンの状態更新
                 btnS_Stop.gameObject.SetActive(false);
                 btnS_Play.gameObject.SetActive(true);
@@ -168,7 +163,7 @@ namespace UniLiveViewer
             else if (btn == btnS_Play)
             {
                 //タイムライン・再生
-                timeline.TimelinePlay();
+                _timeline.TimelinePlay();
                 //再生・停止ボタンの状態更新
                 btnS_Stop.gameObject.SetActive(true);
                 btnS_Play.gameObject.SetActive(false);
@@ -176,69 +171,8 @@ namespace UniLiveViewer
             else if (btn == btnS_BaseReturn)
             {
                 //タイムライン・初期化
-                timeline.TimelineBaseReturn();
+                _timeline.TimelineBaseReturn();
             }
-        }
-
-        /// <summary>
-        /// オーディオファイルの読み込み
-        /// </summary>
-        /// <param name="btn"></param>
-        private void Click_AudioLoad(Button_Base btn)
-        {
-            menuManager.PlayOneShot(SoundType.BTN_CLICK);
-
-            //読み込みボタン
-            if (btn == btnS_AudioLoad[0])
-            {
-                //重複防止で無効化しておく
-                btnS_AudioLoad[0].gameObject.SetActive(false);
-                var text = btnS_AudioLoad[1].transform.GetChild(0).GetChild(0).GetComponent<TextMesh>();
-                if (SystemInfo.userProfile.LanguageCode == (int)USE_LANGUAGE.JP)
-                {
-                    text.text = $"{fileAccess.GetAudioFileCount()}件あります、よろしいですか?";
-                }
-                else
-                {
-                    text.text = $"There are {fileAccess.GetAudioFileCount()} files.Is it OK ? ";
-                }
-                //確認ボタンを有効化
-                btnS_AudioLoad[1].gameObject.SetActive(true);
-
-                //受付時間後にリセット
-                ReceptionTime(5000).Forget();
-            }
-            //最終確認ボタン
-            else if (btn == btnS_AudioLoad[1])
-            {
-                cts.Cancel();
-                //重複防止で無効化しておく
-                btnS_AudioLoad[1].gameObject.SetActive(false);
-                //読み込む
-                LoadCheck().Forget();
-            }
-        }
-
-        private async UniTask ReceptionTime(int wait)
-        {
-            if (wait != 0)
-            {
-                cts = new CancellationTokenSource();
-                await UniTask.Delay(wait, cancellationToken: cts.Token);
-            }
-            btnS_AudioLoad[1].gameObject.SetActive(false);
-            btnS_AudioLoad[0].gameObject.SetActive(true);
-        }
-
-        private async UniTask LoadCheck()
-        {
-            int moveIndex = fileAccess.PresetCount - fileAccess.CurrentAudio;
-
-            //完了街ち
-            await fileAccess.AudioLoad();
-
-            //読み込みの音楽の先頭にカレントを移動
-            ChangeAuido(moveIndex);
         }
 
         /// <summary>
@@ -268,14 +202,14 @@ namespace UniLiveViewer
         /// オーディオを変更する
         /// </summary>
         /// <param name="moveIndex"></param>
-        private void ChangeAuido(int moveIndex)
+        private async void ChangeAuido(int moveIndex)
         {
             //文字画像を差し替える
-            textMeshs[0].text = timeline.NextAudioClip(moveIndex);
+            textMeshs[0].text = await _timeline.NextAudioClip(false,moveIndex);
             //サイズ調整
             textMeshs[0].fontSize = textMeshs[0].text.FontSizeMatch(600, 30, 50);
             //オーディオの長さ
-            float sec = timeline.GetNowAudioLength();
+            float sec = await _timeline.GetNowAudioLength(false);
             slider_Playback.maxValuel = sec;
             textMeshs[2].text = $"{((int)sec / 60):00}:{((int)sec % 60):00}";
         }
@@ -289,7 +223,7 @@ namespace UniLiveViewer
         private void Director_Stoped(PlayableDirector obj)
         {
             //再生途中の一時停止は無視する
-            if (timeline.AudioClip_PlaybackTime <= 0)
+            if (_timeline.AudioClip_PlaybackTime <= 0)
             {
                 //再生表示
                 if (btnS_Stop) btnS_Stop.gameObject.SetActive(false);
@@ -304,7 +238,7 @@ namespace UniLiveViewer
             btnS_Play.gameObject.SetActive(true);
 
             //マニュアルモードにする
-            timeline.TimelineManualMode().Forget();
+            _timeline.TimelineManualMode().Forget();
         }
 
         private void DebugInput()
@@ -313,15 +247,10 @@ namespace UniLiveViewer
             if (Input.GetKeyDown(KeyCode.K))
             {
                 //タイムライン・再生
-                timeline.TimelinePlay();
+                _timeline.TimelinePlay();
                 //再生・停止ボタンの状態更新
                 btnS_Stop.gameObject.SetActive(true);
                 btnS_Play.gameObject.SetActive(false);
-            }
-            if (Input.GetKeyDown(KeyCode.L))
-            {
-                //読み込む
-                LoadCheck().Forget();
             }
         }
     }

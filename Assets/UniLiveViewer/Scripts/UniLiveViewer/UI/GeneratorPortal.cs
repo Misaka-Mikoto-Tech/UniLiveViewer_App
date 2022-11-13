@@ -31,8 +31,9 @@ namespace UniLiveViewer
         private DanceInfoData[] vmdDanceClipInfo;
 
         //汎用
-        private TimelineController timeline = null;
-        private FileAccessManager fileManager = null;
+        TimelineController _timeline;
+        FileAccessManager _fileManager;
+        AnimationAssetManager _animationAssetManager;
 
         public event Action onGeneratedChara;
         public event Action onEmptyCurrent;
@@ -67,7 +68,7 @@ namespace UniLiveViewer
             else
             {
                 //キャラが存在していなければ生成しておく
-                if (timeline && !timeline.isPortalChara())//初回は生成しない仕様
+                if (_timeline && !_timeline.isPortalChara())//初回は生成しない仕様
                 {
                     SetChara(0).Forget();
                 }
@@ -76,31 +77,37 @@ namespace UniLiveViewer
 
         private void Start()
         {
-            timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
-            fileManager = GameObject.FindGameObjectWithTag("AppConfig").GetComponent<FileAccessManager>();
+            _timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
+            var appConfig = GameObject.FindGameObjectWithTag("AppConfig").transform;
+            _fileManager = appConfig.GetComponent<FileAccessManager>();
+            _animationAssetManager = appConfig.GetComponent<AnimationAssetManager>();
 
-            fileManager.onLoadSuccess += () =>
+            var vmdList = _animationAssetManager.vmdList;
+            var vmdLipSyncList = _animationAssetManager.vmdLipSyncList;
+
+
+            _fileManager.onLoadSuccess += () =>
             {
                 //VMD枠はダミーアニメーションを追加しておく
-                if (fileManager.vmdList.Count > 0)
+                if (vmdList.Count > 0)
                 {
-                    vmdDanceClipInfo = new DanceInfoData[fileManager.vmdList.Count];
+                    vmdDanceClipInfo = new DanceInfoData[vmdList.Count];
 
                     for (int i = 0; i < vmdDanceClipInfo.Length; i++)
                     {
                         vmdDanceClipInfo[i] = Instantiate(DanceInfoData_VMDPrefab);
 
                         vmdDanceClipInfo[i].motionOffsetTime = 0;
-                        vmdDanceClipInfo[i].strBeforeName = fileManager.vmdList[i];
-                        vmdDanceClipInfo[i].viewName = fileManager.vmdList[i];
+                        vmdDanceClipInfo[i].strBeforeName = vmdList[i];
+                        vmdDanceClipInfo[i].viewName = vmdList[i];
                     }
                     danceAniClipInfo = danceAniClipInfo.Concat(vmdDanceClipInfo).ToArray();
                 }
                 //口パクVMD
-                if (fileManager.vmdLipSyncList.Count > 0)
+                if (vmdLipSyncList.Count > 0)
                 {
-                    string[] lipSyncs = new string[fileManager.vmdLipSyncList.Count];
-                    lipSyncs = fileManager.vmdLipSyncList.ToArray();
+                    string[] lipSyncs = new string[vmdLipSyncList.Count];
+                    lipSyncs = vmdLipSyncList.ToArray();
 
                     string[] dummy = { LIPSYNC_NONAME };
                     vmdLipSync = dummy.Concat(lipSyncs).ToArray();
@@ -168,10 +175,10 @@ namespace UniLiveViewer
                 else if (currentChara >= listChara.Count) currentChara = 0;
 
                 //既存のポータルキャラを削除
-                timeline.DestoryPortalChara();
+                _timeline.DestoryPortalChara();
 
                 //フィールド上限オーバーなら生成しない
-                if (timeline.FieldCharaCount >= timeline.maxFieldChara) return;
+                if (_timeline.FieldCharaCount >= _timeline.maxFieldChara) return;
 
                 //null枠の場合も処理しない
                 if (!listChara[currentChara])
@@ -224,7 +231,7 @@ namespace UniLiveViewer
                     charaCon.SetState(CharaController.CHARASTATE.MINIATURE, transform);//ミニチュア状態
 
                     //Timelineのポータル枠へバインドする
-                    isSuccess = timeline.NewAssetBinding_Portal(charaCon);
+                    isSuccess = _timeline.NewAssetBinding_Portal(charaCon);
                 }
                 else
                 {
@@ -232,7 +239,7 @@ namespace UniLiveViewer
                     charaCon.SetState(CharaController.CHARASTATE.MINIATURE, transform);//ミニチュア状態
 
                     //Timelineのポータル枠へバインドする
-                    isSuccess = timeline.NewAssetBinding_Portal(charaCon);
+                    isSuccess = _timeline.NewAssetBinding_Portal(charaCon);
                 }
 
                 if (!isSuccess)
@@ -266,7 +273,7 @@ namespace UniLiveViewer
                 else if (currentAnime >= danceAniClipInfo.Length) currentAnime = 0;
 
                 //ポータルキャラを確認
-                var portalChara = timeline.trackBindChara[TimelineController.PORTAL_ELEMENT];
+                var portalChara = _timeline.trackBindChara[TimelineController.PORTAL_ELEMENT];
                 if (!portalChara) return;
                 await UniTask.Yield(PlayerLoopTiming.Update, cts.Token);
                 vmdPlayer = portalChara.GetComponent<VMDPlayer_Custom>();
@@ -284,7 +291,7 @@ namespace UniLiveViewer
 
                     //ポータル上のキャラにアニメーション設定
                     //timeline.SetAnimationClip(timeline.sPortalBaseAniTrack, danceAniClipInfo[currentAnime], transform.position, Vector3.zero);
-                    timeline.SetAnimationClip(timeline.sPortalBaseAniTrack, danceAniClipInfo[currentAnime]);
+                    _timeline.SetAnimationClip(_timeline.sPortalBaseAniTrack, danceAniClipInfo[currentAnime]);
                 }
                 //プリセットアニメーション 
                 else
@@ -300,7 +307,7 @@ namespace UniLiveViewer
                     portalChara.isFacialSyncUpdate = true;
                     //ポータル上のキャラにアニメーション設定
                     //timeline.SetAnimationClip(timeline.sPortalBaseAniTrack, danceAniClipInfo[currentAnime], transform.position, Vector3.zero);
-                    timeline.SetAnimationClip(timeline.sPortalBaseAniTrack, danceAniClipInfo[currentAnime]);
+                    _timeline.SetAnimationClip(_timeline.sPortalBaseAniTrack, danceAniClipInfo[currentAnime]);
                 }
                 onGeneratedAnime?.Invoke();
 

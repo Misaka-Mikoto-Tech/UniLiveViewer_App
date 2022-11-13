@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace UniLiveViewer
@@ -19,15 +20,16 @@ namespace UniLiveViewer
         public event Action<int> onSelect;
         public TARGET target = TARGET.NULL;
 
-        [SerializeField] private Button_Base Button_BasePrefab;
-        [SerializeField] private Transform parentAnchor;
-        private FileAccessManager fileManager;
-        private List<Button_Base> btnList = new List<Button_Base>();
+        [SerializeField] Button_Base Button_BasePrefab;
+        [SerializeField] Transform parentAnchor;
+        AudioAssetManager _audioAssetManager;
+        List<Button_Base> btnList = new List<Button_Base>();
 
         // Start is called before the first frame update
         void Start()
         {
-            fileManager = GameObject.FindGameObjectWithTag("AppConfig").GetComponent<FileAccessManager>();
+            var appConfig = GameObject.FindGameObjectWithTag("AppConfig").transform;
+            _audioAssetManager = appConfig.GetComponent<AudioAssetManager>();
         }
 
         /// <summary>
@@ -144,16 +146,17 @@ namespace UniLiveViewer
         public void SetAudioDate()
         {
             //必要ならボタンを生成
-            BtnInstanceCheck(fileManager.audioList.Count);
+            BtnInstanceCheck(_audioAssetManager.CustomAudios.Count);
 
             for (int i = 0; i < btnList.Count; i++)
             {
-                if (i < fileManager.audioList.Count)
+                if (i < _audioAssetManager.CustomAudios.Count)
                 {
-                    btnList[i].SetTextMesh(fileManager.audioList[i].name);
+                    var name = Path.GetFileName(_audioAssetManager.CustomAudios[i]); 
+                    btnList[i].SetTextMesh(name);
                     if (!btnList[i].gameObject.activeSelf) btnList[i].gameObject.SetActive(true);
                 }
-                else if (fileManager.audioList.Count <= i)
+                else if (_audioAssetManager.CustomAudios.Count <= i)
                 {
                     if (btnList[i].gameObject.activeSelf) btnList[i].gameObject.SetActive(false);
                 }

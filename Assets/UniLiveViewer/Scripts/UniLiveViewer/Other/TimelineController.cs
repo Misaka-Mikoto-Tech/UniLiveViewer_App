@@ -49,7 +49,8 @@ namespace UniLiveViewer
         public int maxFieldChara = 1;//最大召喚数
 
         public bool isPortalChara() { return trackBindChara[PORTAL_ELEMENT]; }
-        public FileAccessManager fileManager = null;
+        public FileAccessManager _fileManager;
+        public AudioAssetManager _AudioAssetManager;
         [SerializeField] private AnimationClip grabHandAnime;
         
         public double AudioClip_StartTime = 0;//セットされたaudioクリップの開始再生位置
@@ -88,7 +89,9 @@ namespace UniLiveViewer
         private void Awake()
         {
             if (timeLineAsset == null) timeLineAsset = playableDirector.playableAsset as TimelineAsset;
-            fileManager = GameObject.FindGameObjectWithTag("AppConfig").GetComponent<FileAccessManager>();
+            var appConfig = GameObject.FindGameObjectWithTag("AppConfig").transform;
+            _fileManager = appConfig.GetComponent<FileAccessManager>();
+            _AudioAssetManager = appConfig.GetComponent<AudioAssetManager>();
 
             cancellation_Token = this.GetCancellationTokenOnDestroy();
         }
@@ -116,7 +119,7 @@ namespace UniLiveViewer
                 Debug.Log("メインオーディオが見つかりません");
             }
 
-            NextAudioClip(0);
+            NextAudioClip(true,0).Forget();
 
             //開幕は停止しておく
             TimelineBaseReturn();
@@ -357,12 +360,10 @@ namespace UniLiveViewer
         /// <summary>
         /// 指定CurrentのBGMをセットする
         /// </summary>
-        public string NextAudioClip(int moveCurrent)
+        public async UniTask<string> NextAudioClip(bool isPreset, int moveCurrent)
         {
-            fileManager.CurrentAudio += moveCurrent;
-
             //クリップ決定
-            AudioClip newAudioClip = fileManager.audioList[fileManager.CurrentAudio];
+            AudioClip newAudioClip = await _AudioAssetManager.GetAudioClips(isPreset, moveCurrent);
 
             // タイムライン内のトラック一覧を取得
             if (timeLineAsset == null) timeLineAsset = playableDirector.playableAsset as TimelineAsset;
@@ -378,7 +379,7 @@ namespace UniLiveViewer
 
                 // 指定名称のクリップを抜き出す
                 TimelineClip oldAudioClip = clips.FirstOrDefault(x => x.displayName != "");
-                oldAudioClip.duration = AudioClip_StartTime + fileManager.audioList[fileManager.CurrentAudio].length;//秒
+                oldAudioClip.duration = AudioClip_StartTime + newAudioClip.length;//秒
 
                 //位置を調整
                 //oldAudioClip.start = dlayTime;
@@ -403,7 +404,7 @@ namespace UniLiveViewer
                             track = tracks.FirstOrDefault(x => x.name == AUDIOTRACK[i]);
                             clips = track.GetClips();
                             oldAudioClip = clips.FirstOrDefault(x => x.displayName != "");
-                            oldAudioClip.duration = AudioClip_StartTime + fileManager.audioList[fileManager.CurrentAudio].length;//秒
+                            oldAudioClip.duration = AudioClip_StartTime + newAudioClip.length;//秒
                             (oldAudioClip.asset as AudioPlayableAsset).clip = newAudioClip;
                         }
                     }
@@ -424,9 +425,9 @@ namespace UniLiveViewer
             }
         }
 
-        public float GetNowAudioLength()
+        public async UniTask<float> GetNowAudioLength(bool isPreset)
         {
-            return fileManager.audioList[fileManager.CurrentAudio].length;
+            return (await _AudioAssetManager.GetCurrentAudioClip(isPreset)).length;
         }
 
         /// <summary>

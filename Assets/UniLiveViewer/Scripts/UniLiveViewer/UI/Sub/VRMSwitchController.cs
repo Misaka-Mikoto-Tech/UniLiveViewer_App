@@ -43,7 +43,8 @@ namespace UniLiveViewer
         public event Action<CharaController> VRMAdded;
         public event Action<CharaController> onSetupComplete;
         //ファイルアクセスとサムネの管理
-        private FileAccessManager fileManager;
+        private FileAccessManager _fileManager;
+        private TextureAssetManager _textureAssetManager;
         //当たり判定
         private VRMTouchColliders touchCollider = null;
 
@@ -62,7 +63,9 @@ namespace UniLiveViewer
 
         private async void Start()
         {
-            fileManager = GameObject.FindGameObjectWithTag("AppConfig").GetComponent<FileAccessManager>();
+            var appConfig = GameObject.FindGameObjectWithTag("AppConfig").transform;
+            _fileManager = appConfig.GetComponent<FileAccessManager>();
+            _textureAssetManager = appConfig.GetComponent<TextureAssetManager>();
             touchCollider = GameObject.FindGameObjectWithTag("Player").GetComponent<VRMTouchColliders>();
 
             //サムネ用ボタンの生成
@@ -115,10 +118,10 @@ namespace UniLiveViewer
             switch (currentPage)
             {
                 case 0:
-                    if (!fileManager.isSuccess) return;
+                    if (!_fileManager.isSuccess) return;
                     //フォルダパスの表示を更新
                     textDirectory[0].text = $"({PathsInfo.GetFullPath(FOLDERTYPE.CHARA)}/)";
-                    textDirectory[1].text = $"/Download...[{fileManager.CountVRM(PathsInfo.GetFullPath_Download() + "/")} VRMs]";
+                    textDirectory[1].text = $"/Download...[{_fileManager.CountVRM(PathsInfo.GetFullPath_Download() + "/")} VRMs]";
 
                     //ローディングアニメーションを無効状態
                     anime_Loading.gameObject.SetActive(false);
@@ -127,8 +130,8 @@ namespace UniLiveViewer
                     thumbnailCon.gameObject.SetActive(true);
 
                     //VRM選択ボタンを生成する
-                    string sFolderPath = PathsInfo.GetFullPath(FOLDERTYPE.CHARA) + "/";
-                    string[] names = fileManager.GetAllVRMNames(sFolderPath);
+                    
+                    string[] names = _textureAssetManager.VrmNames;
                     thumbnailCon.SetThumbnail(names).Forget();
                     break;
                 case 1:
@@ -292,7 +295,7 @@ namespace UniLiveViewer
         {
             try
             {
-                await fileManager.CopyVRMtoCharaFolder(PathsInfo.GetFullPath_Download() + "/");
+                await _textureAssetManager.CopyVRMtoCharaFolder(PathsInfo.GetFullPath_Download() + "/");
                 InitPage(0);//開き直して反映
             }
             catch
