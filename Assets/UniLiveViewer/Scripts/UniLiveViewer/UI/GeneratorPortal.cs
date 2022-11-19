@@ -11,53 +11,52 @@ namespace UniLiveViewer
     public class GeneratorPortal : MonoBehaviour
     {
         //キャラ
-        [SerializeField] private List<CharaController> listChara = new List<CharaController>();
+        [SerializeField] List<CharaController> listChara = new List<CharaController>();
         public int currentChara { get; private set; } = 0;
 
         public int currentAnime { get; private set; } = 0;
         public int currentVMDLipSync { get; private set; } = 0;
         public bool isAnimationReverse = false;
-        private const string LIPSYNC_NONAME = "No-LipSyncData";
-        private const string LIPSYNC_VIEWNAME = "+ LipSyncData";
+        const string LIPSYNC_NONAME = "No-LipSyncData";
+        const string LIPSYNC_VIEWNAME = "+ LipSyncData";
 
         //基本ダンスクリップに上書きするクリップ(手・顔・口パク）
-        private Dictionary<string, int> dicAniType = new Dictionary<string, int>() { { "HAND_L", 0 }, { "HAND_R", 1 }, { "FACE", 2 }, { "LIP", 3 } };
+        Dictionary<string, int> dicAniType = new Dictionary<string, int>() { { "HAND_L", 0 }, { "HAND_R", 1 }, { "FACE", 2 }, { "LIP", 3 } };
 
-        [SerializeField] private DanceInfoData[] danceAniClipInfo;
-        [SerializeField] private string[] vmdLipSync;
+        [SerializeField] DanceInfoData[] danceAniClipInfo;
+        [SerializeField] string[] vmdLipSync;
         public DanceInfoData[] GetDanceInfoData() { return danceAniClipInfo; }
         public string[] GetVmdLipSync() { return vmdLipSync; }
-        [SerializeField] private DanceInfoData DanceInfoData_VMDPrefab;//VMD用のテンプレ
-        private DanceInfoData[] vmdDanceClipInfo;
+        [SerializeField] DanceInfoData DanceInfoData_VMDPrefab;//VMD用のテンプレ
+        DanceInfoData[] vmdDanceClipInfo;
 
         //汎用
         TimelineController _timeline;
-        FileAccessManager _fileManager;
         AnimationAssetManager _animationAssetManager;
 
         public event Action onGeneratedChara;
         public event Action onEmptyCurrent;
         public event Action onGeneratedAnime;
 
-        private VMDPlayer_Custom vmdPlayer;
-        private bool retryVMD = false;
-        private CancellationTokenSource cts = new CancellationTokenSource();
+        VMDPlayer_Custom vmdPlayer;
+        bool retryVMD = false;
+        CancellationTokenSource cts = new CancellationTokenSource();
 
         //読み込み済みVMD情報
-        private static Dictionary<string, VMD> dic_VMDReader = new Dictionary<string, VMD>();
+        static Dictionary<string, VMD> dic_VMDReader = new Dictionary<string, VMD>();
         void Awake()
         {
             //キャラリストに空枠を追加(空をVRM読み込み枠として扱う、雑仕様)
             listChara.Add(null);
         }
 
-        private void OnDisable()
+        void OnDisable()
         {
             cts.Cancel();
             cts = new CancellationTokenSource();
         }
 
-        private void OnEnable()
+        void OnEnable()
         {
             //リトライ処理
             if (retryVMD)
@@ -75,44 +74,42 @@ namespace UniLiveViewer
             }
         }
 
-        private void Start()
+        public void Initialize()
         {
-            _timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
-            var appConfig = GameObject.FindGameObjectWithTag("AppConfig").transform;
-            _fileManager = appConfig.GetComponent<FileAccessManager>();
-            _animationAssetManager = appConfig.GetComponent<AnimationAssetManager>();
-
             var vmdList = _animationAssetManager.vmdList;
             var vmdLipSyncList = _animationAssetManager.vmdLipSyncList;
 
-
-            _fileManager.onLoadSuccess += () =>
+            //VMD枠はダミーアニメーションを追加しておく
+            if (vmdList.Count > 0)
             {
-                //VMD枠はダミーアニメーションを追加しておく
-                if (vmdList.Count > 0)
+                vmdDanceClipInfo = new DanceInfoData[vmdList.Count];
+
+                for (int i = 0; i < vmdDanceClipInfo.Length; i++)
                 {
-                    vmdDanceClipInfo = new DanceInfoData[vmdList.Count];
+                    vmdDanceClipInfo[i] = Instantiate(DanceInfoData_VMDPrefab);
 
-                    for (int i = 0; i < vmdDanceClipInfo.Length; i++)
-                    {
-                        vmdDanceClipInfo[i] = Instantiate(DanceInfoData_VMDPrefab);
-
-                        vmdDanceClipInfo[i].motionOffsetTime = 0;
-                        vmdDanceClipInfo[i].strBeforeName = vmdList[i];
-                        vmdDanceClipInfo[i].viewName = vmdList[i];
-                    }
-                    danceAniClipInfo = danceAniClipInfo.Concat(vmdDanceClipInfo).ToArray();
+                    vmdDanceClipInfo[i].motionOffsetTime = 0;
+                    vmdDanceClipInfo[i].strBeforeName = vmdList[i];
+                    vmdDanceClipInfo[i].viewName = vmdList[i];
                 }
-                //口パクVMD
-                if (vmdLipSyncList.Count > 0)
-                {
-                    string[] lipSyncs = new string[vmdLipSyncList.Count];
-                    lipSyncs = vmdLipSyncList.ToArray();
+                danceAniClipInfo = danceAniClipInfo.Concat(vmdDanceClipInfo).ToArray();
+            }
+            //口パクVMD
+            if (vmdLipSyncList.Count > 0)
+            {
+                string[] lipSyncs = new string[vmdLipSyncList.Count];
+                lipSyncs = vmdLipSyncList.ToArray();
 
-                    string[] dummy = { LIPSYNC_NONAME };
-                    vmdLipSync = dummy.Concat(lipSyncs).ToArray();
-                }
-            };
+                string[] dummy = { LIPSYNC_NONAME };
+                vmdLipSync = dummy.Concat(lipSyncs).ToArray();
+            }
+        }
+
+        void Start()
+        {
+            _timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
+            var appConfig = GameObject.FindGameObjectWithTag("AppConfig").transform;
+            _animationAssetManager = appConfig.GetComponent<AnimationAssetManager>();
         }
 
         /// <summary>

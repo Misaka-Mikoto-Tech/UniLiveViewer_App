@@ -39,6 +39,8 @@ namespace UniLiveViewer
 
         async void Start()
         {
+            if (GlobalConfig.GetActiveSceneName() == "TitleScene") return;
+
             await UniTask.Delay(1000, cancellationToken: cancellation_token);
             _basePath = PathsInfo.GetFullPath(FOLDERTYPE.BGM) + "/";
             CustomAudioNamesUpdate();

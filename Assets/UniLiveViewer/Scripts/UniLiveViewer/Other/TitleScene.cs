@@ -38,7 +38,7 @@ namespace UniLiveViewer
             audioSource = GetComponent<AudioSource>();
             audioSource.volume = SystemInfo.soundVolume_SE;
 
-            //randomにキャラが変わる
+            //randomにキャラ変更
             int r = Random.Range(0, 3);
             for (int i = 0; i < 3; i++)
             {
@@ -48,21 +48,15 @@ namespace UniLiveViewer
 
         }
 
-        // Start is called before the first frame update
-        void Start()
+        public void Initialize()
         {
-            var fileManager = GameObject.FindGameObjectWithTag("AppConfig").gameObject.GetComponent<FileAccessManager>();
-
-            fileManager.onLoadEnd += () =>
+            if (SystemInfo.userProfile.LanguageCode != (int)USE_LANGUAGE.NULL)
             {
-                if (SystemInfo.userProfile.LanguageCode != (int)USE_LANGUAGE.NULL)
-                {
-                    //2回目以降
-                    sprRender.gameObject.SetActive(false);
-                    SceneChange().Forget();
-                }
-                else InitHand().Forget();
-            };
+                //2回目以降
+                sprRender.gameObject.SetActive(false);
+                SceneChange().Forget();
+            }
+            else InitHand().Forget();
         }
 
         private async UniTask InitHand()
@@ -78,14 +72,14 @@ namespace UniLiveViewer
             if (btn.name.Contains("_JP"))
             {
                 SystemInfo.userProfile.LanguageCode = (int)USE_LANGUAGE.JP;
-                FileAccessManager.WriteJson(SystemInfo.userProfile);
+                FileReadAndWriteUtility.WriteJson(SystemInfo.userProfile);
                 //差し替える
                 sprRender.sprite = sprPrefab[1];
             }
             else
             {
                 SystemInfo.userProfile.LanguageCode = (int)USE_LANGUAGE.EN;
-                FileAccessManager.WriteJson(SystemInfo.userProfile);
+                FileReadAndWriteUtility.WriteJson(SystemInfo.userProfile);
                 //差し替える
                 sprRender.sprite = sprPrefab[0];
             }

@@ -1,4 +1,5 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -13,6 +14,7 @@ namespace UniLiveViewer
 
         public List<string> vmdList = new List<string>();
         public List<string> vmdLipSyncList = new List<string>();
+
 
         void Awake()
         {
@@ -71,7 +73,7 @@ namespace UniLiveViewer
                 }
 
                 //一旦保存
-                FileAccessManager.SaveOffset();
+                FileReadAndWriteUtility.SaveOffset();
             }
             catch
             {

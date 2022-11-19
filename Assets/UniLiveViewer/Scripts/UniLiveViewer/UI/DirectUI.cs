@@ -6,18 +6,17 @@ namespace UniLiveViewer
 { 
     public class DirectUI : MonoBehaviour
     {
-        [SerializeField] private Transform guideParent;
-        [SerializeField] private Transform guideTarget;
+        [SerializeField] Transform guideParent;
+        [SerializeField] Transform guideTarget;
 
-        private FileAccessManager fileManager;
-        private PlayerStateManager playerStateManager;
-        private Renderer _renderer;
-        private Vector3 EndPoint = new Vector3(0, 0.7f, 5);
-        private Vector3 keepDistance;
+        PlayerStateManager playerStateManager;
+        Renderer _renderer;
+        Vector3 EndPoint = new Vector3(0, 0.7f, 5);
+        Vector3 keepDistance;
 
-        private bool isInit = false;
+        bool isInit = false;
 
-        private void Awake()
+        void Awake()
         {
             _renderer = GetComponent<Renderer>();
         }
@@ -25,7 +24,6 @@ namespace UniLiveViewer
         // Start is called before the first frame update
         void Start()
         {
-            fileManager = GameObject.FindGameObjectWithTag("AppConfig").gameObject.GetComponent<FileAccessManager>();
 
             playerStateManager = PlayerStateManager.instance;
             playerStateManager.onSwitchMainUI += SwitchEnable;
@@ -53,18 +51,34 @@ namespace UniLiveViewer
                     transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
                     break;
             }
-
-            fileManager.onLoadEnd += () => Init().Forget();
         }
 
-        private void Update()
+        public void Initialize()
+        {
+            transform.position = EndPoint;
+            DelayUIOpen().Forget();
+        }
+
+        /// <summary>
+        /// 時間差でUIを表示する
+        /// </summary>
+        async UniTask DelayUIOpen()
+        {
+            //時間差でUIを表示する
+            SwitchEnable(false);
+            await UniTask.Delay(800);
+            SwitchEnable(true);
+            isInit = true;
+        }
+
+        void Update()
         {
             if (!isInit) return;
             guideTarget.position = guideParent.position;
             guideTarget.rotation = guideParent.rotation;
         }
 
-        private void SwitchEnable(bool isEnable)
+        void SwitchEnable(bool isEnable)
         {
             if (guideParent.gameObject.activeSelf != isEnable) guideParent.gameObject.SetActive(isEnable);
             if (guideTarget.gameObject.activeSelf != isEnable) guideTarget.gameObject.SetActive(isEnable);
@@ -72,17 +86,6 @@ namespace UniLiveViewer
 
             if(isEnable) transform.position = (playerStateManager.transform.position - keepDistance);
             else keepDistance = playerStateManager.transform.position - transform.position;
-        }
-
-        private async UniTask Init()
-        {
-            transform.position = EndPoint;
-
-            SwitchEnable(false);
-            await UniTask.Delay(800);
-            SwitchEnable(true);
-
-            isInit = true;
         }
     }
 }

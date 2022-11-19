@@ -49,7 +49,6 @@ namespace UniLiveViewer
         public int maxFieldChara = 1;//最大召喚数
 
         public bool isPortalChara() { return trackBindChara[PORTAL_ELEMENT]; }
-        public FileAccessManager _fileManager;
         public AudioAssetManager _AudioAssetManager;
         [SerializeField] private AnimationClip grabHandAnime;
         
@@ -90,7 +89,6 @@ namespace UniLiveViewer
         {
             if (timeLineAsset == null) timeLineAsset = playableDirector.playableAsset as TimelineAsset;
             var appConfig = GameObject.FindGameObjectWithTag("AppConfig").transform;
-            _fileManager = appConfig.GetComponent<FileAccessManager>();
             _AudioAssetManager = appConfig.GetComponent<AudioAssetManager>();
 
             cancellation_Token = this.GetCancellationTokenOnDestroy();

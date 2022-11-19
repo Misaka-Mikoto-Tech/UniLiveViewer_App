@@ -30,57 +30,6 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// フォルダ内VRMファイル名を取得
-        /// </summary>
-        /// <returns></returns>
-        string[] GetVrmNames(string folderPath)
-        {
-            string[] result = null;
-            try
-            {
-                //VRMファイルのみ検索
-                result = Directory.GetFiles(folderPath, "*.vrm", SearchOption.TopDirectoryOnly);
-
-                //ファイルパスからファイル名の抽出
-                for (int i = 0; i < result.Length; i++)
-                {
-                    result[i] = Path.GetFileName(result[i]);
-                }
-            }
-            catch
-            {
-                result = null;
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// VRMファイルをコピー(download→Chara)
-        /// </summary>
-        /// <param name="pathMy"></param>
-        /// <returns></returns>
-        public async UniTask CopyVRMtoCharaFolder(string folderPath)
-        {
-            _vrmNames = GetVrmNames(folderPath);
-            try
-            {
-                string charaFolderPath = PathsInfo.GetFullPath(FOLDERTYPE.CHARA) + "/";
-                //ファイルコピー
-                for (int i = 0; i < _vrmNames.Length; i++)
-                {
-                    File.Copy(folderPath + _vrmNames[i], charaFolderPath + _vrmNames[i], true);//上書き保存
-                }
-
-                //VRMのサムネイル画像をキャッシュする
-                await CacheThumbnails();
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        /// <summary>
         /// 暫定
         /// </summary>
         public async UniTask CacheThumbnails()
@@ -152,6 +101,59 @@ namespace UniLiveViewer
                 await UniTask.Yield(PlayerLoopTiming.Update, cancellation_token);
             }
         }
+
+        /// <summary>
+        /// フォルダ内VRMファイル名を取得
+        /// </summary>
+        /// <returns></returns>
+        string[] GetVrmNames(string folderPath)
+        {
+            string[] result = null;
+            try
+            {
+                //VRMファイルのみ検索
+                result = Directory.GetFiles(folderPath, "*.vrm", SearchOption.TopDirectoryOnly);
+
+                //ファイルパスからファイル名の抽出
+                for (int i = 0; i < result.Length; i++)
+                {
+                    result[i] = Path.GetFileName(result[i]);
+                }
+            }
+            catch
+            {
+                result = null;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// VRMファイルをコピー(download→Chara)
+        /// </summary>
+        /// <param name="pathMy"></param>
+        /// <returns></returns>
+        public async UniTask CopyVRMtoCharaFolder(string folderPath)
+        {
+            _vrmNames = GetVrmNames(folderPath);
+            try
+            {
+                string charaFolderPath = PathsInfo.GetFullPath(FOLDERTYPE.CHARA) + "/";
+                //ファイルコピー
+                for (int i = 0; i < _vrmNames.Length; i++)
+                {
+                    File.Copy(folderPath + _vrmNames[i], charaFolderPath + _vrmNames[i], true);//上書き保存
+                }
+
+                //VRMのサムネイル画像をキャッシュする
+                await CacheThumbnails();
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        
 
         /// <summary>
         /// 実機にて不具合あるので次回

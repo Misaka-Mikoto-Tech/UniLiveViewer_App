@@ -69,6 +69,7 @@ namespace UniLiveViewer
                         moveIndex = jumpCurrent - generatorPortal.currentAnime;
                         generatorPortal.SetAnimation(moveIndex).Forget();
                         break;
+                        // TODO:作業中・・・少し修正大変そう
                     case JumpList.TARGET.VMD_LIPSYNC:
                         moveIndex = jumpCurrent - generatorPortal.currentVMDLipSync;
                         ChangeVMDLipSync(moveIndex);
@@ -102,7 +103,7 @@ namespace UniLiveViewer
                 timeline.SetVMD_MotionOffset(generatorPortal.GetNowAnimeInfo().viewName, (int)slider_Offset.Value);
                 textMeshs[3].text = $"{slider_Offset.Value:0000}";
             };
-            slider_Offset.UnControled += () => { FileAccessManager.SaveOffset(); };
+            slider_Offset.UnControled += () => { FileReadAndWriteUtility.SaveOffset(); };
             offsetAnchor = slider_Offset.transform.parent;
             slider_EyeLook.ValueUpdate += () =>
             {
@@ -268,7 +269,7 @@ namespace UniLiveViewer
                     break;
                 }
             }
-            FileAccessManager.SaveOffset();
+            FileReadAndWriteUtility.SaveOffset();
         }
 
         /// <summary>

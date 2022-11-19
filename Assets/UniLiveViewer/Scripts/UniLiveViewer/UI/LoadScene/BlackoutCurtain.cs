@@ -7,26 +7,30 @@ namespace UniLiveViewer
 {
     public class BlackoutCurtain : MonoBehaviour
     {
-        [SerializeField] private LoadAnimation loadAnimation;
-        [SerializeField] private Renderer renderer_Cutoff;
-        [SerializeField] private Renderer renderer_Brack;
-        [SerializeField] private TextMesh[] vmdError = new TextMesh[2];
+        [SerializeField] LoadAnimation loadAnimation;
+        [SerializeField] Renderer renderer_Cutoff;
+        [SerializeField] Renderer renderer_Brack;
+        [SerializeField] TextMesh[] vmdError = new TextMesh[2];
 
-        [SerializeField] private AnimationCurve curve;
+        [SerializeField] AnimationCurve curve;
         public static BlackoutCurtain instance;
 
-        private PlayerStateManager player;
-        private FileAccessManager fileManager;
-        private MaterialPropertyBlock materialPropertyBlock;
-        private Color color;
-        private CancellationToken cancellation_Token;
+        PlayerStateManager player;
+        MaterialPropertyBlock materialPropertyBlock;
+        Color color;
+        CancellationToken cancellation_Token;
 
-        private void Awake()
+        void Awake()
+        {
+            Initialize();
+        }
+
+        void Initialize()
         {
             cancellation_Token = this.GetCancellationTokenOnDestroy();
 
             //不透明黒
-            color = new Color(0,0,0,1);
+            color = new Color(0, 0, 0, 1);
             materialPropertyBlock = new MaterialPropertyBlock();
             renderer_Brack.GetPropertyBlock(materialPropertyBlock);
             materialPropertyBlock.SetColor("_BaseColor", color);
@@ -44,23 +48,57 @@ namespace UniLiveViewer
             instance = this;
         }
 
-        // Start is called before the first frame update
-        void Start()
+        /// <summary>
+        /// 演出開始
+        /// </summary>
+        public void Staging()
         {
             player = PlayerStateManager.instance;
             transform.parent = player.myCamera.transform;
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.identity;
 
-            fileManager = GameObject.FindGameObjectWithTag("AppConfig").gameObject.GetComponent<FileAccessManager>();
+            loadAnimation.gameObject.SetActive(true);
+        }
 
-            fileManager.onLoadStart += () => {
-                loadAnimation.gameObject.SetActive(true);
-            };
-            fileManager.onVMDLoadError += VMDLoadError;
-            fileManager.onLoadSuccess += () => {
-                FinishLoading().Forget();
-            };
+        /// <summary>
+        /// エラーメッセージを表示
+        /// </summary>
+        public void ShowErrorMessage()
+        {
+            Debug.Log("読み込み失敗発生:" + SystemInfo.userProfile.LanguageCode);
+
+            if (loadAnimation.gameObject.activeSelf) loadAnimation.gameObject.SetActive(false);
+
+            int index = SystemInfo.userProfile.LanguageCode - 1;
+            vmdError[index].gameObject.SetActive(true);
+        }
+
+        /// <summary>
+        /// 演出終了
+        /// </summary>
+        /// <returns></returns>
+        public async UniTaskVoid Ending()
+        {
+            await UniTask.Delay(300, cancellationToken: cancellation_Token);
+
+            //まずloadingアニメーションを消す
+            loadAnimation.gameObject.SetActive(false);
+            await UniTask.Yield(PlayerLoopTiming.Update, cancellation_Token);
+
+            //暗転から徐々に再開
+            color = materialPropertyBlock.GetColor("_BaseColor");
+            color.a = 1;//不透明
+
+            while (color.a >= 0.0f)
+            {
+                color.a -= Time.deltaTime;
+
+                materialPropertyBlock.SetColor("_BaseColor", color);
+                renderer_Brack.SetPropertyBlock(materialPropertyBlock);
+                await UniTask.Yield(PlayerLoopTiming.Update, cancellation_Token);
+            }
+            player.enabled = true;//操作可能に
         }
 
         /// <summary>
@@ -99,45 +137,8 @@ namespace UniLiveViewer
             async.allowSceneActivation = false;
             await UniTask.Delay(1000, cancellationToken: cancellation_Token);
             SystemInfo.userProfile.LastSceneName = sceneName;
-            FileAccessManager.WriteJson(SystemInfo.userProfile);
+            FileReadAndWriteUtility.WriteJson(SystemInfo.userProfile);
             async.allowSceneActivation = true;
-        }
-
-
-        private async UniTaskVoid FinishLoading()
-        {
-            await UniTask.Delay(300, cancellationToken: cancellation_Token);
-
-            //まずloadingアニメーションを消す
-            loadAnimation.gameObject.SetActive(false);
-            await UniTask.Yield(PlayerLoopTiming.Update, cancellation_Token);
-
-            //暗転から徐々に再開
-            color = materialPropertyBlock.GetColor("_BaseColor");
-            color.a = 1;//不透明
-
-            while (color.a >= 0.0f)
-            {
-                color.a -= Time.deltaTime;
-
-                materialPropertyBlock.SetColor("_BaseColor", color);
-                renderer_Brack.SetPropertyBlock(materialPropertyBlock);
-                await UniTask.Yield(PlayerLoopTiming.Update, cancellation_Token);
-            }
-            player.enabled = true;//操作可能に
-        }
-
-        /// <summary>
-        /// ファイル名異常
-        /// </summary>
-        private void VMDLoadError()
-        {
-            Debug.Log("読み込み失敗発生:" + SystemInfo.userProfile.LanguageCode);
-
-            if (loadAnimation.gameObject.activeSelf) loadAnimation.gameObject.SetActive(false);
-
-            int index = SystemInfo.userProfile.LanguageCode - 1;
-            vmdError[index].gameObject.SetActive(true);
         }
     }
 

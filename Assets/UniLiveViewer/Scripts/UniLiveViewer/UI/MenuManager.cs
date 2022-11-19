@@ -19,11 +19,9 @@ namespace UniLiveViewer
 
         public TimelineController timeline => _timeline;
         public VRMSwitchController vrmSelectUI => _vrmSelectUI;
-        public FileAccessManager fileAccess => _fileAccess;
 
         private TimelineController _timeline = null;
         [SerializeField] private VRMSwitchController _vrmSelectUI = null;
-        private FileAccessManager _fileAccess;
 
         [Header("＜Sound＞")]
         [SerializeField] private AudioClip[] Sound;//ボタン音,タブ音,ボタン揺れ音
@@ -34,8 +32,7 @@ namespace UniLiveViewer
             audioSource = GetComponent<AudioSource>();
             audioSource.volume = SystemInfo.soundVolume_SE;
 
-            _timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
-            _fileAccess = GameObject.FindGameObjectWithTag("AppConfig").gameObject.GetComponent<FileAccessManager>();
+            _timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();    
         }
 
         // Start is called before the first frame update

@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using System;
 using System.Threading;
 using UnityEngine;
@@ -11,46 +11,46 @@ namespace UniLiveViewer
     {
         public static int loadVRMID = 0;
 
-        [SerializeField] private Transform[] pageTransform;
-        [SerializeField] private Transform displayAnchor;
+        [SerializeField] Transform[] pageTransform;
+        [SerializeField] Transform displayAnchor;
 
         [Space(1)]
         [Header("＜1ページ＞")]
-        [SerializeField] private TextMesh[] textDirectory;
-        [SerializeField] private VRMRuntimeLoader_Custom runtimeLoader;//サンプルをそのまま利用する
-        [SerializeField] private LoadAnimation anime_Loading;
-        [SerializeField] private ThumbnailController thumbnailCon;
+        [SerializeField] TextMesh[] textDirectory;
+        [SerializeField] VRMRuntimeLoader_Custom runtimeLoader;//サンプルをそのまま利用する
+        [SerializeField] LoadAnimation anime_Loading;
+        [SerializeField] ThumbnailController thumbnailCon;
 
         [Space(1)]
         [Header("＜2ページ＞")]
-        [SerializeField] private PrefabEditor prefabEditor;
-        [SerializeField] private Button_Base btn_Apply;
+        [SerializeField] PrefabEditor prefabEditor;
+        [SerializeField] Button_Base btn_Apply;
 
         [Space(1)]
         [Header("＜3ページ＞")]
-        [SerializeField] private TextMesh textErrorResult;
+        [SerializeField] TextMesh textErrorResult;
 
         [Header("＜アタッチャー＞")]
-        [SerializeField] private ComponentAttacher_VRM attacherPrefab;
+        [SerializeField] ComponentAttacher_VRM attacherPrefab;
 
         [Header("＜その他＞")]
         //特殊表情用サウンド
-        [SerializeField] private AudioClip[] specialFaceAudioClip;
+        [SerializeField] AudioClip[] specialFaceAudioClip;
         //クリックSE
-        private AudioSource audioSource;
-        [SerializeField] private AudioClip[] Sound;//ボタン音,読み込み音,クリック音                               
+        AudioSource audioSource;
+        [SerializeField] AudioClip[] Sound;//ボタン音,読み込み音,クリック音                               
         //VRM読み込み時イベント
         public event Action<CharaController> VRMAdded;
         public event Action<CharaController> onSetupComplete;
         //ファイルアクセスとサムネの管理
-        private FileAccessManager _fileManager;
-        private TextureAssetManager _textureAssetManager;
+        FileAccessManager _fileManager;
+        TextureAssetManager _textureAssetManager;
         //当たり判定
-        private VRMTouchColliders touchCollider = null;
+        VRMTouchColliders touchCollider = null;
 
-        private CancellationToken cancellation_token;
+        CancellationToken cancellation_token;
 
-        private void Awake()
+        void Awake()
         {
             audioSource = GetComponent<AudioSource>();
             audioSource.volume = SystemInfo.soundVolume_SE;
@@ -61,7 +61,7 @@ namespace UniLiveViewer
             cancellation_token = this.GetCancellationTokenOnDestroy();
         }
 
-        private async void Start()
+        async void Start()
         {
             var appConfig = GameObject.FindGameObjectWithTag("AppConfig").transform;
             _fileManager = appConfig.GetComponent<FileAccessManager>();
@@ -149,7 +149,7 @@ namespace UniLiveViewer
         /// VRMを読み込む
         /// </summary>
         /// <param name="btn">該当サムネボタン</param>
-        private async UniTaskVoid LoadVRM(Button_Base btn)
+        async UniTaskVoid LoadVRM(Button_Base btn)
         {
             //重複クリックできないようにボタンを無効化
             thumbnailCon.gameObject.SetActive(false);
@@ -237,7 +237,7 @@ namespace UniLiveViewer
         /// 設定の確定
         /// </summary>
         /// <param name="btn"></param>
-        private async UniTask PrefabApply(Button_Base btn)
+        async UniTask PrefabApply(Button_Base btn)
         {
             //クリック音
             audioSource.PlayOneShot(Sound[0]);

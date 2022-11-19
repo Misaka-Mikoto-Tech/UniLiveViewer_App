@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using System;
 using System.Threading;
 using UnityEngine;
@@ -67,19 +67,19 @@ namespace UniLiveViewer
             slider_InitCharaSize.UnControled += () =>
             {
                 SystemInfo.userProfile.InitCharaSize = float.Parse(slider_InitCharaSize.Value.ToString("f2"));
-                FileAccessManager.WriteJson(SystemInfo.userProfile);
+                FileReadAndWriteUtility.WriteJson(SystemInfo.userProfile);
             };
             slider_CharaShadow.ValueUpdate += Update_CharaShadow;
             slider_CharaShadow.UnControled += () =>
             {
                 SystemInfo.userProfile.CharaShadow = float.Parse(slider_CharaShadow.Value.ToString("f2"));
-                FileAccessManager.WriteJson(SystemInfo.userProfile);
+                FileReadAndWriteUtility.WriteJson(SystemInfo.userProfile);
             };
             slider_VMDScale.ValueUpdate += Update_VMDScale;
             slider_VMDScale.UnControled += () =>
             {
                 SystemInfo.userProfile.VMDScale = float.Parse(slider_VMDScale.Value.ToString("f3"));
-                FileAccessManager.WriteJson(SystemInfo.userProfile);
+                FileReadAndWriteUtility.WriteJson(SystemInfo.userProfile);
             };
             slider_FixedFoveated.ValueUpdate += Update_FixedFoveated;
             slider_Fog.ValueUpdate += () => { RenderSettings.fogDensity = slider_Fog.Value; };
@@ -293,7 +293,7 @@ namespace UniLiveViewer
             else if (btn == btn_General[2])
             {
                 SystemInfo.userProfile.TouchVibration = btn.isEnable;
-                FileAccessManager.WriteJson(SystemInfo.userProfile);
+                FileReadAndWriteUtility.WriteJson(SystemInfo.userProfile);
             }
             //キャラ影デクリ
             else if (btn == btn_General[3])
@@ -301,7 +301,7 @@ namespace UniLiveViewer
                 quasiShadow.ShadowType -= 1;
                 textMeshs[3].text = $"FootShadow:\n{quasiShadow.ShadowType}";
                 SystemInfo.userProfile.CharaShadowType = (int)quasiShadow.ShadowType;
-                FileAccessManager.WriteJson(SystemInfo.userProfile);
+                FileReadAndWriteUtility.WriteJson(SystemInfo.userProfile);
             }
             //キャラ影インクリ
             else if (btn == btn_General[4])
@@ -309,7 +309,7 @@ namespace UniLiveViewer
                 quasiShadow.ShadowType += 1;
                 textMeshs[3].text = $"FootShadow:\n{quasiShadow.ShadowType}";
                 SystemInfo.userProfile.CharaShadowType = (int)quasiShadow.ShadowType;
-                FileAccessManager.WriteJson(SystemInfo.userProfile);
+                FileReadAndWriteUtility.WriteJson(SystemInfo.userProfile);
             }
 
             menuManager.PlayOneShot(SoundType.BTN_CLICK);
@@ -369,7 +369,7 @@ namespace UniLiveViewer
             }
 
             //保存する
-            FileAccessManager.WriteJson(SystemInfo.userProfile);
+            FileReadAndWriteUtility.WriteJson(SystemInfo.userProfile);
         }
 
         /// <summary>
@@ -418,7 +418,7 @@ namespace UniLiveViewer
                     break;
             }
             //保存する
-            FileAccessManager.WriteJson(SystemInfo.userProfile);
+            FileReadAndWriteUtility.WriteJson(SystemInfo.userProfile);
         }
 
         /// <summary>
@@ -440,7 +440,7 @@ namespace UniLiveViewer
                         SystemInfo.userProfile.scene_view_led = result;
 
                         //保存する
-                        FileAccessManager.WriteJson(SystemInfo.userProfile);
+                        FileReadAndWriteUtility.WriteJson(SystemInfo.userProfile);
                     }
                     break;
             }
@@ -517,7 +517,7 @@ namespace UniLiveViewer
             }
 
             //保存する
-            FileAccessManager.WriteJson(SystemInfo.userProfile);
+            FileReadAndWriteUtility.WriteJson(SystemInfo.userProfile);
 
             menuManager.PlayOneShot(SoundType.BTN_CLICK);
         }

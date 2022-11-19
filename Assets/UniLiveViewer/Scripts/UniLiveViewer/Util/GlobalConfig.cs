@@ -51,7 +51,7 @@ namespace UniLiveViewer
             else if (sName == "ViewerScene") sceneMode = SceneMode.VIEWER;
             else if (sName == "GymnasiumScene") sceneMode = SceneMode.GYMNASIUM;
 
-            userProfile = FileAccessManager.ReadJson();
+            userProfile = FileReadAndWriteUtility.ReadJson();
         }
     }
 

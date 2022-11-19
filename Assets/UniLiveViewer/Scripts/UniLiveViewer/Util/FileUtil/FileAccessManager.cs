@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Threading;
 using UnityEngine;
+using UniRx;
 
 namespace UniLiveViewer 
 {
@@ -11,114 +12,57 @@ namespace UniLiveViewer
     {
         public bool isSuccess { get; private set; } = false;
 
-        [SerializeField] TextureAssetManager _textureAssetManager;
-        [SerializeField] AnimationAssetManager _animationAssetManager;
-
         CancellationToken cancellation_token;
-
-        public event Action onLoadStart;
-        public event Action onLoadSuccess;
-        public event Action onLoadFail;
-        public event Action onVMDLoadError;
-        public event Action onLoadEnd;
+        Subject<Unit> _onLoadStart = new Subject<Unit>();
+        public IObservable<Unit> LoadStartAsObservable => _onLoadStart;
+        Subject<Unit> _onLoadEnd = new Subject<Unit>();
+        public IObservable<Unit> LoadEndAsObservable => _onLoadEnd;
+        Subject<Unit> _onVMDLoadError = new Subject<Unit>();
+        public IObservable<Unit> LoadErrorAsObservable => _onVMDLoadError;
 
         void Awake()
         {
             cancellation_token = this.GetCancellationTokenOnDestroy();
+        }
 
-            _animationAssetManager = GetComponent<AnimationAssetManager>();
-            _textureAssetManager = GetComponent<TextureAssetManager>();
-
-            //Linkだと両方反応するのでelif必須→PLATFORM_OCULUSってのがあるみたい
+        public async UniTask Initialize(AnimationAssetManager animationAssetManager, TextureAssetManager textureAssetManager)
+        {
+            //Linkだと両方反応するのでelif必須
+            //PLATFORM_OCULUSってのもある？
 #if UNITY_EDITOR
             Debug.Log("Windowsとして認識しています");
 #elif UNITY_ANDROID
             Debug.Log("Questとして認識しています");
 #endif
-        }
 
-        void Start()
-        {
-            Init().Forget();
-        }
-
-        async UniTask Init()
-        {
             await UniTask.Delay(100, cancellationToken:cancellation_token);//他の初期化を待つ
             try
             {
-                onLoadStart?.Invoke();
+                _onLoadStart?.OnNext(Unit.Default);
 
+                //フォルダ作成
                 TryCreateCustomFolder();
+                //リードミー作成
                 await TryCreateReadmeFile();
-                Debug.Log("readme生成完了");
-
+                //タイトルシーン以外
                 if (GlobalConfig.GetActiveSceneName() != "TitleScene")
                 {
                     //VMDのファイルを確認
-                    if (!_animationAssetManager.CheckOffsetFile())
+                    if (!animationAssetManager.CheckOffsetFile())
                     {
-                        onVMDLoadError?.Invoke();//フォーマットエラー
+                        _onVMDLoadError?.OnNext(Unit.Default);//フォーマットエラー
                         throw new Exception("CheckOffsetFile");
                     }
-                    //VRMのサムネイル画像をキャッシュする
-                    await _textureAssetManager.CacheThumbnails();
+                    await textureAssetManager.CacheThumbnails();
                 }
+
                 isSuccess = true;
-                onLoadSuccess?.Invoke();
                 Debug.Log("ロード成功");
+                _onLoadEnd?.OnNext(Unit.Default);
             }
             catch
             {
-                onLoadFail?.Invoke();
                 Debug.Log("ロード失敗");
-            }
-            onLoadEnd?.Invoke();
-        }
-
-        /// <summary>
-        /// Jsonファイルを読み込んでクラスに変換
-        /// </summary>
-        /// <returns></returns>
-        public static UserProfile ReadJson()
-        {
-            UserProfile result;
-
-            string path = PathsInfo.GetFullPath_JSON();
-            string datastr = "";
-            StreamReader reader = null;
-            if (File.Exists(path))
-            {
-                using (reader = new StreamReader(path))
-                {
-                    datastr = reader.ReadToEnd();
-                    //reader.Close();
-                }
-                result = JsonUtility.FromJson<UserProfile>(datastr);
-            }
-            else
-            {
-                //新規作成して読み込み直す
-                result = new UserProfile();
-                WriteJson(result);
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Jsonファイルに書き込む
-        /// </summary>
-        /// <param name="lang"></param>
-        public static void WriteJson(UserProfile data)
-        {
-            //Json形式に変換
-            string path = PathsInfo.GetFullPath_JSON();
-            string jsonstr = JsonUtility.ToJson(data, true);
-            using (StreamWriter writer = new StreamWriter(path, false))
-            {
-                writer.Write(jsonstr);
-                //writer.Flush();
-                //writer.Close();
             }
         }
 
@@ -150,6 +94,10 @@ namespace UniLiveViewer
             }
         }
         
+        /// <summary>
+        /// フォルダ生成
+        /// </summary>
+        /// <param name="fullPath"></param>
         void CreateFolder(string fullPath)
         {
             try
@@ -185,10 +133,11 @@ namespace UniLiveViewer
             {
                 throw new Exception("CreateFile");
             }
+            Debug.Log("Readme作成完了");
         }
 
         //TODO:わざわざ書き込む必要ないし解放必要では
-        static async UniTask ResourcesLoadText(string fileName, string path)
+        async UniTask ResourcesLoadText(string fileName, string path)
         {
             TextAsset resourceFile = (TextAsset)await Resources.LoadAsync<TextAsset>(fileName);
             using (StreamWriter writer = new StreamWriter(path, false, System.Text.Encoding.UTF8))
@@ -205,23 +154,6 @@ namespace UniLiveViewer
         public int CountVRM(string folderPath)
         {
             return Directory.GetFiles(folderPath, "*.vrm", SearchOption.TopDirectoryOnly).Length;
-        }
-
-
-        /// <summary>
-        /// ダンスモーションの再生位置書き込み
-        /// </summary>
-        public static void SaveOffset()
-        {
-            //書き込み
-            string path = PathsInfo.GetFullPath(FOLDERTYPE.SETTING) + "/";
-            using (StreamWriter writer = new StreamWriter(path + "MotionOffset.txt", false, System.Text.Encoding.UTF8))
-            {
-                foreach (var e in SystemInfo.dicVMD_offset)
-                {
-                    writer.WriteLine(e.Key + "," + e.Value);
-                }
-            }
         }
     }
 }
