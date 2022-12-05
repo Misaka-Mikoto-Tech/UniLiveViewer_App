@@ -5,10 +5,10 @@ namespace UniLiveViewer
     //TODO:一括管理に変える
     public class PassthroughProjection : MonoBehaviour
     {
-        private OVRPassthroughLayer passthroughLayer;
-        [SerializeField] private MeshFilter projectionObject;
+        OVRPassthroughLayer _passthroughLayer;
+        [SerializeField] MeshFilter _projectionObject;
 
-        private void Awake()
+        void Awake()
         {
             GameObject ovrCameraRig = GameObject.Find("PassthroughProjection");
             if (ovrCameraRig == null)
@@ -17,24 +17,24 @@ namespace UniLiveViewer
                 return;
             }
 
-            passthroughLayer = ovrCameraRig.GetComponent<OVRPassthroughLayer>();
-            if (passthroughLayer == null)
+            _passthroughLayer = ovrCameraRig.GetComponent<OVRPassthroughLayer>();
+            if (_passthroughLayer == null)
             {
                 Debug.LogError("OVRCameraRig does not contain an OVRPassthroughLayer component");
             }
         }
 
-        private void OnEnable()
+        void OnEnable()
         {
             if (PlayerStateManager.instance.myOVRManager.isInsightPassthroughEnabled)
             {
-                passthroughLayer.AddSurfaceGeometry(projectionObject.gameObject, true);
+                _passthroughLayer.AddSurfaceGeometry(_projectionObject.gameObject, true);
             }
         }
 
-        private void OnDisable()
+        void OnDisable()
         {
-            passthroughLayer.RemoveSurfaceGeometry(projectionObject.gameObject);
+            _passthroughLayer.RemoveSurfaceGeometry(_projectionObject.gameObject);
         }
 
     }

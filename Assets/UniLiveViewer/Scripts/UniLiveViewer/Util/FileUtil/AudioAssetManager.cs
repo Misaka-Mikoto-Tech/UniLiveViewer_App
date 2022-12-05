@@ -23,8 +23,9 @@ namespace UniLiveViewer
         [Header("＜カスタム曲＞")]
         [SerializeField] const int MAX_STACK = 5;
         [SerializeField] List<AudioClip> _stackAudioClips = new List<AudioClip>();
+        public IReadOnlyList<string> CustomAudios => _customAudioNames;
         [SerializeField] List<string> _customAudioNames = new List<string>();
-        public List<string> CustomAudios => _customAudioNames;
+        
         public int CurrentCustom => _currentCustom;
         int _currentCustom = 0;
         int _currentStack = 0;

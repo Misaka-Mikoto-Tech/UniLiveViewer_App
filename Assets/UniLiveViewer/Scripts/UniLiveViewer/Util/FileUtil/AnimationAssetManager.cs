@@ -1,5 +1,4 @@
-using Cysharp.Threading.Tasks;
-using System;
+﻿using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -11,10 +10,10 @@ namespace UniLiveViewer
     public class AnimationAssetManager : MonoBehaviour
     {
         CancellationToken cancellation_token;
-
-        public List<string> vmdList = new List<string>();
-        public List<string> vmdLipSyncList = new List<string>();
-
+        public IReadOnlyList<string> VmdList => _vmdList;
+        List<string> _vmdList = new List<string>();
+        public IReadOnlyList<string> VmdLipSyncList => _vmdLipSyncList;
+        List<string> _vmdLipSyncList = new List<string>();
 
         void Awake()
         {
@@ -24,7 +23,6 @@ namespace UniLiveViewer
         /// <summary>
         /// アプリフォルダ内のVMDファイル名を取得
         /// </summary>
-        /// <returns></returns>
         public bool CheckOffsetFile()
         {
             //初期化
@@ -46,11 +44,9 @@ namespace UniLiveViewer
                 }
             }
 
-            //VMDファイル名を取得
             string sFolderPath = PathsInfo.GetFullPath(FOLDERTYPE.MOTION) + "/";
             try
             {
-                //VMDファイルのみ検索
                 var names = Directory.GetFiles(sFolderPath, "*.vmd", SearchOption.TopDirectoryOnly);
 
                 //ファイルパスからファイル名の抽出
@@ -62,7 +58,7 @@ namespace UniLiveViewer
                     if (names[i].Contains(",")) return false;
                     else
                     {
-                        vmdList.Add(names[i]);
+                        _vmdList.Add(names[i]);
 
                         //既存offset情報がなければ追加
                         if (!SystemInfo.dicVMD_offset.ContainsKey(names[i]))
@@ -71,7 +67,6 @@ namespace UniLiveViewer
                         }
                     }
                 }
-
                 //一旦保存
                 FileReadAndWriteUtility.SaveOffset();
             }
@@ -91,18 +86,16 @@ namespace UniLiveViewer
         /// <returns></returns>
         void GetAllVMDLipSyncNames()
         {
-            //VMDファイル名を取得
             string sFolderPath = PathsInfo.GetFullPath_LipSync() + "/";
             try
             {
-                //VRMファイルのみ検索
                 var names = Directory.GetFiles(sFolderPath, "*.vmd", SearchOption.TopDirectoryOnly);
 
                 //ファイルパスからファイル名の抽出
                 for (int i = 0; i < names.Length; i++)
                 {
                     names[i] = names[i].Replace(sFolderPath, "");
-                    vmdLipSyncList.Add(names[i]);
+                    _vmdLipSyncList.Add(names[i]);
                 }
             }
             catch
@@ -110,7 +103,5 @@ namespace UniLiveViewer
                 Debug.Log("VMDLipSyncファイル読み込みに失敗しました");
             }
         }
-
     }
-
 }

@@ -9,39 +9,39 @@ namespace UniLiveViewer
     public class AttachPointGenerator : MonoBehaviour
     {
         public AttachPoint anchorPointPrefab;
-        public List<AttachPoint> anchorList = new List<AttachPoint>();
-        private Animator anime;
-        private Dictionary<HumanBodyBones, float> dicAttachPoint = new Dictionary<HumanBodyBones, float>();
+        [SerializeField] List<AttachPoint> anchorList = new List<AttachPoint>();
+        Animator _animator;
+        Dictionary<HumanBodyBones, float> dicAttachPoint = new Dictionary<HumanBodyBones, float>();
 
-        public bool isCustomize = false;//現状SD専用
+        [SerializeField] bool _isCustomize = false;//現状SD専用
 
-        private CharaController charaCon;
-        private TimelineController timeline;
+        CharaController _charaCon;
+        TimelineController _timeline;
 
-        public float height = 0;//身長はとりあえず図れるが、他がうまくいかないと無意味(初期姿勢バグってる奴も直さないといけない)
+        [SerializeField] float _height = 0;//身長はとりあえず図れるが、他がうまくいかないと無意味(初期姿勢バグってる奴も直さないといけない)
 
-        private void Awake()
+        void Awake()
         {
-            anime = GetComponent<Animator>();
-            charaCon = transform.GetComponent<CharaController>();
+            _animator = GetComponent<Animator>();
+            _charaCon = transform.GetComponent<CharaController>();
         }
 
         // Start is called before the first frame update
         void Start()
         {
-            timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
+            _timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
 
             Init();
         }
 
-        private void Init()
+        void Init()
         {
             if (anchorList != null && anchorList.Count > 0) return;//Prefab対策
 
             //身長を図る(UI上ベース約0.15～0.35くらい)
             //height = anime.GetBoneTransform(HumanBodyBones.Head).position.y - anime.GetBoneTransform(HumanBodyBones.RightFoot).position.y;
             //直すの面倒なので座高(UI上ベース約0.07～0.12くらい)
-            height = anime.GetBoneTransform(HumanBodyBones.Head).position.y - anime.GetBoneTransform(HumanBodyBones.Spine).position.y;
+            _height = _animator.GetBoneTransform(HumanBodyBones.Head).position.y - _animator.GetBoneTransform(HumanBodyBones.Spine).position.y;
 
 
             //約胸～頭までの距離が短ければミニキャラと認定する
@@ -49,7 +49,7 @@ namespace UniLiveViewer
             //if (dir.sqrMagnitude < 0.035f) isMiniChara = true;
 
             //SD用
-            if (isCustomize)
+            if (_isCustomize)
             {
                 dicAttachPoint = new Dictionary<HumanBodyBones, float>()
                 {
@@ -66,11 +66,11 @@ namespace UniLiveViewer
                     //アタッチオブジェ生成
                     var attachPoint = Instantiate(anchorPointPrefab.gameObject, transform.position, Quaternion.identity);
                     var attachPointScript = attachPoint.GetComponent<AttachPoint>();
-                    attachPointScript.myCharaCon = charaCon;
+                    attachPointScript.myCharaCon = _charaCon;
 
                     //パラメータ設定
                     attachPoint.name = "AP_" + Enum.GetName(typeof(HumanBodyBones), e.Key);
-                    attachPoint.transform.parent = anime.GetBoneTransform(e.Key);
+                    attachPoint.transform.parent = _animator.GetBoneTransform(e.Key);
                     attachPoint.transform.localRotation = Quaternion.identity;
 
                     switch (e.Key)
@@ -114,19 +114,19 @@ namespace UniLiveViewer
                     //アタッチオブジェ生成
                     var attachPoint = Instantiate(anchorPointPrefab.gameObject, transform.position, Quaternion.identity);
                     var attachPointScript = attachPoint.GetComponent<AttachPoint>();
-                    attachPointScript.myCharaCon = charaCon;
+                    attachPointScript.myCharaCon = _charaCon;
 
                     //パラメータ設定
                     attachPoint.name = "AP_" + Enum.GetName(typeof(HumanBodyBones), e.Key);
                     if (e.Key == HumanBodyBones.Chest)
                     {
-                        Transform chest = anime.GetBoneTransform(HumanBodyBones.UpperChest);
-                        if (!chest) chest = anime.GetBoneTransform(HumanBodyBones.Neck)?.parent;
-                        if (!chest) chest = anime.GetBoneTransform(HumanBodyBones.Head)?.parent;
+                        Transform chest = _animator.GetBoneTransform(HumanBodyBones.UpperChest);
+                        if (!chest) chest = _animator.GetBoneTransform(HumanBodyBones.Neck)?.parent;
+                        if (!chest) chest = _animator.GetBoneTransform(HumanBodyBones.Head)?.parent;
                         //セットする
                         attachPoint.transform.parent = chest;
                     }
-                    else attachPoint.transform.parent = anime.GetBoneTransform(e.Key);
+                    else attachPoint.transform.parent = _animator.GetBoneTransform(e.Key);
                     attachPoint.transform.localRotation = Quaternion.identity;
 
                     switch (e.Key)
@@ -137,7 +137,7 @@ namespace UniLiveViewer
                         //    attachPoint.transform.localScale = Vector3.one * 0.45f;
                         //    break;
                         case HumanBodyBones.Chest:
-                            if (height >= 0.11f) attachPoint.transform.localPosition = new Vector3(0, e.Value, 0);
+                            if (_height >= 0.11f) attachPoint.transform.localPosition = new Vector3(0, e.Value, 0);
                             else attachPoint.transform.localPosition = new Vector3(0, e.Value, 0);
                             attachPoint.transform.localScale = Vector3.one * 0.4f;
                             break;
@@ -169,13 +169,13 @@ namespace UniLiveViewer
             if (anchorList[0].transform.childCount == 0)
             {
                 //握っていたら解除する
-                if (charaCon.keepHandL_Anime) timeline.SwitchHandType(charaCon, false, true);
+                if (_charaCon.keepHandL_Anime) _timeline.SwitchHandType(_charaCon, false, true);
             }
             //右手のアタッチポイントのアイテム数確認
             if (anchorList[1].transform.childCount == 0)
             {
                 //握っていたら解除する
-                if (charaCon.keepHandR_Anime) timeline.SwitchHandType(charaCon, false, false);
+                if (_charaCon.keepHandR_Anime) _timeline.SwitchHandType(_charaCon, false, false);
             }
         }
 

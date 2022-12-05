@@ -6,16 +6,16 @@ namespace UniLiveViewer
     [RequireComponent(typeof(AudioSource))]
     public class TouchSound : MonoBehaviour
     {
-        [SerializeField] private Transform parentAnchor;
-        [SerializeField] private float colliderRadius = 0.07f;
+        [SerializeField] Transform parentAnchor;
+        [SerializeField] float colliderRadius = 0.07f;
 
-        private AudioSource audioSource;
-        [SerializeField] private AudioClip[] Sound;
+        AudioSource _audioSource;
+        [SerializeField] AudioClip[] Sound;
 
-        private void Awake()
+        void Awake()
         {
-            audioSource = GetComponent<AudioSource>();
-            audioSource.volume = SystemInfo.soundVolume_SE;
+            _audioSource = GetComponent<AudioSource>();
+            _audioSource.volume = SystemInfo.soundVolume_SE;
 
             //親子全てにコライダーを付ける
             CreateColliders(parentAnchor);
@@ -28,7 +28,7 @@ namespace UniLiveViewer
             this.enabled = false;
         }
 
-        private void CreateColliders(Transform parent)
+        void CreateColliders(Transform parent)
         {
             //末端で無ければ処理する
             if (parent.childCount != 0)
@@ -48,12 +48,12 @@ namespace UniLiveViewer
             }
         }
 
-        private void OnTriggerEnter(Collider other)
+        void OnTriggerEnter(Collider other)
         {
             if (!this.enabled || other.gameObject.layer != SystemInfo.layerNo_IgnoreRaycats) return;
             //タッチ音をランダムにならす
             int i = Random.Range(0, Sound.Length);
-            audioSource.PlayOneShot(Sound[i]);
+            _audioSource.PlayOneShot(Sound[i]);
         }
     }
 }

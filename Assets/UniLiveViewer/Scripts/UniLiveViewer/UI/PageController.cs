@@ -9,21 +9,21 @@ namespace UniLiveViewer
     {
         public event Action onSwitchPage;
         [Header("＜ページ・タブボタン＞")]
-        [SerializeField] private Button_Switch[] btnTab;
-        [SerializeField] private Transform[] pageAnchor;
+        [SerializeField] Button_Switch[] btnTab;
+        [SerializeField] Transform[] pageAnchor;
         public Button_Switch[] BtnTab => btnTab;
         public Transform[] GetPageAnchor => pageAnchor;
 
-        private CancellationToken cancellation_token;
+        CancellationToken cancellation_token;
         public int current { get; private set; }
         public Transform GetCurrentPage() { return pageAnchor[current]; } 
 
         [Header("＜Sound＞")]
-        [SerializeField] private AudioClip[] Sound;//ボタン音
-        private AudioSource audioSource;
+        [SerializeField] AudioClip[] Sound;//ボタン音
+        AudioSource audioSource;
 
 
-        private void Awake()
+        void Awake()
         {
             audioSource = GetComponent<AudioSource>();
             audioSource.volume = SystemInfo.soundVolume_SE;
@@ -32,7 +32,7 @@ namespace UniLiveViewer
             DelayAudioSource().Forget();
         }
 
-        private async UniTask DelayAudioSource()
+        async UniTask DelayAudioSource()
         {
             await UniTask.Delay(1000);
             audioSource.enabled = true;
@@ -61,7 +61,7 @@ namespace UniLiveViewer
         /// ページを切り替える
         /// </summary>
         /// <param name="btn"></param>
-        private void SwitchCurrent(Button_Base btn)
+        void SwitchCurrent(Button_Base btn)
         {
             //タブのボタン状態を更新する
             for (int i = 0; i < btnTab.Length; i++)
@@ -79,7 +79,7 @@ namespace UniLiveViewer
         /// <summary>
         /// カレントページに切り替える
         /// </summary>
-        private void SwitchPages()
+        void SwitchPages()
         {
             //カレントページのタブボタンが非表示の場合別ページへ
             if (!btnTab[current].gameObject.activeSelf)
@@ -113,7 +113,7 @@ namespace UniLiveViewer
             });
         }
 
-        private void Update()
+        void Update()
         {
 #if UNITY_EDITOR
             DebugInput();
@@ -121,12 +121,12 @@ namespace UniLiveViewer
 #endif
         }
 
-        private void OnEnable()
+        void OnEnable()
         {
             SwitchPages();
         }
 
-        private void DebugInput()
+        void DebugInput()
         {
             if (Input.GetKeyDown(KeyCode.T))
             {

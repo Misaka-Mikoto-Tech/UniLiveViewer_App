@@ -6,12 +6,13 @@ namespace UniLiveViewer
     public class DecorationItemInfo : MonoBehaviour
     {
         public string[] ItemName => itemName;
-        public RenderInfo[] RenderInfo => renderInfo;
+        [SerializeField] string[] itemName = new string[2] { "アイテム名", "ItemName" };
 
-        [SerializeField] private string[] itemName = new string[2] { "アイテム名","ItemName" };
-        [SerializeField] private string[] flavorText = new string[2] { "何の変哲もないアイテム", "Unremarkable item" };//未使用
-        [SerializeField] private RenderInfo[] renderInfo = new RenderInfo[0];
-        private OVRGrabbable_Custom ovrGrab;
+        public RenderInfo[] RenderInfo => renderInfo;
+        [SerializeField] RenderInfo[] renderInfo = new RenderInfo[0];
+
+        [SerializeField] string[] flavorText = new string[2] { "何の変哲もないアイテム", "Unremarkable item" };//未使用
+        OVRGrabbable_Custom ovrGrab;
         public bool isAttached;
 
         /// <summary>
@@ -45,7 +46,7 @@ namespace UniLiveViewer
             return true;
         }
 
-        private void OnDestroy()
+        void OnDestroy()
         {
             if (isAttached) return;
 

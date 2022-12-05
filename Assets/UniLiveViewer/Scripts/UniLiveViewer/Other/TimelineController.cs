@@ -13,32 +13,32 @@ namespace UniLiveViewer
     {
         public readonly string sPortalBaseAniTrack = "Animation Track_Portal";
 
-        private const string ANITRACK1 = "Animation Track1";
-        private const string ANITRACK2 = "Animation Track2";
-        private const string ANITRACK3 = "Animation Track3";
-        private const string ANITRACK4 = "Animation Track4";
-        private const string ANITRACK5 = "Animation Track5";
+        const string ANITRACK1 = "Animation Track1";
+        const string ANITRACK2 = "Animation Track2";
+        const string ANITRACK3 = "Animation Track3";
+        const string ANITRACK4 = "Animation Track4";
+        const string ANITRACK5 = "Animation Track5";
 
-        private const string assetName_MainAudio = "Main Audio";
-        private readonly string[] AUDIOTRACK = { "Audio Track 1", "Audio Track 2", "Audio Track 3", "Audio Track 4" };
+        const string assetName_MainAudio = "Main Audio";
+        readonly string[] AUDIOTRACK = { "Audio Track 1", "Audio Track 2", "Audio Track 3", "Audio Track 4" };
 
-        private const string SUBTRACK0 = "Override 0";
-        private const string SUBTRACK1 = "Override 1";
-        private const string SUBTRACK2 = "Override 2";
-        private const string SUBTRACK3 = "Override 3";
+        const string SUBTRACK0 = "Override 0";
+        const string SUBTRACK1 = "Override 1";
+        const string SUBTRACK2 = "Override 2";
+        const string SUBTRACK3 = "Override 3";
 
-        private const string MAINCLIP = "DanceBase";
-        private const string SUBCLIP0 = "HandExpression";
-        private const string SUBCLIP1 = "HandExpression";
-        private const string SUBCLIP2 = "FaceClip";
-        private const string SUBCLIP3 = "LipClip";
+        const string MAINCLIP = "DanceBase";
+        const string SUBCLIP0 = "HandExpression";
+        const string SUBCLIP1 = "HandExpression";
+        const string SUBCLIP2 = "FaceClip";
+        const string SUBCLIP3 = "LipClip";
 
         //ポータルキャラの確認
         public static int PORTAL_ELEMENT = 0;
 
         //タイムライン
         public PlayableDirector playableDirector; //ディレクタ
-        private TimelineAsset timeLineAsset;//タイムラインアセットにアクセス用
+        TimelineAsset timeLineAsset;//タイムラインアセットにアクセス用
 
         //バインドキャラを管理するクラス
         public CharaController[] trackBindChara = new CharaController[6];
@@ -50,15 +50,15 @@ namespace UniLiveViewer
 
         public bool isPortalChara() { return trackBindChara[PORTAL_ELEMENT]; }
         public AudioAssetManager _AudioAssetManager;
-        [SerializeField] private AnimationClip grabHandAnime;
+        [SerializeField] AnimationClip grabHandAnime;
         
         public double AudioClip_StartTime = 0;//セットされたaudioクリップの開始再生位置
-        private double motionClip_StartTime = 3;//モーションクリップの開始再生位置(デフォルト)
-        private CancellationToken cancellation_Token;
+        double motionClip_StartTime = 3;//モーションクリップの開始再生位置(デフォルト)
+        CancellationToken cancellation_Token;
 
         [Header("確認用露出(readonly)")]
-        [SerializeField] private float _timelineSpeed = 1.0f;
-        [SerializeField] private double _PlaybackTime = 0.0f;
+        [SerializeField] float _timelineSpeed = 1.0f;
+        [SerializeField] double _PlaybackTime = 0.0f;
         public float TimelineSpeed
         {
             get { return _timelineSpeed; }

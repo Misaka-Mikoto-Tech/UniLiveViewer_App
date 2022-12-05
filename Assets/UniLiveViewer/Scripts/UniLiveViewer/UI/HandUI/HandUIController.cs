@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace UniLiveViewer
 {
@@ -6,38 +6,35 @@ namespace UniLiveViewer
     {
         public handUI[] handUI_CharaAdjustment;//キャラ拡縮用
         public handUI[] handUI_ItemMatSelecter;//アイテム着色用
-        private ItemMaterialSelector[] itemMaterialSelector = new ItemMaterialSelector[2];
+        ItemMaterialSelector[] _itemMaterialSelector = new ItemMaterialSelector[2];
 
         public handUI handUI_PlayerHeight;
-        private CharacterCameraConstraint_Custom charaCam;
+        CharacterCameraConstraint_Custom _charaCam;
 
-        private float _playerHeight = 0;
+        float _playerHeight = 0;
         public float PlayerHeight 
         { 
             get { return _playerHeight; }
             set 
             {
                 _playerHeight = Mathf.Clamp(value, 0, 2.0f);
-                charaCam.HeightOffset = _playerHeight;
+                _charaCam.HeightOffset = _playerHeight;
                 handUI_PlayerHeight.textMesh.text = $"{_playerHeight:0.00}";
             }
         }
 
-        private TimelineController timeline = null;
-        private Transform lookTarget;
+        Transform _lookTarget;
 
-        private void Awake()
+        void Awake()
         {
-            timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
-            charaCam = GetComponent<CharacterCameraConstraint_Custom>();
-            lookTarget = GameObject.FindGameObjectWithTag("MainCamera").gameObject.transform;
+            _charaCam = GetComponent<CharacterCameraConstraint_Custom>();
+            _lookTarget = GameObject.FindGameObjectWithTag("MainCamera").gameObject.transform;
         }
 
-        // Start is called before the first frame update
         void Start()
         {
             handUI_PlayerHeight.Init(Instantiate(handUI_PlayerHeight.prefab));
-            PlayerHeight = charaCam.HeightOffset;
+            PlayerHeight = _charaCam.HeightOffset;
             handUI_PlayerHeight.Show = false;
 
             for (int i = 0;i< handUI_CharaAdjustment.Length;i++)
@@ -54,29 +51,29 @@ namespace UniLiveViewer
             }
         }
 
-        private void LateUpdate()
+        void LateUpdate()
         {
             //表示中は全てカメラに向く
             if(handUI_PlayerHeight.Show)
             {
-                handUI_PlayerHeight.instance.transform.LookAt(lookTarget);
+                handUI_PlayerHeight.instance.transform.LookAt(_lookTarget);
             }
             for (int i = 0; i < handUI_CharaAdjustment.Length; i++)
             {
                 if (!handUI_CharaAdjustment[i].Show) continue;
-                handUI_CharaAdjustment[i].instance.transform.LookAt(lookTarget);
+                handUI_CharaAdjustment[i].instance.transform.LookAt(_lookTarget);
             }
             for (int i = 0; i < handUI_ItemMatSelecter.Length; i++)
             {
                 if (!handUI_ItemMatSelecter[i].Show) continue;
-                handUI_ItemMatSelecter[i].instance.transform.LookAt(lookTarget);
+                handUI_ItemMatSelecter[i].instance.transform.LookAt(_lookTarget);
             }
         }
 
         public void InitItemMaterialSelector(int handType, DecorationItemInfo decorationItemInfo)
         {
-            itemMaterialSelector[handType] = handUI_ItemMatSelecter[handType].instance.GetComponent<ItemMaterialSelector>();
-            itemMaterialSelector[handType].Init(decorationItemInfo);
+            _itemMaterialSelector[handType] = handUI_ItemMatSelecter[handType].instance.GetComponent<ItemMaterialSelector>();
+            _itemMaterialSelector[handType].Init(decorationItemInfo);
         }
 
         /// <summary>
@@ -87,7 +84,7 @@ namespace UniLiveViewer
         /// <returns></returns>
         public bool TrySetItemTexture(int handType, int current)
         {
-            return itemMaterialSelector[handType].TrySetTexture(current);
+            return _itemMaterialSelector[handType].TrySetTexture(current);
         }
 
         public bool IsShow_HandUI()

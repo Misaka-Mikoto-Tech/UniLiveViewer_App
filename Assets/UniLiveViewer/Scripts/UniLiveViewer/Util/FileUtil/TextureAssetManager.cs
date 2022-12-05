@@ -18,7 +18,7 @@ namespace UniLiveViewer
         public string[] VrmNames => _vrmNames;
         [SerializeField] string[] _vrmNames;
 
-        public Dictionary<string, Sprite> Thumbnails => _thumbnails;
+        public IReadOnlyDictionary<string, Sprite> Thumbnails => _thumbnails;
         [SerializeField] Dictionary<string, Sprite> _thumbnails = new Dictionary<string, Sprite>();
 
         //サムネイルキャッシュ用

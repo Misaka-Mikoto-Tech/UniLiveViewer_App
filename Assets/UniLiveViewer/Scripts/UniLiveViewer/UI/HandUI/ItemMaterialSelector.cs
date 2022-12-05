@@ -4,20 +4,19 @@ namespace UniLiveViewer
 {
     public class ItemMaterialSelector : MonoBehaviour
     {
-        [SerializeField] private MeshRenderer[] Quads = new MeshRenderer[8];//候補とりあえず8
-        [SerializeField] private Transform currentQuad;//カーソルの役割
-        private Vector3 currentQuadOffset = new Vector3(0, 0, 0.01f);//zファイ対策
-        [SerializeField] private TextMesh textMesh;
-        [SerializeField] private Animator anime;
-        private int current = 0;
-        private int limitTex;
+        [SerializeField] MeshRenderer[] _quads = new MeshRenderer[8];//候補とりあえず8
+        [SerializeField] Transform _currentQuad;//カーソルの役割
+        Vector3 _currentQuadOffset = new Vector3(0, 0, 0.01f);//zファイ対策
+        [SerializeField] TextMesh _textMesh;
+        int _current = 0;
+        int _limitTex;
 
-        private DecorationItemInfo itemInfo;
-        private int languageCode;
+        DecorationItemInfo _itemInfo;
+        int _languageCode;
 
-        private void Awake()
+        void Awake()
         {
-            languageCode = SystemInfo.userProfile.LanguageCode - 1;
+            _languageCode = SystemInfo.userProfile.LanguageCode - 1;
         }
 
         /// <summary>
@@ -26,32 +25,32 @@ namespace UniLiveViewer
         /// <param name="info"></param>
         public void Init(DecorationItemInfo info)
         {
-            itemInfo = info;
-            textMesh.text = itemInfo.ItemName[languageCode];
+            _itemInfo = info;
+            _textMesh.text = _itemInfo.ItemName[_languageCode];
 
             if (info.RenderInfo.Length == 0)
             {
-                current = 0;
-                for (int i = 0; i < Quads.Length; i++)
+                _current = 0;
+                for (int i = 0; i < _quads.Length; i++)
                 {
-                    if (Quads[i].gameObject.activeSelf) Quads[i].gameObject.SetActive(false);
+                    if (_quads[i].gameObject.activeSelf) _quads[i].gameObject.SetActive(false);
                 }
             }
             else
             {
-                current = itemInfo.RenderInfo[0].data.textureCurrent;
-                limitTex = itemInfo.RenderInfo[0].data.chooseableTexture.Length;
+                _current = _itemInfo.RenderInfo[0].data.textureCurrent;
+                _limitTex = _itemInfo.RenderInfo[0].data.chooseableTexture.Length;
 
-                for (int i = 0; i < Quads.Length; i++)
+                for (int i = 0; i < _quads.Length; i++)
                 {
-                    if (i < limitTex)
+                    if (i < _limitTex)
                     {
-                        if (!Quads[i].gameObject.activeSelf) Quads[i].gameObject.SetActive(true);
-                        Quads[i].material.SetTexture("_BaseMap", itemInfo.RenderInfo[0].data.chooseableTexture[i]);
+                        if (!_quads[i].gameObject.activeSelf) _quads[i].gameObject.SetActive(true);
+                        _quads[i].material.SetTexture("_BaseMap", _itemInfo.RenderInfo[0].data.chooseableTexture[i]);
                     }
                     else
                     {
-                        if (Quads[i].gameObject.activeSelf) Quads[i].gameObject.SetActive(false);
+                        if (_quads[i].gameObject.activeSelf) _quads[i].gameObject.SetActive(false);
                     }
                 }
             }
@@ -61,10 +60,10 @@ namespace UniLiveViewer
 
         public bool TrySetTexture(int nextCurrent)
         {
-            if (nextCurrent < limitTex && current != nextCurrent)
+            if (nextCurrent < _limitTex && _current != nextCurrent)
             {
-                current = nextCurrent;
-                itemInfo.SetTexture(0, current);//現状は0しかないので固定
+                _current = nextCurrent;
+                _itemInfo.SetTexture(0, _current);//現状は0しかないので固定
 
                 //カーソル移動
                 UpdateCursor();
@@ -76,11 +75,11 @@ namespace UniLiveViewer
         /// <summary>
         /// Currentへカーソル画像を移動する
         /// </summary>
-        private void UpdateCursor()
+        void UpdateCursor()
         {
-            currentQuad.parent = Quads[current].transform;
-            currentQuad.transform.localPosition = currentQuadOffset;
-            currentQuad.transform.localRotation = Quaternion.identity;
+            _currentQuad.parent = _quads[_current].transform;
+            _currentQuad.transform.localPosition = _currentQuadOffset;
+            _currentQuad.transform.localRotation = Quaternion.identity;
         }
     }
 }

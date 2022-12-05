@@ -17,17 +17,18 @@ namespace UniLiveViewer
         }
 
         //対応するセレクター
-        public LineSelector lineSelector = null;
+        public LineSelector LineSelector => _lineSelector;
+        [SerializeField] LineSelector _lineSelector;
 
         public bool IsSummonCircle { get; private set; } = false;
         public HandState handState = HandState.DEFAULT;
 
-        private TimelineController timeline = null;
-        private GeneratorPortal generatorPortal;
+        TimelineController _timeline;
+        GeneratorPortal _generatorPortal;
         public Transform handMeshRoot;
 
-        private AudioSource audioSource;
-        [SerializeField] private AudioClip[] Sound;//掴み,離す,生成,削除
+        AudioSource _audioSource;
+        [SerializeField] AudioClip[] Sound;//掴み,離す,生成,削除
 
         public event Action<OVRGrabber_UniLiveViewer> OnSummon;
         public event Action<OVRGrabber_UniLiveViewer> OnGrabItem;
@@ -44,10 +45,10 @@ namespace UniLiveViewer
 
             if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "TitleScene") return;
 
-            generatorPortal = GameObject.FindGameObjectWithTag("GeneratorPortal").gameObject.GetComponent<GeneratorPortal>();
-            timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
-            audioSource = GetComponent<AudioSource>();
-            audioSource.volume = SystemInfo.soundVolume_SE;
+            _generatorPortal = GameObject.FindGameObjectWithTag("GeneratorPortal").gameObject.GetComponent<GeneratorPortal>();
+            _timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
+            _audioSource = GetComponent<AudioSource>();
+            _audioSource.volume = SystemInfo.soundVolume_SE;
 
             //textMesh_CrossUI = crossUI.GetChild(0).GetComponent<TextMesh>();
             //crossUI.gameObject.SetActive(false);
@@ -61,7 +62,7 @@ namespace UniLiveViewer
             if (handState == HandState.SUMMONCIRCLE)
             {
                 //色更新
-                lineSelector.SetMaterial(false);
+                _lineSelector.SetMaterial(false);
             }
         }
 
@@ -112,7 +113,7 @@ namespace UniLiveViewer
                         grabbedObject.GetComponent<MeshRenderer>().enabled = true;
                         grabbedObject.transform.parent = transform;
                         grabbedObject.GetComponent<DecorationItemInfo>().isAttached = false;
-                        timeline.SetActive_AttachPoint(true);
+                        _timeline.SetActive_AttachPoint(true);
 
                         //item掴んだ
                         OnGrabItem?.Invoke(this);
@@ -130,7 +131,7 @@ namespace UniLiveViewer
                     {
                         //召喚陣の上に乗せる
                         var chara = grabbedObject.gameObject.GetComponent<CharaController>();
-                        chara.SetState(CharaController.CHARASTATE.ON_CIRCLE, lineSelector.LineEndAnchor);
+                        chara.SetState(CharaController.CHARASTATE.ON_CIRCLE, _lineSelector.LineEndAnchor);
 
                         handState = HandState.CHARA_ONCIRCLE;
                     }
@@ -143,7 +144,7 @@ namespace UniLiveViewer
                         handState = HandState.GRABBED_CHARA;
                     }
                     //掴み音
-                    audioSource.PlayOneShot(Sound[0]);
+                    _audioSource.PlayOneShot(Sound[0]);
                 }
             }
             //掴んでいない場合
@@ -153,16 +154,16 @@ namespace UniLiveViewer
                 if (IsSummonCircle)
                 {
                     //セレクターにオブジェクトが触れているか(layer的にキャラ)
-                    if (!lineSelector.hitCollider.collider) return;
+                    if (!_lineSelector.hitCollider.collider) return;
 
                     //対象オブジェクトをフィールドから削除する
-                    timeline.DeleteBindAsset(lineSelector.hitCollider.transform.GetComponent<CharaController>());
+                    _timeline.DeleteBindAsset(_lineSelector.hitCollider.transform.GetComponent<CharaController>());
 
                     //色更新
-                    lineSelector.SetMaterial(true);
+                    _lineSelector.SetMaterial(true);
 
                     //削除音
-                    audioSource.PlayOneShot(Sound[3]);
+                    _audioSource.PlayOneShot(Sound[3]);
                     handState = HandState.SUMMONCIRCLE;
                 }
             }
@@ -210,7 +211,7 @@ namespace UniLiveViewer
                         //Portalに戻す
                         PortalBack(keepChara);
                         //離す音
-                        audioSource.PlayOneShot(Sound[1]);
+                        _audioSource.PlayOneShot(Sound[1]);
                         handState = HandState.DEFAULT;
                         break;
                     //キャラを掴んでいるかつ召喚陣ON
@@ -221,24 +222,24 @@ namespace UniLiveViewer
 
                         //フリートラックがなければPortalに戻す
                         string freeTrack;
-                        if (!timeline.isFreeTrack(out freeTrack))
+                        if (!_timeline.isFreeTrack(out freeTrack))
                         {
                             PortalBack(keepChara);
                             //離す音
-                            audioSource.PlayOneShot(Sound[1]);
+                            _audioSource.PlayOneShot(Sound[1]);
                             return;
                         }
 
                         //セレクターの座標と角度を取得
-                        Vector3 pos = lineSelector.LineEndAnchor.position;
-                        Vector3 eulerAngles = lineSelector.LineEndAnchor.rotation.eulerAngles;
+                        Vector3 pos = _lineSelector.LineEndAnchor.position;
+                        Vector3 eulerAngles = _lineSelector.LineEndAnchor.rotation.eulerAngles;
 
                         //移行に失敗ならPortalに戻す
-                        if (!timeline.TransferPlayableAsset(keepChara, freeTrack, pos, eulerAngles))
+                        if (!_timeline.TransferPlayableAsset(keepChara, freeTrack, pos, eulerAngles))
                         {
                             PortalBack(keepChara);
                             //離す音
-                            audioSource.PlayOneShot(Sound[1]);
+                            _audioSource.PlayOneShot(Sound[1]);
                             return;
                         }
 
@@ -258,7 +259,7 @@ namespace UniLiveViewer
                         }
 
                         //生成音
-                        audioSource.PlayOneShot(Sound[2]);
+                        _audioSource.PlayOneShot(Sound[2]);
 
                         handState = HandState.SUMMONCIRCLE;
 
@@ -285,9 +286,9 @@ namespace UniLiveViewer
         private void PortalBack(CharaController keepChara)
         {
             // ポータルに戻す
-            if (generatorPortal.gameObject.activeSelf)
+            if (_generatorPortal.gameObject.activeSelf)
             {
-                keepChara.SetState(CharaController.CHARASTATE.MINIATURE, generatorPortal.transform);
+                keepChara.SetState(CharaController.CHARASTATE.MINIATURE, _generatorPortal.transform);
             }
             ////ポータル枠のキャラをnull初期化　不要
             //else timeline.NewAssetBinding_Portal(null);
@@ -322,7 +323,7 @@ namespace UniLiveViewer
                     //召喚陣上に設置
                     handState = HandState.CHARA_ONCIRCLE;
                     chara = grabbedObject.gameObject.GetComponent<CharaController>();
-                    chara.SetState(CharaController.CHARASTATE.ON_CIRCLE, lineSelector.LineEndAnchor);
+                    chara.SetState(CharaController.CHARASTATE.ON_CIRCLE, _lineSelector.LineEndAnchor);
                     break;
                 //何もしていない
                 case HandState.DEFAULT:
@@ -335,8 +336,8 @@ namespace UniLiveViewer
             }
 
             //召喚陣の状態を反転
-            IsSummonCircle = !lineSelector.gameObject.activeSelf;
-            lineSelector.gameObject.SetActive(IsSummonCircle);
+            IsSummonCircle = !_lineSelector.gameObject.activeSelf;
+            _lineSelector.gameObject.SetActive(IsSummonCircle);
         }
     }
 }

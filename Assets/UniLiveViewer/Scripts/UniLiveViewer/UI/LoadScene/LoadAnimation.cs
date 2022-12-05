@@ -4,26 +4,26 @@ namespace UniLiveViewer
 {
     public class LoadAnimation : MonoBehaviour
     {
-        private Animator anime;
-        private int current = 0;
-        private string[] sLoadAnime = new string[2] { "isType01", "isType02" };
-        [SerializeField] private TextMesh sceneName;
+        Animator _animator;
+        int _current = 0;
+        string[] _loadAnimeName = new string[2] { "isType01", "isType02" };
+        [SerializeField] TextMesh _sceneName;
 
-        private void Awake()
+        void Awake()
         {
-            anime = GetComponent<Animator>();
+            _animator = GetComponent<Animator>();
         }
 
-        private void OnDisable()
+        void OnDisable()
         {
-            anime.SetBool(sLoadAnime[current], false);
+            _animator.SetBool(_loadAnimeName[_current], false);
         }
 
-        private void OnEnable()
+        void OnEnable()
         {
-            if (sceneName)
+            if (_sceneName)
             {
-                sceneName.text = SystemInfo.sceneMode switch
+                _sceneName.text = SystemInfo.sceneMode switch
                 {
                     SceneMode.CANDY_LIVE => "★CRS Live★",
                     SceneMode.KAGURA_LIVE => "★KAGURA Live★",
@@ -34,11 +34,11 @@ namespace UniLiveViewer
             }
 
             //ローディングアニメーションをランダム設定
-            current = Random.Range(0, 2);
+            _current = Random.Range(0, 2);
 
             //ローディングアニメーション開始
-            anime.gameObject.SetActive(true);
-            anime.SetBool(sLoadAnime[current], true);
+            _animator.gameObject.SetActive(true);
+            _animator.SetBool(_loadAnimeName[_current], true);
         }
     }
 }

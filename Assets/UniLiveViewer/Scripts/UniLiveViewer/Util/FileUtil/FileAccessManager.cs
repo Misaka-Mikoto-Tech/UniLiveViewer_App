@@ -27,8 +27,8 @@ namespace UniLiveViewer
 
         public async UniTask Initialize(AnimationAssetManager animationAssetManager, TextureAssetManager textureAssetManager)
         {
-            //Linkだと両方反応するのでelif必須
-            //PLATFORM_OCULUSってのもある？
+            // NOTE: Linkだと両方反応するのでelif必須
+            // TODO: PLATFORM_OCULUS試す
 #if UNITY_EDITOR
             Debug.Log("Windowsとして認識しています");
 #elif UNITY_ANDROID
@@ -47,7 +47,7 @@ namespace UniLiveViewer
                 //タイトルシーン以外
                 if (GlobalConfig.GetActiveSceneName() != "TitleScene")
                 {
-                    //VMDのファイルを確認
+                    //VMDファイルを確認
                     if (!animationAssetManager.CheckOffsetFile())
                     {
                         _onVMDLoadError?.OnNext(Unit.Default);//フォーマットエラー

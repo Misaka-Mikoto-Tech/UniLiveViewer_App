@@ -16,6 +16,7 @@ namespace UniLiveViewer
 
         public int currentAnime { get; private set; } = 0;
         public int currentVMDLipSync { get; private set; } = 0;
+
         public bool isAnimationReverse = false;
         const string LIPSYNC_NONAME = "No-LipSyncData";
         const string LIPSYNC_VIEWNAME = "+ LipSyncData";
@@ -76,29 +77,26 @@ namespace UniLiveViewer
 
         public void Initialize()
         {
-            var vmdList = _animationAssetManager.vmdList;
-            var vmdLipSyncList = _animationAssetManager.vmdLipSyncList;
-
             //VMD枠はダミーアニメーションを追加しておく
-            if (vmdList.Count > 0)
+            if (_animationAssetManager.VmdList.Count > 0)
             {
-                vmdDanceClipInfo = new DanceInfoData[vmdList.Count];
+                vmdDanceClipInfo = new DanceInfoData[_animationAssetManager.VmdList.Count];
 
                 for (int i = 0; i < vmdDanceClipInfo.Length; i++)
                 {
                     vmdDanceClipInfo[i] = Instantiate(DanceInfoData_VMDPrefab);
 
                     vmdDanceClipInfo[i].motionOffsetTime = 0;
-                    vmdDanceClipInfo[i].strBeforeName = vmdList[i];
-                    vmdDanceClipInfo[i].viewName = vmdList[i];
+                    vmdDanceClipInfo[i].strBeforeName = _animationAssetManager.VmdList[i];
+                    vmdDanceClipInfo[i].viewName = _animationAssetManager.VmdList[i];
                 }
                 danceAniClipInfo = danceAniClipInfo.Concat(vmdDanceClipInfo).ToArray();
             }
             //口パクVMD
-            if (vmdLipSyncList.Count > 0)
+            if (_animationAssetManager.VmdLipSyncList.Count > 0)
             {
-                string[] lipSyncs = new string[vmdLipSyncList.Count];
-                lipSyncs = vmdLipSyncList.ToArray();
+                string[] lipSyncs = new string[_animationAssetManager.VmdLipSyncList.Count];
+                lipSyncs = _animationAssetManager.VmdLipSyncList.ToArray();
 
                 string[] dummy = { LIPSYNC_NONAME };
                 vmdLipSync = dummy.Concat(lipSyncs).ToArray();

@@ -12,22 +12,22 @@ namespace UniLiveViewer
 
     public class MenuManager : MonoBehaviour
     {
-        [SerializeField] private PageController pageController;
+        [SerializeField] PageController pageController;
 
         public JumpList jumpList => _jumpList;
-        [SerializeField] private JumpList _jumpList = null;
+        [SerializeField] JumpList _jumpList = null;
 
         public TimelineController timeline => _timeline;
         public VRMSwitchController vrmSelectUI => _vrmSelectUI;
 
-        private TimelineController _timeline = null;
-        [SerializeField] private VRMSwitchController _vrmSelectUI = null;
+        TimelineController _timeline = null;
+        [SerializeField] VRMSwitchController _vrmSelectUI = null;
 
         [Header("＜Sound＞")]
-        [SerializeField] private AudioClip[] Sound;//ボタン音,タブ音,ボタン揺れ音
-        private AudioSource audioSource;
+        [SerializeField] AudioClip[] Sound;//ボタン音,タブ音,ボタン揺れ音
+        AudioSource audioSource;
 
-        private void Awake()
+        void Awake()
         {
             audioSource = GetComponent<AudioSource>();
             audioSource.volume = SystemInfo.soundVolume_SE;

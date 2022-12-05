@@ -5,20 +5,20 @@ namespace UniLiveViewer
     public class AttachPoint : MonoBehaviour
     {
         public CharaController myCharaCon;
-        private MeshRenderer meshRenderer;
-        private SphereCollider sphereCollider;
+        MeshRenderer _meshRenderer;
+        SphereCollider _sphereCollider;
 
         // Start is called before the first frame update
         void Awake()
         {
-            meshRenderer = GetComponent<MeshRenderer>();
-            sphereCollider = GetComponent<SphereCollider>();
+            _meshRenderer = GetComponent<MeshRenderer>();
+            _sphereCollider = GetComponent<SphereCollider>();
         }
 
         public void SetActive(bool isActive)
         {
-            meshRenderer.enabled = isActive;
-            sphereCollider.enabled = isActive;
+            _meshRenderer.enabled = isActive;
+            _sphereCollider.enabled = isActive;
         }
     }
 }

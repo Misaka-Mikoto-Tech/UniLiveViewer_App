@@ -22,9 +22,10 @@ namespace UniLiveViewer
         }
 
         public CHARASTATE GetCharaState => charaState;
-        [SerializeField] private CHARASTATE charaState = CHARASTATE.NULL;
+        [SerializeField] CHARASTATE charaState = CHARASTATE.NULL;
         public ANIMATIONMODE animationMode = ANIMATIONMODE.CLIP;
-        public Animator GetAnimator => animator;
+        public Animator GetAnimator => _animator;
+        Animator _animator;
 
         public List<VRMSpringBone> springBoneList = new List<VRMSpringBone>();//揺れもの接触判定用
 
@@ -43,7 +44,7 @@ namespace UniLiveViewer
         public ILookAtVRM _lookAtVRM;
 
         public CharaInfoData charaInfoData;
-        private float customScalar = 0;
+        float _customScalar = 0;
         //現状VRM専用
         public IReadOnlyList<SkinnedMeshRenderer> GetSkinnedMeshRenderers;
         public IReadOnlyList<SkinnedMeshRenderer> GetMorphSkinnedMeshRenderers;
@@ -59,21 +60,21 @@ namespace UniLiveViewer
         public AnimationClip keepHandL_Anime;//手アニメーション(握りから戻す際に必要)
         public AnimationClip keepHandR_Anime;//手アニメーション(握りから戻す際に必要)
         [SerializeField] private Transform overrideAnchor = null;//座標の上書き用
-        private Animator animator;
+        
 
         public float CustomScalar
         {
-            get { return customScalar; }
+            get { return _customScalar; }
             set
             {
-                customScalar = Mathf.Clamp(value, 0.25f, 20.0f);
-                transform.localScale = Vector3.one * customScalar;
+                _customScalar = Mathf.Clamp(value, 0.25f, 20.0f);
+                transform.localScale = Vector3.one * _customScalar;
             }
         }
 
         void Awake()
         {
-            animator = transform.GetComponent<Animator>();
+            _animator = transform.GetComponent<Animator>();
 
             //VRMはまだcharaInfoData生成前
             if (charaInfoData && charaInfoData.formatType == CharaInfoData.FORMATTYPE.FBX)
@@ -85,7 +86,7 @@ namespace UniLiveViewer
                 _eyeLookAt = transform.GetComponent<IEyeLookAt>();
             }
 
-            customScalar = SystemInfo.userProfile.InitCharaSize;
+            _customScalar = SystemInfo.userProfile.InitCharaSize;
         }
 
         public void InitVRMSync(LipSync_VRM lipSync, FacialSync_VRM facialSync, VRMBlendShapeProxy blendShapeProxy)
@@ -257,8 +258,8 @@ namespace UniLiveViewer
         public void RemoveRunAnime()
         {
             if (keepRunAnime) return;
-            keepRunAnime = animator.runtimeAnimatorController;
-            animator.runtimeAnimatorController = null;
+            keepRunAnime = _animator.runtimeAnimatorController;
+            _animator.runtimeAnimatorController = null;
         }
 
         /// <summary>
@@ -267,7 +268,7 @@ namespace UniLiveViewer
         public void ReturnRunAnime()
         {
             if (!keepRunAnime) return;
-            animator.runtimeAnimatorController = keepRunAnime;
+            _animator.runtimeAnimatorController = keepRunAnime;
             keepRunAnime = null;
         }
     }

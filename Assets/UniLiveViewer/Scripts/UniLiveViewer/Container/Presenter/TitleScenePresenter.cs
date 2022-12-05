@@ -9,11 +9,10 @@ public class TitleScenePresenter : IStartable, IDisposable
     readonly FileAccessManager _fileAccessManager;
     readonly TitleScene _titleScene;
 
-
     readonly CompositeDisposable _disposable;
 
     [Inject]
-    TitleScenePresenter( FileAccessManager fileAccessManager,
+    public TitleScenePresenter( FileAccessManager fileAccessManager,
                                 TitleScene titleScene)
     {
         _fileAccessManager = fileAccessManager;
