@@ -1,19 +1,12 @@
 ﻿using UnityEngine;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using static UniLiveViewer.OVRGrabber_UniLiveViewer;
 using System;
 
 namespace UniLiveViewer 
 {
     public class PlayerStateManager : MonoBehaviour
     {
-        public enum HandType
-        {
-            LHand = 0,
-            RHand = 1
-        }
-
         [Header("基本")]
         SimpleCapsuleWithStickMovement _simpleCapsuleWithStickMovement;
         TimelineController _timeline;
@@ -105,30 +98,29 @@ namespace UniLiveViewer
             this.enabled = false;
         }
 
-        // Update is called once per frame
         void Update()
         {
-            HandStateAction(HandType.LHand, key_Lcon);
-            HandStateAction(HandType.RHand, key_Rcon);
+            HandStateAction(PlayerEnums.HandType.LHand, key_Lcon);
+            HandStateAction(PlayerEnums.HandType.RHand, key_Rcon);
 
 #if UNITY_EDITOR
             DebugInput();
 #endif
         }
 
-        void HandStateAction(HandType handType, KeyConfig key)
+        void HandStateAction(PlayerEnums.HandType handType, KeyConfig key)
         {
             OVRGrabber_UniLiveViewer hand = _ovrGrabber[(int)handType];
 
             switch (hand.handState)
             {
-                case HandState.GRABBED_CHARA:
+                case PlayerEnums.HandState.GRABBED_CHARA:
                     CheckInput_GrabbedChara(handType, key, hand);
                     break;
-                case HandState.CHARA_ONCIRCLE:
+                case PlayerEnums.HandState.CHARA_ONCIRCLE:
                     CheckInput_OnCircleChara(handType, key, hand);
                     break;
-                case HandState.GRABBED_ITEM:
+                case PlayerEnums.HandState.GRABBED_ITEM:
                     CheckInput_GrabedItem(handType, key, hand);
                     break;
                 default:
@@ -159,7 +151,7 @@ namespace UniLiveViewer
             onPassthrough?.Invoke(myOVRManager.isInsightPassthroughEnabled);
         }
 
-        void CheckInput_GrabbedChara(HandType handType, KeyConfig key,OVRGrabber_UniLiveViewer hand)
+        void CheckInput_GrabbedChara(PlayerEnums.HandType handType, KeyConfig key,OVRGrabber_UniLiveViewer hand)
         {
             //魔法陣と十字を表示してキャラを乗せる
             if (OVRInput.GetDown(key.action))
@@ -176,7 +168,7 @@ namespace UniLiveViewer
             }
         }
 
-        void CheckInput_OnCircleChara(HandType handType, KeyConfig key, OVRGrabber_UniLiveViewer hand)
+        void CheckInput_OnCircleChara(PlayerEnums.HandType handType, KeyConfig key, OVRGrabber_UniLiveViewer hand)
         {
             //魔法陣回転
             if (OVRInput.GetDown(key.rotate_L))
@@ -217,7 +209,7 @@ namespace UniLiveViewer
             }
         }
 
-        void CheckInput_GrabedItem(HandType handType, KeyConfig key, OVRGrabber_UniLiveViewer hand)
+        void CheckInput_GrabedItem(PlayerEnums.HandType handType, KeyConfig key, OVRGrabber_UniLiveViewer hand)
         {
             if (!handUIController.handUI_ItemMatSelecter[(int)handType].Show)
             {
@@ -260,10 +252,10 @@ namespace UniLiveViewer
             }
         }
 
-        void CheckInput_Default(HandType handType, KeyConfig key, OVRGrabber_UniLiveViewer hand)
+        void CheckInput_Default(PlayerEnums.HandType handType, KeyConfig key, OVRGrabber_UniLiveViewer hand)
         {
             //左手専用
-            if (handType == HandType.LHand && handUIController.handUI_PlayerHeight.Show)
+            if (handType == PlayerEnums.HandType.LHand && handUIController.handUI_PlayerHeight.Show)
             {
                 //Playerカメラの高さ調整
                 if (OVRInput.GetDown(key.resize_U))

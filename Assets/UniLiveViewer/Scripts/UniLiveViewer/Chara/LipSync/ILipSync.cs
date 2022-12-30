@@ -15,7 +15,7 @@ namespace UniLiveViewer
     [Serializable]
     public class BindInfo
     {
-        public LIPTYPE lipType;
+        public CharaEnums.LIPTYPE lipType;
         public Transform node;
         public string keyName;
         [HideInInspector] public SkinnedMeshRenderer skinMesh;

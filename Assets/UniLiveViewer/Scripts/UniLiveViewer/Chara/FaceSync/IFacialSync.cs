@@ -21,7 +21,7 @@ namespace UniLiveViewer
         [Serializable]
         public class BindInfo
         {
-            public FACIALTYPE facialType;
+            public CharaEnums.FACIALTYPE facialType;
             public Transform node;
             public KeyPair[] keyPair;
 

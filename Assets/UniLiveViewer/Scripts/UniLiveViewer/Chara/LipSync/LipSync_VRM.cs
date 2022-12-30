@@ -12,13 +12,13 @@ namespace UniLiveViewer
         [Header("<keyName不要>")]
         [SerializeField] BindInfo[] _bindInfo;
 
-        public readonly Dictionary<LIPTYPE, BlendShapePreset> dicVMRMorph = new Dictionary<LIPTYPE, BlendShapePreset>()
+        public readonly Dictionary<CharaEnums.LIPTYPE, BlendShapePreset> dicVMRMorph = new Dictionary<CharaEnums.LIPTYPE, BlendShapePreset>()
         {
-            {LIPTYPE.A ,BlendShapePreset.A},
-            {LIPTYPE.I ,BlendShapePreset.I},
-            {LIPTYPE.U ,BlendShapePreset.U},
-            {LIPTYPE.E ,BlendShapePreset.E},
-            {LIPTYPE.O ,BlendShapePreset.O}
+            {CharaEnums.LIPTYPE.A ,BlendShapePreset.A},
+            {CharaEnums.LIPTYPE.I ,BlendShapePreset.I},
+            {CharaEnums.LIPTYPE.U ,BlendShapePreset.U},
+            {CharaEnums.LIPTYPE.E ,BlendShapePreset.E},
+            {CharaEnums.LIPTYPE.O ,BlendShapePreset.O}
         };
 
         /// <summary>

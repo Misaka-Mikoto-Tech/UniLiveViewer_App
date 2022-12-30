@@ -6,22 +6,14 @@ namespace UniLiveViewer
     //作りが雑(不具合あり)
     public class OVRGrabber_UniLiveViewer : OVRGrabber_Custom
     {
-        public enum HandState
-        {
-            DEFAULT,//何もしていない、何もつかんでいない
-            GRABBED_CHARA,//キャラを掴んでいる
-            GRABBED_ITEM,//アイテムを掴んでいる
-            GRABBED_OTHER,//キャラ以外を掴んでいる
-            SUMMONCIRCLE,//召喚陣ON
-            CHARA_ONCIRCLE//キャラを掴んでいるかつ召喚陣ON
-        }
+
 
         //対応するセレクター
         public LineSelector LineSelector => _lineSelector;
         [SerializeField] LineSelector _lineSelector;
 
         public bool IsSummonCircle { get; private set; } = false;
-        public HandState handState = HandState.DEFAULT;
+        public PlayerEnums.HandState handState = PlayerEnums.HandState.DEFAULT;
 
         TimelineController _timeline;
         GeneratorPortal _generatorPortal;
@@ -59,7 +51,7 @@ namespace UniLiveViewer
             base.Update();
 
             //掴み＆セレクター表示ならセレクター操作モード
-            if (handState == HandState.SUMMONCIRCLE)
+            if (handState == PlayerEnums.HandState.SUMMONCIRCLE)
             {
                 //色更新
                 _lineSelector.SetMaterial(false);
@@ -109,7 +101,7 @@ namespace UniLiveViewer
                     //両手掴みはアイテムという仕様で
                     if (grabbedObject.isBothHandsGrab)
                     {
-                        handState = HandState.GRABBED_ITEM;
+                        handState = PlayerEnums.HandState.GRABBED_ITEM;
                         grabbedObject.GetComponent<MeshRenderer>().enabled = true;
                         grabbedObject.transform.parent = transform;
                         grabbedObject.GetComponent<DecorationItemInfo>().isAttached = false;
@@ -120,7 +112,7 @@ namespace UniLiveViewer
                     }
                     else
                     {
-                        handState = HandState.GRABBED_OTHER;
+                        handState = PlayerEnums.HandState.GRABBED_OTHER;
                     }
                 }
                 //キャラ
@@ -131,17 +123,17 @@ namespace UniLiveViewer
                     {
                         //召喚陣の上に乗せる
                         var chara = grabbedObject.gameObject.GetComponent<CharaController>();
-                        chara.SetState(CharaController.CHARASTATE.ON_CIRCLE, _lineSelector.LineEndAnchor);
+                        chara.SetState(CharaEnums.STATE.ON_CIRCLE, _lineSelector.LineEndAnchor);
 
-                        handState = HandState.CHARA_ONCIRCLE;
+                        handState = PlayerEnums.HandState.CHARA_ONCIRCLE;
                     }
                     else
                     {
                         //手に持たせる
                         var chara = grabbedObject.gameObject.GetComponent<CharaController>();
-                        chara.SetState(CharaController.CHARASTATE.HOLD, null);
+                        chara.SetState(CharaEnums.STATE.HOLD, null);
 
-                        handState = HandState.GRABBED_CHARA;
+                        handState = PlayerEnums.HandState.GRABBED_CHARA;
                     }
                     //掴み音
                     _audioSource.PlayOneShot(Sound[0]);
@@ -164,7 +156,7 @@ namespace UniLiveViewer
 
                     //削除音
                     _audioSource.PlayOneShot(Sound[3]);
-                    handState = HandState.SUMMONCIRCLE;
+                    handState = PlayerEnums.HandState.SUMMONCIRCLE;
                 }
             }
         }
@@ -189,22 +181,22 @@ namespace UniLiveViewer
                 switch (handState)
                 {
                     //キャラ以外を掴んでいれば
-                    case HandState.GRABBED_OTHER:
+                    case PlayerEnums.HandState.GRABBED_OTHER:
                         //掴みを離す基本機能
                         base.GrabEnd();
-                        handState = HandState.DEFAULT;
+                        handState = PlayerEnums.HandState.DEFAULT;
                         break;
-                    case HandState.GRABBED_ITEM:
+                    case PlayerEnums.HandState.GRABBED_ITEM:
                         var grabbedObj = m_grabbedObj;//解除後確認の為キープ
                         grabbedObj.transform.parent = null;
                         //掴みを離す基本機能
                         base.GrabEnd();
-                        handState = HandState.DEFAULT;
+                        handState = PlayerEnums.HandState.DEFAULT;
                         //まだ捕まれていなければ枠非表示
                         if(!grabbedObj.isGrabbed) grabbedObj.GetComponent<MeshRenderer>().enabled = false;
                         break;
                     //キャラを掴んでいる
-                    case HandState.GRABBED_CHARA:
+                    case PlayerEnums.HandState.GRABBED_CHARA:
                         keepChara = m_grabbedObj.gameObject.GetComponent<CharaController>();
                         //掴みを離す基本機能
                         base.GrabEnd();
@@ -212,10 +204,10 @@ namespace UniLiveViewer
                         PortalBack(keepChara);
                         //離す音
                         _audioSource.PlayOneShot(Sound[1]);
-                        handState = HandState.DEFAULT;
+                        handState = PlayerEnums.HandState.DEFAULT;
                         break;
                     //キャラを掴んでいるかつ召喚陣ON
-                    case HandState.CHARA_ONCIRCLE:
+                    case PlayerEnums.HandState.CHARA_ONCIRCLE:
                         keepChara = m_grabbedObj.gameObject.GetComponent<CharaController>();
                         //掴みを離す基本機能
                         base.GrabEnd();
@@ -244,7 +236,7 @@ namespace UniLiveViewer
                         }
 
                         //キャラの状態をフィールドに設定
-                        keepChara.SetState(CharaController.CHARASTATE.FIELD, null);
+                        keepChara.SetState(CharaEnums.STATE.FIELD, null);
 
                         if (keepChara.charaInfoData.charaType == CharaInfoData.CHARATYPE.UnityChanSSU)
                         {
@@ -261,7 +253,7 @@ namespace UniLiveViewer
                         //生成音
                         _audioSource.PlayOneShot(Sound[2]);
 
-                        handState = HandState.SUMMONCIRCLE;
+                        handState = PlayerEnums.HandState.SUMMONCIRCLE;
 
                         //召喚した
                         OnSummon?.Invoke(this);
@@ -270,7 +262,7 @@ namespace UniLiveViewer
                     default:
                         //掴みを離す基本機能
                         base.GrabEnd();
-                        handState = HandState.DEFAULT;
+                        handState = PlayerEnums.HandState.DEFAULT;
                         break;
                 }
             }
@@ -288,7 +280,7 @@ namespace UniLiveViewer
             // ポータルに戻す
             if (_generatorPortal.gameObject.activeSelf)
             {
-                keepChara.SetState(CharaController.CHARASTATE.MINIATURE, _generatorPortal.transform);
+                keepChara.SetState(CharaEnums.STATE.MINIATURE, _generatorPortal.transform);
             }
             ////ポータル枠のキャラをnull初期化　不要
             //else timeline.NewAssetBinding_Portal(null);
@@ -298,7 +290,7 @@ namespace UniLiveViewer
         {
             base.OffhandGrabbed(grabbable);
 
-            handState = HandState.DEFAULT;
+            handState = PlayerEnums.HandState.DEFAULT;
         }
 
         /// <summary>
@@ -312,26 +304,26 @@ namespace UniLiveViewer
             switch (handState)
             {
                 //キャラを掴んでいるかつ召喚陣ON
-                case HandState.CHARA_ONCIRCLE:
+                case PlayerEnums.HandState.CHARA_ONCIRCLE:
                     //手元に戻す
-                    handState = HandState.GRABBED_CHARA;
+                    handState = PlayerEnums.HandState.GRABBED_CHARA;
                     chara = grabbedObject.gameObject.GetComponent<CharaController>();
-                    chara.SetState(CharaController.CHARASTATE.HOLD, null);
+                    chara.SetState(CharaEnums.STATE.HOLD, null);
                     break;
                 //キャラを掴んでいる
-                case HandState.GRABBED_CHARA:
+                case PlayerEnums.HandState.GRABBED_CHARA:
                     //召喚陣上に設置
-                    handState = HandState.CHARA_ONCIRCLE;
+                    handState = PlayerEnums.HandState.CHARA_ONCIRCLE;
                     chara = grabbedObject.gameObject.GetComponent<CharaController>();
-                    chara.SetState(CharaController.CHARASTATE.ON_CIRCLE, _lineSelector.LineEndAnchor);
+                    chara.SetState(CharaEnums.STATE.ON_CIRCLE, _lineSelector.LineEndAnchor);
                     break;
                 //何もしていない
-                case HandState.DEFAULT:
-                    handState = HandState.SUMMONCIRCLE;
+                case PlayerEnums.HandState.DEFAULT:
+                    handState = PlayerEnums.HandState.SUMMONCIRCLE;
                     break;
                 //召喚陣ON
-                case HandState.SUMMONCIRCLE:
-                    handState = HandState.DEFAULT;
+                case PlayerEnums.HandState.SUMMONCIRCLE:
+                    handState = PlayerEnums.HandState.DEFAULT;
                     break;
             }
 

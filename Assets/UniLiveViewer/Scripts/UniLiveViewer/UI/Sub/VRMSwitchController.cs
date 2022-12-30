@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System;
 using System.Threading;
 using UnityEngine;
@@ -244,16 +244,16 @@ namespace UniLiveViewer
 
             var vrm = prefabEditor.EditTarget;
 
-            if (vrm.animationMode == CharaController.ANIMATIONMODE.VMD)
+            if (vrm.animationMode == CharaEnums.ANIMATION_MODE.VMD)
             {
                 var vmdPlayer = vrm.GetComponent<VMDPlayer_Custom>();
                 vmdPlayer.Clear();
             }
-            else if(vrm.animationMode == CharaController.ANIMATIONMODE.CLIP)
+            else if(vrm.animationMode == CharaEnums.ANIMATION_MODE.CLIP)
             {
                 vrm.GetComponent<Animator>().enabled = false;
             }
-            vrm.SetState(CharaController.CHARASTATE.NULL, null);
+            vrm.SetState(CharaEnums.STATE.NULL, null);
             vrm.transform.parent = runtimeLoader.transform;
             vrm.transform.localPosition = Vector3.zero;
             vrm.transform.localRotation = Quaternion.identity;
@@ -261,7 +261,7 @@ namespace UniLiveViewer
 
             vrm.SetEnabelSpringBones(false);//Prefab化で値が残ってしまうので無効化
             vrm.GetComponent<Animator>().enabled = true;
-            vrm.animationMode = CharaController.ANIMATIONMODE.CLIP;
+            vrm.animationMode = CharaEnums.ANIMATION_MODE.CLIP;
             vrm.gameObject.SetActive(false);
             await UniTask.Yield(cancellation_token);
 

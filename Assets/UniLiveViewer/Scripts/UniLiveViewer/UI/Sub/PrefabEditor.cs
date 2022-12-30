@@ -102,7 +102,7 @@ namespace UniLiveViewer
         {
             //VRMをプリセットアンカーに移動
             editTarget = _editTarget;
-            editTarget.SetState(CharaController.CHARASTATE.NULL, vrmPresetAnchor);
+            editTarget.SetState(CharaEnums.STATE.NULL, vrmPresetAnchor);
             matManager = editTarget.transform.GetComponent<MaterialManager>();
 
             //回転UI初期化

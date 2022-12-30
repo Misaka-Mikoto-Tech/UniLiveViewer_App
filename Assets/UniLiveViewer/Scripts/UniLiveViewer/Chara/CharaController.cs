@@ -7,23 +7,9 @@ namespace UniLiveViewer
 {
     public class CharaController : MonoBehaviour
     {
-        public enum CHARASTATE
-        {
-            NULL = 0,
-            MINIATURE,
-            HOLD,
-            ON_CIRCLE,
-            FIELD,
-        }
-        public enum ANIMATIONMODE
-        {
-            CLIP = 0,
-            VMD,
-        }
-
-        public CHARASTATE GetCharaState => charaState;
-        [SerializeField] CHARASTATE charaState = CHARASTATE.NULL;
-        public ANIMATIONMODE animationMode = ANIMATIONMODE.CLIP;
+        public CharaEnums.STATE GetCharaState => charaState;
+        [SerializeField] CharaEnums.STATE charaState = CharaEnums.STATE.NULL;
+        public CharaEnums.ANIMATION_MODE animationMode = CharaEnums.ANIMATION_MODE.CLIP;
         public Animator GetAnimator => _animator;
         Animator _animator;
 
@@ -149,7 +135,7 @@ namespace UniLiveViewer
         /// </summary>
         /// <param name="setState"></param>
         /// <param name="overrideTarget">対象位置に座標を合わせる</param>
-        public void SetState(CHARASTATE setState, Transform overrideTarget)
+        public void SetState(CharaEnums.STATE setState, Transform overrideTarget)
         {
             Vector3 globalScale = Vector3.zero;
 
@@ -157,7 +143,7 @@ namespace UniLiveViewer
             charaState = setState;
             switch (charaState)
             {
-                case CHARASTATE.NULL:
+                case CharaEnums.STATE.NULL:
                     //VRMとPrefab用
                     globalScale = Vector3.one;
                     gameObject.layer = SystemInfo.layerNo_Default;
@@ -167,17 +153,17 @@ namespace UniLiveViewer
                     isHeadLookAtUpdate = false;
                     isEyeLookAtUpdate = false;
                     break;
-                case CHARASTATE.MINIATURE:
+                case CharaEnums.STATE.MINIATURE:
                     globalScale = new Vector3(0.26f, 0.26f, 0.26f);
                     gameObject.layer = SystemInfo.layerNo_GrabObject;
                     break;
-                case CHARASTATE.HOLD:
+                case CharaEnums.STATE.HOLD:
                     globalScale = new Vector3(0.26f, 0.26f, 0.26f);
                     break;
-                case CHARASTATE.ON_CIRCLE:
+                case CharaEnums.STATE.ON_CIRCLE:
                     globalScale = new Vector3(1.0f, 1.0f, 1.0f);
                     break;
-                case CHARASTATE.FIELD:
+                case CharaEnums.STATE.FIELD:
                     globalScale = new Vector3(1.0f, 1.0f, 1.0f);
                     gameObject.layer = SystemInfo.layerNo_FieldObject;
                     break;
@@ -198,7 +184,7 @@ namespace UniLiveViewer
             }
             else transform.parent = null;
 
-            if(charaState == CHARASTATE.MINIATURE || charaState == CHARASTATE.HOLD) transform.localScale = globalScale;
+            if(charaState == CharaEnums.STATE.MINIATURE || charaState == CharaEnums.STATE.HOLD) transform.localScale = globalScale;
             else transform.localScale = globalScale * CustomScalar;
         }
 

@@ -13,14 +13,14 @@ namespace UniLiveViewer
         [SerializeField] SkinBindInfo[] _skinBindInfo;
         
 
-        public readonly Dictionary<FACIALTYPE, BlendShapePreset> dicVMRMorph = new Dictionary<FACIALTYPE, BlendShapePreset>()
+        public readonly Dictionary<CharaEnums.FACIALTYPE, BlendShapePreset> dicVMRMorph = new Dictionary<CharaEnums.FACIALTYPE, BlendShapePreset>()
         {
-            {FACIALTYPE.BLINK,BlendShapePreset.Blink},
-            {FACIALTYPE.JOY,BlendShapePreset.Joy},
-            {FACIALTYPE.ANGRY,BlendShapePreset.Angry},
-            {FACIALTYPE.SORROW,BlendShapePreset.Sorrow},
-            {FACIALTYPE.SUP,BlendShapePreset.Neutral},
-            {FACIALTYPE.FUN,BlendShapePreset.Fun}
+            {CharaEnums.FACIALTYPE.BLINK,BlendShapePreset.Blink},
+            {CharaEnums.FACIALTYPE.JOY,BlendShapePreset.Joy},
+            {CharaEnums.FACIALTYPE.ANGRY,BlendShapePreset.Angry},
+            {CharaEnums.FACIALTYPE.SORROW,BlendShapePreset.Sorrow},
+            {CharaEnums.FACIALTYPE.SUP,BlendShapePreset.Neutral},
+            {CharaEnums.FACIALTYPE.FUN,BlendShapePreset.Fun}
         };
 
         /// <summary>
