@@ -18,7 +18,7 @@ public class StageScenePresenter : IStartable, IDisposable
     readonly CompositeDisposable _disposable;
 
     [Inject]
-    StageScenePresenter( FileAccessManager fileAccessManager,
+    public StageScenePresenter( FileAccessManager fileAccessManager,
                                 AnimationAssetManager animationAssetManager,
                                 AudioAssetManager audioAssetManager,
                                 TextureAssetManager textureAssetManager,
@@ -52,17 +52,18 @@ public class StageScenePresenter : IStartable, IDisposable
 
         //ロード完了
         _fileAccessManager.LoadEndAsObservable
-            .Subscribe(_ => _blackoutCurtain.Ending().Forget())
+            .Subscribe(_ => OnLoadEnd())
             .AddTo(_disposable);
-        _fileAccessManager.LoadEndAsObservable
-            .Subscribe(_ => _directUI.Initialize())
-            .AddTo(_disposable);
-        _fileAccessManager.LoadEndAsObservable
-            .Subscribe(_ => _generatorPortal.Initialize())
-            .AddTo(_disposable);
-
+        
         //フォルダとファイルの作成
         await _fileAccessManager.Initialize(_animationAssetManager, _textureAssetManager);
+    }
+
+    void OnLoadEnd()
+    {
+        _blackoutCurtain.Ending().Forget();
+        _directUI.Initialize();
+        _generatorPortal.Initialize();
     }
 
     public void Dispose()

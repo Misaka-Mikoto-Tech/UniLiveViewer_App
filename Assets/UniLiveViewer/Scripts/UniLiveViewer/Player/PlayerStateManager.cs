@@ -10,6 +10,7 @@ namespace UniLiveViewer
         [Header("基本")]
         SimpleCapsuleWithStickMovement _simpleCapsuleWithStickMovement;
         TimelineController _timeline;
+        TimelineInfo _timelineInfo;
         public OVRManager myOVRManager;
         public Camera myCamera;
 
@@ -49,6 +50,7 @@ namespace UniLiveViewer
         void Awake()
         {
             _timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
+            _timelineInfo = _timeline.GetComponent<TimelineInfo>();
             _audioSource = GetComponent<AudioSource>();
             _audioSource.volume = SystemInfo.soundVolume_SE;
 
@@ -294,7 +296,7 @@ namespace UniLiveViewer
 
         void CharaResize(float addVal)
         {
-            var chara = _timeline.trackBindChara[TimelineController.PORTAL_ELEMENT];
+            var chara = _timelineInfo.GetCharacter(TimelineController.PORTAL_INDEX);
             chara.CustomScalar += addVal;
             handUIController.handUI_CharaAdjustment[0].textMesh.text = $"{chara.CustomScalar:0.00}";
             handUIController.handUI_CharaAdjustment[1].textMesh.text = $"{chara.CustomScalar:0.00}";
@@ -308,7 +310,7 @@ namespace UniLiveViewer
                 hand.FoeceGrabEnd();//強制離す
 
                 //アタッチ成功かつマニュアルモード
-                if (_timeline.isManualMode() && grabObj.GetComponent<DecorationItemInfo>().TryAttachment())
+                if (_timelineInfo.isManualMode() && grabObj.GetComponent<DecorationItemInfo>().TryAttachment())
                 {
                     //手なら握らせる
                     if (grabObj.hitCollider.name.Contains("Hand"))

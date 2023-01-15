@@ -97,9 +97,9 @@ namespace UniLiveViewer
                     Debug.Log("サムネイルキャッシュ中に中断");
                     throw;
                 }
-                Debug.Log("サムネイルキャッシュ成功");
                 await UniTask.Yield(PlayerLoopTiming.Update, cancellation_token);
             }
+            Debug.Log("サムネイルキャッシュ成功");
         }
 
         /// <summary>

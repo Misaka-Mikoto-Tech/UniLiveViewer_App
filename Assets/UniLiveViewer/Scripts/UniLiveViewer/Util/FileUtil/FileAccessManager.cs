@@ -103,7 +103,7 @@ namespace UniLiveViewer
             try
             {
                 var isExisting = Directory.Exists(fullPath);
-                if (isExisting) Debug.Log("フォルダが既にあります");
+                if (isExisting) Debug.Log($"フォルダが既に有り：{fullPath}");
                 else
                 {
                     Directory.CreateDirectory(fullPath);

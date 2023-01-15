@@ -6,7 +6,7 @@ namespace UniLiveViewer
     public class MeshGuide : MonoBehaviour
     {
         [SerializeField] private GameObject guidePrefab;
-        private bool isShow = false;
+        bool isShow = false;
         public bool IsShow 
         { 
             get { return isShow; } 
@@ -18,30 +18,32 @@ namespace UniLiveViewer
 
                     for (int i = 0; i < pair.Length; i++)
                     {
-                        if (i == TimelineController.PORTAL_ELEMENT) continue;
-                        if (!timeline.trackBindChara[i]) pair[i].guideMesh.enabled = false;
+                        if (i == TimelineController.PORTAL_INDEX) continue;
+                        if (!_timelineInfo.GetCharacter(i)) pair[i].guideMesh.enabled = false;
                         else pair[i].guideMesh.enabled = isShow; 
                     }
                 }
             } 
         }
-        private Pair[] pair;
-        private Vector3 distance = Vector3.zero;
-        private TimelineController timeline;
+        Pair[] pair;
+        Vector3 distance = Vector3.zero;
+        TimelineController _timeline;
+        TimelineInfo _timelineInfo;
 
         // Start is called before the first frame update
         void Start()
         {
-            timeline = GetComponent<TimelineController>();
+            _timeline = GetComponent<TimelineController>();
+            _timelineInfo = _timeline.GetComponent<TimelineInfo>();
 
             GameObject anchor = new GameObject("GuideMeshs");
 
-            if (timeline)
+            if (_timeline)
             {
-                timeline.FieldCharaAdded += Update_BodyData;
-                timeline.FieldCharaDeleted += Update_BodyData;
+                _timeline.FieldCharaAdded += Update_BodyData;
+                _timeline.FieldCharaDeleted += Update_BodyData;
 
-                pair = new Pair[timeline.trackBindChara.Length];
+                pair = new Pair[_timelineInfo.CharacterCount()];
                 for (int i = 0; i < pair.Length; i++)
                 {
                     pair[i] = new Pair();
@@ -56,8 +58,9 @@ namespace UniLiveViewer
         {
             for (int i = 0; i < pair.Length; i++)
             {
-                if (i == TimelineController.PORTAL_ELEMENT) continue;
-                if (!timeline.trackBindChara[i])
+                if (i == TimelineController.PORTAL_INDEX) continue;
+                var chara = _timelineInfo.GetCharacter(i);
+                if (!chara)
                 {
                     pair[i].charaController = null;
                     pair[i].head = null;
@@ -65,8 +68,8 @@ namespace UniLiveViewer
                 }
                 else
                 {
-                    pair[i].charaController = timeline.trackBindChara[i];
-                    pair[i].head = timeline.trackBindChara[i].GetAnimator.GetBoneTransform(HumanBodyBones.Head);
+                    pair[i].charaController = chara;
+                    pair[i].head = chara.GetAnimator.GetBoneTransform(HumanBodyBones.Head);
                 }
             }
         }
@@ -78,7 +81,7 @@ namespace UniLiveViewer
 
             for (int i = 0; i < pair.Length; i++)
             {
-                if (i == TimelineController.PORTAL_ELEMENT) continue;
+                if (i == TimelineController.PORTAL_INDEX) continue;
                 if (pair[i].charaController)
                 {
                     pair[i].guideMesh.transform.position = pair[i].charaController.transform.position;

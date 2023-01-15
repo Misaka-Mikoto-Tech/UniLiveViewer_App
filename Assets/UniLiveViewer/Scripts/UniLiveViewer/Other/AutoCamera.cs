@@ -14,27 +14,29 @@ namespace UniLiveViewer
         }
         
         public bool isUpdate = true;
-        [SerializeField] private Transform target;
-        [SerializeField] private Transform baseTransform;
+        [SerializeField] Transform target;
+        [SerializeField] Transform baseTransform;
         [Header("＜parameters＞")]
-        [SerializeField] private int interval = 5000;
-        [SerializeField] private float offsetUp, offsetDown, offsetRight, offsetLeft;
-        [SerializeField] private SWITCHTYPE switchType = SWITCHTYPE.ALL;//カメラ候補を切り替えるモード
-        [SerializeField] private Camera[] _camera;
-        [SerializeField] private SpriteRenderer[] _spr;
-        private CancellationToken cancellationToken;
-        private TimelineController timeline;
+        [SerializeField] int interval = 5000;
+        [SerializeField] float offsetUp, offsetDown, offsetRight, offsetLeft;
+        [SerializeField] SWITCHTYPE switchType = SWITCHTYPE.ALL;//カメラ候補を切り替えるモード
+        [SerializeField] Camera[] _camera;
+        [SerializeField] SpriteRenderer[] _spr;
+        CancellationToken cancellationToken;
+        TimelineController _timeline;
+        TimelineInfo _timelineInfo;
 
         // Start is called before the first frame update
         void Start()
         {
-            timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
+            _timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
+            _timelineInfo = _timeline.GetComponent<TimelineInfo>();
             cancellationToken = this.GetCancellationTokenOnDestroy();
 
             if(switchType != SWITCHTYPE.ALL)
             {
-                timeline.FieldCharaAdded += Init;
-                timeline.FieldCharaDeleted += Init;
+                _timeline.FieldCharaAdded += Init;
+                _timeline.FieldCharaDeleted += Init;
             }
 
             foreach (var e in _camera)
@@ -45,22 +47,26 @@ namespace UniLiveViewer
             AutoUpdate().Forget();
         }
 
-        private void Init()
+        /// <summary>
+        /// ポータル以外で一番若いindexキャラを被写体に設定
+        /// </summary>
+        void Init()
         {
             if (target) return;
-            for (int i = 0;i< timeline.trackBindChara.Length;i++)
+            for (int i = 0;i< _timelineInfo.CharacterCount(); i++)
             {
-                if (i == TimelineController.PORTAL_ELEMENT) continue;
-                if (timeline.trackBindChara[i])
+                if (i == TimelineController.PORTAL_INDEX) continue;
+                var chara = _timelineInfo.GetCharacter(i);
+                if (chara)
                 {
-                    target = timeline.trackBindChara[i]._lookAt.test.virtualHead;
-                    baseTransform = timeline.trackBindChara[i]._lookAt.test.virtualChest;
+                    target = chara._lookAt.test.virtualHead;
+                    baseTransform = chara._lookAt.test.virtualChest;
                     break;
                 }
             }
         }
 
-        private async UniTask AutoUpdate()
+        async UniTask AutoUpdate()
         {
             int r = 0;
             Vector3 pos;

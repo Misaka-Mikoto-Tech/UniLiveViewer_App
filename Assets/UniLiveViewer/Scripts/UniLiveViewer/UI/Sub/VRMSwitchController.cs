@@ -247,7 +247,7 @@ namespace UniLiveViewer
             if (vrm.animationMode == CharaEnums.ANIMATION_MODE.VMD)
             {
                 var vmdPlayer = vrm.GetComponent<VMDPlayer_Custom>();
-                vmdPlayer.Clear();
+                vmdPlayer.ResetBodyAndFace();
             }
             else if(vrm.animationMode == CharaEnums.ANIMATION_MODE.CLIP)
             {

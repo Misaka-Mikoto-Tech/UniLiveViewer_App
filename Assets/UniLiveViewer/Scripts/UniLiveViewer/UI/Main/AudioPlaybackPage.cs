@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 using NanaCiel;
 using UnityEngine.Playables;
 using Cysharp.Threading.Tasks;
@@ -9,29 +8,30 @@ namespace UniLiveViewer
 {
     public class AudioPlaybackPage : MonoBehaviour
     {
-        [SerializeField] private MenuManager menuManager;
-        [SerializeField] private Button_Base[] btn_jumpList;
+        [SerializeField] MenuManager menuManager;
+        [SerializeField] Button_Base[] btn_jumpList;
 
-        [SerializeField] private Button_Base[] btn_Audio = new Button_Base[2];
-        [SerializeField] private Button_Base btnS_Play = null;
-        [SerializeField] private Button_Base btnS_Stop = null;
-        [SerializeField] private Button_Base btnS_BaseReturn = null;
-        [SerializeField] private TextMesh[] textMeshs = new TextMesh[4];
-        [SerializeField] private SliderGrabController slider_Playback = null;
-        [SerializeField] private SliderGrabController slider_Speed = null;
+        [SerializeField] Button_Base[] btn_Audio = new Button_Base[2];
+        [SerializeField] Button_Base btnS_Play = null;
+        [SerializeField] Button_Base btnS_Stop = null;
+        [SerializeField] Button_Base btnS_BaseReturn = null;
+        [SerializeField] TextMesh[] textMeshs = new TextMesh[4];
+        [SerializeField] SliderGrabController slider_Playback = null;
+        [SerializeField] SliderGrabController slider_Speed = null;
 
         TimelineController _timeline;
+        TimelineInfo _timelineInfo;
         PlayerStateManager _playerStateManager;
         AudioAssetManager _audioAssetManager;
 
-        private CancellationTokenSource cts;
+        CancellationTokenSource cts;
 
-        private void Awake()
+        void Awake()
         {
             
         }
 
-        private void OnEnable()
+        void OnEnable()
         {
             Init();
         }
@@ -44,9 +44,10 @@ namespace UniLiveViewer
 
             _playerStateManager = PlayerStateManager.instance;
             _timeline = menuManager.timeline;
+            _timelineInfo = _timeline.GetComponent<TimelineInfo>();
 
             //再生スライダーに最大値を設定
-            slider_Playback.maxValuel = (float)_timeline.playableDirector.duration;
+            slider_Playback.maxValuel = (float)_timelineInfo.GetPlayableDirector.duration;
 
             //ジャンプリスト
             foreach (var e in btn_jumpList)
@@ -67,8 +68,8 @@ namespace UniLiveViewer
             };
 
             //その他
-            _timeline.playableDirector.played += Director_Played;
-            _timeline.playableDirector.stopped += Director_Stoped;
+            _timelineInfo.GetPlayableDirector.played += Director_Played;
+            _timelineInfo.GetPlayableDirector.stopped += Director_Stoped;
             for (int i = 0; i < btn_Audio.Length; i++)
             {
                 btn_Audio[i].onTrigger += MoveIndex_Auido;
@@ -91,10 +92,10 @@ namespace UniLiveViewer
             Init();
         }
 
-        private async void Init()
+        async void Init()
         {
             if (!_timeline) return;
-            if (_timeline.playableDirector.timeUpdateMode == DirectorUpdateMode.Manual)
+            if (_timelineInfo.GetPlayableDirector.timeUpdateMode == DirectorUpdateMode.Manual)
             {
                 btnS_Stop.gameObject.SetActive(false);
                 btnS_Play.gameObject.SetActive(true);
@@ -130,7 +131,7 @@ namespace UniLiveViewer
 #endif
         }
 
-        private void OpenJumplist(Button_Base btn)
+        void OpenJumplist(Button_Base btn)
         {
             if (!menuManager.jumpList.gameObject.activeSelf) menuManager.jumpList.gameObject.SetActive(true);
 
@@ -145,7 +146,7 @@ namespace UniLiveViewer
         /// オーディオプレイヤーのクリック処理
         /// </summary>
         /// <param name="btn"></param>
-        private void Click_AudioPlayer(Button_Base btn)
+        void Click_AudioPlayer(Button_Base btn)
         {
             menuManager.PlayOneShot(SoundType.BTN_CLICK);
 
@@ -179,7 +180,7 @@ namespace UniLiveViewer
         /// 次オーディオに切り替える
         /// </summary>
         /// <param name="btn"></param>
-        private void MoveIndex_Auido(Button_Base btn)
+        void MoveIndex_Auido(Button_Base btn)
         {
             for (int i = 0; i < 2; i++)
             {
@@ -202,7 +203,7 @@ namespace UniLiveViewer
         /// オーディオを変更する
         /// </summary>
         /// <param name="moveIndex"></param>
-        private async void ChangeAuido(int moveIndex)
+        async void ChangeAuido(int moveIndex)
         {
             //文字画像を差し替える
             textMeshs[0].text = await _timeline.NextAudioClip(false,moveIndex);
@@ -214,13 +215,13 @@ namespace UniLiveViewer
             textMeshs[2].text = $"{((int)sec / 60):00}:{((int)sec % 60):00}";
         }
 
-        private void Director_Played(PlayableDirector obj)
+        void Director_Played(PlayableDirector obj)
         {
             //停止表示
             //btnS_Stop.gameObject.SetActive(true);
             //btnS_Play.gameObject.SetActive(false);
         }
-        private void Director_Stoped(PlayableDirector obj)
+        void Director_Stoped(PlayableDirector obj)
         {
             //再生途中の一時停止は無視する
             if (_timeline.AudioClip_PlaybackTime <= 0)
@@ -231,7 +232,7 @@ namespace UniLiveViewer
             }
         }
 
-        private void ManualStart()
+        void ManualStart()
         {
             //ボタンの状態を制御
             btnS_Stop.gameObject.SetActive(false);
@@ -241,7 +242,7 @@ namespace UniLiveViewer
             _timeline.TimelineManualMode().Forget();
         }
 
-        private void DebugInput()
+        void DebugInput()
         {
             if (Input.GetKeyDown(KeyCode.I)) ChangeAuido(1);
             if (Input.GetKeyDown(KeyCode.K))

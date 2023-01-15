@@ -8,7 +8,8 @@ namespace UniLiveViewer
         [SerializeField] protected HumanBodyBones target_humanBodyBone = HumanBodyBones.Spine;
         protected Transform[] targets;
         protected List<Transform> targetList;
-        protected TimelineController timeline;
+        protected TimelineController _timeline;
+        protected TimelineInfo _timelineInfo;
 
         protected virtual void OnEnable()
         {
@@ -18,21 +19,23 @@ namespace UniLiveViewer
         // Start is called before the first frame update
         protected virtual void Init()
         {
-            if (!timeline)
+            if (!_timeline)
             {
-                timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
-                timeline.FieldCharaAdded += Init;
-                timeline.FieldCharaDeleted += Init;
+                _timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
+                _timelineInfo = _timeline.GetComponent<TimelineInfo>();
+                _timeline.FieldCharaAdded += Init;
+                _timeline.FieldCharaDeleted += Init;
             }
 
-            targets = new Transform[timeline.maxFieldChara];
+            targets = new Transform[_timelineInfo.MaxFieldChara];
             targetList = new List<Transform>();
-            for (int i = 0; i < timeline.maxFieldChara; i++)
+            for (int i = 0; i < _timeline.MaxFieldChara; i++)
             {
-                if (!timeline.trackBindChara[i + 1]) targets[i] = null;
+                var portalChara = _timelineInfo.GetCharacter(i + 1);
+                if (!portalChara) targets[i] = null;
                 else
                 {
-                    targets[i] = timeline.trackBindChara[i + 1].GetAnimator.GetBoneTransform(target_humanBodyBone);
+                    targets[i] = portalChara.GetAnimator.GetBoneTransform(target_humanBodyBone);
                     targetList.Add(targets[i]);
                 }
             }

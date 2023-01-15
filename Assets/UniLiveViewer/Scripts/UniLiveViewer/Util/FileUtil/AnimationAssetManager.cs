@@ -1,6 +1,7 @@
 ﻿using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using UnityEngine;
 
@@ -25,24 +26,10 @@ namespace UniLiveViewer
         /// </summary>
         public bool CheckOffsetFile()
         {
-            //初期化
-            if (SystemInfo.dicVMD_offset.Count != 0)
-            {
-                SystemInfo.dicVMD_offset.Clear();
-            }
+            if (!FileReadAndWriteUtility.TryLoadMotionOffset()) return false;
+            if (!FileReadAndWriteUtility.TryLoadMotionFacialPair()) return false;
 
-            //offset情報ファイルがあれば読み込む
-            string path = PathsInfo.GetFullPath(FOLDERTYPE.SETTING) + "/MotionOffset.txt";
-            if (File.Exists(path))
-            {
-                foreach (string line in File.ReadLines(path))
-                {
-                    string[] spl = line.Split(',');
-                    if (spl.Length != 2) return false;
-                    if(spl[0]==""|| spl[1] == "") return false;
-                    SystemInfo.dicVMD_offset.Add(spl[0], int.Parse(spl[1]));
-                }
-            }
+            _vmdList.Clear();
 
             string sFolderPath = PathsInfo.GetFullPath(FOLDERTYPE.MOTION) + "/";
             try
@@ -61,14 +48,14 @@ namespace UniLiveViewer
                         _vmdList.Add(names[i]);
 
                         //既存offset情報がなければ追加
-                        if (!SystemInfo.dicVMD_offset.ContainsKey(names[i]))
+                        if (!FileReadAndWriteUtility.GetMotionOffset.ContainsKey(names[i]))
                         {
-                            SystemInfo.dicVMD_offset.Add(names[i], 0);
+                            FileReadAndWriteUtility.SetMotionOffset(names[i], 0);
                         }
                     }
                 }
                 //一旦保存
-                FileReadAndWriteUtility.SaveOffset();
+                FileReadAndWriteUtility.SaveMotionOffset();
             }
             catch
             {

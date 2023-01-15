@@ -17,14 +17,14 @@ namespace UniLiveViewer
             textMeshes_maxChara[3].text = GetMaxChara(SceneMode.GYMNASIUM).ToString();
         }
 
-        private byte GetMaxChara(SceneMode mode)
+        int GetMaxChara(SceneMode mode)
         {
-            byte result = 0;
+            int result = 0;
 #if UNITY_EDITOR
-            result = SystemInfo.MAXCHARA_EDITOR[(byte)mode];
+            result = SystemInfo.MAXCHARA_EDITOR[(int)mode];
 #elif UNITY_ANDROID
-            if (UnityEngine.SystemInfo.deviceName == "Oculus Quest 2") result = SystemInfo.MAXCHARA_QUEST2[(byte)mode];
-            else if (UnityEngine.SystemInfo.deviceName == "Oculus Quest") result = SystemInfo.MAXCHARA_QUEST1[(byte)mode];
+            if (UnityEngine.SystemInfo.deviceName == "Oculus Quest 2") result = SystemInfo.MAXCHARA_QUEST2[(int)mode];
+            else if (UnityEngine.SystemInfo.deviceName == "Oculus Quest") result = SystemInfo.MAXCHARA_QUEST1[(int)mode];
 #endif
             return result;
         }
