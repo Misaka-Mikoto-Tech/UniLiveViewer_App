@@ -37,6 +37,10 @@ namespace UniLiveViewer
         /// </summary>
         public void BtnInstanceCheck(int needCount)
         {
+            const int MAXLINE = 25;//行数
+            const float BETWEEN_ROWS = 3.4f;//列間
+            const float BETWEEN_LINE = 0.24f;//行間
+
             if (btnList.Count < needCount)
             {
                 float initX = 0, initY = 0;
@@ -44,8 +48,8 @@ namespace UniLiveViewer
                 Button_Base btn;
                 for (int i = btnList.Count; i < needCount; i++)
                 {
-                    initX = i / 15 * 3;
-                    initY = 2 - (i % 15 * 0.3f);
+                    initX = i / MAXLINE * BETWEEN_ROWS;
+                    initY = 2 - (i % MAXLINE * BETWEEN_LINE);
 
                     btn = Instantiate(Button_BasePrefab);
                     btn.onTrigger += OnClick;
