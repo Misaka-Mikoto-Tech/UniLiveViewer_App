@@ -2,63 +2,67 @@
 using System;
 using System.Threading;
 using UnityEngine;
-using VRM.FirstPersonSample;
 
 
 namespace UniLiveViewer
 {
     public class VRMSwitchController : MonoBehaviour
     {
+        /// <summary>
+        /// TODO: 処せ
+        /// </summary>
         public static int loadVRMID = 0;
 
-        [SerializeField] Transform[] pageTransform;
-        [SerializeField] Transform displayAnchor;
+        /// <summary>
+        /// 全体のONOFF用
+        /// </summary>
+        [SerializeField] Transform _root;
+        /// <summary>
+        /// 各ページ
+        /// </summary>
+        [SerializeField] Transform[] _pageTransform;
 
-        [Space(1)]
-        [Header("＜1ページ＞")]
-        [SerializeField] TextMesh[] textDirectory;
-        [SerializeField] VRMRuntimeLoader_Custom runtimeLoader;//サンプルをそのまま利用する
-        [SerializeField] LoadAnimation anime_Loading;
-        [SerializeField] ThumbnailController thumbnailCon;
-
-        [Space(1)]
-        [Header("＜2ページ＞")]
-        [SerializeField] PrefabEditor prefabEditor;
-        [SerializeField] Button_Base btn_Apply;
-
-        [Space(1)]
-        [Header("＜3ページ＞")]
-        [SerializeField] TextMesh textErrorResult;
-
+        [Space(1), Header("＜1ページ＞")]
+        [SerializeField] TextMesh[] _textDirectory;
+        IVRMLoaderUI _vrmLoaderUI;
+        [SerializeField] ThumbnailController _thumbnailCon;
+        [SerializeField] LoadAnimation _anime_Loading;
+        [Space(1), Header("＜2ページ＞")]
+        [SerializeField] Button_Base _btnApply;
+        [SerializeField] PrefabEditor _prefabEditor;
+        [Space(1), Header("＜3ページ＞")]
+        [SerializeField] TextMesh _textErrorResult;
         [Header("＜アタッチャー＞")]
-        [SerializeField] ComponentAttacher_VRM attacherPrefab;
-
+        [SerializeField] ComponentAttacher_VRM _attacherPrefab;
         [Header("＜その他＞")]
         //特殊表情用サウンド
-        [SerializeField] AudioClip[] specialFaceAudioClip;
+        [SerializeField] AudioClip[] _specialFaceAudioClip;
         //クリックSE
-        AudioSource audioSource;
-        [SerializeField] AudioClip[] Sound;//ボタン音,読み込み音,クリック音                               
+        AudioSource _audioSource;
+        [SerializeField] AudioClip[] _sound;//ボタン音,読み込み音,クリック音
+                                            //
         //VRM読み込み時イベント
-        public event Action<CharaController> VRMAdded;
-        public event Action<CharaController> onSetupComplete;
+        public event Action<CharaController> OnAddVRM;
+        public event Action<CharaController> OnSetupComplete;
+
         //ファイルアクセスとサムネの管理
         FileAccessManager _fileManager;
         TextureAssetManager _textureAssetManager;
         //当たり判定
-        VRMTouchColliders touchCollider = null;
+        VRMTouchColliders _touchCollider;
+        CancellationToken _cancellationToken;
 
-        CancellationToken cancellation_token;
-
-        void Awake()
+        public void Initialize(IVRMLoaderUI vrmLoaderUI)
         {
-            audioSource = GetComponent<AudioSource>();
-            audioSource.volume = SystemInfo.soundVolume_SE;
+            _vrmLoaderUI = vrmLoaderUI;
+
+            _audioSource = GetComponent<AudioSource>();
+            _audioSource.volume = SystemInfo.soundVolume_SE;
 
             //コールバック登録・・・2ページ目
-            btn_Apply.onTrigger += (btn) => PrefabApply(btn).Forget();
-            prefabEditor.onCurrentUpdate += () => { audioSource.PlayOneShot(Sound[0]); };//クリック音
-            cancellation_token = this.GetCancellationTokenOnDestroy();
+            _btnApply.onTrigger += (btn) => PrefabApply(btn).Forget();
+            _prefabEditor.onCurrentUpdate += () => { _audioSource.PlayOneShot(_sound[0]); };//クリック音
+            _cancellationToken = this.GetCancellationTokenOnDestroy();
         }
 
         async void Start()
@@ -66,19 +70,19 @@ namespace UniLiveViewer
             var appConfig = GameObject.FindGameObjectWithTag("AppConfig").transform;
             _fileManager = appConfig.GetComponent<FileAccessManager>();
             _textureAssetManager = appConfig.GetComponent<TextureAssetManager>();
-            touchCollider = GameObject.FindGameObjectWithTag("Player").GetComponent<VRMTouchColliders>();
+            _touchCollider = GameObject.FindGameObjectWithTag("Player").GetComponent<VRMTouchColliders>();
 
             //サムネ用ボタンの生成
-            Button_Base[] btns = await thumbnailCon.CreateThumbnailButtons();
+            Button_Base[] btns = await _thumbnailCon.CreateThumbnailButtons();
             for (int i = 0; i < btns.Length; i++)
             {
                 btns[i].onTrigger += (b) => LoadVRM(b).Forget();
             }
 
-            thumbnailCon.onGenerated += async () =>
+            _thumbnailCon.onGenerated += async () =>
             {
-                await UniTask.Delay(500, cancellationToken: cancellation_token);
-                audioSource.PlayOneShot(Sound[1]);
+                await UniTask.Delay(500, cancellationToken: _cancellationToken);
+                _audioSource.PlayOneShot(_sound[1]);
             };
 
             UIShow(false);
@@ -90,7 +94,7 @@ namespace UniLiveViewer
         /// <param name="isHide"></param>
         public void UIShow(bool isEnabel)
         {
-            if (displayAnchor.gameObject.activeSelf != isEnabel) displayAnchor.gameObject.SetActive(isEnabel);
+            if (_root.gameObject.activeSelf != isEnabel) _root.gameObject.SetActive(isEnabel);
         }
 
         /// <summary>
@@ -102,15 +106,15 @@ namespace UniLiveViewer
             UIShow(true);
 
             //ページスイッチ
-            for (int i = 0; i < pageTransform.Length; i++)
+            for (int i = 0; i < _pageTransform.Length; i++)
             {
                 if (currentPage == i)
                 {
-                    if (!pageTransform[i].gameObject.activeSelf) pageTransform[i].gameObject.SetActive(true);
+                    if (!_pageTransform[i].gameObject.activeSelf) _pageTransform[i].gameObject.SetActive(true);
                 }
                 else
                 {
-                    if (pageTransform[i].gameObject.activeSelf) pageTransform[i].gameObject.SetActive(false);
+                    if (_pageTransform[i].gameObject.activeSelf) _pageTransform[i].gameObject.SetActive(false);
                 }
             }
 
@@ -120,19 +124,19 @@ namespace UniLiveViewer
                 case 0:
                     if (!_fileManager.isSuccess) return;
                     //フォルダパスの表示を更新
-                    textDirectory[0].text = $"({PathsInfo.GetFullPath(FOLDERTYPE.CHARA)}/)";
-                    textDirectory[1].text = $"/Download...[{_fileManager.CountVRM(PathsInfo.GetFullPath_Download() + "/")} VRMs]";
+                    _textDirectory[0].text = $"({PathsInfo.GetFullPath(FOLDERTYPE.CHARA)}/)";
+                    _textDirectory[1].text = $"/Download...[{_fileManager.CountVRM(PathsInfo.GetFullPath_Download() + "/")} VRMs]";
 
                     //ローディングアニメーションを無効状態
-                    anime_Loading.gameObject.SetActive(false);
+                    _anime_Loading.gameObject.SetActive(false);
 
                     //サムネボタンアンカーを有効状態
-                    thumbnailCon.gameObject.SetActive(true);
+                    _thumbnailCon.gameObject.SetActive(true);
 
                     //VRM選択ボタンを生成する
-                    
+
                     string[] names = _textureAssetManager.VrmNames;
-                    thumbnailCon.SetThumbnail(names).Forget();
+                    _thumbnailCon.SetThumbnail(names).Forget();
                     break;
                 case 1:
                     //prefabEditor.Init();
@@ -152,33 +156,33 @@ namespace UniLiveViewer
         async UniTaskVoid LoadVRM(Button_Base btn)
         {
             //重複クリックできないようにボタンを無効化
-            thumbnailCon.gameObject.SetActive(false);
+            _thumbnailCon.gameObject.SetActive(false);
 
             //クリック音
-            audioSource.PlayOneShot(Sound[0]);
-            await UniTask.Yield(PlayerLoopTiming.Update, cancellation_token);
+            _audioSource.PlayOneShot(_sound[0]);
+            await UniTask.Yield(PlayerLoopTiming.Update, _cancellationToken);
 
             //ローディングアニメーション開始
-            anime_Loading.gameObject.SetActive(true);
+            _anime_Loading.gameObject.SetActive(true);
 
             GameObject vrmModel = null;
             try
             {
                 //SampleUIを有効化
-                runtimeLoader.gameObject.SetActive(true);
-                await UniTask.Delay(10, cancellationToken: cancellation_token);
+                _vrmLoaderUI.SetUIActive(true);
+                await UniTask.Delay(10, cancellationToken: _cancellationToken);
 
                 //指定パスのVRMのみ読み込む
                 string fileName = btn.transform.name;
                 string fullPath = PathsInfo.GetFullPath(FOLDERTYPE.CHARA) + "/" + fileName;
 
-                var instance = await runtimeLoader.OnOpenClicked_VRM(fullPath, cancellation_token);
+                var instance = await _vrmLoaderUI.GetURPVRMAsync(fullPath, _cancellationToken);
 
                 //Meshが消える対策
                 instance.EnableUpdateWhenOffscreen();
 
                 //キャンセル確認
-                cancellation_token.ThrowIfCancellationRequested();
+                _cancellationToken.ThrowIfCancellationRequested();
 
                 //最低限の設定
                 vrmModel = instance.gameObject;
@@ -187,12 +191,12 @@ namespace UniLiveViewer
                 vrmModel.layer = SystemInfo.layerNo_GrabObject;
 
                 //各種component追加
-                var attacher = Instantiate(attacherPrefab.gameObject).GetComponent<ComponentAttacher_VRM>();
-                await attacher.Init(vrmModel.transform, instance.SkinnedMeshRenderers, cancellation_token);
-                await attacher.Attachment(touchCollider, cancellation_token);
+                var attacher = Instantiate(_attacherPrefab.gameObject).GetComponent<ComponentAttacher_VRM>();
+                await attacher.Init(vrmModel.transform, instance.SkinnedMeshRenderers, _cancellationToken);
+                await attacher.Attachment(_touchCollider, _cancellationToken);
 
                 //VRM追加した
-                VRMAdded?.Invoke(attacher.CharaCon);
+                OnAddVRM?.Invoke(attacher.CharaCon);
 
                 //UIを非表示にする
                 UIShow(false);
@@ -205,15 +209,15 @@ namespace UniLiveViewer
             {
                 if (vrmModel) Destroy(vrmModel);
 
-                runtimeLoader.gameObject.SetActive(false);
+                _vrmLoaderUI.SetUIActive(false);
 
                 //errorページ
                 InitPage(2);
 
                 Debug.Log(e);
                 System.IO.StringReader rs = new System.IO.StringReader(e.ToString());
-                textErrorResult.text = $"{rs.ReadLine()}";//1行まで
-                await UniTask.Delay(5000, cancellationToken: cancellation_token);
+                _textErrorResult.text = $"{rs.ReadLine()}";//1行まで
+                await UniTask.Delay(5000, cancellationToken: _cancellationToken);
 
                 //UIを非表示にする
                 UIShow(false);
@@ -221,14 +225,14 @@ namespace UniLiveViewer
             finally
             {
                 //ローディングアニメーション終了
-                anime_Loading.gameObject.SetActive(false);
+                _anime_Loading.gameObject.SetActive(false);
             }
         }
 
         public void VRMEditing(CharaController _vrmModel)
         {
             //編集対象へ
-            prefabEditor.SetEditingTarget(_vrmModel);
+            _prefabEditor.SetEditingTarget(_vrmModel);
             //マテリアル設定ページへ
             InitPage(1);
         }
@@ -240,52 +244,43 @@ namespace UniLiveViewer
         async UniTask PrefabApply(Button_Base btn)
         {
             //クリック音
-            audioSource.PlayOneShot(Sound[0]);
+            _audioSource.PlayOneShot(_sound[0]);
 
-            var vrm = prefabEditor.EditTarget;
+            var vrm = _prefabEditor.EditTarget;
 
             if (vrm.animationMode == CharaEnums.ANIMATION_MODE.VMD)
             {
                 var vmdPlayer = vrm.GetComponent<VMDPlayer_Custom>();
                 vmdPlayer.ResetBodyAndFace();
             }
-            else if(vrm.animationMode == CharaEnums.ANIMATION_MODE.CLIP)
+            else if (vrm.animationMode == CharaEnums.ANIMATION_MODE.CLIP)
             {
                 vrm.GetComponent<Animator>().enabled = false;
             }
             vrm.SetState(CharaEnums.STATE.NULL, null);
-            vrm.transform.parent = runtimeLoader.transform;
-            vrm.transform.localPosition = Vector3.zero;
-            vrm.transform.localRotation = Quaternion.identity;
-            await UniTask.Delay(1000, cancellationToken: cancellation_token);
+
+            _vrmLoaderUI.SetVRMToPrefab(vrm);
+            await UniTask.Delay(1000, cancellationToken: _cancellationToken);
 
             vrm.SetEnabelSpringBones(false);//Prefab化で値が残ってしまうので無効化
             vrm.GetComponent<Animator>().enabled = true;
             vrm.animationMode = CharaEnums.ANIMATION_MODE.CLIP;
             vrm.gameObject.SetActive(false);
-            await UniTask.Yield(cancellation_token);
+            await UniTask.Yield(_cancellationToken);
 
-            onSetupComplete?.Invoke(vrm);
+            OnSetupComplete?.Invoke(vrm);
 
             //UIを非表示にする
             UIShow(false);
         }
 
+        /// <summary>
+        /// VRMプレハブを削除する
+        /// </summary>
+        /// <param name="id"></param>
         public void ClearVRMPrefab(int id)
         {
-            var charas = runtimeLoader.GetComponentsInChildren<CharaController>(true);//引数非アクティブ込み
-            int count = charas.Length;
-            Debug.Log($"削除対象:{count}");
-
-            int index;
-            for (int i = 0; i < count; i++)
-            {
-                index = count - i - 1;
-                if (charas[index].charaInfoData.vrmID == id)
-                {
-                    Destroy(charas[index].gameObject);
-                }
-            }
+            _vrmLoaderUI.DeleteVRMPrefab(id);
         }
 
         /// <summary>
@@ -300,7 +295,7 @@ namespace UniLiveViewer
             }
             catch
             {
-                textDirectory[1].text = "VRM Copy Error...";
+                _textDirectory[1].text = "VRM Copy Error...";
             }
         }
     }

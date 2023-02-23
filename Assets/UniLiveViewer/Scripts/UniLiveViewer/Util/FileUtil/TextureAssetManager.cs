@@ -11,7 +11,7 @@ namespace UniLiveViewer
     [RequireComponent(typeof(SpriteRenderer))]
     public class TextureAssetManager : MonoBehaviour
     {
-        [SerializeField] VRMRuntimeLoader_Custom vrmRuntimeLoader;
+        IVRMLoaderUI _vrmLoaderUI;
         [SerializeField] Texture2D texDummy;
         CancellationToken cancellation_token;
 
@@ -24,8 +24,10 @@ namespace UniLiveViewer
         //サムネイルキャッシュ用
         //public static Dictionary<string,Texture2D> cacheThumbnails = new Dictionary<string, Texture2D>();
 
-        void Awake()
+        public void Initialize(IVRMLoaderUI vrmLoaderUI)
         {
+            _vrmLoaderUI = vrmLoaderUI;
+
             cancellation_token = this.GetCancellationTokenOnDestroy();
         }
 
@@ -34,7 +36,7 @@ namespace UniLiveViewer
         /// </summary>
         public async UniTask CacheThumbnails()
         {
-            if (!vrmRuntimeLoader) return;
+            if (_vrmLoaderUI is null) return;
             string charaFolderPath = PathsInfo.GetFullPath(FOLDERTYPE.CHARA) + "/";
 
             Texture2D texture = null;
@@ -59,7 +61,7 @@ namespace UniLiveViewer
                 {
                     // TODO: 直バイナリパースに置き換えたい
                     //VRMファイルからサムネイルを抽出する
-                    texture = await vrmRuntimeLoader.GetThumbnail(charaFolderPath + _vrmNames[i], cancellation_token);
+                    texture = await _vrmLoaderUI.GetThumbnailAsync(charaFolderPath + _vrmNames[i], cancellation_token);
 
                     if (texture)
                     {

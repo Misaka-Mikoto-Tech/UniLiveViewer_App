@@ -1,6 +1,7 @@
 ﻿using VContainer;
 using VContainer.Unity;
 using UniLiveViewer;
+using VRM.FirstPersonSample;
 
 public class StageSceneLifetimeScope : LifetimeScope
 {
@@ -15,6 +16,10 @@ public class StageSceneLifetimeScope : LifetimeScope
         builder.RegisterComponentInHierarchy<BlackoutCurtain>();
         builder.RegisterComponentInHierarchy<GeneratorPortal>();
 
+        builder.RegisterComponentInHierarchy<VRMSwitchController>();
+        builder.RegisterComponentInHierarchy<VRMRuntimeLoader_Custom>().As<IVRMLoaderUI>();
+
+        builder.RegisterEntryPoint<VRMPresenter>();
         builder.RegisterEntryPoint<StageScenePresenter>();
     }
 }

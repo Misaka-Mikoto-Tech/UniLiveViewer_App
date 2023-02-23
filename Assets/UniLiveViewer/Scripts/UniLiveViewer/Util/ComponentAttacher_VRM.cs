@@ -9,6 +9,9 @@ using System.Linq;
 
 namespace UniLiveViewer 
 {
+    /// <summary>
+    /// TODO: Prefab目的のMonoBehaviour変、分解できるはず
+    /// </summary>
     public class ComponentAttacher_VRM : MonoBehaviour
     {
         [SerializeField] RuntimeAnimatorController _aniConPrefab = null;
@@ -94,7 +97,7 @@ namespace UniLiveViewer
             }
         }
 
-        private async UniTask CustomizeComponent_Standard(CancellationToken token)
+        async UniTask CustomizeComponent_Standard(CancellationToken token)
         {
             try
             {
@@ -146,7 +149,7 @@ namespace UniLiveViewer
         /// <summary>
         /// VRMのコンポーネントをカスタマイズする
         /// </summary>
-        private async UniTask CustomizeComponent_VRM(VRMTouchColliders touchCollider, CancellationToken token)
+        async UniTask CustomizeComponent_VRM(VRMTouchColliders touchCollider, CancellationToken token)
         {
             try
             {
