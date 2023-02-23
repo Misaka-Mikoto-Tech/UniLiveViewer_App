@@ -133,12 +133,12 @@ namespace UniLiveViewer
             btn_FaceUpdate.onTrigger += Switch_Mouth;
             VRMOptionAnchor = btn_FaceUpdate.transform.parent;
             btn_MouthUpdate.onTrigger += Switch_Mouth;
-            vrmSelectUI.VRMAdded += (vrm) =>
+            vrmSelectUI.OnAddVRM += (vrm) =>
             {
                 generatorPortal.AddVRMPrefab(vrm);//VRMを追加
                 generatorPortal.SetChara(0).Forget();//追加されたVRMを生成する
             };
-            vrmSelectUI.onSetupComplete += (vrm) =>
+            vrmSelectUI.OnSetupComplete += (vrm) =>
             {
                 _timeline.ClearPortal();
                 //VRMのPrefabを差し替える
@@ -296,8 +296,11 @@ namespace UniLiveViewer
 
             //反転ボタンの状態に合わせる
             var portalChara = _timelineInfo.GetCharacter(TimelineController.PORTAL_INDEX);
+            Debug.LogWarning("こおここ");
             if (portalChara)
             {
+                Debug.LogWarning("こおここ");
+
                 //キャラを生成して反転を反映させる
                 await generatorPortal.SetChara(0);
                 textMeshs[1].text = generatorPortal.GetNowAnimeInfo().viewName;

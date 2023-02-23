@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 //using UnityEngine.Animations.Rigging;
 
 namespace UniLiveViewer 
@@ -17,12 +17,12 @@ namespace UniLiveViewer
         /// <summary>
         /// 頭の注視処理
         /// </summary>
-        public void HeadUpdate()
+        void IHeadLookAt.HeadUpdate()
         {
             HeadUpdateBase();
         }
 
-        public void HeadUpdate_OnAnimatorIK()
+        void IHeadLookAt.HeadUpdate_OnAnimatorIK()
         {
             //全体、体、頭、目
             _animator.SetLookAtWeight(1.0f, 0.0f, _leapVal_Head, _result_EyeLook.x);
@@ -32,7 +32,7 @@ namespace UniLiveViewer
         /// <summary>
         /// 目の注視処理
         /// </summary>
-        public void EyeUpdate()
+        void IEyeLookAt.EyeUpdate()
         {
             EyeUpdateBase();
 

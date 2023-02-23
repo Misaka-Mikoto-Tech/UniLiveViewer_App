@@ -26,7 +26,7 @@ namespace UniLiveViewer
         /// <summary>
         /// シェイプキーを更新する
         /// </summary>
-        public void MorphUpdate()
+        void IFacialSync.MorphUpdate()
         {
             var total = 1.0f;
             var w = 0.0f;
@@ -44,7 +44,7 @@ namespace UniLiveViewer
         /// <summary>
         /// シェイプキーを全て初期化する
         /// </summary>
-        public void MorphReset()
+        void IFacialSync.MorphReset()
         {
             foreach (var e in dicVMRMorph.Values)
             {
@@ -56,7 +56,7 @@ namespace UniLiveViewer
         /// <summary>
         /// モーフのバインド情報を返す
         /// </summary>
-        public SkinBindInfo[] GetSkinBindInfo()
+        SkinBindInfo[] IFacialSync.GetSkinBindInfo()
         {
             return _skinBindInfo;
         }

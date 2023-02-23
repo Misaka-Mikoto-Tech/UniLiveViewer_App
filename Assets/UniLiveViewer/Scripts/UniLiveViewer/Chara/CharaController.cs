@@ -97,8 +97,7 @@ namespace UniLiveViewer
                 //VRMボーン
                 if (GetComponent<VRMLookAtBoneApplyer_Custom>() != null)
                 {
-                    var lookAt = gameObject.AddComponent<LookAt_VRMBone>();
-                    _lookAt = transform.GetComponent<LookAtBase>();
+                    _lookAt =  gameObject.AddComponent<LookAt_VRMBone>().GetComponent<LookAtBase>();
                     _headLookAt = transform.GetComponent<IHeadLookAt>();
                     _eyeLookAt = transform.GetComponent<IEyeLookAt>();
                     _lookAtVRM = transform.GetComponent<ILookAtVRM>();
@@ -107,14 +106,13 @@ namespace UniLiveViewer
                     ((LookAt_VRMBone)_lookAtVRM)._vrmEyeApplyer = GetComponent<VRMLookAtBoneApplyer_Custom>();
 
                     var lookAtHead = transform.GetComponent<VRMLookAtHead_Custom>();
-                    lookAtHead.Target = lookAt.GetLookAtTarget();
+                    lookAtHead.Target = _lookAtVRM.GetLookAtTarget();
                     lookAtHead.UpdateType = UpdateType.LateUpdate;
                 }
                 //VRMブレンドシェイプ
                 else if (GetComponent<VRMLookAtBlendShapeApplyer_Custom>() != null)
                 {
-                    var lookAt = gameObject.AddComponent<LookAt_VRMBlendShape>();
-                    _lookAt = transform.GetComponent<LookAtBase>();
+                    _lookAt = gameObject.AddComponent<LookAt_VRMBone>().GetComponent<LookAtBase>();
                     _headLookAt = transform.GetComponent<IHeadLookAt>();
                     _eyeLookAt = transform.GetComponent<IEyeLookAt>();
                     _lookAtVRM = transform.GetComponent<ILookAtVRM>();
@@ -123,7 +121,7 @@ namespace UniLiveViewer
                     ((LookAt_VRMBlendShape)_lookAtVRM)._vrmEyeApplyer = GetComponent<VRMLookAtBlendShapeApplyer_Custom>();
 
                     var lookAtHead = transform.GetComponent<VRMLookAtHead_Custom>();
-                    lookAtHead.Target = lookAt.GetLookAtTarget();
+                    lookAtHead.Target = _lookAtVRM.GetLookAtTarget();
                     lookAtHead.UpdateType = UpdateType.LateUpdate;
                 }
                 //UVはそもそも用意されて無いのだ
@@ -186,6 +184,8 @@ namespace UniLiveViewer
 
             if(charaState == CharaEnums.STATE.MINIATURE || charaState == CharaEnums.STATE.HOLD) transform.localScale = globalScale;
             else transform.localScale = globalScale * CustomScalar;
+
+            Debug.LogWarning(transform.position);
         }
 
         // Update is called once per frame

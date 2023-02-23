@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using VRM;
 
@@ -24,7 +24,7 @@ namespace UniLiveViewer
         /// <summary>
         /// シェイプキーを更新する
         /// </summary>
-        public void MorphUpdate()
+        void ILipSync.MorphUpdate()
         {
             var total = 1.0f;
             var w = 0.0f;
@@ -41,7 +41,7 @@ namespace UniLiveViewer
         /// <summary>
         /// シェイプキーを全て初期化する
         /// </summary>
-        public void MorphReset()
+        void ILipSync.MorphReset()
         {
             foreach (var e in dicVMRMorph.Values)
             {
@@ -52,7 +52,7 @@ namespace UniLiveViewer
         /// <summary>
         /// モーフのバインド情報を返す
         /// </summary>
-        public BindInfo[] GetBindInfo()
+        BindInfo[] ILipSync.GetBindInfo()
         {
             return _bindInfo;
         }

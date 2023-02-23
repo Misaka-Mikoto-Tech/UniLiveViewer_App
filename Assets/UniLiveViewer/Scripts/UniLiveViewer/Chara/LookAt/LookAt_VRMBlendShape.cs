@@ -26,12 +26,12 @@ namespace UniLiveViewer
         /// <summary>
         /// 頭の注視処理
         /// </summary>
-        public void HeadUpdate()
+        void IHeadLookAt.HeadUpdate()
         {
             HeadUpdateBase();
         }
 
-        public void HeadUpdate_OnAnimatorIK()
+        void IHeadLookAt.HeadUpdate_OnAnimatorIK()
         {
             //全体、体、頭、目
             _animator.SetLookAtWeight(1.0f, 0.0f, _leapVal_Head, 0.0f);
@@ -41,7 +41,7 @@ namespace UniLiveViewer
         /// <summary>
         /// 目の注視処理
         /// </summary>
-        public void EyeUpdate()
+        void IEyeLookAt.EyeUpdate()
         {
             EyeUpdateBase();
 
@@ -64,7 +64,7 @@ namespace UniLiveViewer
         /// <summary>
         /// 注視の有効/無効
         /// </summary>
-        public void SetEnable(bool isEnable)
+        void ILookAtVRM.SetEnable(bool isEnable)
         {
             _vrmEyeApplyer.enabled = isEnable;
         }
@@ -72,7 +72,7 @@ namespace UniLiveViewer
         /// <summary>
         /// 注視リセット
         /// </summary>
-        public void EyeReset()
+        void ILookAtVRM.EyeReset()
         {
             _vrmEyeApplyer.Horizontal.CurveXRangeDegree = 0;
             _vrmEyeApplyer.Horizontal.CurveYRangeDegree = 0;
@@ -86,7 +86,7 @@ namespace UniLiveViewer
         /// <summary>
         /// 注視ターゲット
         /// </summary>
-        public Transform GetLookAtTarget()
+        Transform ILookAtVRM.GetLookAtTarget()
         {
             return _lookTarget;
         }

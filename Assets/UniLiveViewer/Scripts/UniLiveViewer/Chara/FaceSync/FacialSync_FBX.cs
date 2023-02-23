@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace UniLiveViewer
 {
@@ -43,13 +43,14 @@ namespace UniLiveViewer
         /// <summary>
         /// シェイプキーを更新する
         /// </summary>
-        public void MorphUpdate() 
+        void IFacialSync.MorphUpdate() 
         {
             foreach (var e in _skinBindInfo)
             {
                 Morph(e);
             }
         }
+
         void Morph(SkinBindInfo skinBindInfo)
         {
             var total = 1.0f;
@@ -68,7 +69,7 @@ namespace UniLiveViewer
         /// <summary>
         /// シェイプキーを全て初期化する
         /// </summary>
-        public void MorphReset()
+        void IFacialSync.MorphReset()
         {
             foreach (var e in _skinBindInfo)
             {
@@ -90,7 +91,7 @@ namespace UniLiveViewer
         /// <summary>
         /// モーフのバインド情報を返す
         /// </summary>
-        public SkinBindInfo[] GetSkinBindInfo()
+        SkinBindInfo[] IFacialSync.GetSkinBindInfo()
         {
             return _skinBindInfo;
         }

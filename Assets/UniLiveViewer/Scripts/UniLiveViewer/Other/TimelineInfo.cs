@@ -20,6 +20,7 @@ namespace UniLiveViewer
         {
             return _timeline.GetCharacter(index);
         }
+
         /// <summary>
         /// timeline上でのキャラ上限、今6決め打ち
         /// </summary>
@@ -28,20 +29,22 @@ namespace UniLiveViewer
         {
             return _timeline.CharacterCount();
         }
+
         /// <summary>
         /// フィールドの現在キャラ数
         /// </summary>
         public int FieldCharaCount => _timeline.FieldCharaCount;
+
         /// <summary>
         /// フィールドに存在できる最大キャラ数
         /// </summary>
         public int MaxFieldChara => _timeline.MaxFieldChara;
+
         /// <summary>
         /// ポータル枠にキャラが存在するか
         /// </summary>
         /// <returns></returns>
         public bool IsPortalChara() { return _timeline.IsPortalChara(); }
-
 
         TimelineController _timeline;
 
