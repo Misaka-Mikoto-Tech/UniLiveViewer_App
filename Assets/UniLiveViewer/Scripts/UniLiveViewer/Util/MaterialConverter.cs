@@ -4,35 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using UnityEngine;
+using NanaCiel;
 
 namespace UniLiveViewer
 {
-    public enum SurfaceType
-    {
-        Opaque,
-        Transparent
-    }
-    public enum BlendMode_MToon
-    {
-        Opaque,
-        Cutout,
-        Transparent,
-        TransparentWithZWrite
-    }
-    public enum BlendMode
-    {
-        Alpha,
-        Premultiply,
-        Additive,
-        Multiply
-    }
-    public enum RenderFace//この並びはURP
-    {
-        Both,
-        Back,
-        Front
-    }
-
     //TODO:突貫工事、作りかけ雑
     public class MaterialConverter : MonoBehaviour
     {
@@ -84,110 +59,79 @@ namespace UniLiveViewer
 
         public async UniTask Conversion(CharaController charaCon, CancellationToken token)
         {
-            try
-            {
-                //前処理
-                await Pretreatment(charaCon, token);
-                //置換
-                await ShaderReplace(charaCon,token);
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch
-            {
-                throw new Exception("VRM Material Conversion");
-            }
+            token.ThrowIfCancellationRequested();
+
+            await Pretreatment(charaCon, token).OnError();
+            token.ThrowIfCancellationRequested();
+
+            await ShaderReplace(charaCon, token).OnError();
         }
 
         /// <summary>
         /// 前処理
         /// </summary>
         /// <param name="parent"></param>
-        private async UniTask Pretreatment(CharaController charaCon, CancellationToken token)
+        async UniTask Pretreatment(CharaController charaCon, CancellationToken token)
         {
-            try
-            {
-                await UniTask.Yield(PlayerLoopTiming.Update, token);
+            token.ThrowIfCancellationRequested();
 
-                foreach (var mesh in charaCon.GetSkinnedMeshRenderers)
+            await UniTask.Yield(PlayerLoopTiming.Update, token);
+            token.ThrowIfCancellationRequested();
+
+            foreach (var mesh in charaCon.GetSkinnedMeshRenderers)
+            {
+                //レイヤー設定
+                if (mesh.transform.name.Contains("eye", StringComparison.OrdinalIgnoreCase)
+                    || mesh.transform.name.Contains("face", StringComparison.OrdinalIgnoreCase))
                 {
-                    //あれば不要なので無効化しておく
-                    
-                    if (mesh.transform.childCount > 0 && mesh.transform.GetChild(0).transform.name.Contains("_headless"))
-                    {
-                        mesh.transform.GetChild(0).gameObject.SetActive(false);
-                    }
-                    //レイヤー設定
-                    if (mesh.transform.name.Contains("eye", StringComparison.OrdinalIgnoreCase) 
-                        || mesh.transform.name.Contains("face", StringComparison.OrdinalIgnoreCase))
-                    {
-                        //目や顔にアウトラインは残念な感じになりやすいので
-                        mesh.gameObject.layer = SystemInfo.layerNo_UnRendererFeature;
-                    }
-                    else mesh.gameObject.layer = gameObject.layer;
-
-                    //マテリアル取得
-                    foreach (var mat in mesh.materials)
-                    {
-                        materials_Base.Add(mat);
-                    }
-                    foreach (var mat in mesh.materials)
-                    {
-                        materials.Add(mat);
-                    }
+                    //目や顔にアウトラインは残念な感じになりやすいので
+                    mesh.gameObject.layer = SystemInfo.layerNo_UnRendererFeature;
                 }
-            }
-            catch
-            {
-                throw;
+                else mesh.gameObject.layer = gameObject.layer;
+
+                //マテリアル取得
+                foreach (var mat in mesh.materials)
+                {
+                    materials_Base.Add(mat);
+                }
+                foreach (var mat in mesh.materials)
+                {
+                    materials.Add(mat);
+                }
             }
         }
 
-        private async UniTask ShaderReplace(CharaController charaCon,CancellationToken token)
+        async UniTask ShaderReplace(CharaController charaCon,CancellationToken token)
         {
-            try
-            {
-                await UniTask.Yield(PlayerLoopTiming.Update, token);
+            token.ThrowIfCancellationRequested();
 
-                //置換対象マテリアルを処理
-                if (materials.Count > 0)
-                {
-                    for (int i = 0; i < materials.Count; i++)
-                    {
-                        SetupMaterialBlendMode2(materials[i]);
-                    }
-                }
-            }
-            catch
+            await UniTask.Yield(PlayerLoopTiming.Update, token);
+            token.ThrowIfCancellationRequested();
+
+            //置換対象マテリアルを処理
+            if (materials.Count > 0)
             {
-                throw;
+                for (int i = 0; i < materials.Count; i++)
+                {
+                    SetupMaterialBlendMode2(materials[i]);
+                }
             }
         }
 
         public async UniTask Conversion_Item(MeshRenderer[] meshRenderers, CancellationToken token)
         {
-            try
-            {
-                await UniTask.Yield(PlayerLoopTiming.Update, token);
+            token.ThrowIfCancellationRequested();
 
-                foreach (var mesh in meshRenderers)
+            await UniTask.Yield(PlayerLoopTiming.Update, token);
+            token.ThrowIfCancellationRequested();
+
+            foreach (var mesh in meshRenderers)
+            {
+                mesh.gameObject.layer = gameObject.layer;
+                for (int i = 0; i < mesh.materials.Length; i++)
                 {
-                    mesh.gameObject.layer = gameObject.layer;
-                    for (int i = 0; i < mesh.materials.Length; i++)
-                    {
-                        SetupMaterialBlendMode2(mesh.materials[i]);
-                    }
+                    SetupMaterialBlendMode2(mesh.materials[i]);
                 }
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch
-            {
-                throw new Exception("VRM matConversion");
             }
         }
 
