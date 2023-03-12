@@ -20,7 +20,7 @@ namespace UniLiveViewer
         [SerializeField] FacialSync_VRM _faceSyncPrefab = null;
         [SerializeField] CharaInfoData _charaInfoDataPrefab;
         [SerializeField] AttachPoint _attachPointPrefab;
-        MaterialConverter _matConverter;
+        IMaterialConverter _materialConverter;
         MaterialManager _matManager;
 
         public CharaController CharaCon { get; private set; }
@@ -54,8 +54,7 @@ namespace UniLiveViewer
             //スキンメッシュレンダーの流用
             CharaCon.SetSkinnedMeshRenderers(skins);
             //マテリアル関係
-            _matConverter = _targetVRM.AddComponent<MaterialConverter>();
-            _matConverter.Init();
+            _materialConverter = new MaterialConverter(_targetVRM.layer);
             _matManager = _targetVRM.AddComponent<MaterialManager>();
         }
 
@@ -67,7 +66,7 @@ namespace UniLiveViewer
             var meshRenderers = _targetVRM.GetComponentsInChildren<MeshRenderer>();
             if (meshRenderers != null && meshRenderers.Length > 0)
             {
-                await _matConverter.Conversion_Item(meshRenderers.ToArray(), token).OnError();
+                await _materialConverter.Conversion_Item(meshRenderers.ToArray(), token).OnError();
                 token.ThrowIfCancellationRequested();
             }
 
@@ -79,13 +78,13 @@ namespace UniLiveViewer
             token.ThrowIfCancellationRequested();
 
             //skinの方はVRMから流用
-            await _matConverter.Conversion(CharaCon, token).OnError();
+            await _materialConverter.Conversion(CharaCon, token).OnError();
             token.ThrowIfCancellationRequested();
 
             await _matManager.ExtractMaterials(CharaCon, token).OnError();
             token.ThrowIfCancellationRequested();
 
-            Destroy(_targetVRM.GetComponent<MaterialConverter>());
+            _materialConverter.Dispose();
         }
 
         async UniTask CustomizeComponent_Standard(CancellationToken token)

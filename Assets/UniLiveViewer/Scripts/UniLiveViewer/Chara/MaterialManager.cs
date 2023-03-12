@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace UniLiveViewer
 {
@@ -75,7 +76,7 @@ namespace UniLiveViewer
             }
         }
 
-        public void SetRenderFace(string name, RenderFace render)
+        public void SetRenderFace(string name, CullMode cullMode)
         {
             int _index;
             for (int i = 0; i < info.Count; i++)
@@ -83,7 +84,7 @@ namespace UniLiveViewer
                 if (info[i].name == name)
                 {
                     _index = info[i].index;
-                    info[i].skinMesh.materials[_index].SetFloat("_Cull", (float)render);
+                    info[i].skinMesh.materials[_index].SetFloat("_Cull", (float)cullMode);
                 }
             }
         }

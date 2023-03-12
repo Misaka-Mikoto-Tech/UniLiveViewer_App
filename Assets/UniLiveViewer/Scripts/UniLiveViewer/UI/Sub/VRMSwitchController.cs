@@ -211,7 +211,7 @@ namespace UniLiveViewer
                 token.ThrowIfCancellationRequested();
 
                 OnAddVRM?.Invoke(attacher.CharaCon);
-                Destroy(attacher.gameObject);
+                Destroy(attacher);
             }
 
             //UIを非表示にする
@@ -230,7 +230,7 @@ namespace UniLiveViewer
             //errorページ
             InitPage(2);
 
-            Debug.Log(exception);
+            Debug.LogError(exception);
             System.IO.StringReader rs = new System.IO.StringReader(exception.ToString());
             _textErrorResult.text = $"{rs.ReadLine()}";//1行まで
             await UniTask.Delay(5000, cancellationToken: _cancellationToken);

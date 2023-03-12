@@ -12,6 +12,9 @@
         Transparent,
         TransparentWithZWrite
     }
+    /// <summary>
+    /// NOTE: URPだとEditorしかない
+    /// </summary>
     public enum BlendMode
     {
         Alpha,
@@ -19,10 +22,10 @@
         Additive,
         Multiply
     }
-    public enum RenderFace//この並びはURP
-    {
-        Both,
-        Back,
-        Front
-    }
+    //public enum RenderFace//この並びはURP
+    //{
+    //    Both,
+    //    Back,
+    //    Front
+    //}
 }

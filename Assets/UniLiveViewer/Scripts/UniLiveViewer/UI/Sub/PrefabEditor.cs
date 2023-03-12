@@ -4,6 +4,7 @@ using UnityEngine;
 using NanaCiel;
 using System;
 using System.Linq;
+using UnityEngine.Rendering;
 
 namespace UniLiveViewer 
 {
@@ -127,7 +128,7 @@ namespace UniLiveViewer
             //全取得
             int _index = matInfo.index;
             SurfaceType surfaceType = (SurfaceType)matInfo.skinMesh.materials[_index].GetFloat("_Surface");
-            RenderFace renderFace = (RenderFace)matInfo.skinMesh.materials[_index].GetFloat("_Cull");
+            CullMode renderFace = (CullMode)matInfo.skinMesh.materials[_index].GetFloat("_Cull");
             Color color = matInfo.skinMesh.materials[_index].GetColor("_Color");
             bool alphaClip = matInfo.skinMesh.materials[_index].GetFloat("_AlphaClip") == 1 ? true : false;
             float cutoff = matInfo.skinMesh.materials[_index].GetFloat("_Cutoff");
@@ -189,19 +190,19 @@ namespace UniLiveViewer
 
             if (btn == btn_RenderFace[0])
             {
-                matManager.SetRenderFace(currentMatName, RenderFace.Both);
+                matManager.SetRenderFace(currentMatName, CullMode.Off);
                 btn_RenderFace[1].isEnable = false;
                 btn_RenderFace[2].isEnable = false;
             }
             else if (btn == btn_RenderFace[1])
             {
-                matManager.SetRenderFace(currentMatName, RenderFace.Back);
+                matManager.SetRenderFace(currentMatName, CullMode.Front);
                 btn_RenderFace[0].isEnable = false;
                 btn_RenderFace[2].isEnable = false;
             }
             else if (btn == btn_RenderFace[2])
             {
-                matManager.SetRenderFace(currentMatName, RenderFace.Front);
+                matManager.SetRenderFace(currentMatName, CullMode.Back);
                 btn_RenderFace[0].isEnable = false;
                 btn_RenderFace[1].isEnable = false;
             }

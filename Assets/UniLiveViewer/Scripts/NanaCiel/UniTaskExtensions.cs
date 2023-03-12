@@ -14,7 +14,7 @@ namespace NanaCiel
             }
             catch (Exception e) when (!(e is OperationCanceledException))
             {
-                Debug.Log(e.Message);
+                Debug.LogError(e.Message);
             }
         }
 
@@ -38,7 +38,7 @@ namespace NanaCiel
             }
             catch (Exception e) when (!(e is OperationCanceledException))
             {
-                Debug.Log(e.Message);
+                Debug.LogError(e.Message);
             }
         }
 
