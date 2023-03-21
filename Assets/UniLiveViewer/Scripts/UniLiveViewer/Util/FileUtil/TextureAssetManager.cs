@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using UnityEngine;
-using VRM.FirstPersonSample;
 
 namespace UniLiveViewer 
 {
@@ -59,7 +58,6 @@ namespace UniLiveViewer
 
                 try
                 {
-                    // TODO: 直バイナリパースに置き換えたい
                     //VRMファイルからサムネイルを抽出する
                     texture = await _vrmLoaderUI.GetThumbnailAsync(charaFolderPath + _vrmNames[i], cancellation_token);
 

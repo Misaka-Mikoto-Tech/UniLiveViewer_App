@@ -7,7 +7,7 @@
     }
     public enum BlendMode_MToon
     {
-        Opaque,
+        Opaque = 0,
         Cutout,
         Transparent,
         TransparentWithZWrite
@@ -17,15 +17,9 @@
     /// </summary>
     public enum BlendMode
     {
-        Alpha,
+        Alpha = 0,
         Premultiply,
         Additive,
         Multiply
     }
-    //public enum RenderFace//この並びはURP
-    //{
-    //    Both,
-    //    Back,
-    //    Front
-    //}
 }
