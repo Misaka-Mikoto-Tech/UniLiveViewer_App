@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace UniLiveViewer
+namespace NanaCiel
 {
     public class TextureFormatter
     {
