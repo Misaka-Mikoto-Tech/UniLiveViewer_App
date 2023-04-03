@@ -13,8 +13,17 @@ namespace UniLiveViewer
     {
         enum ReplaceShaderType
         {
-            None = -1,
-            Default = 0,
+            /// <summary>
+            /// 置換しない
+            /// </summary>
+            None = 0,
+            /// <summary>
+            /// NOTE: デフォをtransparentにしておかないと効かない..？
+            /// </summary>
+            SimpleStandard,
+            /// <summary>
+            /// NOTE: デフォをtransparentにしておかないと効かない..？
+            /// </summary>
             SimpleMToon,
         }
 
@@ -38,12 +47,12 @@ namespace UniLiveViewer
         CullMode _renderFace;
 
         // NOTE: 不要かな
-        //string _renderType;
+        string _renderType;
         //int _zWrite;
         //int _SrcBlend;
         //int _DstBlend;
         //bool _shadowCaster;
-        //int _renderQueue;
+        int _renderQueue;
 
         //Color
         Texture _mainTex;
@@ -76,10 +85,13 @@ namespace UniLiveViewer
             _shaderMap = new Dictionary<string, ReplaceShaderType>()
             {
                 { "VRM/MToon", ReplaceShaderType.SimpleMToon},
-                { "Standard", ReplaceShaderType.Default},
-                { "Universal Render Pipeline/Unlit", ReplaceShaderType.Default},
-                { "Universal Render Pipeline/Lit", ReplaceShaderType.Default},
-                { "Universal Render Pipeline/Simple Lit", ReplaceShaderType.Default}
+                { "Unlit/Textuer", ReplaceShaderType.None},
+                { "Unlit/Transparent", ReplaceShaderType.None},
+                { "Unlit/Transparent Cutout", ReplaceShaderType.None},
+                { "Standard", ReplaceShaderType.SimpleStandard},
+                { "Universal Render Pipeline/Unlit", ReplaceShaderType.None},
+                { "Universal Render Pipeline/Lit", ReplaceShaderType.SimpleStandard},
+                { "Universal Render Pipeline/Simple Lit", ReplaceShaderType.SimpleStandard}
                 //Shader Graphs/Simple Standard
                 //Shader Graphs/Simple Toon_DoubleShadow
             };
@@ -162,35 +174,35 @@ namespace UniLiveViewer
 
         void InternalConversion(Material material)
         {
-            var replaceShaderType = _shaderMap.FirstOrDefault(x => x.Key == material.shader.name).Value;
-            if (replaceShaderType is ReplaceShaderType.None)
+            ReplaceShaderType? replaceShaderType = _shaderMap.FirstOrDefault(x => x.Key == material.shader.name).Value;
+            if (replaceShaderType is null)
             {
                 Debug.LogWarning($"未対応Shaderです:{material.shader.name}");
                 return;
             }
-
-            ReadProperty(material);
-
-            if (replaceShaderType == ReplaceShaderType.Default)
+            else if (replaceShaderType is ReplaceShaderType.None)
+            {
+                return;
+            }
+            else if (replaceShaderType is ReplaceShaderType.SimpleStandard)
             {
                 material.shader = Shader.Find("Shader Graphs/Simple Standard");
                 SetPropertyToSimpleStandard(material);
             }
-            else if (replaceShaderType == ReplaceShaderType.SimpleMToon)
+            else if (replaceShaderType is ReplaceShaderType.SimpleMToon)
             {
-                // NOTE: デフォをtransparentにしておかないと効かない..？
+                ReadMToonProperty(material);
                 material.shader = Shader.Find("Shader Graphs/Simple MToon");
                 SetPropertyToSimpleMToon(material);
             }
         }
 
         /// <summary>
-        /// マテリアルからShader読み取り
         /// 
-        /// TODO: MToon以外も対応する、Material.HasPropertyは...さぼる
+        /// NOTE: 追々使うのでコメントアウト残しておく、Material.HasPropertyは...さぼる
         /// </summary>
         /// <param name="material"></param>
-        void ReadProperty(Material material)
+        void ReadMToonProperty(Material material)
         {
             //定義済みローカルキーワード
             //_alphaTest = material.IsKeywordEnabled("_ALPHATEST_ON");
@@ -271,9 +283,20 @@ namespace UniLiveViewer
 
         void SetPropertyToSimpleStandard(Material material)
         {
-            // TODO: パーツで混じってるので対応する
-
-            //SetKeyword(material);
+            var renderQueue = material.renderQueue;
+            if (renderQueue == (int)RenderQueue.Geometry)
+            {
+                _blendMode = BlendMode_MToon.Opaque;
+            }
+            else if(renderQueue == (int)RenderQueue.AlphaTest)
+            {
+                _blendMode = BlendMode_MToon.Cutout;
+            }
+            else if (renderQueue == (int)RenderQueue.Transparent)
+            {
+                _blendMode = BlendMode_MToon.Transparent;
+            }
+            SetKeyword(material);
         }
 
         void SetPropertyToSimpleMToon(Material material)
@@ -285,6 +308,9 @@ namespace UniLiveViewer
             if (_shadeTexture is null) _shadeTexture = _mainTex;
             material.SetTexture(URPShaderConstant.SHADE_TEX, _shadeTexture);
             material.SetColor(URPShaderConstant.SHADE_COLOR, _shadeColor);
+
+            material.SetFloat(URPShaderConstant.SHADOW_STEP, _shadeToony);
+            
 
             if (_emissionTex is Texture && _shadeColor != Color.black)
             {
@@ -385,12 +411,6 @@ namespace UniLiveViewer
                 material.renderQueue = (int)RenderQueue.Transparent;
                 //material.renderQueue = (int)RenderQueue.Transparent + 1;
             }
-        }
-
-
-        void IMaterialConverter.Dispose()
-        {
-            
         }
     }
 }

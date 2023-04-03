@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using VRM;
 using UniHumanoid;
@@ -83,8 +83,6 @@ namespace UniLiveViewer
 
             await _matManager.ExtractMaterials(CharaCon, token).OnError();
             token.ThrowIfCancellationRequested();
-
-            _materialConverter.Dispose();
         }
 
         async UniTask CustomizeComponent_Standard(CancellationToken token)

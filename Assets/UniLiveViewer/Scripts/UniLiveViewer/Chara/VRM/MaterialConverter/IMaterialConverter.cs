@@ -8,7 +8,5 @@ namespace UniLiveViewer
     {
         UniTask Conversion(CharaController charaCon, CancellationToken token);
         UniTask Conversion_Item(MeshRenderer[] meshRenderers, CancellationToken token);
-
-        void Dispose();
     }
 }
