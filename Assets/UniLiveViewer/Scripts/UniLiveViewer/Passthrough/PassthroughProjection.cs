@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using VContainer;
 
 namespace UniLiveViewer
 {   
@@ -6,7 +7,8 @@ namespace UniLiveViewer
     public class PassthroughProjection : MonoBehaviour
     {
         OVRPassthroughLayer _passthroughLayer;
-        [SerializeField] MeshFilter _projectionObject;
+        MeshFilter _projectionObject;
+        PassthroughService _passthroughService;
 
         void Awake()
         {
@@ -22,11 +24,16 @@ namespace UniLiveViewer
             {
                 Debug.LogError("OVRCameraRig does not contain an OVRPassthroughLayer component");
             }
+
+            var player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerLifetimeScope>();
+            _passthroughService = player.Container.Resolve<PassthroughService>();
+            // TODO: 強引すぎ見直す
+            _projectionObject = transform.parent.GetComponent<MeshFilter>();
         }
 
         void OnEnable()
         {
-            if (PlayerStateManager.instance.myOVRManager.isInsightPassthroughEnabled)
+            if (_passthroughService.IsInsightPassthroughEnabled())
             {
                 _passthroughLayer.AddSurfaceGeometry(_projectionObject.gameObject, true);
             }

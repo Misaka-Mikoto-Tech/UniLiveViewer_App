@@ -2,6 +2,7 @@
 using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using VContainer;
 
 namespace UniLiveViewer
 {
@@ -15,7 +16,7 @@ namespace UniLiveViewer
         [SerializeField] AnimationCurve curve;
         public static BlackoutCurtain instance;
 
-        PlayerStateManager player;
+        PlayerStateManager _playerStateManager;
         MaterialPropertyBlock materialPropertyBlock;
         Color color;
         CancellationToken cancellation_Token;
@@ -46,6 +47,10 @@ namespace UniLiveViewer
             }
 
             instance = this;
+
+            // TODO: UI作り直す時にまともにする
+            var player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerLifetimeScope>();
+            _playerStateManager = player.Container.Resolve<PlayerStateManager>();
         }
 
         /// <summary>
@@ -53,8 +58,7 @@ namespace UniLiveViewer
         /// </summary>
         public void Staging()
         {
-            player = PlayerStateManager.instance;
-            transform.parent = player.myCamera.transform;
+            transform.parent = _playerStateManager.myCamera.transform;
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.identity;
 
@@ -98,7 +102,7 @@ namespace UniLiveViewer
                 renderer_Brack.SetPropertyBlock(materialPropertyBlock);
                 await UniTask.Yield(PlayerLoopTiming.Update, cancellation_Token);
             }
-            player.enabled = true;//操作可能に
+            _playerStateManager.enabled = true;//操作可能に
         }
 
         /// <summary>
@@ -108,7 +112,7 @@ namespace UniLiveViewer
         /// <returns></returns>
         public async UniTask StartBlackout(string sceneName)
         {
-            player.enabled = false;//操作不可に
+            _playerStateManager.enabled = false;//操作不可に
             renderer_Brack.enabled = false;
             renderer_Cutoff.enabled = true;
             if (loadAnimation.gameObject.activeSelf) loadAnimation.gameObject.SetActive(false);

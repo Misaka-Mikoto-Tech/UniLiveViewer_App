@@ -130,8 +130,8 @@ namespace UniLiveViewer
                     Value = _value + (coefficient * axis.y * Time.deltaTime);
                     ValueUpdate?.Invoke();
                     //コントローラーの振動
-                    if (isLHandGrabbed) PlayerStateManager.ControllerVibration(OVRInput.Controller.LTouch, 1, 0.2f, 0.05f);
-                    else PlayerStateManager.ControllerVibration(OVRInput.Controller.RTouch, 1, 0.2f, 0.05f);
+                    if (isLHandGrabbed) ControllerVibration.Execute(OVRInput.Controller.LTouch, 1, 0.2f, 0.05f);
+                    else ControllerVibration.Execute(OVRInput.Controller.RTouch, 1, 0.2f, 0.05f);
                 }
                 //minの設定値で刻む
                 else if (abs >= 0.02f)
@@ -139,8 +139,8 @@ namespace UniLiveViewer
                     Value = _value + (Mathf.Sign(axis.y) * minStepValuel);
                     ValueUpdate?.Invoke();
                     //コントローラーの振動
-                    if (isLHandGrabbed) PlayerStateManager.ControllerVibration(OVRInput.Controller.LTouch, 1, 0.4f, 0.05f);
-                    else PlayerStateManager.ControllerVibration(OVRInput.Controller.RTouch, 1, 0.4f, 0.05f);
+                    if (isLHandGrabbed) ControllerVibration.Execute(OVRInput.Controller.LTouch, 1, 0.4f, 0.05f);
+                    else ControllerVibration.Execute(OVRInput.Controller.RTouch, 1, 0.4f, 0.05f);
                 }
 
                 //handleを離したら

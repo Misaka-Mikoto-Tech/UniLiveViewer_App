@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using VRM;
 using NanaCiel;
@@ -205,8 +205,8 @@ namespace UniLiveViewer
                 {
                     if (springBone.isHit_Any)
                     {
-                        if (springBone.isLeft_Any) PlayerStateManager.ControllerVibration(OVRInput.Controller.LTouch, 1, charaInfoData.power, charaInfoData.time);
-                        if (springBone.isRight_Any) PlayerStateManager.ControllerVibration(OVRInput.Controller.RTouch, 1, charaInfoData.power, charaInfoData.time);
+                        if (springBone.isLeft_Any) ControllerVibration.Execute(OVRInput.Controller.LTouch, 1, charaInfoData.power, charaInfoData.time);
+                        if (springBone.isRight_Any) ControllerVibration.Execute(OVRInput.Controller.RTouch, 1, charaInfoData.power, charaInfoData.time);
                         break;
                     }
                 }

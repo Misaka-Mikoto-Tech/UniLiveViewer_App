@@ -3,6 +3,7 @@ using NanaCiel;
 using UnityEngine.Playables;
 using Cysharp.Threading.Tasks;
 using System.Threading;
+using VContainer;
 
 namespace UniLiveViewer
 {
@@ -42,7 +43,10 @@ namespace UniLiveViewer
             var appConfig = GameObject.FindGameObjectWithTag("AppConfig").transform;
             _audioAssetManager = appConfig.GetComponent<AudioAssetManager>();
 
-            _playerStateManager = PlayerStateManager.instance;
+            // TODO: UI作り直す時にまともにする
+            var player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerLifetimeScope>();
+            _playerStateManager = player.Container.Resolve<PlayerStateManager>();
+
             _timeline = menuManager.timeline;
             _timelineInfo = _timeline.GetComponent<TimelineInfo>();
 
@@ -151,7 +155,7 @@ namespace UniLiveViewer
             menuManager.PlayOneShot(SoundType.BTN_CLICK);
 
             //スライダー操作中は受け付けない
-            if (_playerStateManager.IsSliderGrabbing()) return;
+            if (_playerStateManager.IsSliderGrabbing(SystemInfo.tag_GrabSliderVolume)) return;
 
             if (btn == btnS_Stop)
             {

@@ -1,8 +1,9 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
+using VContainer;
 
 namespace UniLiveViewer
 {
@@ -41,7 +42,7 @@ namespace UniLiveViewer
 
         private TimelineController timeline = null;
         private QuasiShadow quasiShadow;
-        private PlayerStateManager playerStateManager;
+        PassthroughService _passthroughService;
 
         private Material matMirrore;//LiveScene用
         private BackGroundController backGroundCon;
@@ -92,8 +93,6 @@ namespace UniLiveViewer
         }
         private void OnEnable()
         {
-            if(!playerStateManager) playerStateManager = PlayerStateManager.instance;
-
             Init().Forget();
         }
 
@@ -101,6 +100,10 @@ namespace UniLiveViewer
         void Start()
         {
             int current = (int)SystemInfo.sceneMode;
+
+            // TODO: UI作り直す時にまともにする
+            var player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerLifetimeScope>();
+            _passthroughService = player.Container.Resolve<PassthroughService>();
 
             //シーン応じて有効化を切り替える
             for (int i = 0; i < sceneAnchor.Length; i++)
@@ -248,7 +251,7 @@ namespace UniLiveViewer
             }
 
             //共用
-            btn_General[1].isEnable = playerStateManager.myOVRManager.isInsightPassthroughEnabled;
+            btn_General[1].isEnable = _passthroughService.IsInsightPassthroughEnabled();
             btn_General[2].isEnable = SystemInfo.userProfile.TouchVibration;
 
             //キャラサイズ
@@ -287,7 +290,7 @@ namespace UniLiveViewer
             //パススルー
             else if (btn == btn_General[1])
             {
-                playerStateManager.EnablePassthrough(btn.isEnable);
+                _passthroughService.Switching(btn.isEnable);
             }
             //コントローラー振動
             else if (btn == btn_General[2])

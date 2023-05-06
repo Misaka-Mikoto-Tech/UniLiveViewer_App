@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
-namespace UniLiveViewer 
+namespace UniLiveViewer
 {
     public class SystemInfo
     {

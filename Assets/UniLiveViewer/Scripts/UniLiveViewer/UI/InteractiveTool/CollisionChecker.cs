@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace UniLiveViewer
@@ -89,8 +89,8 @@ namespace UniLiveViewer
             else isTouchL = false;
 
             //振動処理
-            if (isTouchL) PlayerStateManager.ControllerVibration(OVRInput.Controller.LTouch, 1, 0.6f, 0.05f);
-            else PlayerStateManager.ControllerVibration(OVRInput.Controller.RTouch, 1, 0.6f, 0.05f);
+            if (isTouchL) ControllerVibration.Execute(OVRInput.Controller.LTouch, 1, 0.6f, 0.05f);
+            else ControllerVibration.Execute(OVRInput.Controller.RTouch, 1, 0.6f, 0.05f);
         }
 
         /// <summary>

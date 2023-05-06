@@ -1,6 +1,8 @@
 ﻿using Cysharp.Threading.Tasks;
 using System.Collections;
 using UnityEngine;
+using UniRx;
+using VContainer;
 
 namespace UniLiveViewer
 { 
@@ -9,24 +11,28 @@ namespace UniLiveViewer
         [SerializeField] Transform guideParent;
         [SerializeField] Transform guideTarget;
 
-        PlayerStateManager playerStateManager;
+        PlayerStateManager _playerStateManager;
         Renderer _renderer;
         Vector3 EndPoint = new Vector3(0, 0.7f, 5);
         Vector3 keepDistance;
 
         bool isInit = false;
+        CompositeDisposable _disposables;
 
         void Awake()
         {
             _renderer = GetComponent<Renderer>();
+            _disposables = new CompositeDisposable();
         }
 
         // Start is called before the first frame update
         void Start()
         {
-
-            playerStateManager = PlayerStateManager.instance;
-            playerStateManager.onSwitchMainUI += SwitchEnable;
+            // TODO: UI作り直す時にまともにする
+            var player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerLifetimeScope>();
+            _playerStateManager = player.Container.Resolve<PlayerStateManager>();
+            _playerStateManager.MainUISwitchingAsObservable
+                .Subscribe(SwitchEnable).AddTo(_disposables);
 
             switch (SystemInfo.sceneMode)
             {
@@ -84,8 +90,8 @@ namespace UniLiveViewer
             if (guideTarget.gameObject.activeSelf != isEnable) guideTarget.gameObject.SetActive(isEnable);
             _renderer.enabled = isEnable;
 
-            if(isEnable) transform.position = (playerStateManager.transform.position - keepDistance);
-            else keepDistance = playerStateManager.transform.position - transform.position;
+            if(isEnable) transform.position = (_playerStateManager.transform.position - keepDistance);
+            else keepDistance = _playerStateManager.transform.position - transform.position;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Cysharp.Threading.Tasks;
 using System.Threading;
 using UnityEngine;
+using VContainer;
 
 namespace UniLiveViewer
 {
@@ -31,7 +32,7 @@ namespace UniLiveViewer
         [Header("＜各ページに相当＞")]
         [SerializeField] private DecorationItems[] decorationItems;
 
-        private PlayerStateManager playerStateManager;
+        PassthroughService _passthroughService;
         private CancellationToken cancellation_token;
         private int languageCurrent;
 
@@ -47,9 +48,12 @@ namespace UniLiveViewer
 
             languageCurrent = (int)SystemInfo.userProfile.LanguageCode - 1;
             currentSubPage = new int[decorationItems.Length];
-            playerStateManager = PlayerStateManager.instance;
 
-            EnablePassthrough(playerStateManager.myOVRManager.isInsightPassthroughEnabled);
+            // TODO: UI作り直す時にまともにする
+            var player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerLifetimeScope>();
+            _passthroughService = player.Container.Resolve<PassthroughService>();
+
+            EnablePassthrough(_passthroughService.IsInsightPassthroughEnabled());
 
             pageController.onSwitchPage += Init;
         }
@@ -61,7 +65,7 @@ namespace UniLiveViewer
 
         private void Init()
         {
-            EnablePassthrough(playerStateManager.myOVRManager.isInsightPassthroughEnabled);
+            EnablePassthrough(_passthroughService.IsInsightPassthroughEnabled());
 
             //アイテム数に応じてサブページ送りボタンの表示切替
             int itemLength = decorationItems[pageController.current].ItemPrefab.Length;
