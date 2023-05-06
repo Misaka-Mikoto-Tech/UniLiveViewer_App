@@ -117,14 +117,14 @@ namespace UniLiveViewer
                 var portalChara = _timelineInfo.GetCharacter(TimelineController.PORTAL_INDEX);
                 if (!portalChara) return;
                 //目の向く量をセット
-                portalChara._lookAt.inputWeight_Eye = slider_EyeLook.Value;
+                portalChara.LookAt.inputWeight_Eye = slider_EyeLook.Value;
             };
             slider_HeadLook.ValueUpdate += () =>
             {
                 var portalChara = _timelineInfo.GetCharacter(TimelineController.PORTAL_INDEX);
                 if (!portalChara) return;
                 //顔の向く量をセット
-                portalChara._lookAt.inputWeight_Head = slider_HeadLook.Value;
+                portalChara.LookAt.inputWeight_Head = slider_HeadLook.Value;
             };
             btn_VRMLoad.onTrigger += VRMLoad;
             btn_VRMSetting.onTrigger += VRMSetting;
@@ -296,19 +296,16 @@ namespace UniLiveViewer
 
             //反転ボタンの状態に合わせる
             var portalChara = _timelineInfo.GetCharacter(TimelineController.PORTAL_INDEX);
-            Debug.LogWarning("こおここ");
             if (portalChara)
             {
-                Debug.LogWarning("こおここ");
-
                 //キャラを生成して反転を反映させる
                 await generatorPortal.SetChara(0);
                 textMeshs[1].text = generatorPortal.GetNowAnimeInfo().viewName;
                 textMeshs[1].fontSize = textMeshs[1].text.FontSizeMatch(600, 30, 50);
 
                 //スライダーの値を反映
-                portalChara._lookAt.inputWeight_Head = slider_HeadLook.Value;
-                portalChara._lookAt.inputWeight_Eye = slider_EyeLook.Value;
+                portalChara.LookAt.inputWeight_Head = slider_HeadLook.Value;
+                portalChara.LookAt.inputWeight_Eye = slider_EyeLook.Value;
             }
             menuManager.PlayOneShot(SoundType.BTN_CLICK);
         }
@@ -428,8 +425,8 @@ namespace UniLiveViewer
             textMeshs[2].text = $"{_timelineInfo.FieldCharaCount}/{_timelineInfo.MaxFieldChara}";
 
             //スライダーの値を反映
-            portalChara._lookAt.inputWeight_Head = slider_HeadLook.Value;
-            portalChara._lookAt.inputWeight_Eye = slider_EyeLook.Value;
+            portalChara.LookAt.inputWeight_Head = slider_HeadLook.Value;
+            portalChara.LookAt.inputWeight_Eye = slider_EyeLook.Value;
 
             //モーフボタン初期化
             if (portalChara.charaInfoData.formatType == CharaInfoData.FORMATTYPE.FBX)

@@ -169,13 +169,13 @@ namespace UniLiveViewer
             if (anchorList[0].transform.childCount == 0)
             {
                 //握っていたら解除する
-                if (_charaCon.keepHandL_Anime) _timeline.SwitchHandType(_charaCon, false, true);
+                if (_charaCon.CachedClip_handL) _timeline.SwitchHandType(_charaCon, false, true);
             }
             //右手のアタッチポイントのアイテム数確認
             if (anchorList[1].transform.childCount == 0)
             {
                 //握っていたら解除する
-                if (_charaCon.keepHandR_Anime) _timeline.SwitchHandType(_charaCon, false, false);
+                if (_charaCon.CachedClip_handR) _timeline.SwitchHandType(_charaCon, false, false);
             }
         }
 

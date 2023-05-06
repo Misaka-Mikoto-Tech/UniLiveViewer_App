@@ -59,8 +59,8 @@ namespace UniLiveViewer
                 var chara = _timelineInfo.GetCharacter(i);
                 if (chara)
                 {
-                    target = chara._lookAt.test.virtualHead;
-                    baseTransform = chara._lookAt.test.virtualChest;
+                    target = chara.LookAt.test.virtualHead;
+                    baseTransform = chara.LookAt.test.virtualChest;
                     break;
                 }
             }

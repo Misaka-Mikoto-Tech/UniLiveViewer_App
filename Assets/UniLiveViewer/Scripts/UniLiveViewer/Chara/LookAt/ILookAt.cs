@@ -10,6 +10,7 @@
     {
         public void EyeUpdate();
     }
+
     public interface ILookAtVRM 
     {
         public void SetEnable(bool isEnable);

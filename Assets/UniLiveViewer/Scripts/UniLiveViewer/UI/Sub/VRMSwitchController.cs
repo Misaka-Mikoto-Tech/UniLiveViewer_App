@@ -257,12 +257,12 @@ namespace UniLiveViewer
 
             var vrm = _prefabEditor.EditTarget;
 
-            if (vrm.animationMode == CharaEnums.ANIMATION_MODE.VMD)
+            if (vrm.AnimationMode == CharaEnums.ANIMATION_MODE.VMD)
             {
                 var vmdPlayer = vrm.GetComponent<VMDPlayer_Custom>();
                 vmdPlayer.ResetBodyAndFace();
             }
-            else if (vrm.animationMode == CharaEnums.ANIMATION_MODE.CLIP)
+            else if (vrm.AnimationMode == CharaEnums.ANIMATION_MODE.CLIP)
             {
                 vrm.GetComponent<Animator>().enabled = false;
             }
@@ -275,7 +275,7 @@ namespace UniLiveViewer
 
             vrm.SetEnabelSpringBones(false);//Prefab化で値が残ってしまうので無効化
             vrm.GetComponent<Animator>().enabled = true;
-            vrm.animationMode = CharaEnums.ANIMATION_MODE.CLIP;
+            vrm.AnimationMode = CharaEnums.ANIMATION_MODE.CLIP;
             vrm.gameObject.SetActive(false);
 
             await UniTask.Yield(_cancellationToken);

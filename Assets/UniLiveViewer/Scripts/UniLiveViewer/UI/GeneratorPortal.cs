@@ -204,24 +204,23 @@ namespace UniLiveViewer
                 {
                     if (!charaCon.gameObject.activeSelf) charaCon.gameObject.SetActive(true);
 
-                    charaCon._lipSync = charaCon.GetComponentInChildren<ILipSync>();
-                    charaCon._facialSync = charaCon.GetComponentInChildren<IFacialSync>();
-                    charaCon._lookAt = charaCon.GetComponent<LookAtBase>();
-                    charaCon._headLookAt = charaCon.GetComponent<IHeadLookAt>();
-                    charaCon._eyeLookAt = charaCon.GetComponent<IEyeLookAt>();
-                    charaCon._lookAtVRM = charaCon.GetComponent<ILookAtVRM>();
+                    charaCon.LipSync = charaCon.GetComponentInChildren<ILipSync>();
+                    charaCon.FacialSync = charaCon.GetComponentInChildren<IFacialSync>();
+                    charaCon.LookAt = charaCon.GetComponent<LookAtBase>();
+                    charaCon.HeadLookAt = charaCon.GetComponent<IHeadLookAt>();
+                    charaCon.EyeLookAt = charaCon.GetComponent<IEyeLookAt>();
+                    charaCon.LookAtVRM = charaCon.GetComponent<ILookAtVRM>();
 
                     //Prefab化経由は無効化されているので戻す
-                    charaCon._lookAtVRM.SetEnable(true);
-                    charaCon.isHeadLookAtUpdate = true;
-                    charaCon.isEyeLookAtUpdate = true;
-
+                    charaCon.LookAtVRM.SetEnable(true);
+                    
                     //揺れ物の再稼働
                     charaCon.SetEnabelSpringBones(true);
                     await UniTask.Yield(PlayerLoopTiming.Update, cts.Token);
                 }
 
                 //パラメーター設定
+                charaCon.SetLookAt(true);
                 charaCon.SetState(CharaEnums.STATE.MINIATURE, transform);//ミニチュア状態
 
                 //Timelineのポータル枠へバインドする
@@ -270,9 +269,9 @@ namespace UniLiveViewer
                     // NOTE: Animatorが競合するので無効化
                     portalChara.GetComponent<Animator>().enabled = false;
 
-                    portalChara.animationMode = CharaEnums.ANIMATION_MODE.VMD;
-                    portalChara.isLipSyncUpdate = false;
-                    portalChara.isFacialSyncUpdate = false;
+                    portalChara.AnimationMode = CharaEnums.ANIMATION_MODE.VMD;
+                    portalChara.CanLipSync = false;
+                    portalChara.CanFacialSync = false;
 
                     await VMDPlay(_vmdPlayer, folderPath, viewName, true, cts.Token);
                 }
@@ -285,9 +284,9 @@ namespace UniLiveViewer
                     //VMDを停止、animator再開
                     _vmdPlayer.ResetBodyAndFace();
                     portalChara.GetComponent<Animator>().enabled = true;
-                    portalChara.animationMode = CharaEnums.ANIMATION_MODE.CLIP;
-                    portalChara.isLipSyncUpdate = true;
-                    portalChara.isFacialSyncUpdate = true;
+                    portalChara.AnimationMode = CharaEnums.ANIMATION_MODE.CLIP;
+                    portalChara.CanLipSync = true;
+                    portalChara.CanFacialSync = true;
                 }
                 //ポータル上のキャラにアニメーション設定
                 _timeline.SetAnimationClip(_timelineInfo.PortalBaseAniTrack, _danceAniClipInfo[CurrentAnime]);
@@ -296,8 +295,8 @@ namespace UniLiveViewer
 
                 //最後に表情系をリセットしておく
                 await UniTask.Yield(PlayerLoopTiming.Update, cts.Token);
-                portalChara._facialSync.MorphReset();
-                portalChara._lipSync.MorphReset();
+                portalChara.FacialSync.MorphReset();
+                portalChara.LipSync.MorphReset();
 
                 TrySetFacialAnimation();
             }
@@ -373,8 +372,8 @@ namespace UniLiveViewer
 
                     //最後に表情系をリセットしておく
                     await UniTask.Yield(PlayerLoopTiming.Update, cts.Token);
-                    portalChara._facialSync.MorphReset();
-                    portalChara._lipSync.MorphReset();
+                    portalChara.FacialSync.MorphReset();
+                    portalChara.LipSync.MorphReset();
                 }
             }
             catch (OperationCanceledException)

@@ -198,13 +198,13 @@ namespace UniLiveViewer
                 if (isFace)
                 {
                     vmdPlayer.morphPlayer_vrm.isUpdateFace = isEnable;
-                    if (!isEnable) bindChara._facialSync.MorphReset();
+                    if (!isEnable) bindChara.FacialSync.MorphReset();
                 }
                 //口パク
                 else
                 {
                     vmdPlayer.morphPlayer_vrm.isUpdateMouth = isEnable;
-                    if (!isEnable) bindChara._lipSync.MorphReset();
+                    if (!isEnable) bindChara.LipSync.MorphReset();
                 }
             }
             //プリセット中
@@ -213,14 +213,14 @@ namespace UniLiveViewer
                 //表情
                 if (isFace)
                 {
-                    if (!isEnable) bindChara._facialSync.MorphReset();
-                    bindChara.isFacialSyncUpdate = isEnable;
+                    if (!isEnable) bindChara.FacialSync.MorphReset();
+                    bindChara.CanFacialSync = isEnable;
                 }
                 //口パク
                 else
                 {
-                    if (!isEnable) bindChara._lipSync.MorphReset();
-                    bindChara.isLipSyncUpdate = isEnable;
+                    if (!isEnable) bindChara.LipSync.MorphReset();
+                    bindChara.CanLipSync = isEnable;
                 }
             }
         }
@@ -255,7 +255,7 @@ namespace UniLiveViewer
                 //CharaListにセット
                 _bindCharacters[PORTAL_INDEX] = bindChara;
                 //バインド情報を付与
-                bindChara.bindTrackName = sPortalBaseAniTrack;
+                bindChara.BindTrackName = sPortalBaseAniTrack;
                 //chara.bindTrackName_LipSync = "LipSync Track_Portal";
             }
             else
@@ -282,7 +282,6 @@ namespace UniLiveViewer
         /// <param name="overrideAniClips"></param>
         /// <param name="initPos"></param>
         /// <param name="initEulerAngles"></param>
-        //public void SetAnimationClip(string baseAniTrackName, DanceInfoData danceInfoData, Vector3 initPos, Vector3 initEulerAngles)
         public void SetAnimationClip(string baseAniTrackName, DanceInfoData danceInfoData)
         {
             // タイムライン内のトラック一覧を取得
@@ -341,7 +340,7 @@ namespace UniLiveViewer
                         handClip = clips.FirstOrDefault(x => x.displayName == SUBCLIP0);
 
                         //キャラが既に握りなら
-                        if (_bindCharacters[PORTAL_INDEX] && _bindCharacters[PORTAL_INDEX].keepHandL_Anime)
+                        if (_bindCharacters[PORTAL_INDEX] && _bindCharacters[PORTAL_INDEX].CachedClip_handL)
                         {
 
                         }
@@ -359,7 +358,7 @@ namespace UniLiveViewer
                         handClip = clips.FirstOrDefault(x => x.displayName == SUBCLIP1);
 
                         //キャラが既に握りなら
-                        if (_bindCharacters[PORTAL_INDEX] && _bindCharacters[PORTAL_INDEX].keepHandR_Anime)
+                        if (_bindCharacters[PORTAL_INDEX] && _bindCharacters[PORTAL_INDEX].CachedClip_handR)
                         {
 
                         }
@@ -467,20 +466,20 @@ namespace UniLiveViewer
             //重複排除
             if (isLeft)
             {
-                if (!isGrabHand && !charaCon.keepHandL_Anime) return;
-                else if (isGrabHand && charaCon.keepHandL_Anime) return;
+                if (!isGrabHand && !charaCon.CachedClip_handL) return;
+                else if (isGrabHand && charaCon.CachedClip_handL) return;
             }
             else
             {
-                if (!isGrabHand && !charaCon.keepHandR_Anime) return;
-                else if (isGrabHand && charaCon.keepHandR_Anime) return;
+                if (!isGrabHand && !charaCon.CachedClip_handR) return;
+                else if (isGrabHand && charaCon.CachedClip_handR) return;
             }
 
             // タイムライン内のトラック一覧を取得
             IEnumerable<TrackAsset> tracks = timeLineAsset.GetOutputTracks();
 
             //対象のキャラTrackAssetを取得
-            TrackAsset track = tracks.FirstOrDefault(x => x.name == charaCon.bindTrackName);
+            TrackAsset track = tracks.FirstOrDefault(x => x.name == charaCon.BindTrackName);
             if (!track) return;
 
 
@@ -493,14 +492,14 @@ namespace UniLiveViewer
                 //握る
                 if (isGrabHand)
                 {
-                    charaCon.keepHandL_Anime = (handClip.asset as AnimationPlayableAsset).clip;
+                    charaCon.CachedClip_handL = (handClip.asset as AnimationPlayableAsset).clip;
                     (handClip.asset as AnimationPlayableAsset).clip = _grabHandAnime;
                 }
                 //解除する
                 else
                 {
-                    (handClip.asset as AnimationPlayableAsset).clip = charaCon.keepHandL_Anime;
-                    charaCon.keepHandL_Anime = null;
+                    (handClip.asset as AnimationPlayableAsset).clip = charaCon.CachedClip_handL;
+                    charaCon.CachedClip_handL = null;
                 }
             }
             else
@@ -512,14 +511,14 @@ namespace UniLiveViewer
                 //握る
                 if (isGrabHand)
                 {
-                    charaCon.keepHandR_Anime = (handClip.asset as AnimationPlayableAsset).clip;
+                    charaCon.CachedClip_handR = (handClip.asset as AnimationPlayableAsset).clip;
                     (handClip.asset as AnimationPlayableAsset).clip = _grabHandAnime;
                 }
                 //解除する
                 else
                 {
-                    (handClip.asset as AnimationPlayableAsset).clip = charaCon.keepHandR_Anime;
-                    charaCon.keepHandR_Anime = null;
+                    (handClip.asset as AnimationPlayableAsset).clip = charaCon.CachedClip_handR;
+                    charaCon.CachedClip_handR = null;
                 }
             }
 
@@ -543,7 +542,7 @@ namespace UniLiveViewer
             IEnumerable<TrackAsset> tracks = timeLineAsset.GetOutputTracks();
 
             //転送するキャラのTrackAssetを取得
-            TrackAsset track = tracks.FirstOrDefault(x => x.name == transferChara.bindTrackName);
+            TrackAsset track = tracks.FirstOrDefault(x => x.name == transferChara.BindTrackName);
             if (!track) return false;
 
             //トラック内のクリップを全取得
@@ -589,13 +588,13 @@ namespace UniLiveViewer
             }
 
             //表情系をリセットしておく
-            _bindCharacters[PORTAL_INDEX]._lipSync.MorphReset();
-            _bindCharacters[PORTAL_INDEX]._lipSync.MorphReset();
+            _bindCharacters[PORTAL_INDEX].LipSync.MorphReset();
+            _bindCharacters[PORTAL_INDEX].LipSync.MorphReset();
 
             //##### ここから転送先処理 #####
             IEnumerable<PlayableBinding> outputs = _playableDirector.playableAsset.outputs;
             //移行元のPlayableBindingをnullバインドで解除しておく
-            PlayableBinding fromBaseAnime = outputs.FirstOrDefault(x => x.streamName == transferChara.bindTrackName);
+            PlayableBinding fromBaseAnime = outputs.FirstOrDefault(x => x.streamName == transferChara.BindTrackName);
             _playableDirector.SetGenericBinding(fromBaseAnime.sourceObject, null);
 
             //移行先の既存キャラ確認
@@ -603,7 +602,7 @@ namespace UniLiveViewer
             {
                 if (_bindCharacters[i])
                 {
-                    if (_bindCharacters[i].bindTrackName == transferChara.bindTrackName)
+                    if (_bindCharacters[i].BindTrackName == transferChara.BindTrackName)
                     {
                         //転送元のリンクを解除
                         _bindCharacters[i] = null;
@@ -620,7 +619,7 @@ namespace UniLiveViewer
             _playableDirector.SetGenericBinding(toBaseAnime.sourceObject, transferChara.gameObject);
 
             //バインド情報を付与
-            transferChara.bindTrackName = toTrackName;
+            transferChara.BindTrackName = toTrackName;
 
             //リストに登録
             var index = _map[toTrackName];
@@ -772,8 +771,8 @@ namespace UniLiveViewer
             foreach (var chara in _bindCharacters)
             {
                 if (!chara) continue;
-                chara._facialSync.MorphReset();
-                chara._lipSync.MorphReset();
+                chara.FacialSync.MorphReset();
+                chara.LipSync.MorphReset();
             }
 
             //モードをマニュアルからゲームタイマーへ

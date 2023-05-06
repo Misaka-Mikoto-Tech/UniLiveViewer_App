@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using VRM;
 using UniHumanoid;
@@ -176,14 +176,14 @@ namespace UniLiveViewer
                     _vrmSpringBones[i].ColliderGroups = colliderList.ToArray();
                     colliderList.Clear();
                     //登録
-                    CharaCon.springBoneList.Add(_vrmSpringBones[i]);
+                    CharaCon.SpringBoneList.Add(_vrmSpringBones[i]);
                 }
                 else
                 {
                     //そのまま追加
                     _vrmSpringBones[i].ColliderGroups = touchCollider.colliders;
                     //登録
-                    CharaCon.springBoneList.Add(_vrmSpringBones[i]);
+                    CharaCon.SpringBoneList.Add(_vrmSpringBones[i]);
                 }
             }
         }
