@@ -8,26 +8,40 @@ using UnityVMDReader;
 
 namespace UniLiveViewer
 {
+    public enum CurrentMode
+    {
+        PRESET,
+        CUSTOM
+    }
+
     public class GeneratorPortal : MonoBehaviour
     {
         const string LIPSYNC_NONAME = "[ NULL ]";
+        public int CurrentChara => _charaIndex;
+        int _charaIndex = 0;
 
-        public int CurrentChara { get; private set; } = 0;
-        public int CurrentAnime { get; private set; } = 0;
+        public int CurrentAnime => _animeIndex;
+        int _animeIndex = 0;
+
         public int CurrentVMDLipSync { get; private set; } = 0;
 
-        public bool IsAnimationReverse = false;
+        public bool IsAnimationReverse;
 
-        [SerializeField] List<CharaController> _listChara = new List<CharaController>();
-        [SerializeField] DanceInfoData[] _danceAniClipInfo;
+        [SerializeField] List<CharaController> _listChara;
+        [SerializeField] List<CharaController> _listVRM;
+        List<CharaController> _currentCharaList;
+
+        [SerializeField] List<DanceInfoData> _listAniClipInfo;
+        [SerializeField] List<DanceInfoData> _listVMDInfo;
+        List<DanceInfoData> _currentAnimeList;
         [SerializeField] string[] _vmdLipSync;
 
-        public DanceInfoData[] GetDanceInfoData() { return _danceAniClipInfo; }
+        public DanceInfoData[] GetDanceInfoData() { return _currentAnimeList.ToArray(); }
         public string[] GetVmdLipSync() { return _vmdLipSync; }
         [SerializeField] DanceInfoData _danceInfoData_VMDPrefab;//VMD用のテンプレ
-        DanceInfoData[] _vmdDanceClipInfo;
+        
         VMDPlayer_Custom _vmdPlayer;
-        bool _retryVMD = false;
+        bool _retryVMD;
 
         //汎用
         TimelineController _timeline;
@@ -39,7 +53,7 @@ namespace UniLiveViewer
         public event Action onGeneratedAnime;
         public event Action<string> onSelectedAnimePair;
 
-        CancellationTokenSource cts = new CancellationTokenSource();
+        CancellationTokenSource _cancellationTokenSource;
 
         //読み込み済みVMD情報
         static Dictionary<string, VMD> dic_VMDReader = new Dictionary<string, VMD>();
@@ -47,13 +61,26 @@ namespace UniLiveViewer
         void Awake()
         {
             //キャラリストに空枠を追加(空をVRM読み込み枠として扱う、雑仕様)
-            _listChara.Add(null);
+            _listVRM = new List<CharaController>();
+            _listVRM.Add(null);
+            _currentCharaList = _listChara;
+
+            _listVMDInfo = new List<DanceInfoData>();
+            _currentAnimeList = _listAniClipInfo;
+
+            IsAnimationReverse = false;
+            _retryVMD = false;
+
+            _charaIndex = 0;
+            _animeIndex = 0;
+
+            _cancellationTokenSource = new CancellationTokenSource();
         }
 
         void OnDisable()
         {
-            cts.Cancel();
-            cts = new CancellationTokenSource();
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource = new CancellationTokenSource();
         }
 
         void OnEnable()
@@ -67,7 +94,7 @@ namespace UniLiveViewer
             else
             {
                 //キャラが存在していなければ生成しておく
-                if (_timeline && !_timelineInfo.IsPortalChara())//初回は生成しない仕様
+                if (_timeline && !_timeline.GetCharacterInPortal)//初回は生成しない仕様
                 {
                     SetChara(0).Forget();
                 }
@@ -79,17 +106,15 @@ namespace UniLiveViewer
             //VMD枠はダミーアニメーションを追加しておく
             if (_animationAssetManager.VmdList.Count > 0)
             {
-                _vmdDanceClipInfo = new DanceInfoData[_animationAssetManager.VmdList.Count];
-
-                for (int i = 0; i < _vmdDanceClipInfo.Length; i++)
+                for (int i = 0; i < _animationAssetManager.VmdList.Count; i++)
                 {
-                    _vmdDanceClipInfo[i] = Instantiate(_danceInfoData_VMDPrefab);
+                    var danceInfoData = Instantiate(_danceInfoData_VMDPrefab);
+                    danceInfoData.motionOffsetTime = 0;
+                    danceInfoData.strBeforeName = _animationAssetManager.VmdList[i];
+                    danceInfoData.viewName = _animationAssetManager.VmdList[i];
 
-                    _vmdDanceClipInfo[i].motionOffsetTime = 0;
-                    _vmdDanceClipInfo[i].strBeforeName = _animationAssetManager.VmdList[i];
-                    _vmdDanceClipInfo[i].viewName = _animationAssetManager.VmdList[i];
+                    _listVMDInfo.Add(danceInfoData);
                 }
-                _danceAniClipInfo = _danceAniClipInfo.Concat(_vmdDanceClipInfo).ToArray();
             }
             //口パクVMD
             if (_animationAssetManager.VmdLipSyncList.Count > 0)
@@ -115,11 +140,11 @@ namespace UniLiveViewer
         public void AddVRMPrefab(CharaController charaCon_vrm)
         {
             //VRMを追加
-            _listChara[_listChara.Count - 1] = charaCon_vrm;
+            _listVRM[_listVRM.Count - 1] = charaCon_vrm;
             //無効化して管理
             charaCon_vrm.gameObject.SetActive(false);
             //リストに空枠を追加(空をVRM読み込み枠として扱う)
-            _listChara.Add(null);
+            _listVRM.Add(null);
         }
 
         /// <summary>
@@ -128,15 +153,15 @@ namespace UniLiveViewer
         /// <param name="charaCon_vrm"></param>
         public void ChangeCurrentVRM(CharaController charaCon_vrm)
         {
-            if (_listChara[CurrentChara].charaInfoData.formatType
+            if (_listVRM[_charaIndex].charaInfoData.formatType
                 != CharaInfoData.FORMATTYPE.VRM) return;
 
             //オリジナル以外は削除可
-            if(_listChara[CurrentChara].name.Contains("(Clone)"))
+            if(_listVRM[_charaIndex].name.Contains("(Clone)"))
             {
-                Destroy(_listChara[CurrentChara].gameObject);
+                Destroy(_listVRM[_charaIndex].gameObject);
             }
-            _listChara[CurrentChara] = charaCon_vrm;
+            _listVRM[_charaIndex] = charaCon_vrm;
 
             //未使用アセット削除
             Resources.UnloadUnusedAssets();
@@ -148,8 +173,24 @@ namespace UniLiveViewer
         public void DeleteCurrenVRM()
         {
             //UI上から削除
-            Destroy(_listChara[CurrentChara].gameObject);
-            _listChara.RemoveAt(CurrentChara);
+            Destroy(_listVRM[_charaIndex].gameObject);
+            _listVRM.RemoveAt(_charaIndex);
+        }
+
+        public void SetCurrentCharaList(CurrentMode currentMode)
+        {
+            if (currentMode == CurrentMode.CUSTOM) _currentCharaList = _listVRM;
+            else _currentCharaList = _listChara;
+
+            _charaIndex = 0;
+        }
+
+        public void SetCurrentAnimeList(CurrentMode currentMode)
+        {
+            if (currentMode == CurrentMode.CUSTOM) _currentAnimeList = _listVMDInfo;
+            else _currentAnimeList = _listAniClipInfo;
+
+            _animeIndex = 0;
         }
 
         /// <summary>
@@ -162,42 +203,39 @@ namespace UniLiveViewer
 
             try
             {
-                CurrentChara += moveCurrent;
+                _charaIndex += moveCurrent;
 
                 //Current移動制限
-                if (CurrentChara < 0) CurrentChara = _listChara.Count - 1;
-                else if (CurrentChara >= _listChara.Count) CurrentChara = 0;
-
-                //既存のポータルキャラを削除
-                _timeline.DestoryPortalChara();
+                if (_charaIndex < 0) _charaIndex = _currentCharaList.Count - 1;
+                else if (_charaIndex >= _currentCharaList.Count) _charaIndex = 0;
 
                 //フィールド上限オーバーなら生成しない
                 if (_timelineInfo.FieldCharaCount >= _timelineInfo.MaxFieldChara) return;
 
                 //null枠の場合も処理しない
-                if (!_listChara[CurrentChara])
+                if (!_currentCharaList[_charaIndex])
                 {
+                    _timeline.ClearCaracter();
                     onEmptyCurrent?.Invoke();
                     return;
                 }
 
                 //キャラを生成
-                charaCon = Instantiate(_listChara[CurrentChara]);
-                charaCon.transform.position = transform.position;
-                charaCon.transform.localRotation = Quaternion.identity;
+                charaCon = Instantiate(_currentCharaList[_charaIndex]);
+                charaCon.transform.position = new Vector3(0,100,0);// 遠くの方へ
 
-                await UniTask.Yield(PlayerLoopTiming.Update, cts.Token);
+                await UniTask.Yield(PlayerLoopTiming.Update, _cancellationTokenSource.Token);
 
                 if (charaCon.charaInfoData.formatType == CharaInfoData.FORMATTYPE.VRM)
                 {
-                    var matManager_f = _listChara[CurrentChara].GetComponent<MaterialManager>();
+                    var matManager_f = _currentCharaList[_charaIndex].GetComponent<MaterialManager>();
                     var matManager_t = charaCon.GetComponent<MaterialManager>();
 
                     matManager_t.matLocation = matManager_f.matLocation;
                     matManager_t.info = matManager_f.info;
                 }
                 
-                if (cts == null) cts = new CancellationTokenSource();
+                if (_cancellationTokenSource == null) _cancellationTokenSource = new CancellationTokenSource();
 
                 //VRM
                 if (charaCon.charaInfoData.formatType == CharaInfoData.FORMATTYPE.VRM)
@@ -216,15 +254,17 @@ namespace UniLiveViewer
                     
                     //揺れ物の再稼働
                     charaCon.SetEnabelSpringBones(true);
-                    await UniTask.Yield(PlayerLoopTiming.Update, cts.Token);
+                    await UniTask.Yield(PlayerLoopTiming.Update, _cancellationTokenSource.Token);
                 }
 
                 //パラメーター設定
                 charaCon.SetLookAt(true);
                 charaCon.SetState(CharaEnums.STATE.MINIATURE, transform);//ミニチュア状態
+                charaCon.transform.position = transform.position;
+                charaCon.transform.localRotation = Quaternion.identity;
 
                 //Timelineのポータル枠へバインドする
-                if (!_timeline.NewAssetBinding_Portal(charaCon))
+                if (!_timeline.BindingNewAsset(charaCon))
                 {
                     if (charaCon) Destroy(charaCon.gameObject);
                     return;
@@ -249,15 +289,15 @@ namespace UniLiveViewer
             try
             {
                 //Current移動制限    
-                CurrentAnime += moveCurrent;
-                if (CurrentAnime < 0) CurrentAnime = _danceAniClipInfo.Length - 1;
-                else if (CurrentAnime >= _danceAniClipInfo.Length) CurrentAnime = 0;
+                _animeIndex += moveCurrent;
+                if (_animeIndex < 0) _animeIndex = _currentAnimeList.Count - 1;
+                else if (_animeIndex >= _currentAnimeList.Count) _animeIndex = 0;
 
                 //ポータルキャラを確認
                 var portalChara = _timelineInfo.GetCharacter(TimelineController.PORTAL_INDEX);
                 if (!portalChara) return;
 
-                await UniTask.Yield(PlayerLoopTiming.Update, cts.Token);
+                await UniTask.Yield(PlayerLoopTiming.Update, _cancellationTokenSource.Token);
                 _vmdPlayer = portalChara.GetComponent<VMDPlayer_Custom>();
 
                 //VMD
@@ -273,13 +313,13 @@ namespace UniLiveViewer
                     portalChara.CanLipSync = false;
                     portalChara.CanFacialSync = false;
 
-                    await VMDPlay(_vmdPlayer, folderPath, viewName, true, cts.Token);
+                    await VMDPlay(_vmdPlayer, folderPath, viewName, true, _cancellationTokenSource.Token);
                 }
                 //プリセットアニメーション 
                 else
                 {
                     //反転設定
-                    _danceAniClipInfo[CurrentAnime].isReverse = IsAnimationReverse;
+                    _currentAnimeList[_animeIndex].isReverse = IsAnimationReverse;
 
                     //VMDを停止、animator再開
                     _vmdPlayer.ResetBodyAndFace();
@@ -289,12 +329,12 @@ namespace UniLiveViewer
                     portalChara.CanFacialSync = true;
                 }
                 //ポータル上のキャラにアニメーション設定
-                _timeline.SetAnimationClip(_timelineInfo.PortalBaseAniTrack, _danceAniClipInfo[CurrentAnime]);
+                _timeline.BindingNewAnimationClip(_currentAnimeList[_animeIndex]);
 
                 onGeneratedAnime?.Invoke();
 
                 //最後に表情系をリセットしておく
-                await UniTask.Yield(PlayerLoopTiming.Update, cts.Token);
+                await UniTask.Yield(PlayerLoopTiming.Update, _cancellationTokenSource.Token);
                 portalChara.FacialSync.MorphReset();
                 portalChara.LipSync.MorphReset();
 
@@ -353,7 +393,7 @@ namespace UniLiveViewer
                 var portalChara = _timelineInfo.GetCharacter(TimelineController.PORTAL_INDEX);
                 if (!portalChara) return;
 
-                await UniTask.Yield(PlayerLoopTiming.Update, cts.Token);
+                await UniTask.Yield(PlayerLoopTiming.Update, _cancellationTokenSource.Token);
                 _vmdPlayer = portalChara.GetComponent<VMDPlayer_Custom>();
 
                 var bodyName = GetNowAnimeInfo().viewName;
@@ -365,13 +405,13 @@ namespace UniLiveViewer
                 else
                 {
                     var folderPath = PathsInfo.GetFullPath_LipSync() + "/";
-                    await VMDPlay(_vmdPlayer, folderPath, facialName, false, cts.Token);
+                    await VMDPlay(_vmdPlayer, folderPath, facialName, false, _cancellationTokenSource.Token);
 
                     onSelectedAnimePair?.Invoke(facialName);
                     FileReadAndWriteUtility.SaveMotionFacialPair(bodyName, facialName);
 
                     //最後に表情系をリセットしておく
-                    await UniTask.Yield(PlayerLoopTiming.Update, cts.Token);
+                    await UniTask.Yield(PlayerLoopTiming.Update, _cancellationTokenSource.Token);
                     portalChara.FacialSync.MorphReset();
                     portalChara.LipSync.MorphReset();
                 }
@@ -416,11 +456,10 @@ namespace UniLiveViewer
         /// <returns></returns>
         public CharaInfoData[] GetCharasInfo()
         {
-            CharaInfoData[] result = new CharaInfoData[_listChara.Count];
-
-            for (int i = 0; i < _listChara.Count; i++)
+            var result = new CharaInfoData[_currentCharaList.Count];
+            for (int i = 0; i < _currentCharaList.Count; i++)
             {
-                if (_listChara[i]) result[i] = _listChara[i].charaInfoData;
+                if (_currentCharaList[i]) result[i] = _currentCharaList[i].charaInfoData;
                 else result[i] = null;
             }
             return result;
@@ -432,9 +471,9 @@ namespace UniLiveViewer
         /// <returns></returns>
         public bool GetNowCharaName(out string name)
         {
-            if (_listChara[CurrentChara])
+            if (_currentCharaList[_charaIndex])
             {
-                name = _listChara[CurrentChara].charaInfoData.viewName;
+                name = _currentCharaList[_charaIndex].charaInfoData.viewName;
                 return true;
             }
             else
@@ -450,7 +489,7 @@ namespace UniLiveViewer
         /// <returns></returns>
         public DanceInfoData GetNowAnimeInfo()
         {
-            return _danceAniClipInfo[CurrentAnime];
+            return _currentAnimeList[_animeIndex];
         }
     }
 }

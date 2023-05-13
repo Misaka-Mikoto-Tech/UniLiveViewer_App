@@ -299,7 +299,7 @@ namespace UniLiveViewer
                 hand.FoeceGrabEnd();//強制離す
 
                 //アタッチ成功かつマニュアルモード
-                if (_timelineInfo.isManualMode() && grabObj.GetComponent<DecorationItemInfo>().TryAttachment())
+                if (_timelineInfo.IsManualMode && grabObj.GetComponent<DecorationItemInfo>().TryAttachment())
                 {
                     //手なら握らせる
                     if (grabObj.hitCollider.name.Contains("Hand"))

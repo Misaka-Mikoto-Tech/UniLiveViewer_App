@@ -149,7 +149,7 @@ namespace UniLiveViewer
                     if (!_lineSelector.hitCollider.collider) return;
 
                     //対象オブジェクトをフィールドから削除する
-                    _timeline.DeleteBindAsset(_lineSelector.hitCollider.transform.GetComponent<CharaController>());
+                    _timeline.TryDeleteCaracter(_lineSelector.hitCollider.transform.GetComponent<CharaController>());
 
                     //色更新
                     _lineSelector.SetMaterial(true);
@@ -212,9 +212,9 @@ namespace UniLiveViewer
                         //掴みを離す基本機能
                         base.GrabEnd();
 
+                        var trackNo = _timeline.TryGetFreeTrack();
                         //フリートラックがなければPortalに戻す
-                        string freeTrack;
-                        if (!_timeline.isFreeTrack(out freeTrack))
+                        if (trackNo is null)
                         {
                             PortalBack(keepChara);
                             //離す音
@@ -223,11 +223,11 @@ namespace UniLiveViewer
                         }
 
                         //セレクターの座標と角度を取得
-                        Vector3 pos = _lineSelector.LineEndAnchor.position;
-                        Vector3 eulerAngles = _lineSelector.LineEndAnchor.rotation.eulerAngles;
+                        var pos = _lineSelector.LineEndAnchor.position;
+                        var eulerAngles = _lineSelector.LineEndAnchor.rotation.eulerAngles;
 
                         //移行に失敗ならPortalに戻す
-                        if (!_timeline.TransferPlayableAsset(keepChara, freeTrack, pos, eulerAngles))
+                        if (!_timeline.TransferPlayableAsset(keepChara, trackNo, pos, eulerAngles))
                         {
                             PortalBack(keepChara);
                             //離す音

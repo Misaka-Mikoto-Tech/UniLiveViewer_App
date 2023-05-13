@@ -9,18 +9,24 @@ using UnityEngine.Timeline;
 
 namespace UniLiveViewer
 {
+    // NOTE: まだカオス
     public class TimelineController : MonoBehaviour
     {
-        public string PortalBaseAniTrack => sPortalBaseAniTrack;
-        const string sPortalBaseAniTrack = "Animation Track_Portal";
-        Dictionary<string, int> _map = new Dictionary<string, int>
+        /// <summary>
+        /// ポータルキャラのindex
+        /// </summary>
+        public static int PORTAL_INDEX = 0;
+
+        const string ANIMATION_TRACK_PORTAL = "Animation Track_Portal";
+
+        Dictionary<int, string> _trackNameMap = new Dictionary<int, string>()
         {
-            {sPortalBaseAniTrack,0},
-            {"Animation Track1",1},
-            {"Animation Track2",2},
-            {"Animation Track3",3},
-            {"Animation Track4",4},
-            {"Animation Track5",5},
+            {0,ANIMATION_TRACK_PORTAL},
+            {1,"Animation Track1"},
+            {2,"Animation Track2"},
+            {3,"Animation Track3"},
+            {4,"Animation Track4"},
+            {5,"Animation Track5"},
         };
 
         const string assetName_MainAudio = "Main Audio";
@@ -37,60 +43,39 @@ namespace UniLiveViewer
         const string SUBCLIP2 = "FaceClip";
         const string SUBCLIP3 = "LipClip";
 
-        /// <summary>
-        /// ポータルキャラのindex
-        /// </summary>
-        public static int PORTAL_INDEX = 0;
-
         PlayableDirector _playableDirector;
-        TimelineAsset timeLineAsset;//タイムラインアセットにアクセス用
+        TimelineAsset _timeLineAsset;//タイムラインアセットにアクセス用
 
         /// <summary>
         /// トラックにバインドされているキャラ
+        /// TODO: 2重管理..うっ...改善したい
         /// </summary>
-        [SerializeField] CharaController[] _bindCharacters = new CharaController[6];
-        /// <summary>
-        /// トラックから指定キャラを取得
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        public CharaController GetCharacter(int index)
-        {
-            return _bindCharacters[index];
-        }
-        /// <summary>
-        /// timeline上でのキャラ上限、今6決め打ち
-        /// </summary>
-        /// <returns></returns>
-        public int CharacterCount()
-        {
-            return _bindCharacters.Length;
-        }
+        public IReadOnlyDictionary<int, CharaController> BindCharaMap => _bindCharaMap;
+        Dictionary<int, CharaController> _bindCharaMap = Enumerable.Range(0, 6).ToDictionary(i => i, i => (CharaController)null);
+
         /// <summary>
         /// フィールドの現在キャラ数
         /// </summary>
         public int FieldCharaCount => _fieldCharaCount;
         int _fieldCharaCount = 1;
+
         /// <summary>
         /// フィールドに存在できる最大キャラ数
         /// </summary>
         public int MaxFieldChara => _maxFieldChara;
         int _maxFieldChara = 1;
-        /// <summary>
-        /// ポータル枠にキャラが存在するか
-        /// </summary>
-        /// <returns></returns>
-        public bool IsPortalChara() { return _bindCharacters[PORTAL_INDEX]; }
+
+        public CharaController GetCharacterInPortal => _bindCharaMap[PORTAL_INDEX];
 
         public event Action FieldCharaAdded;//設置キャラ数の更新時
         public event Action FieldCharaDeleted;//設置キャラ数の更新時
 
         AudioAssetManager _audioAssetManager;
         [SerializeField] AnimationClip _grabHandAnime;
-        
-        [SerializeField] double AudioClip_StartTime = 0;//セットされたaudioクリップの開始再生位置
-        double motionClip_StartTime = 3;//モーションクリップの開始再生位置(デフォルト)
-        CancellationToken cancellation_Token;
+
+        [SerializeField] double _audioClipStartTime = 0;//セットされたaudioクリップの開始再生位置
+        double _motionClipStartTime = 3;//モーションクリップの開始再生位置(デフォルト)
+        CancellationToken _cancellationToken;
 
         [Header("確認用露出(readonly)")]
         [SerializeField] float _timelineSpeed = 1.0f;
@@ -110,51 +95,51 @@ namespace UniLiveViewer
         {
             get
             {
-                _PlaybackTime = _playableDirector.time - AudioClip_StartTime;//参考用
+                _PlaybackTime = _playableDirector.time - _audioClipStartTime;//参考用
                 return _PlaybackTime;
             }
             set
             {
                 _PlaybackTime = value;
                 if (_PlaybackTime > _playableDirector.duration) _PlaybackTime = _playableDirector.duration;
-                _playableDirector.time = AudioClip_StartTime + _PlaybackTime;//タイムラインに反映
+                _playableDirector.time = _audioClipStartTime + _PlaybackTime;//タイムラインに反映
             }
         }
 
         void Awake()
         {
             _playableDirector = GetComponent<PlayableDirector>();
-            if (timeLineAsset == null) timeLineAsset = _playableDirector.playableAsset as TimelineAsset;
+            if (_timeLineAsset == null) _timeLineAsset = _playableDirector.playableAsset as TimelineAsset;
             var appConfig = GameObject.FindGameObjectWithTag("AppConfig").transform;
             _audioAssetManager = appConfig.GetComponent<AudioAssetManager>();
 
-            cancellation_Token = this.GetCancellationTokenOnDestroy();
+            _cancellationToken = this.GetCancellationTokenOnDestroy();
         }
 
         void Start()
         {
             // タイムライン内のトラック一覧を取得
-            IEnumerable<TrackAsset> tracks = timeLineAsset.GetOutputTracks();
+            var tracks = _timeLineAsset.GetOutputTracks();
 
             //メインオーディオのTrackAssetを取得
-            TrackAsset track = tracks.FirstOrDefault(x => x.name == assetName_MainAudio);
+            var track = tracks.FirstOrDefault(x => x.name == assetName_MainAudio);
 
             if (track)
             {
                 //トラック内のクリップを全取得
-                IEnumerable<TimelineClip> clips = track.GetClips();
+                var clips = track.GetClips();
                 // 指定名称のクリップを抜き出す
-                TimelineClip danceClip = clips.FirstOrDefault(x => x.displayName == "Main Audio Clip");
+                var danceClip = clips.FirstOrDefault(x => x.displayName == "Main Audio Clip");
                 //開始位置を取得
-                danceClip.start = motionClip_StartTime + 2;
-                AudioClip_StartTime = danceClip.start;
+                danceClip.start = _motionClipStartTime + 2;
+                _audioClipStartTime = danceClip.start;
             }
             else
             {
                 Debug.Log("メインオーディオが見つかりません");
             }
 
-            NextAudioClip(true,0).Forget();
+            NextAudioClip(_cancellationToken, true, 0).Forget();
 
             //開幕は停止しておく
             TimelineBaseReturn();
@@ -168,27 +153,74 @@ namespace UniLiveViewer
 #endif
         }
 
-        public void DestoryPortalChara()
+        /// <summary>
+        /// キャラクリア(※ポータル限定)
+        /// NOTE: カウントしないのも必要
+        /// </summary>
+        public void ClearCaracter()
         {
-            //既存キャラがいれば削除しておく
-            if (_bindCharacters[PORTAL_INDEX])
+            var portalChara = GetCharacterInPortal;
+            if (!portalChara) return;
+            Destroy(portalChara.gameObject);
+            _bindCharaMap[PORTAL_INDEX] = null;
+        }
+
+        /// <summary>
+        /// キャラ削除
+        /// NOTE: UnlockBindingAssetとまとめられない？
+        /// </summary>
+        /// <param name="charaController"></param>
+        public void TryDeleteCaracter(CharaController charaController)
+        {
+            if (!charaController) return;
+
+            for (int i = 0; i < _bindCharaMap.Count; i++)
             {
-                Destroy(_bindCharacters[PORTAL_INDEX].gameObject);
-                _bindCharacters[PORTAL_INDEX] = null;
+                if (_bindCharaMap[i] != charaController) continue;
+                Destroy(charaController.gameObject);
+                _bindCharaMap[i] = null;
+                break;
+            }
+
+            _fieldCharaCount--;
+            FieldCharaDeleted?.Invoke();
+        }
+
+        /// <summary>
+        /// nullバインドでキャラ解除
+        /// NOTE: TryDeleteCaracterとまとめられない？
+        /// </summary>
+        /// <param name="charaController"></param>
+        public void UnlockBindingAsset(CharaController charaController)
+        {
+            if (!charaController) return;
+
+            // バインド解除
+            var outputs = _playableDirector.playableAsset.outputs;
+            var fromBaseAnime = outputs.FirstOrDefault(x => x.streamName == charaController.BindTrackName);
+            _playableDirector.SetGenericBinding(fromBaseAnime.sourceObject, null);
+
+            // 管理から削除
+            for (int i = 0; i < _bindCharaMap.Count; i++)
+            {
+                if (!_bindCharaMap[i]) continue;
+                if (_bindCharaMap[i].BindTrackName != charaController.BindTrackName) continue;
+                _bindCharaMap[i] = null;
+                break;
             }
         }
 
         /// <summary>
-        /// 顔モーフの有効無効を切り替える
+        /// 顔モーフの有効無効を切り替える(※ポータル限定)
         /// </summary>
         /// <param name="isFace">表情か口パクか</param>
         /// <param name="isEnable"></param>
-        public void SetMouthUpdate_Portal(bool isFace, bool isEnable)
+        public void SetMouthUpdate(bool isFace, bool isEnable)
         {
-            var bindChara = _bindCharacters[PORTAL_INDEX];
+            var bindChara = _bindCharaMap[PORTAL_INDEX];
             if (!bindChara) return;
 
-            var vmdPlayer = _bindCharacters[PORTAL_INDEX].GetComponent<VMDPlayer_Custom>();
+            var vmdPlayer = bindChara.GetComponent<VMDPlayer_Custom>();
             if (bindChara.charaInfoData.formatType != CharaInfoData.FORMATTYPE.VRM) return;
 
             //VMD再生中
@@ -225,114 +257,127 @@ namespace UniLiveViewer
             }
         }
 
-        public void ClearPortal()
-        {
-            IEnumerable<PlayableBinding> outputs = _playableDirector.playableAsset.outputs;
-            //ポータル用BaseAnimeのPlayableBindingを取得
-            PlayableBinding Asset_BaseAnime = outputs.FirstOrDefault(x => x.streamName == sPortalBaseAniTrack);
-            //bindを解除
-            _playableDirector.SetGenericBinding(Asset_BaseAnime.sourceObject, null);
-            _bindCharacters[PORTAL_INDEX] = null;
-        }
-
         /// <summary>
-        /// 新規キャラをポータル枠にバインドする
+        /// 新規キャラをバインドする(※ポータル限定)
         /// </summary>
         /// <param name="bindObject"></param>
         /// <returns></returns>
-        public bool NewAssetBinding_Portal(CharaController bindChara)
+        public bool BindingNewAsset(CharaController bindChara)
         {
-            if (!bindChara) return false;//失敗(nullバインドの必要なし)
+            if (!bindChara) return false;
 
-            IEnumerable<PlayableBinding> outputs = _playableDirector.playableAsset.outputs;
-            //ポータル用BaseAnimeのPlayableBindingを取得
-            PlayableBinding Asset_BaseAnime = outputs.FirstOrDefault(x => x.streamName == sPortalBaseAniTrack);
+            // ポータル枠を削除しておく
+            ClearCaracter();
 
-            if (Asset_BaseAnime.streamName != "")
-            {
-                //オブジェクトをバインドする
-                _playableDirector.SetGenericBinding(Asset_BaseAnime.sourceObject, bindChara.gameObject);
-                //CharaListにセット
-                _bindCharacters[PORTAL_INDEX] = bindChara;
-                //バインド情報を付与
-                bindChara.BindTrackName = sPortalBaseAniTrack;
-                //chara.bindTrackName_LipSync = "LipSync Track_Portal";
-            }
-            else
+            //ポータルのPlayableBindingを取得
+            var outputs = _playableDirector.playableAsset.outputs;
+            var assetBaseAnime = outputs.FirstOrDefault(x => x.streamName == _trackNameMap[0]);
+            if (assetBaseAnime.streamName == "")
             {
                 Debug.Log("システム設定エラー、キャラ登録枠が見つかりません。PlayableBinding名を見直してください");
                 return false;
             }
 
-            //マニュアル状態なら
+            //オブジェクトをバインドする
+            _playableDirector.SetGenericBinding(assetBaseAnime.sourceObject, bindChara.gameObject);
+            _bindCharaMap[PORTAL_INDEX] = bindChara;
+            bindChara.BindTrackName = _trackNameMap[0];
+            //chara.bindTrackName_LipSync = "LipSync Track_Portal";
+
+            //マニュアル状態ならアニメーターコントローラーを解除しておく
             if (_playableDirector.timeUpdateMode == DirectorUpdateMode.Manual)
             {
-                //アニメーターコントローラーを解除しておく
                 RemoveCharasAniCon().Forget();
             }
-
-            return true;//成功
+            return true;
         }
 
         /// <summary>
-        /// 新規アニメーションをポータル枠にバインドする
+        /// 新規アニメーションクリップをバインドする(※ポータル限定)
+        /// NOTE: 全く切り替わらなくなったらEditorでトラックごと作り直したら直った...
         /// </summary>
         /// <param name="baseAniTrackName"></param>
-        /// <param name="baseAniClip"></param>
-        /// <param name="overrideAniClips"></param>
-        /// <param name="initPos"></param>
-        /// <param name="initEulerAngles"></param>
-        public void SetAnimationClip(string baseAniTrackName, DanceInfoData danceInfoData)
+        /// <param name="danceInfoData"></param>
+        public void BindingNewAnimationClip(DanceInfoData danceInfoData)
         {
             // タイムライン内のトラック一覧を取得
-            if (timeLineAsset == null) timeLineAsset = _playableDirector.playableAsset as TimelineAsset;
-            IEnumerable<TrackAsset> tracks = timeLineAsset.GetOutputTracks();
+            if (_timeLineAsset == null) _timeLineAsset = _playableDirector.playableAsset as TimelineAsset;
+            var tracks = _timeLineAsset.GetOutputTracks().OfType<AnimationTrack>();
+
+            var baseAniTrackName = _trackNameMap[0];
 
             //BaseAnimeのTrackAssetを取得
-            TrackAsset track = tracks.FirstOrDefault(x => x.name == baseAniTrackName);
+            var track = tracks.FirstOrDefault(x => x.name == baseAniTrackName);
+            if (!track) return;
 
-            if (track)
-            {
-                //トラック内のクリップを全取得
-                IEnumerable<TimelineClip> clips = track.GetClips();
-                // 指定名称のクリップを抜き出す
-                TimelineClip danceClip = clips.FirstOrDefault(x => x.displayName == MAINCLIP);
-                danceClip.start = motionClip_StartTime + danceInfoData.motionOffsetTime;
+            //トラック内のクリップを全取得
+            var clips = track.GetClips();
+            // 指定名称のクリップを抜き出す
+            var danceClip = clips.FirstOrDefault(x => x.displayName == MAINCLIP);
+            danceClip.start = _motionClipStartTime + danceInfoData.motionOffsetTime;
 
-                //登録する
-                //danceClip.asset = baseAniClip; これダメ
-                AnimationPlayableAsset animationPlayableAsset = danceClip.asset as AnimationPlayableAsset;
-                if (!danceInfoData.isReverse) animationPlayableAsset.clip = danceInfoData.baseDanceClip;
-                else animationPlayableAsset.clip = danceInfoData.baseDanceClip_reverse;
+            //登録する
+            var animationPlayableAsset = danceClip.asset as AnimationPlayableAsset;
+            animationPlayableAsset.clip = danceInfoData.isReverse ?
+                danceInfoData.baseDanceClip_reverse : danceInfoData.baseDanceClip;
 
-                //animationPlayableAsset.position = initPos;
-                //animationPlayableAsset.rotation = Quaternion.Euler(initEulerAngles);
+            //オーバーライドアニメーションを登録する
+            SetAnimationClip_Override(track, danceInfoData);
 
-                //(danceClip.asset as AnimationPlayableAsset).clip = animationClip;
+            TimeLineReStart();
+        }
 
-                //オーバーライドアニメーションを登録する
-                SetAnimationClip_Override(track, danceInfoData);
+        /// <summary>
+        /// 既存アニメーションを別枠にバインドする
+        /// </summary>
+        /// <param name="baseAniTrackName"></param>
+        /// <param name="danceInfoData"></param>
+        /// <param name="initPos"></param>
+        /// <param name="initEulerAngles"></param>
+        public void SetAnimationClip(string baseAniTrackName, DanceInfoData danceInfoData, Vector3 initPos, Vector3 initEulerAngles)
+        {
+            // タイムライン内のトラック一覧を取得
+            if (_timeLineAsset == null) _timeLineAsset = _playableDirector.playableAsset as TimelineAsset;
+            var tracks = _timeLineAsset.GetOutputTracks().OfType<AnimationTrack>();
 
-                //反映の為にディレクターをリスタートする
-                TimeLineReStart();
-            }
+            //BaseAnimeのTrackAssetを取得
+            var track = tracks.FirstOrDefault(x => x.name == baseAniTrackName);
+            if (!track) return;
+
+            //トラック内のクリップを全取得
+            var clips = track.GetClips();
+            // 指定名称のクリップを抜き出す
+            var danceClip = clips.FirstOrDefault(x => x.displayName == MAINCLIP);
+            danceClip.start = _motionClipStartTime + danceInfoData.motionOffsetTime;
+
+            //登録する
+            var animationPlayableAsset = danceClip.asset as AnimationPlayableAsset;
+            animationPlayableAsset.clip = danceInfoData.isReverse ?
+                danceInfoData.baseDanceClip_reverse : danceInfoData.baseDanceClip;
+
+            animationPlayableAsset.position = initPos;
+            animationPlayableAsset.rotation = Quaternion.Euler(initEulerAngles);
+
+            //オーバーライドアニメーションを登録する
+            SetAnimationClip_Override(track, danceInfoData);
+
+            TimeLineReStart();
         }
 
         /// <summary>
         /// 上書きするアニメーションを順番に登録する
+        /// TODO: 綺麗にする
         /// </summary>
         /// <param name="parentTrack">ベースになるTrack</param>
         /// <param name="overrideAniClips">上書きしたいアニメーション</param>
-        void SetAnimationClip_Override(TrackAsset parentTrack, DanceInfoData danceClipInfo)
+        void SetAnimationClip_Override(TrackAsset parentTrack, DanceInfoData danceInfoData)
         {
             TimelineClip handClip;
 
             //上書きするトラックを処理する
-            foreach (var subTrack in parentTrack.GetChildTracks())
+            foreach (var subTrack in parentTrack.GetChildTracks().OfType<AnimationTrack>())
             {
-                // トラック内のクリップ一覧を取得
-                IEnumerable<TimelineClip> clips = subTrack.GetClips();
-
+                var clips = subTrack.GetClips();
                 switch (subTrack.name)
                 {
                     case SUBTRACK0:
@@ -340,16 +385,17 @@ namespace UniLiveViewer
                         handClip = clips.FirstOrDefault(x => x.displayName == SUBCLIP0);
 
                         //キャラが既に握りなら
-                        if (_bindCharacters[PORTAL_INDEX] && _bindCharacters[PORTAL_INDEX].CachedClip_handL)
+                        if (_bindCharaMap[PORTAL_INDEX] && _bindCharaMap[PORTAL_INDEX].CachedClip_handL)
                         {
 
                         }
                         else
                         {
                             //登録する
-                            if (!danceClipInfo.isReverse) (handClip.asset as AnimationPlayableAsset).clip = danceClipInfo.overrideClip_hand;
-                            else (handClip.asset as AnimationPlayableAsset).clip = danceClipInfo.overrideClip_reverseHand;
-                            handClip.start = motionClip_StartTime + danceClipInfo.motionOffsetTime;
+                            handClip.start = _motionClipStartTime + danceInfoData.motionOffsetTime;
+                            var animationPlayableAsset = handClip.asset as AnimationPlayableAsset;
+                            animationPlayableAsset.clip = danceInfoData.isReverse ?
+                                danceInfoData.overrideClip_reverseHand : danceInfoData.overrideClip_hand;
                         }
 
                         break;
@@ -358,34 +404,35 @@ namespace UniLiveViewer
                         handClip = clips.FirstOrDefault(x => x.displayName == SUBCLIP1);
 
                         //キャラが既に握りなら
-                        if (_bindCharacters[PORTAL_INDEX] && _bindCharacters[PORTAL_INDEX].CachedClip_handR)
+                        if (_bindCharaMap[PORTAL_INDEX] && _bindCharaMap[PORTAL_INDEX].CachedClip_handR)
                         {
 
                         }
                         else
                         {
                             //登録する
-                            if (!danceClipInfo.isReverse) (handClip.asset as AnimationPlayableAsset).clip = danceClipInfo.overrideClip_hand;
-                            else (handClip.asset as AnimationPlayableAsset).clip = danceClipInfo.overrideClip_reverseHand;
-                            handClip.start = motionClip_StartTime + danceClipInfo.motionOffsetTime;
+                            handClip.start = _motionClipStartTime + danceInfoData.motionOffsetTime;
+                            var animationPlayableAsset = handClip.asset as AnimationPlayableAsset;
+                            animationPlayableAsset.clip = danceInfoData.isReverse ?
+                                danceInfoData.overrideClip_reverseHand : danceInfoData.overrideClip_hand;
                         }
 
                         break;
                     case SUBTRACK2:
                         // 指定名称のクリップを抜き出す
-                        TimelineClip faceClip = clips.FirstOrDefault(x => x.displayName == SUBCLIP2);
+                        var faceClip = clips.FirstOrDefault(x => x.displayName == SUBCLIP2);
 
                         //登録する
-                        (faceClip.asset as AnimationPlayableAsset).clip = danceClipInfo.overrideClip_face;
-                        faceClip.start = motionClip_StartTime + danceClipInfo.motionOffsetTime;
+                        (faceClip.asset as AnimationPlayableAsset).clip = danceInfoData.overrideClip_face;
+                        faceClip.start = _motionClipStartTime + danceInfoData.motionOffsetTime;
                         break;
                     case SUBTRACK3:
                         // 指定名称のクリップを抜き出す
-                        TimelineClip lipClip = clips.FirstOrDefault(x => x.displayName == SUBCLIP3);
+                        var lipClip = clips.FirstOrDefault(x => x.displayName == SUBCLIP3);
 
                         //登録する
-                        (lipClip.asset as AnimationPlayableAsset).clip = danceClipInfo.overrideClip_lip;
-                        lipClip.start = motionClip_StartTime + danceClipInfo.motionOffsetTime;
+                        (lipClip.asset as AnimationPlayableAsset).clip = danceInfoData.overrideClip_lip;
+                        lipClip.start = _motionClipStartTime + danceInfoData.motionOffsetTime;
                         break;
                 }
             }
@@ -394,66 +441,70 @@ namespace UniLiveViewer
         /// <summary>
         /// 指定CurrentのBGMをセットする
         /// </summary>
-        public async UniTask<string> NextAudioClip(bool isPreset, int moveCurrent)
+        public async UniTask<string> NextAudioClip(CancellationToken token, bool isPreset, int moveCurrent)
         {
-            //クリップ決定
-            AudioClip newAudioClip = await _audioAssetManager.GetAudioClips(isPreset, moveCurrent);
+            token.ThrowIfCancellationRequested();
+
+            var newAudioClip = await _audioAssetManager.GetAudioClipAsync(token, isPreset, moveCurrent);
+            token.ThrowIfCancellationRequested();
 
             // タイムライン内のトラック一覧を取得
-            if (timeLineAsset == null) timeLineAsset = _playableDirector.playableAsset as TimelineAsset;
-            IEnumerable<TrackAsset> tracks = timeLineAsset.GetOutputTracks();
+            if (_timeLineAsset is null) _timeLineAsset = _playableDirector.playableAsset as TimelineAsset;
+            var tracks = _timeLineAsset.GetOutputTracks().OfType<AudioTrack>();
 
             //audioのTrackAssetを取得
-            TrackAsset track = tracks.FirstOrDefault(x => x.name == assetName_MainAudio);
+            var track = tracks.FirstOrDefault(x => x.name == assetName_MainAudio);
+            if (!track) return "";
 
-            if (track)
+            //トラック内のクリップを全取得
+            var clips = track.GetClips();
+
+            // 指定名称のクリップを抜き出す
+            var oldAudioClip = clips.FirstOrDefault(x => x.displayName != "");
+            oldAudioClip.duration = _audioClipStartTime + newAudioClip.length;//秒
+
+            //位置を調整
+            //oldAudioClip.start = dlayTime;
+
+            //更新
+            //AudioClip_StartTime = oldAudioClip.start;
+
+            //登録する
+            (oldAudioClip.asset as AudioPlayableAsset).clip = newAudioClip;
+
+            //スペクトル用
+            if (SystemInfo.sceneMode == SceneMode.CANDY_LIVE)
             {
-                //トラック内のクリップを全取得
-                IEnumerable<TimelineClip> clips = track.GetClips();
-
-                // 指定名称のクリップを抜き出す
-                TimelineClip oldAudioClip = clips.FirstOrDefault(x => x.displayName != "");
-                oldAudioClip.duration = AudioClip_StartTime + newAudioClip.length;//秒
-
-                //位置を調整
-                //oldAudioClip.start = dlayTime;
-
-                //更新
-                //AudioClip_StartTime = oldAudioClip.start;
-
-                //登録する
-                (oldAudioClip.asset as AudioPlayableAsset).clip = newAudioClip;
-
-                //スペクトル用
-                if (SystemInfo.sceneMode == SceneMode.CANDY_LIVE)
+                if (newAudioClip.name.Contains(".mp3") || newAudioClip.name.Contains(".wav"))
                 {
-                    if (newAudioClip.name.Contains(".mp3") || newAudioClip.name.Contains(".wav"))
+                    // NOTE: ランタイム上手くいかなかった
+                }
+                else
+                {
+                    for (int i = 0; i < 4; i++)
                     {
-                        //ランタイム上手くいかなかった
-                    }
-                    else
-                    {
-                        for (int i = 0; i < 4; i++)
-                        {
-                            track = tracks.FirstOrDefault(x => x.name == AUDIOTRACK[i]);
-                            clips = track.GetClips();
-                            oldAudioClip = clips.FirstOrDefault(x => x.displayName != "");
-                            oldAudioClip.duration = AudioClip_StartTime + newAudioClip.length;//秒
-                            (oldAudioClip.asset as AudioPlayableAsset).clip = newAudioClip;
-                        }
+                        track = tracks.FirstOrDefault(x => x.name == AUDIOTRACK[i]);
+                        clips = track.GetClips();
+                        oldAudioClip = clips.FirstOrDefault(x => x.displayName != "");
+                        oldAudioClip.duration = _audioClipStartTime + newAudioClip.length;//秒
+                        (oldAudioClip.asset as AudioPlayableAsset).clip = newAudioClip;
                     }
                 }
-
-                //反映の為にディレクターをリスタートする
-                TimeLineReStart();
             }
-
+            TimeLineReStart();
             return newAudioClip.name;
         }
 
-        public async UniTask<float> GetNowAudioLength(bool isPreset)
+        /// <summary>
+        /// 現在曲の長さ
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="isPreset"></param>
+        /// <returns></returns>
+        public async UniTask<float> CurrentAudioLength(CancellationToken token, bool isPreset)
         {
-            return (await _audioAssetManager.GetCurrentAudioClip(isPreset)).length;
+            token.ThrowIfCancellationRequested();
+            return (await _audioAssetManager.GetCurrentAudioClipAsycn(token, isPreset)).length;
         }
 
         /// <summary>
@@ -476,10 +527,10 @@ namespace UniLiveViewer
             }
 
             // タイムライン内のトラック一覧を取得
-            IEnumerable<TrackAsset> tracks = timeLineAsset.GetOutputTracks();
+            var tracks = _timeLineAsset.GetOutputTracks();
 
             //対象のキャラTrackAssetを取得
-            TrackAsset track = tracks.FirstOrDefault(x => x.name == charaCon.BindTrackName);
+            var track = tracks.FirstOrDefault(x => x.name == charaCon.BindTrackName);
             if (!track) return;
 
 
@@ -488,7 +539,7 @@ namespace UniLiveViewer
                 //サブトラック
                 var subTrack = track.GetChildTracks().FirstOrDefault(x => x.name == SUBTRACK0);
                 //指定クリップ
-                TimelineClip handClip = subTrack.GetClips().FirstOrDefault(x => x.displayName == SUBCLIP0);
+                var handClip = subTrack.GetClips().FirstOrDefault(x => x.displayName == SUBCLIP0);
                 //握る
                 if (isGrabHand)
                 {
@@ -507,7 +558,7 @@ namespace UniLiveViewer
                 //サブトラック
                 var subTrack = track.GetChildTracks().FirstOrDefault(x => x.name == SUBTRACK1);
                 //指定クリップ
-                TimelineClip handClip = subTrack.GetClips().FirstOrDefault(x => x.displayName == SUBCLIP1);
+                var handClip = subTrack.GetClips().FirstOrDefault(x => x.displayName == SUBCLIP1);
                 //握る
                 if (isGrabHand)
                 {
@@ -521,8 +572,6 @@ namespace UniLiveViewer
                     charaCon.CachedClip_handR = null;
                 }
             }
-
-            //反映の為にディレクターをリスタートする
             TimeLineReStart();
         }
 
@@ -534,156 +583,124 @@ namespace UniLiveViewer
         /// <param name="initPos"></param>
         /// <param name="initEulerAngles"></param>
         /// <returns></returns>
-        public bool TransferPlayableAsset(CharaController transferChara, string toTrackName, Vector3 initPos, Vector3 initEulerAngles)
+        public bool TransferPlayableAsset(CharaController transferChara, int? toTrackNo, Vector3 initPos, Vector3 initEulerAngles)
         {
-            DanceInfoData danceInfoData = new DanceInfoData();
+            // 転送元情報
+            var srcData = TryGetDanceInfoData(transferChara);
+            if (srcData is null) return false;
 
-            // タイムライン内のトラック一覧を取得
-            IEnumerable<TrackAsset> tracks = timeLineAsset.GetOutputTracks();
+            // 表情系をリセットしておく
+            transferChara.FacialSync.MorphReset();
+            transferChara.LipSync.MorphReset();
 
-            //転送するキャラのTrackAssetを取得
-            TrackAsset track = tracks.FirstOrDefault(x => x.name == transferChara.BindTrackName);
-            if (!track) return false;
+            var trackName = _trackNameMap[toTrackNo.Value];
 
-            //トラック内のクリップを全取得
-            IEnumerable<TimelineClip> clips = track.GetClips();
-            // 指定名称のクリップを抜き出す
-            TimelineClip danceClip = clips.FirstOrDefault(x => x.displayName == MAINCLIP);
-            danceInfoData.motionOffsetTime = (float)(danceClip.start - motionClip_StartTime);
+            // バインド
+            UnlockBindingAsset(transferChara);
+            BindingNewAsset(transferChara, trackName);
 
-            //DanceBaseのアニメーションを取得
-            danceInfoData.baseDanceClip = (danceClip.asset as AnimationPlayableAsset).clip;
+            //アニメーションを移行(取得した転送元アニメーションで新規登録)
+            SetAnimationClip(trackName, srcData, initPos, initEulerAngles);
 
+            // RootMotionの解除
+            // NOTE: 掴んで自由に移動させる為に必要だったが、設置後は移動モーションにカクツキが生じてしまうため解除
+            // 設置座標設定後に解除しないと位置が反映されないので注意(またこの変更はアニメーターの再初期化が走る)
+            transferChara.GetComponent<Animator>().applyRootMotion = false;
+
+            _fieldCharaCount++;
+            FieldCharaAdded?.Invoke();
+
+            Debug.Log("転送成功");
+            return true;
+        }
+
+        /// <summary>
+        /// 指定キャラの関連情報を取得
+        /// </summary>
+        /// <param name="transferChara"></param>
+        DanceInfoData TryGetDanceInfoData(CharaController charaController)
+        {
+            var danceInfoData = new DanceInfoData();
+
+            // 転送するキャラのTrackAssetを特定
+            var tracks = _timeLineAsset.GetOutputTracks();
+            var mainTrack = tracks.FirstOrDefault(x => x.name == charaController.BindTrackName);
+            if (!mainTrack) return null;
+
+            // メイン候補からダンス用クリップを特定
+            // NOTE: まぁ現状1つしかないんですけど
+            var clips = mainTrack.GetClips();
+            var danceClip = clips.FirstOrDefault(x => x.displayName == MAINCLIP);
+            var animationPlayableAsset = danceClip.asset as AnimationPlayableAsset;
+            danceInfoData.baseDanceClip = animationPlayableAsset.clip;
+            danceInfoData.motionOffsetTime = (float)(danceClip.start - _motionClipStartTime);
+
+            // 各サブトラック情報をセット
             TimelineClip handClip;
-
-            //オーバーライドアニメーションを取得
-            foreach (var subTrack in track.GetChildTracks())
+            foreach (var subTrack in mainTrack.GetChildTracks())
             {
-                // トラック内のクリップ一覧を取得
                 clips = subTrack.GetClips();
 
                 switch (subTrack.name)
                 {
                     case SUBTRACK0:
-                        // 指定名称のクリップを抜き出す
                         handClip = clips.FirstOrDefault(x => x.displayName == SUBCLIP0);
                         danceInfoData.overrideClip_hand = (handClip.asset as AnimationPlayableAsset).clip;
                         break;
                     case SUBTRACK1:
-                        // 指定名称のクリップを抜き出す
                         handClip = clips.FirstOrDefault(x => x.displayName == SUBCLIP1);
                         danceInfoData.overrideClip_hand = (handClip.asset as AnimationPlayableAsset).clip;
                         break;
                     case SUBTRACK2:
-                        // 指定名称のクリップを抜き出す
-                        TimelineClip FaceClip = clips.FirstOrDefault(x => x.displayName == SUBCLIP2);
+                        var FaceClip = clips.FirstOrDefault(x => x.displayName == SUBCLIP2);
                         danceInfoData.overrideClip_face = (FaceClip.asset as AnimationPlayableAsset).clip;
                         break;
                     case SUBTRACK3:
-                        // 指定名称のクリップを抜き出す
-                        TimelineClip lipClip = clips.FirstOrDefault(x => x.displayName == SUBCLIP3);
+                        var lipClip = clips.FirstOrDefault(x => x.displayName == SUBCLIP3);
                         danceInfoData.overrideClip_lip = (lipClip.asset as AnimationPlayableAsset).clip;
                         break;
                 }
             }
+            return danceInfoData;
+        }
 
-            //表情系をリセットしておく
-            _bindCharacters[PORTAL_INDEX].LipSync.MorphReset();
-            _bindCharacters[PORTAL_INDEX].LipSync.MorphReset();
+        /// <summary>
+        /// 指定トラックにキャラをバインドする
+        /// </summary>
+        /// <param name="charaController"></param>
+        /// <param name="toTrackName"></param>
+        void BindingNewAsset(CharaController charaController, string toTrackName)
+        {
+            if (charaController is null) return;
 
-            //##### ここから転送先処理 #####
-            IEnumerable<PlayableBinding> outputs = _playableDirector.playableAsset.outputs;
-            //移行元のPlayableBindingをnullバインドで解除しておく
-            PlayableBinding fromBaseAnime = outputs.FirstOrDefault(x => x.streamName == transferChara.BindTrackName);
-            _playableDirector.SetGenericBinding(fromBaseAnime.sourceObject, null);
+            // 指定先PlayableBindingを取得
+            var outputs = _playableDirector.playableAsset.outputs;
+            var assetBaseAnime = outputs.FirstOrDefault(x => x.streamName == toTrackName);
+            if (assetBaseAnime.streamName == "") return;
 
-            //移行先の既存キャラ確認
-            for (int i = 0; i < _bindCharacters.Length; i++)
-            {
-                if (_bindCharacters[i])
-                {
-                    if (_bindCharacters[i].BindTrackName == transferChara.BindTrackName)
-                    {
-                        //転送元のリンクを解除
-                        _bindCharacters[i] = null;
-                        break;
-                    }
-                }
-            }
-
-            //移行先のPlayableBindingを取得
-            PlayableBinding toBaseAnime = outputs.FirstOrDefault(x => x.streamName == toTrackName);
-            if (toBaseAnime.streamName == "") return false;
+            // 先客がいれば削除しておく
+            var destChara = _bindCharaMap.FirstOrDefault(x => x.Value != null && x.Value.BindTrackName == toTrackName).Value;
+            if (destChara) TryDeleteCaracter(destChara);
 
             //オブジェクトを移行先にバインドする
-            _playableDirector.SetGenericBinding(toBaseAnime.sourceObject, transferChara.gameObject);
-
-            //バインド情報を付与
-            transferChara.BindTrackName = toTrackName;
-
-            //リストに登録
-            var index = _map[toTrackName];
-            _bindCharacters[index] = transferChara;
-
-            //アニメーションを移行(取得した転送元アニメーションで新規登録)
-            //SetAnimationClip(toTrackName, danceInfoData, initPos, initEulerAngles);
-            SetAnimationClip(toTrackName, danceInfoData);
-
-            //RootMotionの解除
-            //掴んで自由に移動させる為に必要だったが、設置後は移動モーションにカクツキが生じてしまうため解除
-            //設置座標設定後に解除しないと位置が反映されないので注意(またこの変更はアニメーターの再初期化が走る)
-            transferChara.GetComponent<Animator>().applyRootMotion = false;
-
-            //座標系はRootMotion変更後
-            transferChara.transform.position = initPos;
-            transferChara.transform.rotation = Quaternion.Euler(initEulerAngles);
-
-            //フィールドカウンター
-            _fieldCharaCount++;
-            FieldCharaAdded?.Invoke();
-
-            Debug.Log("転送成功");
-
-            return true;
+            _playableDirector.SetGenericBinding(assetBaseAnime.sourceObject, charaController.gameObject);
+            charaController.BindTrackName = toTrackName;
+            var index = _trackNameMap.FirstOrDefault(x => x.Value == toTrackName).Key;
+            _bindCharaMap[index] = charaController;
         }
 
         /// <summary>
-        /// トラックバインドキャラを削除する
+        /// ID一致するVRMを全て削除(※Prefab削除時)
         /// </summary>
-        /// <param name="chara"></param>
-        public void DeleteBindAsset(CharaController chara)
+        /// <param name="id"></param>
+        public void DeletebindAsset_CleanUp(int id)
         {
-            if (!chara) return;
-
-            for (int i = 0; i < _bindCharacters.Length; i++)
+            for (int i = 0; i < _bindCharaMap.Count; i++)
             {
-                if (chara == _bindCharacters[i])
+                if (_bindCharaMap[i] && id == _bindCharaMap[i].charaInfoData.vrmID)
                 {
-                    _bindCharacters[i] = null;
-                    break;
-                }
-            }
-            Destroy(chara.gameObject);
-
-            //フィールドカウンター
-            _fieldCharaCount--;
-            FieldCharaDeleted?.Invoke();
-        }
-
-        /// <summary>
-        /// ID一致でバインドアセットを削除
-        /// </summary>
-        /// <param name="chara"></param>
-        public void DeletebindAsset_CleanUp(int _id)
-        {
-            for (int i = 0; i < _bindCharacters.Length; i++)
-            {
-                if (_bindCharacters[i] && _id == _bindCharacters[i].charaInfoData.vrmID)
-                {
-                    Destroy(_bindCharacters[i].gameObject);
-                    _bindCharacters[i] = null;
-
-                    //フィールドカウンター
+                    Destroy(_bindCharaMap[i].gameObject);
+                    _bindCharaMap[i] = null;
                     if (i != PORTAL_INDEX) _fieldCharaCount--;
                 }
             }
@@ -691,20 +708,19 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// Field上のラックバインドキャラを削除する
+        /// 全ての召喚キャラをクリア
         /// </summary>
         public void DeletebindAsset_FieldAll()
         {
-            for (int i = 0; i < _bindCharacters.Length; i++)
+            for (int i = 0; i < _bindCharaMap.Count; i++)
             {
                 if (i == PORTAL_INDEX) continue;
-                if (_bindCharacters[i])
+                if (_bindCharaMap[i])
                 {
-                    Destroy(_bindCharacters[i].gameObject);
-                    _bindCharacters[i] = null;
+                    Destroy(_bindCharaMap[i].gameObject);
+                    _bindCharaMap[i] = null;
                 }
             }
-            //フィールドカウンター
             _fieldCharaCount = 0;
             FieldCharaDeleted?.Invoke();
         }
@@ -713,30 +729,28 @@ namespace UniLiveViewer
         /// 空いているトラックを探す
         /// </summary>
         /// <returns></returns>
-        public bool isFreeTrack(out string freeTrack)
+        public int? TryGetFreeTrack()
         {
-            freeTrack = "";
-            for (int i = 1; i < _bindCharacters.Length; i++)
+            for (int i = 1; i < _bindCharaMap.Count; i++)
             {
-                if (_bindCharacters[i]) continue;
-                freeTrack = _map.FirstOrDefault(x => x.Value == i).Key;
-                return true;
+                if (_bindCharaMap[i]) continue;
+                return i;
             }
-            return false;
+            return null;
         }
 
         /// <summary>
         /// タイムラインの変更内容を強制的?に反映させる
         /// AnimationClip変更だけ反映されないためリスタートが必要
-        /// ・・・ランタイムは無理?って見かけたけど試してみたらいけたっていう
+        /// NOTE:ランタイムは無理?って見かけたけど試してみたらいけたっていう
         /// </summary>
         void TimeLineReStart()
         {
             //再生時間の記録
-            double keepTime = _playableDirector.time;
+            var keepTime = _playableDirector.time;
             //初期化して入れ直し(これでいけちゃう謎)
             _playableDirector.playableAsset = null;
-            _playableDirector.playableAsset = timeLineAsset;
+            _playableDirector.playableAsset = _timeLineAsset;
 
             //前回の続きを指定
             _playableDirector.time = keepTime;
@@ -755,7 +769,7 @@ namespace UniLiveViewer
                 //速度更新
                 //TimelineSpeedUpdate();
             }
-            if (_playableDirector.timeUpdateMode == DirectorUpdateMode.Manual)
+            else if (_playableDirector.timeUpdateMode == DirectorUpdateMode.Manual)
             {
                 //更新
                 _playableDirector.Evaluate();
@@ -768,11 +782,11 @@ namespace UniLiveViewer
         public void TimelinePlay()
         {
             //表情系をリセットしておく
-            foreach (var chara in _bindCharacters)
+            foreach (var chara in _bindCharaMap)
             {
-                if (!chara) continue;
-                chara.FacialSync.MorphReset();
-                chara.LipSync.MorphReset();
+                if (chara.Value is null) continue;
+                chara.Value.FacialSync.MorphReset();
+                chara.Value.LipSync.MorphReset();
             }
 
             //モードをマニュアルからゲームタイマーへ
@@ -825,7 +839,7 @@ namespace UniLiveViewer
         /// <returns></returns>
         async UniTask ManualUpdate()
         {
-            double keepVal = AudioClip_PlaybackTime;
+            var keepVal = AudioClip_PlaybackTime;
 
             while (_playableDirector.timeUpdateMode == DirectorUpdateMode.Manual)
             {
@@ -838,15 +852,15 @@ namespace UniLiveViewer
                     //キープの更新
                     keepVal = AudioClip_PlaybackTime;
                 }
-                await UniTask.Delay(100,cancellationToken: cancellation_Token);
+                await UniTask.Delay(100, cancellationToken: _cancellationToken);
             }
 
             //AnimatorControllerを戻す
             //Manual状態で戻すと一瞬初期座標に移動してチラついてしまう為、このタイミングで実行
-            for (int i = 0; i < _bindCharacters.Length; i++)
+            for (int i = 0; i < _bindCharaMap.Count; i++)
             {
-                if (!_bindCharacters[i]) continue;
-                _bindCharacters[i].ReturnRunAnime();
+                if (!_bindCharaMap[i]) continue;
+                _bindCharaMap[i].ReturnRunAnime();
             }
         }
 
@@ -859,10 +873,10 @@ namespace UniLiveViewer
             //マニュアル状態のみ
             if (_playableDirector.timeUpdateMode != DirectorUpdateMode.Manual) return;
 
-            foreach (var chara in _bindCharacters)
+            foreach (var chara in _bindCharaMap)
             {
-                if (chara == null) continue;
-                chara.GetComponent<AttachPointGenerator>().SetActive_AttachPoint(isActive);
+                if (chara.Value == null) continue;
+                chara.Value.GetComponent<AttachPointGenerator>().SetActive_AttachPoint(isActive);
             }
         }
 
@@ -874,17 +888,17 @@ namespace UniLiveViewer
             //マニュアルモードでなければ処理しない
             if (_playableDirector.timeUpdateMode != DirectorUpdateMode.Manual) return;
 
-            await UniTask.Yield(PlayerLoopTiming.Update, cancellation_Token);//必要、VRMのAwakeが間に合わない
+            await UniTask.Yield(PlayerLoopTiming.Update, _cancellationToken);//必要、VRMのAwakeが間に合わない
 
             //TimeLineと競合っぽいのでAnimatorControllerを解除しておく 
-            for (int i = 0; i < _bindCharacters.Length; i++)
+            for (int i = 0; i < _bindCharaMap.Count; i++)
             {
-                if (!_bindCharacters[i]) continue;
-                _bindCharacters[i].RemoveRunAnime();
+                if (!_bindCharaMap[i]) continue;
+                _bindCharaMap[i].RemoveRunAnime();
             }
 
             //ワンフレーム後にアニメーションの状態を1回だけ更新
-            await UniTask.Yield(PlayerLoopTiming.Update, cancellation_Token);
+            await UniTask.Yield(PlayerLoopTiming.Update, _cancellationToken);
             _playableDirector.Evaluate();
         }
     }

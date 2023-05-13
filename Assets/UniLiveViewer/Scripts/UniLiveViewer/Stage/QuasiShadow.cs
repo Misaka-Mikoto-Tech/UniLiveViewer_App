@@ -73,7 +73,7 @@ namespace UniLiveViewer
                 bounds.Expand(100);
                 meshFilter.mesh.bounds = bounds;
 
-                _shadowDatas = new ShadowData[_timelineInfo.CharacterCount()];
+                _shadowDatas = new ShadowData[_timelineInfo.CharacterCount];
                 for (int i = 0; i < _shadowDatas.Length; i++)
                 {
                     _shadowDatas[i] = new ShadowData();

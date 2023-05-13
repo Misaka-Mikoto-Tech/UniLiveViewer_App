@@ -53,7 +53,7 @@ namespace UniLiveViewer
         void Init()
         {
             if (target) return;
-            for (int i = 0;i< _timelineInfo.CharacterCount(); i++)
+            for (int i = 0;i< _timelineInfo.CharacterCount; i++)
             {
                 if (i == TimelineController.PORTAL_INDEX) continue;
                 var chara = _timelineInfo.GetCharacter(i);

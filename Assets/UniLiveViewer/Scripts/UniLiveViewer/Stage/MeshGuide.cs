@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace UniLiveViewer
 {
@@ -43,7 +43,7 @@ namespace UniLiveViewer
                 _timeline.FieldCharaAdded += Update_BodyData;
                 _timeline.FieldCharaDeleted += Update_BodyData;
 
-                pair = new Pair[_timelineInfo.CharacterCount()];
+                pair = new Pair[_timelineInfo.CharacterCount];
                 for (int i = 0; i < pair.Length; i++)
                 {
                     pair[i] = new Pair();

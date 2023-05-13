@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Playables;
 
 namespace UniLiveViewer
@@ -6,7 +6,7 @@ namespace UniLiveViewer
     // NOTE:controller側がカオスなので一端雑に分離
     public class TimelineInfo : MonoBehaviour
     {
-        public string PortalBaseAniTrack => _timeline.PortalBaseAniTrack;
+        TimelineController _timeline;
 
         public PlayableDirector GetPlayableDirector => _playableDirector;
         PlayableDirector _playableDirector;
@@ -16,19 +16,13 @@ namespace UniLiveViewer
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public CharaController GetCharacter(int index)
-        {
-            return _timeline.GetCharacter(index);
-        }
+        public CharaController GetCharacter(int index) => _timeline.BindCharaMap[index];
 
         /// <summary>
         /// timeline上でのキャラ上限、今6決め打ち
         /// </summary>
         /// <returns></returns>
-        public int CharacterCount()
-        {
-            return _timeline.CharacterCount();
-        }
+        public int CharacterCount => _timeline.BindCharaMap.Count;
 
         /// <summary>
         /// フィールドの現在キャラ数
@@ -40,23 +34,12 @@ namespace UniLiveViewer
         /// </summary>
         public int MaxFieldChara => _timeline.MaxFieldChara;
 
-        /// <summary>
-        /// ポータル枠にキャラが存在するか
-        /// </summary>
-        /// <returns></returns>
-        public bool IsPortalChara() { return _timeline.IsPortalChara(); }
-
-        TimelineController _timeline;
+        public bool IsManualMode => _playableDirector.timeUpdateMode == DirectorUpdateMode.Manual;
 
         void Awake()
         {
             _timeline = GetComponent<TimelineController>();
             _playableDirector = GetComponent<PlayableDirector>();
-        }
-
-        public bool isManualMode()
-        {
-            return _playableDirector.timeUpdateMode == DirectorUpdateMode.Manual;
         }
     }
 }

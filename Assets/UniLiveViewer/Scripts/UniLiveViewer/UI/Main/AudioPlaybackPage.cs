@@ -1,16 +1,21 @@
-﻿using UnityEngine;
-using NanaCiel;
-using UnityEngine.Playables;
 using Cysharp.Threading.Tasks;
+using NanaCiel;
 using System.Threading;
+using UnityEngine;
+using UnityEngine.Playables;
 using VContainer;
 
 namespace UniLiveViewer
 {
+    /// <summary>
+    /// TODO: 変数名
+    /// </summary>
     public class AudioPlaybackPage : MonoBehaviour
     {
-        [SerializeField] MenuManager menuManager;
+        [SerializeField] MenuManager _menuManager;
         [SerializeField] Button_Base[] btn_jumpList;
+        [SerializeField] Button_Switch[] _switchAudio = new Button_Switch[2];
+        bool _isPresetAudio;
 
         [SerializeField] Button_Base[] btn_Audio = new Button_Base[2];
         [SerializeField] Button_Base btnS_Play = null;
@@ -25,11 +30,12 @@ namespace UniLiveViewer
         PlayerStateManager _playerStateManager;
         AudioAssetManager _audioAssetManager;
 
-        CancellationTokenSource cts;
+        CancellationToken _cancellationToken;
 
         void Awake()
         {
-            
+            _isPresetAudio = true;
+            _cancellationToken = this.GetCancellationTokenOnDestroy();
         }
 
         void OnEnable()
@@ -47,7 +53,7 @@ namespace UniLiveViewer
             var player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerLifetimeScope>();
             _playerStateManager = player.Container.Resolve<PlayerStateManager>();
 
-            _timeline = menuManager.timeline;
+            _timeline = _menuManager.timeline;
             _timelineInfo = _timeline.GetComponent<TimelineInfo>();
 
             //再生スライダーに最大値を設定
@@ -58,17 +64,24 @@ namespace UniLiveViewer
             {
                 e.onTrigger += OpenJumplist;
             }
-            menuManager.jumpList.onSelect += (jumpCurrent) =>
+            _menuManager.jumpList.onSelect += (jumpCurrent) =>
             {
-                int moveIndex = 0;
-                switch (menuManager.jumpList.target)
+                var moveIndex = 0;
+                switch (_menuManager.jumpList.target)
                 {
                     case JumpList.TARGET.AUDIO:
-                        moveIndex = jumpCurrent - _audioAssetManager.CurrentCustom;
-                        ChangeAuido(moveIndex);
+                        if (_isPresetAudio)
+                        {
+                            moveIndex = jumpCurrent - _audioAssetManager.CurrentPreset;
+                        }
+                        else
+                        {
+                            moveIndex = jumpCurrent - _audioAssetManager.CurrentCustom;
+                        }
+                        ChangeAuido(_isPresetAudio, moveIndex);
                         break;
                 }
-                menuManager.PlayOneShot(SoundType.BTN_CLICK);
+                _menuManager.PlayOneShot(SoundType.BTN_CLICK);
             };
 
             //その他
@@ -81,7 +94,7 @@ namespace UniLiveViewer
             slider_Playback.Controled += ManualStart;
             slider_Playback.ValueUpdate += () =>
             {
-                float sec = slider_Playback.Value;
+                var sec = slider_Playback.Value;
                 _timeline.AudioClip_PlaybackTime = sec;//timelineに時間を反映
                 textMeshs[1].text = $"{((int)sec / 60):00}:{((int)sec % 60):00}";//テキストに反映
             };
@@ -93,6 +106,12 @@ namespace UniLiveViewer
             btnS_Play.onTrigger += Click_AudioPlayer;
             btnS_Stop.onTrigger += Click_AudioPlayer;
             btnS_BaseReturn.onTrigger += Click_AudioPlayer;
+            for (int i = 0; i < _switchAudio.Length; i++)
+            {
+                _switchAudio[i].isEnable = (i == 0);
+                _switchAudio[i].onTrigger += OnClickSwitchAudio;
+            }
+
             Init();
         }
 
@@ -110,7 +129,7 @@ namespace UniLiveViewer
                 btnS_Play.gameObject.SetActive(false);
             }
             //オーディオの長さ
-            float sec = await _timeline.GetNowAudioLength(false);
+            var sec = await _timeline.CurrentAudioLength(_cancellationToken, true);
             textMeshs[2].text = $"{((int)sec / 60):00}:{((int)sec % 60):00}";
             //タイムラインの速度を表示
             slider_Speed.Value = _timeline.TimelineSpeed;
@@ -124,7 +143,7 @@ namespace UniLiveViewer
             if (!slider_Playback.isControl)
             {
                 //TimeLine再生時間をスライダーにセット
-                float sec = (float)_timeline.AudioClip_PlaybackTime;
+                var sec = (float)_timeline.AudioClip_PlaybackTime;
                 slider_Playback.Value = sec;
                 //テキストに反映
                 textMeshs[1].text = $"{((int)sec / 60):00}:{((int)sec % 60):00}";
@@ -137,13 +156,13 @@ namespace UniLiveViewer
 
         void OpenJumplist(Button_Base btn)
         {
-            if (!menuManager.jumpList.gameObject.activeSelf) menuManager.jumpList.gameObject.SetActive(true);
+            if (!_menuManager.jumpList.gameObject.activeSelf) _menuManager.jumpList.gameObject.SetActive(true);
 
             if (btn == btn_jumpList[0])
             {
-                menuManager.jumpList.SetAudioDate();
+                _menuManager.jumpList.SetAudioDate(_isPresetAudio);
             }
-            menuManager.PlayOneShot(SoundType.BTN_CLICK);
+            _menuManager.PlayOneShot(SoundType.BTN_CLICK);
         }
 
         /// <summary>
@@ -152,7 +171,7 @@ namespace UniLiveViewer
         /// <param name="btn"></param>
         void Click_AudioPlayer(Button_Base btn)
         {
-            menuManager.PlayOneShot(SoundType.BTN_CLICK);
+            _menuManager.PlayOneShot(SoundType.BTN_CLICK);
 
             //スライダー操作中は受け付けない
             if (_playerStateManager.IsSliderGrabbing(SystemInfo.tag_GrabSliderVolume)) return;
@@ -180,6 +199,25 @@ namespace UniLiveViewer
             }
         }
 
+        void OnClickSwitchAudio(Button_Base btn)
+        {
+            if (_switchAudio[0] == btn)
+            {
+                _isPresetAudio = true;
+                _switchAudio[0].isEnable = true;
+                _switchAudio[1].isEnable = false;
+                _menuManager.jumpList.Close();
+            }
+            else
+            {
+                _isPresetAudio = false;
+                _switchAudio[0].isEnable = false;
+                _switchAudio[1].isEnable = true;
+                _menuManager.jumpList.Close();
+            }
+            ChangeAuido(_isPresetAudio, 0);
+        }
+
         /// <summary>
         /// 次オーディオに切り替える
         /// </summary>
@@ -188,18 +226,12 @@ namespace UniLiveViewer
         {
             for (int i = 0; i < 2; i++)
             {
-                //押されたボタンの判別
-                if (btn_Audio[i] == btn)
-                {
-                    int moveIndex = 0;
-                    if (i == 0) moveIndex = -1;
-                    else if (i == 1) moveIndex = 1;
+                if (btn_Audio[i] != btn) continue;
 
-                    ChangeAuido(moveIndex);
-
-                    menuManager.PlayOneShot(SoundType.BTN_CLICK);
-                    break;
-                }
+                var moveIndex = i == 0 ? -1 : 1;
+                ChangeAuido(moveIndex);
+                _menuManager.PlayOneShot(SoundType.BTN_CLICK);
+                return;
             }
         }
 
@@ -210,11 +242,27 @@ namespace UniLiveViewer
         async void ChangeAuido(int moveIndex)
         {
             //文字画像を差し替える
-            textMeshs[0].text = await _timeline.NextAudioClip(false,moveIndex);
+            textMeshs[0].text = await _timeline.NextAudioClip(_cancellationToken, _isPresetAudio, moveIndex);
             //サイズ調整
             textMeshs[0].fontSize = textMeshs[0].text.FontSizeMatch(600, 30, 50);
             //オーディオの長さ
-            float sec = await _timeline.GetNowAudioLength(false);
+            var sec = await _timeline.CurrentAudioLength(_cancellationToken, _isPresetAudio);
+            slider_Playback.maxValuel = sec;
+            textMeshs[2].text = $"{((int)sec / 60):00}:{((int)sec % 60):00}";
+        }
+
+        /// <summary>
+        /// オーディオを変更する
+        /// </summary>
+        /// <param name="moveIndex"></param>
+        async void ChangeAuido(bool isPreset, int moveIndex)
+        {
+            //文字画像を差し替える
+            textMeshs[0].text = await _timeline.NextAudioClip(_cancellationToken, isPreset, moveIndex);
+            //サイズ調整
+            textMeshs[0].fontSize = textMeshs[0].text.FontSizeMatch(600, 30, 50);
+            //オーディオの長さ
+            var sec = await _timeline.CurrentAudioLength(_cancellationToken, _isPresetAudio);
             slider_Playback.maxValuel = sec;
             textMeshs[2].text = $"{((int)sec / 60):00}:{((int)sec % 60):00}";
         }
@@ -228,12 +276,11 @@ namespace UniLiveViewer
         void Director_Stoped(PlayableDirector obj)
         {
             //再生途中の一時停止は無視する
-            if (_timeline.AudioClip_PlaybackTime <= 0)
-            {
-                //再生表示
-                if (btnS_Stop) btnS_Stop.gameObject.SetActive(false);
-                if (btnS_Play) btnS_Play.gameObject.SetActive(true);
-            }
+            if (_timeline.AudioClip_PlaybackTime > 0) return;
+            
+            //再生表示
+            if (btnS_Stop) btnS_Stop.gameObject.SetActive(false);
+            if (btnS_Play) btnS_Play.gameObject.SetActive(true);
         }
 
         void ManualStart()

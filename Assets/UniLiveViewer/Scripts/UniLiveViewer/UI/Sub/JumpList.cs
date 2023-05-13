@@ -147,22 +147,47 @@ namespace UniLiveViewer
         /// <summary>
         /// ボタンにオーディオ名を設定する
         /// </summary>
-        public void SetAudioDate()
+        public void SetAudioDate(bool isPresetAudio)
         {
-            //必要ならボタンを生成
-            BtnInstanceCheck(_audioAssetManager.CustomAudios.Count);
 
-            for (int i = 0; i < btnList.Count; i++)
+            if (isPresetAudio)
             {
-                if (i < _audioAssetManager.CustomAudios.Count)
+                //必要ならボタンを生成
+                var count = _audioAssetManager.PresetAudioClips.Count;
+                BtnInstanceCheck(count);
+
+                for (int i = 0; i < btnList.Count; i++)
                 {
-                    var name = Path.GetFileName(_audioAssetManager.CustomAudios[i]); 
-                    btnList[i].SetTextMesh(name);
-                    if (!btnList[i].gameObject.activeSelf) btnList[i].gameObject.SetActive(true);
+                    if (i < count)
+                    {
+                        var name = Path.GetFileName(_audioAssetManager.PresetAudioClips[i].name);
+                        btnList[i].SetTextMesh(name);
+                        if (!btnList[i].gameObject.activeSelf) btnList[i].gameObject.SetActive(true);
+                    }
+                    else
+                    {
+                        if (btnList[i].gameObject.activeSelf) btnList[i].gameObject.SetActive(false);
+                    }
                 }
-                else if (_audioAssetManager.CustomAudios.Count <= i)
+            }
+            else
+            {
+                //必要ならボタンを生成
+                var count = _audioAssetManager.CustomAudios.Count;
+                BtnInstanceCheck(count);
+
+                for (int i = 0; i < btnList.Count; i++)
                 {
-                    if (btnList[i].gameObject.activeSelf) btnList[i].gameObject.SetActive(false);
+                    if (i < count)
+                    {
+                        var name = Path.GetFileName(_audioAssetManager.CustomAudios[i]);
+                        btnList[i].SetTextMesh(name);
+                        if (!btnList[i].gameObject.activeSelf) btnList[i].gameObject.SetActive(true);
+                    }
+                    else
+                    {
+                        if (btnList[i].gameObject.activeSelf) btnList[i].gameObject.SetActive(false);
+                    }
                 }
             }
 
@@ -173,7 +198,7 @@ namespace UniLiveViewer
         /// リスト内のいずれかのボタンがクリックされた
         /// </summary>
         /// <param name="btn"></param>
-        private void OnClick(Button_Base btn)
+        void OnClick(Button_Base btn)
         {
             //ボタンを特定
             for (int i = 0; i < btnList.Count; i++)
@@ -182,9 +207,15 @@ namespace UniLiveViewer
                 {
                     //カレントを渡す
                     onSelect?.Invoke(i);
+                    Debug.Log($"ジャンプボタンIndex:{i}");
                     break;
                 }
             }
+            gameObject.SetActive(false);
+        }
+
+        public void Close()
+        {
             gameObject.SetActive(false);
         }
     }

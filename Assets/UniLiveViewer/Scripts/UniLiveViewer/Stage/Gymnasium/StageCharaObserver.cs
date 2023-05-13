@@ -29,7 +29,7 @@ namespace UniLiveViewer
 
             targets = new Transform[_timelineInfo.MaxFieldChara];
             targetList = new List<Transform>();
-            for (int i = 0; i < _timeline.MaxFieldChara; i++)
+            for (int i = 0; i < _timelineInfo.MaxFieldChara; i++)
             {
                 var portalChara = _timelineInfo.GetCharacter(i + 1);
                 if (!portalChara) targets[i] = null;
