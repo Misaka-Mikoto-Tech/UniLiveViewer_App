@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using UnityEngine;
 using UnityVMDReader;
+using UniRx;
 
 namespace UniLiveViewer
 {
@@ -48,10 +49,14 @@ namespace UniLiveViewer
         TimelineInfo _timelineInfo;
         AnimationAssetManager _animationAssetManager;
 
-        public event Action onGeneratedChara;
-        public event Action onEmptyCurrent;
-        public event Action onGeneratedAnime;
-        public event Action<string> onSelectedAnimePair;
+        public IObservable<CharaController> GenerateCharacterAsObservable => _generateCharacterStream;
+        Subject<CharaController> _generateCharacterStream;
+        public IObservable<Unit> GenerateEmptyCharacterAsObservable => _generateEmptyCharacterStream;
+        Subject<Unit> _generateEmptyCharacterStream;
+        public IObservable<Unit> EndAnimationSetAsObservable => _endAnimationSetStream;
+        Subject<Unit> _endAnimationSetStream;
+        public IReadOnlyReactiveProperty<string> SubAnimationName => _subAnimationName;
+        ReactiveProperty<string> _subAnimationName;
 
         CancellationTokenSource _cancellationTokenSource;
 
@@ -73,6 +78,11 @@ namespace UniLiveViewer
 
             _charaIndex = 0;
             _animeIndex = 0;
+
+            _generateCharacterStream = new Subject<CharaController>();
+            _generateEmptyCharacterStream = new Subject<Unit>();
+            _endAnimationSetStream = new Subject<Unit>();
+            _subAnimationName = new ReactiveProperty<string>();
 
             _cancellationTokenSource = new CancellationTokenSource();
         }
@@ -134,15 +144,12 @@ namespace UniLiveViewer
             _animationAssetManager = GameObject.FindGameObjectWithTag("AppConfig").GetComponent<AnimationAssetManager>();
         }
 
-        /// <summary>
-        /// キャラリストにVRMを追加する
-        /// </summary>
-        public void AddVRMPrefab(CharaController charaCon_vrm)
+        public void AddVRMList(CharaController vrmCharaController)
         {
             //VRMを追加
-            _listVRM[_listVRM.Count - 1] = charaCon_vrm;
+            _listVRM[_listVRM.Count - 1] = vrmCharaController;
             //無効化して管理
-            charaCon_vrm.gameObject.SetActive(false);
+            vrmCharaController.gameObject.SetActive(false);
             //リストに空枠を追加(空をVRM読み込み枠として扱う)
             _listVRM.Add(null);
         }
@@ -151,17 +158,14 @@ namespace UniLiveViewer
         /// CurrentのPrefabを入れ替える
         /// </summary>
         /// <param name="charaCon_vrm"></param>
-        public void ChangeCurrentVRM(CharaController charaCon_vrm)
+        public void ChangeCurrentVRM(CharaController vrmCharaController)
         {
-            if (_listVRM[_charaIndex].charaInfoData.formatType
-                != CharaInfoData.FORMATTYPE.VRM) return;
-
             //オリジナル以外は削除可
-            if(_listVRM[_charaIndex].name.Contains("(Clone)"))
+            if (_listVRM[_charaIndex] is CharaController && _listVRM[_charaIndex].name.Contains("(Clone)"))
             {
                 Destroy(_listVRM[_charaIndex].gameObject);
             }
-            _listVRM[_charaIndex] = charaCon_vrm;
+            _listVRM[_charaIndex] = vrmCharaController;
 
             //未使用アセット削除
             Resources.UnloadUnusedAssets();
@@ -216,7 +220,7 @@ namespace UniLiveViewer
                 if (!_currentCharaList[_charaIndex])
                 {
                     _timeline.ClearCaracter();
-                    onEmptyCurrent?.Invoke();
+                    _generateEmptyCharacterStream.OnNext(Unit.Default);
                     return;
                 }
 
@@ -270,7 +274,7 @@ namespace UniLiveViewer
                     return;
                 }
 
-                onGeneratedChara?.Invoke();
+                _generateCharacterStream.OnNext(charaCon);
 
                 SetAnimation(0).Forget();//キャラにアニメーション情報をセットする
             }
@@ -331,7 +335,7 @@ namespace UniLiveViewer
                 //ポータル上のキャラにアニメーション設定
                 _timeline.BindingNewAnimationClip(_currentAnimeList[_animeIndex]);
 
-                onGeneratedAnime?.Invoke();
+                _endAnimationSetStream.OnNext(Unit.Default);
 
                 //最後に表情系をリセットしておく
                 await UniTask.Yield(PlayerLoopTiming.Update, _cancellationTokenSource.Token);
@@ -361,7 +365,7 @@ namespace UniLiveViewer
             Debug.LogWarning($"MotionFacialPair照合: {GetNowAnimeInfo().viewName}:{ syncFileName }");
             if (syncFileName == null)
             {
-                onSelectedAnimePair?.Invoke(LIPSYNC_NONAME);
+                _subAnimationName.Value = LIPSYNC_NONAME;
                 return;
             }
             Debug.LogWarning(syncFileName);
@@ -373,7 +377,7 @@ namespace UniLiveViewer
                 SetFacialAnimation(moveIndex).Forget();
                 return;
             }
-            onSelectedAnimePair?.Invoke($"[no file!] {syncFileName}");//一度使ったがファイル消した場合
+            _subAnimationName.Value = $"[no file!] {syncFileName}";//一度使ったがファイル消した場合
         }
 
         /// <summary>
@@ -407,7 +411,7 @@ namespace UniLiveViewer
                     var folderPath = PathsInfo.GetFullPath_LipSync() + "/";
                     await VMDPlay(_vmdPlayer, folderPath, facialName, false, _cancellationTokenSource.Token);
 
-                    onSelectedAnimePair?.Invoke(facialName);
+                    _subAnimationName.Value = facialName;
                     FileReadAndWriteUtility.SaveMotionFacialPair(bodyName, facialName);
 
                     //最後に表情系をリセットしておく

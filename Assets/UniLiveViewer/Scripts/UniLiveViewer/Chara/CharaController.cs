@@ -13,7 +13,10 @@ namespace UniLiveViewer
         public Animator GetAnimator => _animator;
         Animator _animator;
 
-        public List<VRMSpringBone> SpringBoneList;//揺れもの接触判定用
+        /// <summary>
+        /// 初期化はAwakeでもNG、Prefab用コピーしてるのが良くない
+        /// </summary>
+        public List<VRMSpringBone> SpringBoneList = new List<VRMSpringBone>();
 
         //Sync
         public bool CanLipSync;
@@ -71,7 +74,7 @@ namespace UniLiveViewer
                 EyeLookAt = transform.GetComponent<IEyeLookAt>();
             }
 
-            SpringBoneList = new List<VRMSpringBone>();
+
             _charaState = CharaEnums.STATE.NULL;
             AnimationMode = CharaEnums.ANIMATION_MODE.CLIP;
             CanLipSync = false;

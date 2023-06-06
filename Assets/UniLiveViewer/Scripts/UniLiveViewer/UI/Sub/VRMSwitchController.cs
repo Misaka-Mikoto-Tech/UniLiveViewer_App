@@ -3,6 +3,7 @@ using NanaCiel;
 using System;
 using System.Threading;
 using UnityEngine;
+using UniRx;
 
 namespace UniLiveViewer
 {
@@ -40,10 +41,13 @@ namespace UniLiveViewer
         //クリックSE
         AudioSource _audioSource;
         [SerializeField] AudioClip[] _sound;//ボタン音,読み込み音,クリック音
-                                            
+
         //VRM読み込み時イベント
-        public event Action<CharaController> OnAddVRM;
-        public event Action<CharaController> OnSetupComplete;
+        public IObservable<CharaController> AddCharacterAsObservable => _addCharacterStream;
+        Subject<CharaController> _addCharacterStream;
+
+        public IObservable<CharaController> AddPrefabAsObservable => _addPrefabStream;
+        Subject<CharaController> _addPrefabStream;
 
         //ファイルアクセスとサムネの管理
         FileAccessManager _fileManager;
@@ -60,6 +64,9 @@ namespace UniLiveViewer
         public void Initialize(IVRMLoaderUI vrmLoaderUI)
         {
             _vrmLoaderUI = vrmLoaderUI;
+
+            _addCharacterStream = new Subject<CharaController>();
+            _addPrefabStream = new Subject<CharaController>();
 
             _audioSource = GetComponent<AudioSource>();
             _audioSource.volume = SystemInfo.soundVolume_SE;
@@ -210,7 +217,7 @@ namespace UniLiveViewer
                     .OnError(_ => OnError(new Exception("Attacher Attachment")));
                 token.ThrowIfCancellationRequested();
 
-                OnAddVRM?.Invoke(attacher.CharaCon);
+                _addCharacterStream.OnNext(attacher.CharaCon);
                 Destroy(attacher);
             }
 
@@ -281,7 +288,7 @@ namespace UniLiveViewer
             await UniTask.Yield(_cancellationToken);
             token.ThrowIfCancellationRequested();
 
-            OnSetupComplete?.Invoke(vrm);
+            _addPrefabStream.OnNext(vrm);
 
             //UIを非表示にする
             UIShow(false);

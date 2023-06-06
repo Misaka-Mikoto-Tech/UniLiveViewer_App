@@ -2,6 +2,7 @@
 using NanaCiel;
 using System.Threading;
 using UnityEngine;
+using UniRx;
 
 namespace UniLiveViewer
 {
@@ -50,10 +51,14 @@ namespace UniLiveViewer
         VRMSwitchController _vrmSelectUI;
         CancellationToken _cancellationToken;
 
+        CompositeDisposable _disposable;
+
         void Awake()
         {
             _menuManager = transform.root.GetComponent<MenuManager>();
             _cancellationToken = this.GetCancellationTokenOnDestroy();
+
+            _disposable = new CompositeDisposable();
         }
 
         // Start is called before the first frame update
@@ -152,36 +157,46 @@ namespace UniLiveViewer
             _btnFaceUpdate.onTrigger += Switch_Mouth;
             _vrmOptionAnchor = _btnFaceUpdate.transform.parent;
             _btnMouthUpdate.onTrigger += Switch_Mouth;
-            _vrmSelectUI.OnAddVRM += (vrm) =>
-            {
-                _generatorPortal.AddVRMPrefab(vrm);//VRMを追加
-                _generatorPortal.SetChara(0).Forget();//追加されたVRMを生成する
-            };
-            _vrmSelectUI.OnSetupComplete += (vrm) =>
-            {
-                _timeline.ClearCaracter();
-                //VRMのPrefabを差し替える
-                _generatorPortal.ChangeCurrentVRM(vrm);
-                _generatorPortal.SetChara(0).Forget();
 
-                //var instance = Instantiate(vrm).GetComponent<CharaController>();
-                //instance.SetState(CharaController.CHARASTATE.MINIATURE, generatorPortal.transform);
-            };
-            _generatorPortal.onEmptyCurrent += () =>
-            {
-                //VRM選択画面を非表示(開いたまま別キャラは確認できない仕様)
-                _vrmSelectUI.UIShow(false);
+            _vrmSelectUI.AddCharacterAsObservable
+                .Subscribe(x => 
+                {
+                    _generatorPortal.AddVRMList(x);//VRMを追加
+                    _generatorPortal.SetChara(0).Forget();//追加されたVRMを生成する
+                }).AddTo(_disposable);
 
-                textMeshs[0].text = "VRM Load";
-                textMeshs[0].fontSize = textMeshs[0].text.FontSizeMatch(600, 30, 50);
+            _vrmSelectUI.AddPrefabAsObservable
+                .Subscribe(x =>
+                {
+                    _timeline.ClearCaracter();
+                    //VRMのPrefabを差し替える
+                    _generatorPortal.ChangeCurrentVRM(x);
+                    _generatorPortal.SetChara(0).Forget();
 
-                //生成ボタンの表示
-                if (_timelineInfo.FieldCharaCount < _timelineInfo.MaxFieldChara) _btnVRMLoad.gameObject.SetActive(true);
-                if (_vrmOptionAnchor.gameObject.activeSelf) _vrmOptionAnchor.gameObject.SetActive(false);
-            };
-            _generatorPortal.onGeneratedChara += DrawCharaInfo;
-            _generatorPortal.onGeneratedAnime += DrawAnimeInfo;
-            _generatorPortal.onSelectedAnimePair += DrawAnimePairInfo;
+                    //var instance = Instantiate(vrm).GetComponent<CharaController>();
+                    //instance.SetState(CharaController.CHARASTATE.MINIATURE, generatorPortal.transform);
+                }).AddTo(_disposable);
+
+            _generatorPortal.GenerateEmptyCharacterAsObservable
+                .Subscribe(_ =>
+                {
+                    //VRM選択画面を非表示(開いたまま別キャラは確認できない仕様)
+                    _vrmSelectUI.UIShow(false);
+
+                    textMeshs[0].text = "VRM Load";
+                    textMeshs[0].fontSize = textMeshs[0].text.FontSizeMatch(600, 30, 50);
+
+                    //生成ボタンの表示
+                    if (_timelineInfo.FieldCharaCount < _timelineInfo.MaxFieldChara) _btnVRMLoad.gameObject.SetActive(true);
+                    if (_vrmOptionAnchor.gameObject.activeSelf) _vrmOptionAnchor.gameObject.SetActive(false);
+                }).AddTo(_disposable);
+
+            _generatorPortal.GenerateCharacterAsObservable
+                .Subscribe(_=> DrawCharaInfo()).AddTo(_disposable);
+            _generatorPortal.EndAnimationSetAsObservable
+                .Subscribe(_=> DrawAnimeInfo()).AddTo(_disposable);
+            _generatorPortal.SubAnimationName
+                .Subscribe(DrawAnimePairInfo).AddTo(_disposable);
 
             //VRMロードの画面とボタンを非表示
             _btnVRMLoad.gameObject.SetActive(false);
@@ -192,7 +207,6 @@ namespace UniLiveViewer
             //マニュアル生成
             Instantiate(_bookPrefab[SystemInfo.userProfile.LanguageCode - 1], _bookGrabAnchor.transform);
         }
-
 
         public void OnClickManualBook()
         {
