@@ -6,6 +6,7 @@ using System.Threading;
 using UnityEngine;
 using UnityVMDReader;
 using UniRx;
+using VContainer.Unity;
 
 namespace UniLiveViewer
 {
@@ -23,6 +24,8 @@ namespace UniLiveViewer
 
         public int CurrentAnime => _animeIndex;
         int _animeIndex = 0;
+
+        int _fieldCharaCount;
 
         public int CurrentVMDLipSync { get; private set; } = 0;
 
@@ -46,7 +49,6 @@ namespace UniLiveViewer
 
         //汎用
         TimelineController _timeline;
-        TimelineInfo _timelineInfo;
         AnimationAssetManager _animationAssetManager;
 
         public IObservable<CharaController> GenerateCharacterAsObservable => _generateCharacterStream;
@@ -111,7 +113,13 @@ namespace UniLiveViewer
             }
         }
 
-        public void Initialize()
+        public void Initialize(TimelineController timelineController, AnimationAssetManager animationAssetManager)
+        {
+            _timeline = timelineController;
+            _animationAssetManager = animationAssetManager;
+        }
+
+        public void OnLoadEnd()
         {
             //VMD枠はダミーアニメーションを追加しておく
             if (_animationAssetManager.VmdList.Count > 0)
@@ -135,13 +143,6 @@ namespace UniLiveViewer
                 string[] dummy = { LIPSYNC_NONAME };
                 _vmdLipSync = dummy.Concat(lipSyncs).ToArray();
             }
-        }
-
-        void Start()
-        {
-            _timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
-            _timelineInfo = _timeline.GetComponent<TimelineInfo>();
-            _animationAssetManager = GameObject.FindGameObjectWithTag("AppConfig").GetComponent<AnimationAssetManager>();
         }
 
         public void AddVRMList(CharaController vrmCharaController)
@@ -197,6 +198,11 @@ namespace UniLiveViewer
             _animeIndex = 0;
         }
 
+        public void OnUpdateCharacterCount(int fieldCharaCount)
+        {
+            _fieldCharaCount = fieldCharaCount;
+        }
+
         /// <summary>
         /// 指定Currentのキャラをセットする
         /// </summary>
@@ -214,7 +220,7 @@ namespace UniLiveViewer
                 else if (_charaIndex >= _currentCharaList.Count) _charaIndex = 0;
 
                 //フィールド上限オーバーなら生成しない
-                if (_timelineInfo.FieldCharaCount >= _timelineInfo.MaxFieldChara) return;
+                if (_fieldCharaCount >= SystemInfo.MaxFieldChara) return;
 
                 //null枠の場合も処理しない
                 if (!_currentCharaList[_charaIndex])
@@ -298,7 +304,7 @@ namespace UniLiveViewer
                 else if (_animeIndex >= _currentAnimeList.Count) _animeIndex = 0;
 
                 //ポータルキャラを確認
-                var portalChara = _timelineInfo.GetCharacter(TimelineController.PORTAL_INDEX);
+                var portalChara = _timeline.BindCharaMap[TimelineController.PORTAL_INDEX];
                 if (!portalChara) return;
 
                 await UniTask.Yield(PlayerLoopTiming.Update, _cancellationTokenSource.Token);
@@ -394,7 +400,7 @@ namespace UniLiveViewer
                 else if (CurrentVMDLipSync >= _vmdLipSync.Length) CurrentVMDLipSync = 0;
 
                 //ポータルキャラを確認
-                var portalChara = _timelineInfo.GetCharacter(TimelineController.PORTAL_INDEX);
+                var portalChara = _timeline.BindCharaMap[TimelineController.PORTAL_INDEX];
                 if (!portalChara) return;
 
                 await UniTask.Yield(PlayerLoopTiming.Update, _cancellationTokenSource.Token);

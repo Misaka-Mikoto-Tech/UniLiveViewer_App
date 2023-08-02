@@ -1,8 +1,8 @@
 ﻿using Cysharp.Threading.Tasks;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using UniRx;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
@@ -53,29 +53,17 @@ namespace UniLiveViewer
         public IReadOnlyDictionary<int, CharaController> BindCharaMap => _bindCharaMap;
         Dictionary<int, CharaController> _bindCharaMap = Enumerable.Range(0, 6).ToDictionary(i => i, i => (CharaController)null);
 
-        /// <summary>
-        /// フィールドの現在キャラ数
-        /// </summary>
-        public int FieldCharaCount => _fieldCharaCount;
-        int _fieldCharaCount = 1;
-
-        /// <summary>
-        /// フィールドに存在できる最大キャラ数
-        /// </summary>
-        public int MaxFieldChara => _maxFieldChara;
-        int _maxFieldChara = 1;
-
         public CharaController GetCharacterInPortal => _bindCharaMap[PORTAL_INDEX];
 
-        public event Action FieldCharaAdded;//設置キャラ数の更新時
-        public event Action FieldCharaDeleted;//設置キャラ数の更新時
+        public IReadOnlyReactiveProperty<int> FieldCharacterCount => _fieldCharacterCount;
+        ReactiveProperty<int> _fieldCharacterCount = new ReactiveProperty<int>(0);
 
         AudioAssetManager _audioAssetManager;
         [SerializeField] AnimationClip _grabHandAnime;
 
         [SerializeField] double _audioClipStartTime = 0;//セットされたaudioクリップの開始再生位置
         double _motionClipStartTime = 3;//モーションクリップの開始再生位置(デフォルト)
-        CancellationToken _cancellationToken;
+        CancellationToken _cancellation;
 
         [Header("確認用露出(readonly)")]
         [SerializeField] float _timelineSpeed = 1.0f;
@@ -106,18 +94,14 @@ namespace UniLiveViewer
             }
         }
 
-        void Awake()
+        public void Initialize(PlayableDirector playableDirector, AudioAssetManager audioAssetManager)
         {
-            _playableDirector = GetComponent<PlayableDirector>();
-            if (_timeLineAsset == null) _timeLineAsset = _playableDirector.playableAsset as TimelineAsset;
-            var appConfig = GameObject.FindGameObjectWithTag("AppConfig").transform;
-            _audioAssetManager = appConfig.GetComponent<AudioAssetManager>();
+            _playableDirector = playableDirector;
+            _audioAssetManager = audioAssetManager;
 
-            _cancellationToken = this.GetCancellationTokenOnDestroy();
-        }
+            _cancellation = this.GetCancellationTokenOnDestroy();
+            _timeLineAsset = _playableDirector.playableAsset as TimelineAsset;
 
-        void Start()
-        {
             // タイムライン内のトラック一覧を取得
             var tracks = _timeLineAsset.GetOutputTracks();
 
@@ -139,18 +123,10 @@ namespace UniLiveViewer
                 Debug.Log("メインオーディオが見つかりません");
             }
 
-            NextAudioClip(_cancellationToken, true, 0).Forget();
+            NextAudioClip(_cancellation, true, 0).Forget();
 
             //開幕は停止しておく
             TimelineBaseReturn();
-
-            byte current = (byte)SystemInfo.sceneMode;
-#if UNITY_EDITOR
-            _maxFieldChara = SystemInfo.MAXCHARA_EDITOR[current];
-#elif UNITY_ANDROID
-            if (UnityEngine.SystemInfo.deviceName == "Oculus Quest 2") _maxFieldChara = SystemInfo.MAXCHARA_QUEST2[current];
-            else if (UnityEngine.SystemInfo.deviceName == "Oculus Quest") _maxFieldChara = SystemInfo.MAXCHARA_QUEST1[current];
-#endif
         }
 
         /// <summary>
@@ -182,8 +158,7 @@ namespace UniLiveViewer
                 break;
             }
 
-            _fieldCharaCount--;
-            FieldCharaDeleted?.Invoke();
+            _fieldCharacterCount.Value -= 1;
         }
 
         /// <summary>
@@ -445,8 +420,8 @@ namespace UniLiveViewer
         {
             token.ThrowIfCancellationRequested();
 
-            var newAudioClip = await _audioAssetManager.GetAudioClipAsync(token, isPreset, moveCurrent);
-            token.ThrowIfCancellationRequested();
+            var newAudioClip = await _audioAssetManager.TryGetAudioClipAsync(token, isPreset, moveCurrent);
+            if (newAudioClip == null) return "";
 
             // タイムライン内のトラック一覧を取得
             if (_timeLineAsset is null) _timeLineAsset = _playableDirector.playableAsset as TimelineAsset;
@@ -504,7 +479,8 @@ namespace UniLiveViewer
         public async UniTask<float> CurrentAudioLength(CancellationToken token, bool isPreset)
         {
             token.ThrowIfCancellationRequested();
-            return (await _audioAssetManager.GetCurrentAudioClipAsycn(token, isPreset)).length;
+            var AudioClip = await _audioAssetManager.TryGetCurrentAudioClipAsycn(token, isPreset);
+            return AudioClip == null ? 0 : AudioClip.length;
         }
 
         /// <summary>
@@ -607,8 +583,7 @@ namespace UniLiveViewer
             // 設置座標設定後に解除しないと位置が反映されないので注意(またこの変更はアニメーターの再初期化が走る)
             transferChara.GetComponent<Animator>().applyRootMotion = false;
 
-            _fieldCharaCount++;
-            FieldCharaAdded?.Invoke();
+            _fieldCharacterCount.Value += 1;
 
             Debug.Log("転送成功");
             return true;
@@ -701,10 +676,9 @@ namespace UniLiveViewer
                 {
                     Destroy(_bindCharaMap[i].gameObject);
                     _bindCharaMap[i] = null;
-                    if (i != PORTAL_INDEX) _fieldCharaCount--;
+                    if (i != PORTAL_INDEX) _fieldCharacterCount.Value -= 1;
                 }
             }
-            FieldCharaDeleted?.Invoke();
         }
 
         /// <summary>
@@ -721,8 +695,7 @@ namespace UniLiveViewer
                     _bindCharaMap[i] = null;
                 }
             }
-            _fieldCharaCount = 0;
-            FieldCharaDeleted?.Invoke();
+            _fieldCharacterCount.Value = 0;
         }
 
         /// <summary>
@@ -852,7 +825,7 @@ namespace UniLiveViewer
                     //キープの更新
                     keepVal = AudioClip_PlaybackTime;
                 }
-                await UniTask.Delay(100, cancellationToken: _cancellationToken);
+                await UniTask.Delay(100, cancellationToken: _cancellation);
             }
 
             //AnimatorControllerを戻す
@@ -888,7 +861,7 @@ namespace UniLiveViewer
             //マニュアルモードでなければ処理しない
             if (_playableDirector.timeUpdateMode != DirectorUpdateMode.Manual) return;
 
-            await UniTask.Yield(PlayerLoopTiming.Update, _cancellationToken);//必要、VRMのAwakeが間に合わない
+            await UniTask.Yield(PlayerLoopTiming.Update, _cancellation);//必要、VRMのAwakeが間に合わない
 
             //TimeLineと競合っぽいのでAnimatorControllerを解除しておく 
             for (int i = 0; i < _bindCharaMap.Count; i++)
@@ -898,7 +871,7 @@ namespace UniLiveViewer
             }
 
             //ワンフレーム後にアニメーションの状態を1回だけ更新
-            await UniTask.Yield(PlayerLoopTiming.Update, _cancellationToken);
+            await UniTask.Yield(PlayerLoopTiming.Update, _cancellation);
             _playableDirector.Evaluate();
         }
     }

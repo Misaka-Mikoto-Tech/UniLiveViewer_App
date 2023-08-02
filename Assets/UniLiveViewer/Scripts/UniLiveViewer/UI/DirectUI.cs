@@ -1,11 +1,11 @@
 ﻿using Cysharp.Threading.Tasks;
-using System.Collections;
-using UnityEngine;
 using UniRx;
+using UnityEngine;
 using VContainer;
+using VContainer.Unity;
 
 namespace UniLiveViewer
-{ 
+{
     public class DirectUI : MonoBehaviour
     {
         [SerializeField] Transform guideParent;
@@ -29,15 +29,15 @@ namespace UniLiveViewer
         void Start()
         {
             // TODO: UI作り直す時にまともにする
-            var player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerLifetimeScope>();
-            _playerStateManager = player.Container.Resolve<PlayerStateManager>();
+            var container = LifetimeScope.Find<PlayerLifetimeScope>().Container;
+            _playerStateManager = container.Resolve<PlayerStateManager>();
             _playerStateManager.MainUISwitchingAsObservable
                 .Subscribe(SwitchEnable).AddTo(_disposables);
 
             switch (SystemInfo.sceneMode)
             {
                 case SceneMode.CANDY_LIVE:
-                    EndPoint =  new Vector3(4, 1.0f, 5.5f);
+                    EndPoint = new Vector3(4, 1.0f, 5.5f);
                     transform.position = EndPoint + (Vector3.up * 2);
                     transform.rotation = Quaternion.Euler(new Vector3(0, 90, 0));
                     break;
@@ -90,7 +90,7 @@ namespace UniLiveViewer
             if (guideTarget.gameObject.activeSelf != isEnable) guideTarget.gameObject.SetActive(isEnable);
             _renderer.enabled = isEnable;
 
-            if(isEnable) transform.position = (_playerStateManager.transform.position - keepDistance);
+            if (isEnable) transform.position = (_playerStateManager.transform.position - keepDistance);
             else keepDistance = _playerStateManager.transform.position - transform.position;
         }
     }

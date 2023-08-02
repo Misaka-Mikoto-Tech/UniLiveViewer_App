@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 
 namespace UniLiveViewer
 {
-    public class SystemInfo
+    public static class SystemInfo
     {
         //レイヤー
         public static int layerNo_Default = LayerMask.NameToLayer("Default");
@@ -37,6 +37,24 @@ namespace UniLiveViewer
         public static readonly int[] MAXCHARA_QUEST1 = { 2, 2, 4, 2 };
         public static readonly int[] MAXCHARA_QUEST2 = { 3, 2, 5, 3 };
         public static readonly int[] MAXCHARA_EDITOR = { 5, 5, 5, 5 };
+
+        /// <summary>
+        /// フィールドに存在できる最大キャラ数
+        /// </summary>
+        public static int MaxFieldChara => _maxFieldChara;
+        readonly static int _maxFieldChara;
+
+
+        static SystemInfo()
+        {
+            _maxFieldChara = 1;
+#if UNITY_EDITOR
+            _maxFieldChara = MAXCHARA_EDITOR[(int)sceneMode];
+#elif UNITY_ANDROID // 機能してない..
+            if (UnityEngine.SystemInfo.deviceName == "Oculus Quest 2") _maxFieldChara = SystemInfo.MAXCHARA_QUEST2[current];
+            else if (UnityEngine.SystemInfo.deviceName == "Oculus Quest") _maxFieldChara = SystemInfo.MAXCHARA_QUEST1[current];
+#endif
+        }
 
         public static void Init()
         {

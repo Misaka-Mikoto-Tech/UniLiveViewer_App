@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using VContainer;
+using VContainer.Unity;
+using UniRx;
 
 namespace UniLiveViewer
 {
@@ -9,7 +12,6 @@ namespace UniLiveViewer
         protected Transform[] targets;
         protected List<Transform> targetList;
         protected TimelineController _timeline;
-        protected TimelineInfo _timelineInfo;
 
         protected virtual void OnEnable()
         {
@@ -21,17 +23,19 @@ namespace UniLiveViewer
         {
             if (!_timeline)
             {
-                _timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
-                _timelineInfo = _timeline.GetComponent<TimelineInfo>();
-                _timeline.FieldCharaAdded += Init;
-                _timeline.FieldCharaDeleted += Init;
+                var container = LifetimeScope.Find<TimeLineLifetimeScope>().Container;
+                _timeline = container.Resolve<TimelineController>();
+
+                _timeline.FieldCharacterCount
+                    .Subscribe(_ => Init())
+                    .AddTo(this);
             }
 
-            targets = new Transform[_timelineInfo.MaxFieldChara];
+            targets = new Transform[SystemInfo.MaxFieldChara];
             targetList = new List<Transform>();
-            for (int i = 0; i < _timelineInfo.MaxFieldChara; i++)
+            for (int i = 0; i < SystemInfo.MaxFieldChara; i++)
             {
-                var portalChara = _timelineInfo.GetCharacter(i + 1);
+                var portalChara = _timeline.BindCharaMap[i + 1];
                 if (!portalChara) targets[i] = null;
                 else
                 {

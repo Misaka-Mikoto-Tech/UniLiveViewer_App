@@ -50,13 +50,13 @@ namespace UniLiveViewer
             return SceneManager.GetActiveScene().name;
         }
 
-        private void HomePause()
+        void HomePause()
         {
             _timeline.TimelineManualMode().Forget();
             Time.timeScale = 0;
         }
 
-        private void HomeReStart()
+        void HomeReStart()
         {
             Time.timeScale = 1;
         }

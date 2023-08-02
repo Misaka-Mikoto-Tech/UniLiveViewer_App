@@ -1,75 +1,70 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace UniLiveViewer
 {
     //暫定的
     public class MeshGuide : MonoBehaviour
     {
-        [SerializeField] private GameObject guidePrefab;
-        bool isShow = false;
+        GameObject _guidePrefab;
+        bool _isShow = false;
         public bool IsShow 
         { 
-            get { return isShow; } 
+            get { return _isShow; } 
             set 
             { 
-                if(isShow != value)
+                if(_isShow != value)
                 {
-                    isShow = value;
+                    _isShow = value;
 
-                    for (int i = 0; i < pair.Length; i++)
+                    for (int i = 0; i < _pair.Length; i++)
                     {
                         if (i == TimelineController.PORTAL_INDEX) continue;
-                        if (!_timelineInfo.GetCharacter(i)) pair[i].guideMesh.enabled = false;
-                        else pair[i].guideMesh.enabled = isShow; 
+                        if (!_timeline.BindCharaMap[i]) _pair[i].guideMesh.enabled = false;
+                        else _pair[i].guideMesh.enabled = _isShow; 
                     }
                 }
             } 
         }
-        Pair[] pair;
-        Vector3 distance = Vector3.zero;
+        Pair[] _pair;
+        Vector3 _distance = Vector3.zero;
         TimelineController _timeline;
-        TimelineInfo _timelineInfo;
 
-        // Start is called before the first frame update
+        public void Initialize(TimelineController timeline)
+        {
+            _timeline = timeline;
+            _guidePrefab = Resources.Load<GameObject>("Prefabs/GuideBody");
+            _pair = new Pair[_timeline.BindCharaMap.Count];
+        }
+
         void Start()
         {
-            _timeline = GetComponent<TimelineController>();
-            _timelineInfo = _timeline.GetComponent<TimelineInfo>();
+            var anchor = new GameObject("GuideMeshs");
 
-            GameObject anchor = new GameObject("GuideMeshs");
-
-            if (_timeline)
+            for (int i = 0; i < _pair.Length; i++)
             {
-                _timeline.FieldCharaAdded += Update_BodyData;
-                _timeline.FieldCharaDeleted += Update_BodyData;
-
-                pair = new Pair[_timelineInfo.CharacterCount];
-                for (int i = 0; i < pair.Length; i++)
-                {
-                    pair[i] = new Pair();
-                    pair[i].guideMesh = Instantiate(guidePrefab).GetComponent<MeshRenderer>();
-                    pair[i].guideMesh.transform.parent = anchor.transform;
-                    pair[i].guideMesh.enabled = false;//非表示にしておく
-                }
+                _pair[i] = new Pair();
+                _pair[i].guideMesh = Instantiate(_guidePrefab).GetComponent<MeshRenderer>();
+                _pair[i].guideMesh.transform.parent = anchor.transform;
+                _pair[i].guideMesh.enabled = false;//非表示にしておく
             }
         }
-                
-        private void Update_BodyData()
+
+        public void OnFieldCharacterCount()
         {
-            for (int i = 0; i < pair.Length; i++)
+            for (int i = 0; i < _pair.Length; i++)
             {
                 if (i == TimelineController.PORTAL_INDEX) continue;
-                var chara = _timelineInfo.GetCharacter(i);
+                var chara = _timeline.BindCharaMap[i];
                 if (!chara)
                 {
-                    pair[i].charaController = null;
-                    pair[i].head = null;
-                    pair[i].guideMesh.enabled = false;
+                    _pair[i].charaController = null;
+                    _pair[i].head = null;
+                    _pair[i].guideMesh.enabled = false;
                 }
                 else
                 {
-                    pair[i].charaController = chara;
-                    pair[i].head = chara.GetAnimator.GetBoneTransform(HumanBodyBones.Head);
+                    _pair[i].charaController = chara;
+                    _pair[i].head = chara.GetAnimator.GetBoneTransform(HumanBodyBones.Head);
                 }
             }
         }
@@ -77,16 +72,16 @@ namespace UniLiveViewer
         // Update is called once per frame
         void Update()
         {
-            if (!isShow) return;
+            if (!_isShow) return;
 
-            for (int i = 0; i < pair.Length; i++)
+            for (int i = 0; i < _pair.Length; i++)
             {
                 if (i == TimelineController.PORTAL_INDEX) continue;
-                if (pair[i].charaController)
+                if (_pair[i].charaController)
                 {
-                    pair[i].guideMesh.transform.position = pair[i].charaController.transform.position;
-                    distance = pair[i].head.position - pair[i].guideMesh.transform.position;
-                    pair[i].guideMesh.transform.forward = distance;
+                    _pair[i].guideMesh.transform.position = _pair[i].charaController.transform.position;
+                    _distance = _pair[i].head.position - _pair[i].guideMesh.transform.position;
+                    _pair[i].guideMesh.transform.forward = _distance;
                 }
             }
         }

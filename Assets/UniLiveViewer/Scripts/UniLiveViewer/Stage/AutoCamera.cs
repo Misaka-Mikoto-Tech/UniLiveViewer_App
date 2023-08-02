@@ -1,6 +1,9 @@
 ﻿using Cysharp.Threading.Tasks;
 using System.Threading;
+using UniRx;
 using UnityEngine;
+using VContainer;
+using VContainer.Unity;
 
 namespace UniLiveViewer
 {
@@ -12,7 +15,7 @@ namespace UniLiveViewer
             RANDOM_ONE,
             RANDOM_BACKIMAGE
         }
-        
+
         public bool isUpdate = true;
         [SerializeField] Transform target;
         [SerializeField] Transform baseTransform;
@@ -22,21 +25,21 @@ namespace UniLiveViewer
         [SerializeField] SWITCHTYPE switchType = SWITCHTYPE.ALL;//カメラ候補を切り替えるモード
         [SerializeField] Camera[] _camera;
         [SerializeField] SpriteRenderer[] _spr;
-        CancellationToken cancellationToken;
+        CancellationToken _cancellationToken;
         TimelineController _timeline;
-        TimelineInfo _timelineInfo;
 
         // Start is called before the first frame update
         void Start()
         {
-            _timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
-            _timelineInfo = _timeline.GetComponent<TimelineInfo>();
-            cancellationToken = this.GetCancellationTokenOnDestroy();
+            var container = LifetimeScope.Find<TimeLineLifetimeScope>().Container;
+            _timeline = container.Resolve<TimelineController>();
+            _cancellationToken = this.GetCancellationTokenOnDestroy();
 
-            if(switchType != SWITCHTYPE.ALL)
+            if (switchType != SWITCHTYPE.ALL)
             {
-                _timeline.FieldCharaAdded += Init;
-                _timeline.FieldCharaDeleted += Init;
+                _timeline.FieldCharacterCount
+                    .Subscribe(_ => OnUpdate())
+                    .AddTo(this);
             }
 
             foreach (var e in _camera)
@@ -50,13 +53,13 @@ namespace UniLiveViewer
         /// <summary>
         /// ポータル以外で一番若いindexキャラを被写体に設定
         /// </summary>
-        void Init()
+        void OnUpdate()
         {
             if (target) return;
-            for (int i = 0;i< _timelineInfo.CharacterCount; i++)
+            for (int i = 0; i < _timeline.BindCharaMap.Count; i++)
             {
                 if (i == TimelineController.PORTAL_INDEX) continue;
-                var chara = _timelineInfo.GetCharacter(i);
+                var chara = _timeline.BindCharaMap[i];
                 if (chara)
                 {
                     target = chara.LookAt.test.virtualHead;
@@ -73,10 +76,10 @@ namespace UniLiveViewer
 
             while (true)
             {
-                await UniTask.Delay(interval, cancellationToken:cancellationToken);
+                await UniTask.Delay(interval, cancellationToken: _cancellationToken);
                 if (!isUpdate) continue;
 
-                if(target && baseTransform)
+                if (target && baseTransform)
                 {
                     pos = baseTransform.position + (baseTransform.forward * 2);
                     pos += (baseTransform.up * Random.Range(-offsetDown, offsetUp)) + (baseTransform.right * Random.Range(-offsetLeft, offsetRight));
@@ -92,20 +95,20 @@ namespace UniLiveViewer
                 {
                     case SWITCHTYPE.ALL:
                         foreach (var e in _camera) e.enabled = true;
-                        await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken);
+                        await UniTask.Yield(PlayerLoopTiming.Update, _cancellationToken);
                         foreach (var e in _camera) e.enabled = false;
                         break;
                     case SWITCHTYPE.RANDOM_ONE:
                         r = Random.Range(0, _camera.Length);
                         _camera[r].enabled = true;
-                        await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken);
+                        await UniTask.Yield(PlayerLoopTiming.Update, _cancellationToken);
                         _camera[r].enabled = false;
                         break;
                     case SWITCHTYPE.RANDOM_BACKIMAGE:
                         r = Random.Range(0, _spr.Length);
-                        for (int i = 0;i< _spr.Length;i++) _spr[i].enabled = (i == r);
+                        for (int i = 0; i < _spr.Length; i++) _spr[i].enabled = (i == r);
                         foreach (var e in _camera) e.enabled = true;
-                        await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken);
+                        await UniTask.Yield(PlayerLoopTiming.Update, _cancellationToken);
                         foreach (var e in _camera) e.enabled = false;
                         break;
                 }

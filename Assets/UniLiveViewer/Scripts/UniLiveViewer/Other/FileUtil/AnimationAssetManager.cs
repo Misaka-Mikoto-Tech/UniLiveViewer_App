@@ -1,25 +1,15 @@
-﻿using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading;
 using UnityEngine;
 
-namespace UniLiveViewer 
+namespace UniLiveViewer
 {
-    [RequireComponent(typeof(SpriteRenderer))]
-    public class AnimationAssetManager : MonoBehaviour
+    public class AnimationAssetManager
     {
-        CancellationToken cancellation_token;
         public IReadOnlyList<string> VmdList => _vmdList;
         List<string> _vmdList = new List<string>();
         public IReadOnlyList<string> VmdLipSyncList => _vmdLipSyncList;
         List<string> _vmdLipSyncList = new List<string>();
-
-        void Awake()
-        {
-            cancellation_token = this.GetCancellationTokenOnDestroy();
-        }
 
         /// <summary>
         /// アプリフォルダ内のVMDファイル名を取得
@@ -31,15 +21,15 @@ namespace UniLiveViewer
 
             _vmdList.Clear();
 
-            string sFolderPath = PathsInfo.GetFullPath(FOLDERTYPE.MOTION) + "/";
+            var folderPath = PathsInfo.GetFullPath(FOLDERTYPE.MOTION) + "/";
             try
             {
-                var names = Directory.GetFiles(sFolderPath, "*.vmd", SearchOption.TopDirectoryOnly);
+                var names = Directory.GetFiles(folderPath, "*.vmd", SearchOption.TopDirectoryOnly);
 
                 //ファイルパスからファイル名の抽出
                 for (int i = 0; i < names.Length; i++)
                 {
-                    names[i] = names[i].Replace(sFolderPath, "");
+                    names[i] = names[i].Replace(folderPath, "");
 
                     //ファイル名に区切りのカンマが含まれると困る
                     if (names[i].Contains(",")) return false;
@@ -73,15 +63,15 @@ namespace UniLiveViewer
         /// <returns></returns>
         void GetAllVMDLipSyncNames()
         {
-            string sFolderPath = PathsInfo.GetFullPath_LipSync() + "/";
+            var folderPath = PathsInfo.GetFullPath_LipSync() + "/";
             try
             {
-                var names = Directory.GetFiles(sFolderPath, "*.vmd", SearchOption.TopDirectoryOnly);
+                var names = Directory.GetFiles(folderPath, "*.vmd", SearchOption.TopDirectoryOnly);
 
                 //ファイルパスからファイル名の抽出
                 for (int i = 0; i < names.Length; i++)
                 {
-                    names[i] = names[i].Replace(sFolderPath, "");
+                    names[i] = names[i].Replace(folderPath, "");
                     _vmdLipSyncList.Add(names[i]);
                 }
             }

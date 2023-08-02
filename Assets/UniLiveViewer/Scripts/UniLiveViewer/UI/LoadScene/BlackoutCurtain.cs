@@ -3,6 +3,7 @@ using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using VContainer;
+using VContainer.Unity;
 
 namespace UniLiveViewer
 {
@@ -49,8 +50,8 @@ namespace UniLiveViewer
             instance = this;
 
             // TODO: UI作り直す時にまともにする
-            var player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerLifetimeScope>();
-            _playerStateManager = player.Container.Resolve<PlayerStateManager>();
+            var container = LifetimeScope.Find<PlayerLifetimeScope>().Container;
+            _playerStateManager = container.Resolve<PlayerStateManager>();
         }
 
         /// <summary>

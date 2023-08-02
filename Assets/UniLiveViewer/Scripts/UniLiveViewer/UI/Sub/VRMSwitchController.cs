@@ -2,11 +2,14 @@
 using NanaCiel;
 using System;
 using System.Threading;
-using UnityEngine;
 using UniRx;
+using UnityEngine;
+using VContainer;
+using VContainer.Unity;
 
 namespace UniLiveViewer
 {
+    [RequireComponent(typeof(AudioSource))]
     public class VRMSwitchController : MonoBehaviour
     {
         /// <summary>
@@ -26,7 +29,7 @@ namespace UniLiveViewer
         [Space(1), Header("＜1ページ＞")]
         [SerializeField] TextMesh[] _textDirectory;
         IVRMLoaderUI _vrmLoaderUI;
-        [SerializeField] ThumbnailController _thumbnailCon;
+        ThumbnailController _thumbnailController;
         [SerializeField] LoadAnimation _anime_Loading;
         [Space(1), Header("＜2ページ＞")]
         [SerializeField] Button_Base _btnApply;
@@ -54,16 +57,23 @@ namespace UniLiveViewer
         TextureAssetManager _textureAssetManager;
         //当たり判定
         VRMTouchColliders _touchCollider;
-        CancellationToken _cancellationToken;
+
 
         /// <summary>
         /// 最後に生成したVRM
         /// </summary>
         GameObject _currentVrmInstance;
 
-        public void Initialize(IVRMLoaderUI vrmLoaderUI)
+        public async UniTask InitializeAsync(IVRMLoaderUI vrmLoaderUI,
+            FileAccessManager fileAccessManager,
+            TextureAssetManager textureAssetManager,
+            ThumbnailController thumbnailController,
+            CancellationToken cancellation)
         {
             _vrmLoaderUI = vrmLoaderUI;
+            _fileManager = fileAccessManager;
+            _textureAssetManager = textureAssetManager;
+            _thumbnailController = thumbnailController;
 
             _addCharacterStream = new Subject<CharaController>();
             _addPrefabStream = new Subject<CharaController>();
@@ -72,28 +82,21 @@ namespace UniLiveViewer
             _audioSource.volume = SystemInfo.soundVolume_SE;
 
             //コールバック登録・・・2ページ目
-            _btnApply.onTrigger += (btn) => PrefabApply(btn, _cancellationToken).Forget();
+            _btnApply.onTrigger += (btn) => PrefabApply(btn, cancellation).Forget();
             _prefabEditor.onCurrentUpdate += () => { _audioSource.PlayOneShot(_sound[0]); };//クリック音
-            _cancellationToken = this.GetCancellationTokenOnDestroy();
-        }
 
-        async void Start()
-        {
-            var appConfig = GameObject.FindGameObjectWithTag("AppConfig").transform;
-            _fileManager = appConfig.GetComponent<FileAccessManager>();
-            _textureAssetManager = appConfig.GetComponent<TextureAssetManager>();
-            _touchCollider = GameObject.FindGameObjectWithTag("Player").GetComponent<VRMTouchColliders>();
+            _touchCollider = LifetimeScope.Find<PlayerLifetimeScope>().Container.Resolve<VRMTouchColliders>();
 
-            //サムネ用ボタンの生成
-            Button_Base[] btns = await _thumbnailCon.CreateThumbnailButtons();
+            var btns = await _thumbnailController.CreateThumbnailButtons();
+
             for (int i = 0; i < btns.Length; i++)
             {
-                btns[i].onTrigger += (b) => LoadVRM(b, _cancellationToken).Forget();
+                btns[i].onTrigger += (b) => LoadVRM(b, cancellation).Forget();
             }
 
-            _thumbnailCon.onGenerated += async () =>
+            _thumbnailController.OnGenerated += async () =>
             {
-                await UniTask.Delay(500, cancellationToken: _cancellationToken);
+                await UniTask.Delay(500, cancellationToken: cancellation);
                 _audioSource.PlayOneShot(_sound[1]);
             };
 
@@ -143,12 +146,12 @@ namespace UniLiveViewer
                     _anime_Loading.gameObject.SetActive(false);
 
                     //サムネボタンアンカーを有効状態
-                    _thumbnailCon.gameObject.SetActive(true);
+                    _thumbnailController.gameObject.SetActive(true);
 
                     //VRM選択ボタンを生成する
 
                     string[] names = _textureAssetManager.VrmNames;
-                    _thumbnailCon.SetThumbnail(names).Forget();
+                    _thumbnailController.SetThumbnail(names).Forget();
                     break;
                 case 1:
                     //prefabEditor.Init();
@@ -165,37 +168,37 @@ namespace UniLiveViewer
         /// VRMを読み込む
         /// </summary>
         /// <param name="btn">該当サムネボタン</param>
-        async UniTaskVoid LoadVRM(Button_Base btn, CancellationToken token)
+        async UniTaskVoid LoadVRM(Button_Base btn, CancellationToken cancellation)
         {
-            token.ThrowIfCancellationRequested();
+            cancellation.ThrowIfCancellationRequested();
 
             _currentVrmInstance = null;
 
             //重複クリックできないようにボタンを無効化
-            _thumbnailCon.gameObject.SetActive(false);
+            _thumbnailController.gameObject.SetActive(false);
 
             //クリック音
             _audioSource.PlayOneShot(_sound[0]);
-            await UniTask.Yield(PlayerLoopTiming.Update, token);
+            await UniTask.Yield(PlayerLoopTiming.Update, cancellation);
 
-            token.ThrowIfCancellationRequested();
+            cancellation.ThrowIfCancellationRequested();
 
             //ローディングアニメーション開始
             _anime_Loading.gameObject.SetActive(true);
 
             //SampleUIを有効化
             _vrmLoaderUI.SetUIActive(true);
-            await UniTask.Delay(10, cancellationToken: token);
+            await UniTask.Delay(10, cancellationToken: cancellation);
 
-            token.ThrowIfCancellationRequested();
+            cancellation.ThrowIfCancellationRequested();
 
             //指定パスのVRMのみ読み込む
             var fileName = btn.transform.name;
             var fullPath = PathsInfo.GetFullPath(FOLDERTYPE.CHARA) + "/" + fileName;
 
-            var instance = await _vrmLoaderUI.GetURPVRMAsync(fullPath, token)
-                .OnError(_ => OnError(new Exception("Vrm Loader")));
-            token.ThrowIfCancellationRequested();
+            var instance = await _vrmLoaderUI.GetURPVRMAsync(fullPath, cancellation)
+                .OnError(_ => OnError(new Exception("Vrm Loader"), cancellation));
+            cancellation.ThrowIfCancellationRequested();
 
             if (instance)
             {
@@ -209,13 +212,13 @@ namespace UniLiveViewer
                 _currentVrmInstance.layer = SystemInfo.layerNo_GrabObject;
 
                 var attacher = Instantiate(_attacherPrefab.gameObject).GetComponent<ComponentAttacher_VRM>();
-                await attacher.Init(_currentVrmInstance.transform, instance.SkinnedMeshRenderers, _cancellationToken)
-                    .OnError(_ => OnError(new Exception("Attacher Initialize")));
-                token.ThrowIfCancellationRequested();
-                
-                await attacher.Attachment(_touchCollider, _cancellationToken)
-                    .OnError(_ => OnError(new Exception("Attacher Attachment")));
-                token.ThrowIfCancellationRequested();
+                await attacher.Init(_currentVrmInstance.transform, instance.SkinnedMeshRenderers, cancellation)
+                    .OnError(_ => OnError(new Exception("Attacher Initialize"), cancellation));
+                cancellation.ThrowIfCancellationRequested();
+
+                await attacher.Attachment(_touchCollider, cancellation)
+                    .OnError(_ => OnError(new Exception("Attacher Attachment"), cancellation));
+                cancellation.ThrowIfCancellationRequested();
 
                 _addCharacterStream.OnNext(attacher.CharaCon);
                 Destroy(attacher);
@@ -228,7 +231,7 @@ namespace UniLiveViewer
             _anime_Loading.gameObject.SetActive(false);
         }
 
-        async void OnError(Exception exception)
+        async void OnError(Exception exception, CancellationToken cancellation)
         {
             if (_currentVrmInstance) Destroy(_currentVrmInstance);
 
@@ -240,7 +243,7 @@ namespace UniLiveViewer
             Debug.LogError(exception);
             System.IO.StringReader rs = new System.IO.StringReader(exception.ToString());
             _textErrorResult.text = $"{rs.ReadLine()}";//1行まで
-            await UniTask.Delay(5000, cancellationToken: _cancellationToken);
+            await UniTask.Delay(5000, cancellationToken: cancellation);
         }
 
         public void VRMEditing(CharaController _vrmModel)
@@ -255,9 +258,9 @@ namespace UniLiveViewer
         /// 設定の確定
         /// </summary>
         /// <param name="btn"></param>
-        async UniTask PrefabApply(Button_Base btn, CancellationToken token)
+        async UniTask PrefabApply(Button_Base btn, CancellationToken cancellation)
         {
-            token.ThrowIfCancellationRequested();
+            cancellation.ThrowIfCancellationRequested();
 
             //クリック音
             _audioSource.PlayOneShot(_sound[0]);
@@ -277,16 +280,16 @@ namespace UniLiveViewer
 
             _vrmLoaderUI.SetVRMToPrefab(vrm);
 
-            await UniTask.Delay(1000, cancellationToken: _cancellationToken);
-            token.ThrowIfCancellationRequested();
+            await UniTask.Delay(1000, cancellationToken: cancellation);
+            cancellation.ThrowIfCancellationRequested();
 
             vrm.SetEnabelSpringBones(false);//Prefab化で値が残ってしまうので無効化
             vrm.GetComponent<Animator>().enabled = true;
             vrm.AnimationMode = CharaEnums.ANIMATION_MODE.CLIP;
             vrm.gameObject.SetActive(false);
 
-            await UniTask.Yield(_cancellationToken);
-            token.ThrowIfCancellationRequested();
+            await UniTask.Yield(cancellation);
+            cancellation.ThrowIfCancellationRequested();
 
             _addPrefabStream.OnNext(vrm);
 
@@ -306,20 +309,20 @@ namespace UniLiveViewer
         /// <summary>
         /// ダウンロードフォルダからVRMをコピーしてくる
         /// </summary>
-        public async void OnClick_VRMCopy()
-        {
-            _cancellationToken.ThrowIfCancellationRequested();
-            try
-            {
-                await _textureAssetManager.CopyVRMtoCharaFolder(PathsInfo.GetFullPath_Download() + "/");
-                _cancellationToken.ThrowIfCancellationRequested();
+        //public async void OnClick_VRMCopy()
+        //{
+        //    cancellation.ThrowIfCancellationRequested();
+        //    try
+        //    {
+        //        await _textureAssetManager.CopyVRMtoCharaFolder(PathsInfo.GetFullPath_Download() + "/", cancellation);
+        //        cancellation.ThrowIfCancellationRequested();
 
-                InitPage(0);//開き直して反映
-            }
-            catch
-            {
-                _textDirectory[1].text = "VRM Copy Error...";
-            }
-        }
+        //        InitPage(0);//開き直して反映
+        //    }
+        //    catch
+        //    {
+        //        _textDirectory[1].text = "VRM Copy Error...";
+        //    }
+        //}
     }
 }

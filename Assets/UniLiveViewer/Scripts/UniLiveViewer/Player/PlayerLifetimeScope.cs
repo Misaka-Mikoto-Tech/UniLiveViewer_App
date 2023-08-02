@@ -12,8 +12,11 @@ public class PlayerLifetimeScope : LifetimeScope
 
         builder.Register<MovementRestrictionService>(Lifetime.Singleton);
 
+        builder.RegisterComponentInHierarchy<OVRManager>();
         builder.RegisterComponentInHierarchy<PassthroughService>();
+        builder.RegisterComponentInHierarchy<CharacterCameraConstraint_Custom>();
 
+        builder.RegisterComponentInHierarchy<VRMTouchColliders>();
         builder.RegisterComponentInHierarchy<PlayerStateManager>();
         builder.RegisterComponentInHierarchy<SimpleCapsuleWithStickMovement>();
         builder.RegisterComponentInHierarchy<HandUIController>();

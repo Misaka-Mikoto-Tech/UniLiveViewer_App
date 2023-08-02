@@ -8,40 +8,32 @@ using NanaCiel;
 
 namespace UniLiveViewer 
 {
-    [RequireComponent(typeof(SpriteRenderer))]
-    public class TextureAssetManager : MonoBehaviour
+    public class TextureAssetManager
     {
-        IVRMLoaderUI _vrmLoaderUI;
-        [SerializeField] Texture2D texDummy;
-        CancellationToken cancellation_token;
+        Texture2D _texDummy;
 
         public string[] VrmNames => _vrmNames;
-        [SerializeField] string[] _vrmNames;
+        string[] _vrmNames;
 
         public IReadOnlyDictionary<string, Sprite> Thumbnails => _thumbnails;
         [SerializeField] Dictionary<string, Sprite> _thumbnails = new Dictionary<string, Sprite>();
 
-        //サムネイルキャッシュ用
-        //public static Dictionary<string,Texture2D> cacheThumbnails = new Dictionary<string, Texture2D>();
-
-        public void Initialize(IVRMLoaderUI vrmLoaderUI)
+        TextureAssetManager()
         {
-            _vrmLoaderUI = vrmLoaderUI;
-
-            cancellation_token = this.GetCancellationTokenOnDestroy();
+            _texDummy = Resources.Load<Texture2D>("Texture/NoImage");
         }
 
         /// <summary>
         /// 暫定
         /// </summary>
-        public async UniTask CacheThumbnails()
+        public async UniTask CacheThumbnails(CancellationToken cancellation)
         {
-            if (_vrmLoaderUI is null) return;
-            string charaFolderPath = PathsInfo.GetFullPath(FOLDERTYPE.CHARA) + "/";
+            var charaFolderPath = PathsInfo.GetFullPath(FOLDERTYPE.CHARA) + "/";
 
             Texture2D texture = null;
             Sprite spr = null;
-            await UniTask.Yield(PlayerLoopTiming.Update, cancellation_token);
+
+            await UniTask.Delay(100, cancellationToken: cancellation);
 
             //全ファイル名を取得
             _vrmNames = GetVrmNames(charaFolderPath);
@@ -60,7 +52,7 @@ namespace UniLiveViewer
                 try
                 {
                     //VRMファイルからサムネイルを抽出する
-                    texture = await _vrmLoaderUI.GetThumbnailAsync(charaFolderPath + _vrmNames[i], cancellation_token);
+                    texture = await VRMExpansions.GetThumbnail(charaFolderPath + _vrmNames[i], cancellation);
 
                     if (texture)
                     {
@@ -70,7 +62,7 @@ namespace UniLiveViewer
                     else
                     {
                         //ダミー画像生成
-                        texture = Instantiate(texDummy);
+                        texture = GameObject.Instantiate(_texDummy);
                         //テクスチャ→スプライトに変換
                         spr = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
                         texture = new Texture2D(1, 1, TextureFormat.RGB24, false);
@@ -98,7 +90,7 @@ namespace UniLiveViewer
                     Debug.Log("サムネイルキャッシュ中に中断");
                     throw;
                 }
-                await UniTask.Yield(PlayerLoopTiming.Update, cancellation_token);
+                await UniTask.Yield(PlayerLoopTiming.Update, cancellation);
             }
             Debug.Log("サムネイルキャッシュ成功");
         }
@@ -133,7 +125,7 @@ namespace UniLiveViewer
         /// </summary>
         /// <param name="pathMy"></param>
         /// <returns></returns>
-        public async UniTask CopyVRMtoCharaFolder(string folderPath)
+        public async UniTask CopyVRMtoCharaFolder(string folderPath,CancellationToken cancellation)
         {
             _vrmNames = GetVrmNames(folderPath);
             try
@@ -146,7 +138,7 @@ namespace UniLiveViewer
                 }
 
                 //VRMのサムネイル画像をキャッシュする
-                await CacheThumbnails();
+                await CacheThumbnails(cancellation);
             }
             catch
             {

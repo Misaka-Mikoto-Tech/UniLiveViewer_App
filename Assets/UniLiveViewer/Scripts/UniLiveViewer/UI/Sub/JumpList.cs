@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using VContainer;
 
 namespace UniLiveViewer
 {
@@ -25,11 +26,10 @@ namespace UniLiveViewer
         AudioAssetManager _audioAssetManager;
         List<Button_Base> btnList = new List<Button_Base>();
 
-        // Start is called before the first frame update
-        void Start()
+        [Inject]
+        void Constructor(AudioAssetManager audioAssetManager)
         {
-            var appConfig = GameObject.FindGameObjectWithTag("AppConfig").transform;
-            _audioAssetManager = appConfig.GetComponent<AudioAssetManager>();
+            _audioAssetManager = audioAssetManager;
         }
 
         /// <summary>

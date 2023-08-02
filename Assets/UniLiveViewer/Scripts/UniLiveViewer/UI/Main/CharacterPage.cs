@@ -3,6 +3,8 @@ using NanaCiel;
 using System.Threading;
 using UnityEngine;
 using UniRx;
+using VContainer;
+using VContainer.Unity;
 
 namespace UniLiveViewer
 {
@@ -15,6 +17,8 @@ namespace UniLiveViewer
         bool _isPresetChara;
         bool _isPresetAnime;
 
+
+        int _fieldCharaCount;
 
         /// <summary>
         /// キャラ、モーション、リップ
@@ -46,27 +50,26 @@ namespace UniLiveViewer
         Transform _vrmOptionAnchor;
 
         TimelineController _timeline;
-        TimelineInfo _timelineInfo;
         [SerializeField] GeneratorPortal _generatorPortal;
         VRMSwitchController _vrmSelectUI;
         CancellationToken _cancellationToken;
 
         CompositeDisposable _disposable;
 
-        void Awake()
+
+        public void Initialize(MenuManager menuManager, VRMSwitchController vrmSelectUI)
         {
-            _menuManager = transform.root.GetComponent<MenuManager>();
+            _disposable = new CompositeDisposable();
+
+            _menuManager = menuManager;
             _cancellationToken = this.GetCancellationTokenOnDestroy();
 
-            _disposable = new CompositeDisposable();
-        }
+            var container = LifetimeScope.Find<TimeLineLifetimeScope>().Container;
+            _timeline = container.Resolve<TimelineController>();
 
-        // Start is called before the first frame update
-        void Start()
-        {
-            _timeline = _menuManager.timeline;
-            _timelineInfo = _timeline.GetComponent<TimelineInfo>();
-            _vrmSelectUI = _menuManager.vrmSelectUI;
+            _fieldCharaCount = 0;
+
+            _vrmSelectUI = vrmSelectUI;
 
             //ジャンプリスト
             foreach (var e in _btnJumpList)
@@ -124,11 +127,15 @@ namespace UniLiveViewer
 
             _switchReverse.onTrigger += (b) => ChangeReverse_Anime(b).Forget();
             _switchReverse.isEnable = false;
-            _timeline.FieldCharaAdded += () => { Add_FieldChara().Forget(); };
-            _timeline.FieldCharaDeleted += () => { Add_FieldChara().Forget(); };
+
+            _timeline.FieldCharacterCount
+                .SkipLatestValueOnSubscribe()
+                .Subscribe(_ => Add_FieldChara().Forget())
+                .AddTo(this);
+
             _sliderOffset.ValueUpdate += () =>
             {
-                var portalChara = _timelineInfo.GetCharacter(TimelineController.PORTAL_INDEX);
+                var portalChara = _timeline.BindCharaMap[TimelineController.PORTAL_INDEX];
                 if (!portalChara) return;
                 //オフセットを設定
                 FileReadAndWriteUtility.SetMotionOffset(_generatorPortal.GetNowAnimeInfo().viewName, (int)_sliderOffset.Value);
@@ -138,14 +145,14 @@ namespace UniLiveViewer
             _offsetAnchor = _sliderOffset.transform.parent;
             _sliderEyeLook.ValueUpdate += () =>
             {
-                var portalChara = _timelineInfo.GetCharacter(TimelineController.PORTAL_INDEX);
+                var portalChara = _timeline.BindCharaMap[TimelineController.PORTAL_INDEX];
                 if (!portalChara) return;
                 //目の向く量をセット
                 portalChara.LookAt.inputWeight_Eye = _sliderEyeLook.Value;
             };
             _sliderHeadLook.ValueUpdate += () =>
             {
-                var portalChara = _timelineInfo.GetCharacter(TimelineController.PORTAL_INDEX);
+                var portalChara = _timeline.BindCharaMap[TimelineController.PORTAL_INDEX];
                 if (!portalChara) return;
                 //顔の向く量をセット
                 portalChara.LookAt.inputWeight_Head = _sliderHeadLook.Value;
@@ -159,7 +166,7 @@ namespace UniLiveViewer
             _btnMouthUpdate.onTrigger += Switch_Mouth;
 
             _vrmSelectUI.AddCharacterAsObservable
-                .Subscribe(x => 
+                .Subscribe(x =>
                 {
                     _generatorPortal.AddVRMList(x);//VRMを追加
                     _generatorPortal.SetChara(0).Forget();//追加されたVRMを生成する
@@ -187,14 +194,14 @@ namespace UniLiveViewer
                     textMeshs[0].fontSize = textMeshs[0].text.FontSizeMatch(600, 30, 50);
 
                     //生成ボタンの表示
-                    if (_timelineInfo.FieldCharaCount < _timelineInfo.MaxFieldChara) _btnVRMLoad.gameObject.SetActive(true);
+                    if (_fieldCharaCount < SystemInfo.MaxFieldChara) _btnVRMLoad.gameObject.SetActive(true);
                     if (_vrmOptionAnchor.gameObject.activeSelf) _vrmOptionAnchor.gameObject.SetActive(false);
                 }).AddTo(_disposable);
 
             _generatorPortal.GenerateCharacterAsObservable
-                .Subscribe(_=> DrawCharaInfo()).AddTo(_disposable);
+                .Subscribe(_ => DrawCharaInfo()).AddTo(_disposable);
             _generatorPortal.EndAnimationSetAsObservable
-                .Subscribe(_=> DrawAnimeInfo()).AddTo(_disposable);
+                .Subscribe(_ => DrawAnimeInfo()).AddTo(_disposable);
             _generatorPortal.SubAnimationName
                 .Subscribe(DrawAnimePairInfo).AddTo(_disposable);
 
@@ -206,6 +213,13 @@ namespace UniLiveViewer
 
             //マニュアル生成
             Instantiate(_bookPrefab[SystemInfo.userProfile.LanguageCode - 1], _bookGrabAnchor.transform);
+
+            
+        }
+
+        void Start()
+        {
+            
         }
 
         public void OnClickManualBook()
@@ -221,6 +235,11 @@ namespace UniLiveViewer
             DebugInput();
 #elif UNITY_ANDROID
 #endif
+        }
+
+        public void OnUpdateCharacterCount(int fieldCharaCount)
+        {
+            _fieldCharaCount = fieldCharaCount;
         }
 
         /// <summary>
@@ -357,7 +376,7 @@ namespace UniLiveViewer
             _generatorPortal.IsAnimationReverse = _switchReverse.isEnable;
 
             //反転ボタンの状態に合わせる
-            var portalChara = _timelineInfo.GetCharacter(TimelineController.PORTAL_INDEX);
+            var portalChara = _timeline.BindCharaMap[TimelineController.PORTAL_INDEX];
             if (portalChara)
             {
                 //キャラを生成して反転を反映させる
@@ -391,7 +410,7 @@ namespace UniLiveViewer
         /// <param name="btn"></param>
         void VRMSetting(Button_Base btn)
         {
-            var portalChara = _timelineInfo.GetCharacter(TimelineController.PORTAL_INDEX);
+            var portalChara = _timeline.BindCharaMap[TimelineController.PORTAL_INDEX];
             if (portalChara && portalChara.charaInfoData.formatType == CharaInfoData.FORMATTYPE.VRM)
             {
                 //コピーをVRM設定画面に渡す
@@ -410,7 +429,7 @@ namespace UniLiveViewer
         {
             if (btn == _btnVRMDelete && _timeline.GetCharacterInPortal)
             {
-                var portalChara = _timelineInfo.GetCharacter(TimelineController.PORTAL_INDEX);
+                var portalChara = _timeline.BindCharaMap[TimelineController.PORTAL_INDEX];
                 if (portalChara.charaInfoData.formatType != CharaInfoData.FORMATTYPE.VRM) return;
 
                 var id = portalChara.charaInfoData.vrmID;
@@ -458,7 +477,7 @@ namespace UniLiveViewer
         {
             if (transform.root.gameObject.activeSelf)
             {
-                textMeshs[2].text = $"{_timelineInfo.FieldCharaCount}/{_timelineInfo.MaxFieldChara}";
+                textMeshs[2].text = $"{_fieldCharaCount}/{SystemInfo.MaxFieldChara}";
                 //負荷が高いので削除処理とフレームをずらす
                 await UniTask.Delay(250, cancellationToken: _cancellationToken);
                 //ポータルにキャラが存在していなければ生成しておく
@@ -473,7 +492,7 @@ namespace UniLiveViewer
         {
             if (_btnVRMLoad.gameObject.activeSelf) _btnVRMLoad.gameObject.SetActive(false);
 
-            var portalChara = _timelineInfo.GetCharacter(TimelineController.PORTAL_INDEX);
+            var portalChara = _timeline.BindCharaMap[TimelineController.PORTAL_INDEX];
             if (!portalChara) return;
             if (!_generatorPortal.GetNowCharaName(out var charaName)) return;
 
@@ -482,7 +501,7 @@ namespace UniLiveViewer
 
             textMeshs[0].text = charaName;
             textMeshs[0].fontSize = textMeshs[0].text.FontSizeMatch(600, 30, 50);
-            textMeshs[2].text = $"{_timelineInfo.FieldCharaCount}/{_timelineInfo.MaxFieldChara}";
+            textMeshs[2].text = $"{_fieldCharaCount}/{SystemInfo.MaxFieldChara}";
 
             //スライダーの値を反映
             portalChara.LookAt.inputWeight_Head = _sliderHeadLook.Value;

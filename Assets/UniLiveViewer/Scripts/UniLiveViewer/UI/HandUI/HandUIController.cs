@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace UniLiveViewer
 {
@@ -9,7 +9,7 @@ namespace UniLiveViewer
         ItemMaterialSelector[] _itemMaterialSelector = new ItemMaterialSelector[2];
 
         public handUI handUI_PlayerHeight;
-        CharacterCameraConstraint_Custom _charaCam;
+        CharacterCameraConstraint_Custom _characterCameraConstraintCustom;
 
         float _playerHeight = 0;
         public float PlayerHeight 
@@ -18,26 +18,23 @@ namespace UniLiveViewer
             set 
             {
                 _playerHeight = Mathf.Clamp(value, 0, 2.0f);
-                _charaCam.HeightOffset = _playerHeight;
+                _characterCameraConstraintCustom.HeightOffset = _playerHeight;
                 handUI_PlayerHeight.textMesh.text = $"{_playerHeight:0.00}";
             }
         }
 
         Transform _lookTarget;
 
-        void Awake()
+        public void Initialize(CharacterCameraConstraint_Custom characterCameraConstraintCustom, Camera camera)
         {
-            _charaCam = GetComponent<CharacterCameraConstraint_Custom>();
-            _lookTarget = GameObject.FindGameObjectWithTag("MainCamera").gameObject.transform;
-        }
+            _lookTarget = camera.transform;
+            _characterCameraConstraintCustom = characterCameraConstraintCustom;
 
-        void Start()
-        {
             handUI_PlayerHeight.Init(Instantiate(handUI_PlayerHeight.prefab));
-            PlayerHeight = _charaCam.HeightOffset;
+            PlayerHeight = _characterCameraConstraintCustom.HeightOffset;
             handUI_PlayerHeight.Show = false;
 
-            for (int i = 0;i< handUI_CharaAdjustment.Length;i++)
+            for (int i = 0; i < handUI_CharaAdjustment.Length; i++)
             {
                 handUI_CharaAdjustment[i].Init(Instantiate(handUI_CharaAdjustment[i].prefab));
                 handUI_CharaAdjustment[i].textMesh.text = $"{SystemInfo.userProfile.InitCharaSize}0.00";

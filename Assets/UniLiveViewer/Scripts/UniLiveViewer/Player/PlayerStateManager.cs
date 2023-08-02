@@ -3,6 +3,9 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using System;
 using UniRx;
+using VContainer;
+using VContainer.Unity;
+using UnityEngine.Playables;
 
 namespace UniLiveViewer 
 {
@@ -12,7 +15,7 @@ namespace UniLiveViewer
 
         [Header("基本")]
         TimelineController _timeline;
-        TimelineInfo _timelineInfo;
+        PlayableDirector _playableDirector;
         public OVRManager myOVRManager;
         public Camera myCamera;
 
@@ -51,26 +54,31 @@ namespace UniLiveViewer
         public IObservable<Unit> PlayerInputAsObservable => _playerInputStream;
         Subject<Unit> _playerInputStream;
 
-        CancellationToken _cancellation_token;
-
         [SerializeField] AnimationCurve _animationCurve;
         float _curveTimer;
+
+        MeshGuide _meshGuide;
 
         void Awake()
         {
             _mainUISwitchingStream = new Subject<bool>();
             _playerInputStream = new Subject<Unit>();
+            _bothHandsCandidate = new OVRGrabbable_Custom[2];
+        }
 
-            _timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();
-            _timelineInfo = _timeline.GetComponent<TimelineInfo>();
-            _audioSource = GetComponent<AudioSource>();
-            _audioSource.volume = SystemInfo.soundVolume_SE;
+        public void Initialize(HandUIController handUIController)
+        {
+            _handUIController = handUIController;
 
             _isMoveUI = true;
 
-            _handUIController = GetComponent<HandUIController>();
-            _bothHandsCandidate = new OVRGrabbable_Custom[2];
-
+            var container = LifetimeScope.Find<TimeLineLifetimeScope>().Container;
+            _timeline = container.Resolve<TimelineController>();
+            _playableDirector = container.Resolve<PlayableDirector>();
+            _meshGuide = container.Resolve<MeshGuide>();
+            
+            _audioSource = GetComponent<AudioSource>();
+            _audioSource.volume = SystemInfo.soundVolume_SE;
 
             //両手掴み用
             foreach (var hand in _ovrGrabber)
@@ -81,12 +89,6 @@ namespace UniLiveViewer
             }
             _bothHandsCenterAnchor = new GameObject("BothHandsCenter").transform;
 
-            _cancellation_token = this.GetCancellationTokenOnDestroy();
-        }
-
-        // Start is called before the first frame update
-        void Start()
-        {
             //初期座標
             switch (SystemInfo.sceneMode)
             {
@@ -285,7 +287,7 @@ namespace UniLiveViewer
 
         void CharaResize(float addVal)
         {
-            var chara = _timelineInfo.GetCharacter(TimelineController.PORTAL_INDEX);
+            var chara = _timeline.BindCharaMap[TimelineController.PORTAL_INDEX];
             chara.CustomScalar += addVal;
             _handUIController.handUI_CharaAdjustment[0].textMesh.text = $"{chara.CustomScalar:0.00}";
             _handUIController.handUI_CharaAdjustment[1].textMesh.text = $"{chara.CustomScalar:0.00}";
@@ -299,7 +301,7 @@ namespace UniLiveViewer
                 hand.FoeceGrabEnd();//強制離す
 
                 //アタッチ成功かつマニュアルモード
-                if (_timelineInfo.IsManualMode && grabObj.GetComponent<DecorationItemInfo>().TryAttachment())
+                if (_playableDirector.timeUpdateMode == DirectorUpdateMode.Manual && grabObj.GetComponent<DecorationItemInfo>().TryAttachment())
                 {
                     //手なら握らせる
                     if (grabObj.hitCollider.name.Contains("Hand"))
@@ -373,7 +375,7 @@ namespace UniLiveViewer
                 }
             }
             //ガイドの表示を切り替える
-            _timeline.GetComponent<MeshGuide>().IsShow = isSummonCircle;
+            _meshGuide.IsShow = isSummonCircle;
         }
 
         /// <summary>

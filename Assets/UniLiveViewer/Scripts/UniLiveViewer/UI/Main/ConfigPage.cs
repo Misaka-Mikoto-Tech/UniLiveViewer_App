@@ -1,9 +1,9 @@
 ﻿using Cysharp.Threading.Tasks;
-using System;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 using VContainer;
+using VContainer.Unity;
 
 namespace UniLiveViewer
 {
@@ -13,47 +13,48 @@ namespace UniLiveViewer
         [SerializeField] private MenuManager menuManager;
 
         [Header("＜シーン別＞")]
-        [SerializeField] private Transform[] sceneAnchor;
-        private Button_Base[] btnE = new Button_Base[5];
-        [SerializeField] private Transform[] btnE_ActionParent;
+        [SerializeField] Transform[] sceneAnchor;
+        Button_Base[] btnE = new Button_Base[5];
+        [SerializeField] Transform[] btnE_ActionParent;
 
         [Header("＜KAGURALive専用＞")]
-        [SerializeField] private SliderGrabController slider_Fog = null;
+        [SerializeField] SliderGrabController slider_Fog = null;
 
         [Header("＜ViewerScene専用＞")]
-        [SerializeField] private TextMesh[] textMeshs_Viewer = new TextMesh[4];
+        [SerializeField] TextMesh[] textMeshs_Viewer = new TextMesh[4];
 
         [Header("＜Gym専用＞")]
-        [SerializeField] private TextMesh[] textMeshs_Gym = new TextMesh[1];
+        [SerializeField] TextMesh[] textMeshs_Gym = new TextMesh[1];
 
         [Header("＜共用＞")]
-        [SerializeField] private Button_Base[] btn_General = null;
-        [SerializeField] private Button_Switch[] btnE_SecenChange = new Button_Switch[4];
-        [SerializeField] private TextMesh[] textMeshs = new TextMesh[5];
-        [SerializeField] private SliderGrabController slider_OutLine;
-        [SerializeField] private SliderGrabController slider_InitCharaSize;
-        [SerializeField] private SliderGrabController slider_CharaShadow;
-        [SerializeField] private SliderGrabController slider_VMDScale;
-        [SerializeField] private SliderGrabController slider_FixedFoveated;
+        [SerializeField] Button_Base[] btn_General = null;
+        [SerializeField] Button_Switch[] btnE_SecenChange = new Button_Switch[4];
+        [SerializeField] TextMesh[] textMeshs = new TextMesh[5];
+        [SerializeField] SliderGrabController slider_OutLine;
+        [SerializeField] SliderGrabController slider_InitCharaSize;
+        [SerializeField] SliderGrabController slider_CharaShadow;
+        [SerializeField] SliderGrabController slider_VMDScale;
+        [SerializeField] SliderGrabController slider_FixedFoveated;
         [Space(10)]
-        [SerializeField] private ScriptableRendererFeature outlineRender;
-        [SerializeField] private Material material_OutLine;
-        [SerializeField] private UniversalRendererData frd;
+        [SerializeField] ScriptableRendererFeature outlineRender;
+        [SerializeField] Material material_OutLine;
+        [SerializeField] UniversalRendererData frd;
 
-        private TimelineController timeline = null;
-        private QuasiShadow quasiShadow;
+        TimelineController _timeline;
+        QuasiShadow _quasiShadow;
         PassthroughService _passthroughService;
 
-        private Material matMirrore;//LiveScene用
-        private BackGroundController backGroundCon;
-        private StageLightManager stageLightManager;
-        private CancellationToken cancellation_token;
+        Material _matMirrore;//LiveScene用
+        BackGroundController _backGroundCon;
+        StageLightManager _stageLightManager;
+        CancellationToken _cancellation;
 
-        private void Awake()
+        void Awake()
         {
-            timeline = menuManager.timeline;
-            quasiShadow = timeline.GetComponent<QuasiShadow>();
-            cancellation_token = this.GetCancellationTokenOnDestroy();
+            var container = LifetimeScope.Find<TimeLineLifetimeScope>().Container;
+            _timeline = container.Resolve<TimelineController>();
+            _quasiShadow = container.Resolve<QuasiShadow>();
+            _cancellation = this.GetCancellationTokenOnDestroy();
 
             slider_OutLine.ValueUpdate += () =>
             {
@@ -91,7 +92,7 @@ namespace UniLiveViewer
             }
             btn_General[0].isEnable = isSmoothVMD;//スムースは毎回無効化
         }
-        private void OnEnable()
+        void OnEnable()
         {
             Init().Forget();
         }
@@ -110,7 +111,7 @@ namespace UniLiveViewer
             {
                 if (i == current)
                 {
-                    if(!sceneAnchor[i].gameObject.activeSelf) sceneAnchor[i].gameObject.SetActive(true);
+                    if (!sceneAnchor[i].gameObject.activeSelf) sceneAnchor[i].gameObject.SetActive(true);
                 }
                 else if (sceneAnchor[i].gameObject.activeSelf)
                 {
@@ -134,11 +135,11 @@ namespace UniLiveViewer
                 btnE_ActionParent[3] = GameObject.FindGameObjectWithTag("SonicBoom").transform;
                 btnE_ActionParent[4] = GameObject.FindGameObjectWithTag("ManualUI").transform;
 
-                matMirrore = btnE_ActionParent[2].GetComponent<MeshRenderer>().material;
+                _matMirrore = btnE_ActionParent[2].GetComponent<MeshRenderer>().material;
 
                 btnE_ActionParent[0].gameObject.SetActive(SystemInfo.userProfile.scene_crs_particle);
                 btnE_ActionParent[1].gameObject.SetActive(SystemInfo.userProfile.scene_crs_laser);
-                matMirrore.SetFloat("_Smoothness", SystemInfo.userProfile.scene_crs_reflection ? 1 : 0);
+                _matMirrore.SetFloat("_Smoothness", SystemInfo.userProfile.scene_crs_reflection ? 1 : 0);
                 btnE_ActionParent[3].gameObject.SetActive(SystemInfo.userProfile.scene_crs_sonic);
                 btnE_ActionParent[4].gameObject.SetActive(SystemInfo.userProfile.scene_crs_manual);
             }
@@ -171,7 +172,7 @@ namespace UniLiveViewer
                 btnE_ActionParent = new Transform[1];
 
                 btnE_ActionParent[0] = GameObject.FindGameObjectWithTag("FloorLED").transform;
-                backGroundCon = GameObject.FindGameObjectWithTag("BackGroundController").GetComponent<BackGroundController>();
+                _backGroundCon = GameObject.FindGameObjectWithTag("BackGroundController").GetComponent<BackGroundController>();
 
                 btnE_ActionParent[0].gameObject.SetActive(SystemInfo.userProfile.scene_view_led);
             }
@@ -182,10 +183,10 @@ namespace UniLiveViewer
                 {
                     btnE[i] = sceneAnchor[current].GetChild(i).GetComponent<Button_Base>();
                 }
-                stageLightManager = GameObject.FindGameObjectWithTag("BackGroundController").GetComponent<StageLightManager>();
+                _stageLightManager = GameObject.FindGameObjectWithTag("BackGroundController").GetComponent<StageLightManager>();
             }
 
-                
+
             //レンダーパイプラインからoutlineオブジェクトを取得    
             foreach (var renderObj in frd.rendererFeatures)
             {
@@ -203,9 +204,9 @@ namespace UniLiveViewer
             slider_Fog.Value = 0.03f;
         }
 
-        private async UniTaskVoid Init()
+        async UniTaskVoid Init()
         {
-            await UniTask.Yield(PlayerLoopTiming.Update,cancellation_token);//一応
+            await UniTask.Yield(PlayerLoopTiming.Update, _cancellation);//一応
 
             //sceneボタン初期化
             foreach (var e in btnE_SecenChange)
@@ -222,7 +223,7 @@ namespace UniLiveViewer
                 btnE[4].isEnable = btnE_ActionParent[4].gameObject.activeSelf;
 
                 //反射状態に合わせる
-                btnE[2].isEnable = (matMirrore.GetFloat("_Smoothness") == 1.0f ? true : false);
+                btnE[2].isEnable = (_matMirrore.GetFloat("_Smoothness") == 1.0f ? true : false);
             }
             else if (SystemInfo.sceneMode == SceneMode.KAGURA_LIVE)
             {
@@ -259,10 +260,10 @@ namespace UniLiveViewer
             Update_InitCharaSize();
 
             //キャラ影
-            slider_CharaShadow.Value = quasiShadow.shadowScale;
+            slider_CharaShadow.Value = _quasiShadow.shadowScale;
             Update_CharaShadow();
 
-            textMeshs[3].text = $"FootShadow:\n{quasiShadow.ShadowType}";
+            textMeshs[3].text = $"FootShadow:\n{_quasiShadow.ShadowType}";
 
             //VMD拡縮
             slider_VMDScale.Value = SystemInfo.userProfile.VMDScale;
@@ -280,7 +281,7 @@ namespace UniLiveViewer
 #endif
         }
 
-        private void Click_Action(Button_Base btn)
+        void Click_Action(Button_Base btn)
         {
             //スムース
             if (btn == btn_General[0])
@@ -301,17 +302,17 @@ namespace UniLiveViewer
             //キャラ影デクリ
             else if (btn == btn_General[3])
             {
-                quasiShadow.ShadowType -= 1;
-                textMeshs[3].text = $"FootShadow:\n{quasiShadow.ShadowType}";
-                SystemInfo.userProfile.CharaShadowType = (int)quasiShadow.ShadowType;
+                _quasiShadow.ShadowType -= 1;
+                textMeshs[3].text = $"FootShadow:\n{_quasiShadow.ShadowType}";
+                SystemInfo.userProfile.CharaShadowType = (int)_quasiShadow.ShadowType;
                 FileReadAndWriteUtility.WriteJson(SystemInfo.userProfile);
             }
             //キャラ影インクリ
             else if (btn == btn_General[4])
             {
-                quasiShadow.ShadowType += 1;
-                textMeshs[3].text = $"FootShadow:\n{quasiShadow.ShadowType}";
-                SystemInfo.userProfile.CharaShadowType = (int)quasiShadow.ShadowType;
+                _quasiShadow.ShadowType += 1;
+                textMeshs[3].text = $"FootShadow:\n{_quasiShadow.ShadowType}";
+                SystemInfo.userProfile.CharaShadowType = (int)_quasiShadow.ShadowType;
                 FileReadAndWriteUtility.WriteJson(SystemInfo.userProfile);
             }
 
@@ -347,9 +348,9 @@ namespace UniLiveViewer
                     break;
                 //ミラー
                 case 2:
-                    if (matMirrore)
+                    if (_matMirrore)
                     {
-                        matMirrore.SetFloat("_Smoothness", (result == true ? 1 : 0));
+                        _matMirrore.SetFloat("_Smoothness", (result == true ? 1 : 0));
                         SystemInfo.userProfile.scene_crs_reflection = result;
                     }
                     break;
@@ -451,33 +452,33 @@ namespace UniLiveViewer
 
         public void Click_ChangeEffect(int i)
         {
-            if (!backGroundCon) return;
+            if (!_backGroundCon) return;
             string str;
 
             switch (i)
             {
                 case 0:
-                    backGroundCon.SetCubemap(-1, out str);
+                    _backGroundCon.SetCubemap(-1, out str);
                     textMeshs_Viewer[0].text = "SkyBox_" + str;
                     break;
                 case 1:
-                    backGroundCon.SetCubemap(1, out str);
+                    _backGroundCon.SetCubemap(1, out str);
                     textMeshs_Viewer[0].text = "SkyBox_" + str;
                     break;
                 case 2:
-                    backGroundCon.SetWormHole(-1, out str);
+                    _backGroundCon.SetWormHole(-1, out str);
                     textMeshs_Viewer[1].text = "WormHole_" + str;
                     break;
                 case 3:
-                    backGroundCon.SetWormHole(1, out str);
+                    _backGroundCon.SetWormHole(1, out str);
                     textMeshs_Viewer[1].text = "WormHole_" + str;
                     break;
                 case 4:
-                    backGroundCon.SetParticle(-1, out str);
+                    _backGroundCon.SetParticle(-1, out str);
                     textMeshs_Viewer[2].text = "Particle_" + str;
                     break;
                 case 5:
-                    backGroundCon.SetParticle(1, out str);
+                    _backGroundCon.SetParticle(1, out str);
                     textMeshs_Viewer[2].text = "Particle_" + str;
                     break;
             }
@@ -487,17 +488,17 @@ namespace UniLiveViewer
 
         public void Click_ChangeStageLight(int i)
         {
-            if (!stageLightManager) return;
+            if (!_stageLightManager) return;
             string str;
 
             switch (i)
             {
                 case 0:
-                    stageLightManager.SetStageLight(-1, btnE[0].isEnable, out str);
+                    _stageLightManager.SetStageLight(-1, btnE[0].isEnable, out str);
                     textMeshs_Gym[0].text = "SpotLight_" + str;
                     break;
                 case 1:
-                    stageLightManager.SetStageLight(1, btnE[0].isEnable, out str);
+                    _stageLightManager.SetStageLight(1, btnE[0].isEnable, out str);
                     textMeshs_Gym[0].text = "SpotLight_" + str;
                     break;
             }
@@ -510,11 +511,11 @@ namespace UniLiveViewer
             switch (i)
             {
                 case 0:
-                    stageLightManager.SetLightColor(btnE[0].isEnable);
+                    _stageLightManager.SetLightColor(btnE[0].isEnable);
                     SystemInfo.userProfile.scene_gym_whitelight = btnE[0].isEnable;
                     break;
                 case 1:
-                    timeline.GetComponent<QuasiShadow>().isStepSE = btnE[1].isEnable;
+                    _timeline.GetComponent<QuasiShadow>().isStepSE = btnE[1].isEnable;
                     SystemInfo.userProfile.StepSE = btnE[1].isEnable;
                     break;
             }
@@ -540,16 +541,16 @@ namespace UniLiveViewer
         /// </summary>
         /// <param name="sceneName"></param>
         /// <returns></returns>
-        private async UniTask SceneChange(string sceneName)
+        async UniTask SceneChange(string sceneName)
         {
-            await UniTask.Delay(100, cancellationToken: cancellation_token);
+            await UniTask.Delay(100, cancellationToken: _cancellation);
 
             BlackoutCurtain.instance.StartBlackout(sceneName).Forget();
-            await UniTask.Delay(200, cancellationToken: cancellation_token);
+            await UniTask.Delay(200, cancellationToken: _cancellation);
 
             //音が割れるので止める
-            timeline.TimelineManualMode().Forget();
-            await UniTask.Delay(200, cancellationToken: cancellation_token);
+            _timeline.TimelineManualMode().Forget();
+            await UniTask.Delay(200, cancellationToken: _cancellation);
 
             //UIが透けて見えるので隠す
             menuManager.gameObject.SetActive(false);
@@ -558,7 +559,7 @@ namespace UniLiveViewer
         /// <summary>
         /// キャラ初期サイズ
         /// </summary>
-        private void Update_InitCharaSize()
+        void Update_InitCharaSize()
         {
             textMeshs[0].text = $"{slider_InitCharaSize.Value:0.00}";
         }
@@ -566,16 +567,16 @@ namespace UniLiveViewer
         /// <summary>
         /// キャラの影サイズ
         /// </summary>
-        private void Update_CharaShadow()
+        void Update_CharaShadow()
         {
-            quasiShadow.shadowScale = slider_CharaShadow.Value;
+            _quasiShadow.shadowScale = slider_CharaShadow.Value;
             textMeshs[4].text = $"{slider_CharaShadow.Value:0.00}";
         }
 
         /// <summary>
         /// VMD範囲
         /// </summary>
-        private void Update_VMDScale()
+        void Update_VMDScale()
         {
             slider_VMDScale.Value = Mathf.Clamp(slider_VMDScale.Value, 0.3f, 1.0f);
             textMeshs[1].text = $"{slider_VMDScale.Value:0.000}";
@@ -584,7 +585,7 @@ namespace UniLiveViewer
         /// <summary>
         /// 固定中心窩レンダリングのスライダー
         /// </summary>
-        private void Update_FixedFoveated()
+        void Update_FixedFoveated()
         {
             slider_FixedFoveated.Value = Mathf.Clamp(slider_FixedFoveated.Value, 2, 4);
 #if UNITY_EDITOR
@@ -595,7 +596,7 @@ namespace UniLiveViewer
             textMeshs[2].text = Enum.GetName(typeof(OVRManager.FixedFoveatedRenderingLevel),OVRManager.fixedFoveatedRenderingLevel);
 #endif
         }
-        private void DebugInput()
+        void DebugInput()
         {
             if (Input.GetKeyDown(KeyCode.I)) Click_Setting_Viewer(2);//ワームホール
             if (Input.GetKeyDown(KeyCode.K)) Click_Setting_Viewer(3);//パーティクル

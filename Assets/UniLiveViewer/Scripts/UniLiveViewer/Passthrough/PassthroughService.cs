@@ -11,19 +11,11 @@ namespace UniLiveViewer
         OVRManager _ovrManager;
         Camera _camera;
 
-        [Inject]
-        public void Constructor(Camera camera)
+        public void Initialize(OVRManager ovrManager, Camera camera)
         {
             _camera = camera;
-        }
+            _ovrManager = ovrManager;
 
-        // Start is called before the first frame update
-        void Awake()
-        {
-            _ovrManager = GetComponent<OVRManager>();
-        }
-        void Start()
-        {
             Switching(false);
         }
 

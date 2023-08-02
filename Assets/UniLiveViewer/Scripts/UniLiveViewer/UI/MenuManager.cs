@@ -17,10 +17,8 @@ namespace UniLiveViewer
         public JumpList jumpList => _jumpList;
         [SerializeField] JumpList _jumpList = null;
 
-        public TimelineController timeline => _timeline;
         public VRMSwitchController vrmSelectUI => _vrmSelectUI;
 
-        TimelineController _timeline = null;
         [SerializeField] VRMSwitchController _vrmSelectUI = null;
 
         [Header("＜Sound＞")]
@@ -31,8 +29,6 @@ namespace UniLiveViewer
         {
             audioSource = GetComponent<AudioSource>();
             audioSource.volume = SystemInfo.soundVolume_SE;
-
-            _timeline = GameObject.FindGameObjectWithTag("TimeLineDirector").gameObject.GetComponent<TimelineController>();    
         }
 
         // Start is called before the first frame update

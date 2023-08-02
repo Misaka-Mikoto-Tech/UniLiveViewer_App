@@ -10,25 +10,26 @@ namespace UniLiveViewer
 {
     public class ThumbnailController : MonoBehaviour
     {
-        [SerializeField] private Button_Base btnPrefab;
-        private Transform btnParent;
-        private List<TextMesh> btnTexts = new List<TextMesh>();
-        private Button_Base[] btns = new Button_Base[15];
+        public event Action OnGenerated;
 
-        public event Action onGenerated;
+        Button_Base _btnPrefab;
+        Transform parent;
+        List<TextMesh> _texts = new List<TextMesh>();
+        Button_Base[] _buttons = new Button_Base[15];
 
-        private int[] GENERATE_INTERVAL = { 70,210,350 };//ミリ秒
-        private int[] GENERATE_COUNT = { 1,3,5 };//一括表示数、1～15
+        int[] GENERATE_INTERVAL = { 70,210,350 };//ミリ秒
+        int[] GENERATE_COUNT = { 1,3,5 };//一括表示数、1～15
 
-        private int[] randomBox;
-        private string[] _vrmNames;
-        private CancellationToken cancellation_token;
+        int[] _randomBox;
+        string[] _vrmNames;
+        CancellationToken _cancellation;
 
-        private TextureAssetManager textureAssetManager;
+        TextureAssetManager _textureAssetManager;
 
-        public void Awake()
+        public void Initialize(TextureAssetManager textureAssetManager)
         {
-            textureAssetManager = GameObject.FindGameObjectWithTag("AppConfig").GetComponent<TextureAssetManager>();
+            _textureAssetManager = textureAssetManager;
+            _btnPrefab = Resources.Load<Button_Base>("Prefabs/Button/btnVRM");
         }
 
         /// <summary>
@@ -38,11 +39,10 @@ namespace UniLiveViewer
         /// <returns></returns>
         public async UniTask<Button_Base[]> CreateThumbnailButtons()
         {
-            cancellation_token = this.GetCancellationTokenOnDestroy();
-            btnParent = transform;
+            _cancellation = this.GetCancellationTokenOnDestroy();
+            parent = transform;
 
             int index = 0;
-
             for (int i = 0; i < 3; i++)
             {
                 for (int j = 0; j < 5; j++)
@@ -50,18 +50,18 @@ namespace UniLiveViewer
                     index = (i * 5) + j;
 
                     //生成
-                    btns[index] = Instantiate(btnPrefab);
-                    btns[index].transform.Also((it) =>
+                    _buttons[index] = Instantiate(_btnPrefab);
+                    _buttons[index].transform.Also((it) =>
                     {
-                        it.parent = btnParent;
+                        it.parent = parent;
                         it.localPosition = new Vector3(-0.3f + (j * 0.15f), 0 - (i * 0.15f));
                         it.localRotation = Quaternion.identity;
-                        btnTexts.Add(it.GetChild(1).GetComponent<TextMesh>());
+                        _texts.Add(it.GetChild(1).GetComponent<TextMesh>());
                     });
                 }
-                await UniTask.Yield(PlayerLoopTiming.Update, cancellation_token);
+                await UniTask.Yield(PlayerLoopTiming.Update, _cancellation);
             }
-            return btns;
+            return _buttons;
         }
 
         /// <summary>
@@ -77,31 +77,31 @@ namespace UniLiveViewer
             if (array.Length > 15) _vrmNames = array.Take(15).ToArray();
             else _vrmNames = array;
             //ランダム配列を設定
-            randomBox = new int[_vrmNames.Length];
-            for (int i = 0; i < randomBox.Length; i++) randomBox[i] = i;
-            randomBox = Shuffle(randomBox);
-            await UniTask.Delay(10, cancellationToken: cancellation_token);
+            _randomBox = new int[_vrmNames.Length];
+            for (int i = 0; i < _randomBox.Length; i++) _randomBox[i] = i;
+            _randomBox = Shuffle(_randomBox);
+            await UniTask.Delay(10, cancellationToken: _cancellation);
 
             int index = 0;
             int r = UnityEngine.Random.Range(0, 3);
             
             //必要なボタンのみ有効化して設定する
-            for (int i = 0; i < btns.Length; i++)
+            for (int i = 0; i < _buttons.Length; i++)
             {
                 if (i < _vrmNames.Length)
                 {
                     //ランダムなボタン順
-                    index = randomBox[i];
+                    index = _randomBox[i];
 
-                    if (!btns[index].gameObject.activeSelf) btns[index].gameObject.SetActive(true);
+                    if (!_buttons[index].gameObject.activeSelf) _buttons[index].gameObject.SetActive(true);
                     //ボタン情報更新
-                    btns[index].name = _vrmNames[index];
-                    btnTexts[index].text = _vrmNames[index];
-                    btnTexts[index].fontSize = btnTexts[index].text.FontSizeMatch(500, 25, 40);
+                    _buttons[index].name = _vrmNames[index];
+                    _texts[index].text = _vrmNames[index];
+                    _texts[index].fontSize = _texts[index].text.FontSizeMatch(500, 25, 40);
                     UpdateSprite(index);
 
-                    if (i % GENERATE_COUNT[r] == 0) onGenerated?.Invoke();
-                    if (i % GENERATE_COUNT[r] == GENERATE_COUNT[r] - 1) await UniTask.Delay(GENERATE_INTERVAL[r], cancellationToken: cancellation_token);
+                    if (i % GENERATE_COUNT[r] == 0) OnGenerated?.Invoke();
+                    if (i % GENERATE_COUNT[r] == GENERATE_COUNT[r] - 1) await UniTask.Delay(GENERATE_INTERVAL[r], cancellationToken: _cancellation);
                 }
             }
         }
@@ -115,16 +115,16 @@ namespace UniLiveViewer
             try
             {
                 //サムネイル無しはデフォ画像を流用する仕様
-                Sprite spr = textureAssetManager.Thumbnails[_vrmNames[index]];
-                if (spr) btns[index].collisionChecker.colorSetting[0].targetSprite.sprite = spr;
+                var spr = _textureAssetManager.Thumbnails[_vrmNames[index]];
+                if (spr) _buttons[index].collisionChecker.colorSetting[0].targetSprite.sprite = spr;
             }
             catch
             {
                 //Debug.Log("ロジックエラー。アプリを立ち上げ後にキャッシュ画像を削除した？");
                 //対策としてボタンを非表示
-                if (btnTexts[index].transform.parent.gameObject.activeSelf)
+                if (_texts[index].transform.parent.gameObject.activeSelf)
                 {
-                    btnTexts[index].transform.parent.gameObject.SetActive(false);
+                    _texts[index].transform.parent.gameObject.SetActive(false);
                 }
             }
         }
@@ -135,11 +135,11 @@ namespace UniLiveViewer
         /// <param name="isEnabel"></param>
         private void ThumbnailShow(bool isEnabel)
         {
-            for (int i = 0; i < btnTexts.Count; i++)
+            for (int i = 0; i < _texts.Count; i++)
             {
-                if (btnTexts[i].transform.parent.gameObject.activeSelf != isEnabel)
+                if (_texts[i].transform.parent.gameObject.activeSelf != isEnabel)
                 {
-                    btnTexts[i].transform.parent.gameObject.SetActive(isEnabel);
+                    _texts[i].transform.parent.gameObject.SetActive(isEnabel);
                 }
             }
         }

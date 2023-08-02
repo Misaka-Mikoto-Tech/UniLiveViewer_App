@@ -1,9 +1,10 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using NanaCiel;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Playables;
 using VContainer;
+using VContainer.Unity;
 
 namespace UniLiveViewer
 {
@@ -26,38 +27,29 @@ namespace UniLiveViewer
         [SerializeField] SliderGrabController slider_Speed = null;
 
         TimelineController _timeline;
-        TimelineInfo _timelineInfo;
+        PlayableDirector _playableDirector;
         PlayerStateManager _playerStateManager;
         AudioAssetManager _audioAssetManager;
 
         CancellationToken _cancellationToken;
 
-        void Awake()
+        public void Initialize(AudioAssetManager audioAssetManager)
         {
             _isPresetAudio = true;
             _cancellationToken = this.GetCancellationTokenOnDestroy();
-        }
 
-        void OnEnable()
-        {
-            Init();
-        }
-
-        // Start is called before the first frame update
-        void Start()
-        {
-            var appConfig = GameObject.FindGameObjectWithTag("AppConfig").transform;
-            _audioAssetManager = appConfig.GetComponent<AudioAssetManager>();
+            _audioAssetManager = audioAssetManager;
 
             // TODO: UI作り直す時にまともにする
-            var player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerLifetimeScope>();
+            var player = LifetimeScope.Find<PlayerLifetimeScope>();
             _playerStateManager = player.Container.Resolve<PlayerStateManager>();
 
-            _timeline = _menuManager.timeline;
-            _timelineInfo = _timeline.GetComponent<TimelineInfo>();
+            var container = LifetimeScope.Find<TimeLineLifetimeScope>().Container;
+            _timeline = container.Resolve<TimelineController>();
+            _playableDirector = container.Resolve<PlayableDirector>();
 
             //再生スライダーに最大値を設定
-            slider_Playback.maxValuel = (float)_timelineInfo.GetPlayableDirector.duration;
+            slider_Playback.maxValuel = (float)_playableDirector.duration;
 
             //ジャンプリスト
             foreach (var e in btn_jumpList)
@@ -85,8 +77,8 @@ namespace UniLiveViewer
             };
 
             //その他
-            _timelineInfo.GetPlayableDirector.played += Director_Played;
-            _timelineInfo.GetPlayableDirector.stopped += Director_Stoped;
+            _playableDirector.played += Director_Played;
+            _playableDirector.stopped += Director_Stoped;
             for (int i = 0; i < btn_Audio.Length; i++)
             {
                 btn_Audio[i].onTrigger += MoveIndex_Auido;
@@ -115,10 +107,15 @@ namespace UniLiveViewer
             Init();
         }
 
+        void OnEnable()
+        {
+            Init();
+        }
+
         async void Init()
         {
             if (!_timeline) return;
-            if (_timelineInfo.GetPlayableDirector.timeUpdateMode == DirectorUpdateMode.Manual)
+            if (_playableDirector.timeUpdateMode == DirectorUpdateMode.Manual)
             {
                 btnS_Stop.gameObject.SetActive(false);
                 btnS_Play.gameObject.SetActive(true);

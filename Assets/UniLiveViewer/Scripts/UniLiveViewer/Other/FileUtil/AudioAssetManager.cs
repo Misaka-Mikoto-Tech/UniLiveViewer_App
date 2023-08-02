@@ -30,7 +30,6 @@ namespace UniLiveViewer
         public int CurrentCustom => _currentCustom;
         int _currentCustom;
         string _basePath;
-
         void Awake()
         {
             _currentPreset = 0;
@@ -60,16 +59,18 @@ namespace UniLiveViewer
             _customAudioNames.AddRange(Directory.GetFiles(_basePath, $"*{EXTENSION_WAV}", SearchOption.TopDirectoryOnly));
         }
 
-        public async UniTask<AudioClip> GetCurrentAudioClipAsycn(CancellationToken token, bool isPreset)
+        public async UniTask<AudioClip> TryGetCurrentAudioClipAsycn(CancellationToken token, bool isPreset)
         {
             token.ThrowIfCancellationRequested();
 
             if (isPreset)
             {
+                if (_presetAudioClips.Count == 0) return null;
                 return _presetAudioClips[_currentPreset];
             }
             else
             {
+                if (_customAudioNames.Count == 0) return null;
                 return await LoadAudioClipAsync(token, _customAudioNames[_currentCustom]);
             }
         }
@@ -80,19 +81,21 @@ namespace UniLiveViewer
         /// <param name="isPreset"></param>
         /// <param name="addCurrent"></param>
         /// <returns></returns>
-        public async UniTask<AudioClip> GetAudioClipAsync(CancellationToken token, bool isPreset, int addCurrent)
+        public async UniTask<AudioClip> TryGetAudioClipAsync(CancellationToken cancellation, bool isPreset, int addCurrent)
         {
-            token.ThrowIfCancellationRequested();
+            cancellation.ThrowIfCancellationRequested();
 
             if (isPreset)
             {
+                if (_presetAudioClips.Count == 0) return null;
                 _currentPreset = IndexNormalization(_currentPreset + addCurrent, _presetAudioClips.Count);
                 return _presetAudioClips[_currentPreset];
             }
             else
             {
+                if (_customAudioNames.Count == 0) return null;
                 _currentCustom = IndexNormalization(_currentCustom + addCurrent, _customAudioNames.Count);
-                return await LoadAudioClipAsync(token, _customAudioNames[_currentCustom]);
+                return await LoadAudioClipAsync(cancellation, _customAudioNames[_currentCustom]);
             }
         }
 
@@ -101,15 +104,15 @@ namespace UniLiveViewer
         /// </summary>
         /// <param name="nextCurrent"></param>
         /// <returns></returns>
-        async UniTask<AudioClip> LoadAudioClipAsync(CancellationToken token, string filePath)
+        async UniTask<AudioClip> LoadAudioClipAsync(CancellationToken cancellation, string filePath)
         {
-            token.ThrowIfCancellationRequested();
+            cancellation.ThrowIfCancellationRequested();
 
             var fileName = Path.GetFileName(filePath);
             var audioClip = _stackAudioClips.FirstOrDefault(x => x.name == fileName);
             if (audioClip) return audioClip;
 
-            audioClip = await TryAudioLoadAsycn(filePath);
+            audioClip = await TryAudioLoadAsycn(cancellation,filePath);
             if (audioClip is null) return null;
             UpdateStackList(audioClip);
             return audioClip;
@@ -134,7 +137,7 @@ namespace UniLiveViewer
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
-        async UniTask<AudioClip> TryAudioLoadAsycn(string filePath)
+        async UniTask<AudioClip> TryAudioLoadAsycn(CancellationToken cancellation, string filePath)
         {
             var src = $"file://{filePath}";
             var audioType = AudioType.MPEG;
@@ -145,7 +148,7 @@ namespace UniLiveViewer
             {
                 ((DownloadHandlerAudioClip)www.downloadHandler).streamAudio = true;
 
-                await www.SendWebRequest();
+                await www.SendWebRequest().ToUniTask(cancellationToken: cancellation);
 
                 if (www.result == UnityWebRequest.Result.ConnectionError)
                 {

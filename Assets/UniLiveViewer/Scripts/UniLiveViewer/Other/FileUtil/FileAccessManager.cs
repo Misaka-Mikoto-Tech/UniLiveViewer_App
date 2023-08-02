@@ -7,12 +7,10 @@ using UniRx;
 
 namespace UniLiveViewer 
 {
-    [RequireComponent(typeof(SpriteRenderer))]
-    public class FileAccessManager : MonoBehaviour
+    public class FileAccessManager
     {
         public bool isSuccess { get; private set; } = false;
 
-        CancellationToken cancellation_token;
         Subject<Unit> _onLoadStart = new Subject<Unit>();
         public IObservable<Unit> LoadStartAsObservable => _onLoadStart;
         Subject<Unit> _onLoadEnd = new Subject<Unit>();
@@ -20,12 +18,7 @@ namespace UniLiveViewer
         Subject<Unit> _onVMDLoadError = new Subject<Unit>();
         public IObservable<Unit> LoadErrorAsObservable => _onVMDLoadError;
 
-        void Awake()
-        {
-            cancellation_token = this.GetCancellationTokenOnDestroy();
-        }
-
-        public async UniTask Initialize(AnimationAssetManager animationAssetManager, TextureAssetManager textureAssetManager)
+        FileAccessManager()
         {
             // NOTE: Linkだと両方反応するのでelif必須
             // TODO: PLATFORM_OCULUS試す
@@ -34,16 +27,19 @@ namespace UniLiveViewer
 #elif UNITY_ANDROID
             Debug.Log("Questとして認識しています");
 #endif
+        }
 
-            await UniTask.Delay(100, cancellationToken:cancellation_token);//他の初期化を待つ
+        public async UniTask Initialize(AnimationAssetManager animationAssetManager, TextureAssetManager textureAssetManager,CancellationToken cancellation)
+        {
+            UnityEngine.Debug.LogError("①");
             try
             {
                 _onLoadStart?.OnNext(Unit.Default);
-
                 //フォルダ作成
                 TryCreateCustomFolder();
                 //リードミー作成
                 await TryCreateReadmeFile();
+
                 //タイトルシーン以外
                 if (GlobalConfig.GetActiveSceneName() != "TitleScene")
                 {
@@ -53,9 +49,8 @@ namespace UniLiveViewer
                         _onVMDLoadError?.OnNext(Unit.Default);//フォーマットエラー
                         throw new Exception("CheckOffsetFile");
                     }
-                    await textureAssetManager.CacheThumbnails();
+                    await textureAssetManager.CacheThumbnails(cancellation);
                 }
-
                 isSuccess = true;
                 Debug.Log("ロード成功");
                 _onLoadEnd?.OnNext(Unit.Default);
