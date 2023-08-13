@@ -33,7 +33,7 @@ namespace UniLiveViewer
 
         CancellationToken _cancellationToken;
 
-        public void Initialize(AudioAssetManager audioAssetManager)
+        public void OnStart(AudioAssetManager audioAssetManager)
         {
             _isPresetAudio = true;
             _cancellationToken = this.GetCancellationTokenOnDestroy();

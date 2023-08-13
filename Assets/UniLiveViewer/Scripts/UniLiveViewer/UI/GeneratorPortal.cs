@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -113,7 +113,7 @@ namespace UniLiveViewer
             }
         }
 
-        public void Initialize(TimelineController timelineController, AnimationAssetManager animationAssetManager)
+        public void OnStart(TimelineController timelineController, AnimationAssetManager animationAssetManager)
         {
             _timeline = timelineController;
             _animationAssetManager = animationAssetManager;

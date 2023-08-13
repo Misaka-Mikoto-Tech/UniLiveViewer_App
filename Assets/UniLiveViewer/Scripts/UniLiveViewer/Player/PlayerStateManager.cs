@@ -57,7 +57,7 @@ namespace UniLiveViewer
         [SerializeField] AnimationCurve _animationCurve;
         float _curveTimer;
 
-        MeshGuide _meshGuide;
+        MeshGuideService _meshGuide;
 
         void Awake()
         {
@@ -75,7 +75,7 @@ namespace UniLiveViewer
             var container = LifetimeScope.Find<TimeLineLifetimeScope>().Container;
             _timeline = container.Resolve<TimelineController>();
             _playableDirector = container.Resolve<PlayableDirector>();
-            _meshGuide = container.Resolve<MeshGuide>();
+            _meshGuide = container.Resolve<MeshGuideService>();
             
             _audioSource = GetComponent<AudioSource>();
             _audioSource.volume = SystemInfo.soundVolume_SE;

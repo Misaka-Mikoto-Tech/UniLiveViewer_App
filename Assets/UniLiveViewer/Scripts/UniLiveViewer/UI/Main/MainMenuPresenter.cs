@@ -48,8 +48,8 @@ namespace UniLiveViewer
 
             await UniTask.Yield(cancellation);//Timelineの初期化を待つ
 
-            _characterPage.Initialize(_menuManager, _vrmSwitchController);
-            _audioPlaybackPage.Initialize(_audioAssetManager);
+            _characterPage.OnStart(_menuManager, _vrmSwitchController);
+            _audioPlaybackPage.OnStart(_audioAssetManager);
 
             UnityEngine.Debug.Log("Trace: MainMenuPresenter.Start");
         }

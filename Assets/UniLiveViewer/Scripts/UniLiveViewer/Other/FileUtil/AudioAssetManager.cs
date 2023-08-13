@@ -1,5 +1,4 @@
 ﻿using Cysharp.Threading.Tasks;
-using NanaCiel;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -112,7 +111,7 @@ namespace UniLiveViewer
             var audioClip = _stackAudioClips.FirstOrDefault(x => x.name == fileName);
             if (audioClip) return audioClip;
 
-            audioClip = await TryAudioLoadAsycn(cancellation,filePath);
+            audioClip = await TryAudioLoadAsycn(cancellation, filePath);
             if (audioClip is null) return null;
             UpdateStackList(audioClip);
             return audioClip;

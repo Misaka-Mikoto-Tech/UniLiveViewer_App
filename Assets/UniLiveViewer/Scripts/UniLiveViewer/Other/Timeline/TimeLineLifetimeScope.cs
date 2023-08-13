@@ -10,11 +10,13 @@ public class TimeLineLifetimeScope : LifetimeScope
 {
     protected override void Configure(IContainerBuilder builder)
     {
+        builder.Register<MeshGuideService>(Lifetime.Singleton);
+
         builder.RegisterComponentInHierarchy<TimelineController>();
         builder.RegisterComponentInHierarchy<AudioAssetManager>();
         builder.RegisterComponentInHierarchy<PlayableDirector>();
-        builder.RegisterComponentInHierarchy<MeshGuide>();
-        builder.RegisterComponentInHierarchy<QuasiShadow>();
+        builder.RegisterComponentInHierarchy<QuasiShadowSetting>();
+        builder.RegisterComponentInHierarchy<QuasiShadowService>();
 
         // ここの並び順模様確認
         builder.RegisterEntryPoint<TimelinePresenter>();

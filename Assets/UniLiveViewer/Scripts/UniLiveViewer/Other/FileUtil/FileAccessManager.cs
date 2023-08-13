@@ -29,9 +29,8 @@ namespace UniLiveViewer
 #endif
         }
 
-        public async UniTask Initialize(AnimationAssetManager animationAssetManager, TextureAssetManager textureAssetManager,CancellationToken cancellation)
+        public async UniTask OnStartAsync(AnimationAssetManager animationAssetManager, TextureAssetManager textureAssetManager,CancellationToken cancellation)
         {
-            UnityEngine.Debug.LogError("①");
             try
             {
                 _onLoadStart?.OnNext(Unit.Default);

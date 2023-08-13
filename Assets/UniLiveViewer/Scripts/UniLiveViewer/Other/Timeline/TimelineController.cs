@@ -94,7 +94,7 @@ namespace UniLiveViewer
             }
         }
 
-        public void Initialize(PlayableDirector playableDirector, AudioAssetManager audioAssetManager)
+        public void OnStart(PlayableDirector playableDirector, AudioAssetManager audioAssetManager)
         {
             _playableDirector = playableDirector;
             _audioAssetManager = audioAssetManager;

@@ -12,7 +12,6 @@ public class VRMPresenter : IAsyncStartable, IDisposable
     readonly IVRMLoaderUI _vrmLoaderUI;
     readonly VRMSwitchController _switchController;
     readonly FileAccessManager _fileAccessManager;
-    readonly TextureAssetManager _textureAssetManager;
     readonly ThumbnailController _thumbnailController;
     readonly Transform _thumbnailRoot;
 
@@ -21,16 +20,14 @@ public class VRMPresenter : IAsyncStartable, IDisposable
     [Inject]
     public VRMPresenter(
         IVRMLoaderUI vrmLoaderUI,
-        VRMSwitchController switchController,
         FileAccessManager fileAccessManager,
-        TextureAssetManager textureAssetManager,
+        VRMSwitchController switchController,
         ThumbnailController thumbnailController,
         Transform thumbnailRoot)
     {
         _vrmLoaderUI = vrmLoaderUI;
-        _switchController = switchController;
         _fileAccessManager = fileAccessManager;
-        _textureAssetManager = textureAssetManager;
+        _switchController = switchController;
         _thumbnailController = thumbnailController;
         _thumbnailRoot = thumbnailRoot;
 
@@ -41,13 +38,13 @@ public class VRMPresenter : IAsyncStartable, IDisposable
     {
         Debug.Log("Trace: VRMPresenter.StartAsync");
 
-        await _switchController.InitializeAsync(_vrmLoaderUI, _fileAccessManager, cancellation);
+        await _switchController.OnStartAsync(_vrmLoaderUI, _fileAccessManager, cancellation);
 
         _switchController.OnOpenPageAsObservable
             .Where(x => x == 0)
             .Subscribe(async _ => {
                 _thumbnailRoot.gameObject.SetActive(true);
-                await _thumbnailController.SetThumbnail(_textureAssetManager.VrmNames, cancellation);
+                await _thumbnailController.SetThumbnail(cancellation);
             })
             .AddTo(_disposables);
 

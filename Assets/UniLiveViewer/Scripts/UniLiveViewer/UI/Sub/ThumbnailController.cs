@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -78,12 +78,12 @@ namespace UniLiveViewer
         /// <summary>
         /// VRMの数だけサムネボタンを生成する
         /// </summary>
-        public async UniTask SetThumbnail(string[] vrmNames,CancellationToken cancellation)
+        public async UniTask SetThumbnail(CancellationToken cancellation)
         {
             //一旦全部非表示
             ThumbnailShow(false);
             //全VRMファイル名を取得
-            var array = vrmNames;
+            var array = _textureAssetManager.VrmNames;
             //最大15件に丸める
             if (array.Length > 15) _vrmNames = array.Take(15).ToArray();
             else _vrmNames = array;

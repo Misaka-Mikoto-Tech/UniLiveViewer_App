@@ -57,7 +57,7 @@ namespace UniLiveViewer
         CompositeDisposable _disposable;
 
 
-        public void Initialize(MenuManager menuManager, VRMSwitchController vrmSelectUI)
+        public void OnStart(MenuManager menuManager, VRMSwitchController vrmSelectUI)
         {
             _disposable = new CompositeDisposable();
 

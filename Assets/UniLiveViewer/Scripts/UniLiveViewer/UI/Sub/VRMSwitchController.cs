@@ -65,7 +65,7 @@ namespace UniLiveViewer
         /// </summary>
         GameObject _currentVrmInstance;
 
-        public async UniTask InitializeAsync(IVRMLoaderUI vrmLoaderUI,
+        public async UniTask OnStartAsync(IVRMLoaderUI vrmLoaderUI,
             FileAccessManager fileAccessManager,
             CancellationToken cancellation)
         {
@@ -186,7 +186,6 @@ namespace UniLiveViewer
 
             var instance = await _vrmLoaderUI.GetURPVRMAsync(fullPath, cancellation)
                 .OnError(_ => OnError(new Exception("Vrm Loader"), cancellation));
-
             cancellation.ThrowIfCancellationRequested();
 
             if (instance)

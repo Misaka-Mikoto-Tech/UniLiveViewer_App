@@ -33,7 +33,7 @@ public class TitleScenePresenter : IAsyncStartable, IDisposable
             .AddTo(_disposable);
 
         //フォルダとファイルの作成
-        await _fileAccessManager.Initialize(null, null, cancellation);
+        await _fileAccessManager.OnStartAsync(null, null, cancellation);
         _titleScene.Begin();
     }
 

@@ -19,7 +19,7 @@ public class StageScenePresenter : IAsyncStartable, IDisposable
     readonly CompositeDisposable _disposables;
 
     [Inject]
-    public StageScenePresenter(FileAccessManager fileAccessManager,
+    public StageScenePresenter( FileAccessManager fileAccessManager,
                                 AnimationAssetManager animationAssetManager,
                                 TextureAssetManager textureAssetManager,
                                 DirectUI directUI,
@@ -61,10 +61,10 @@ public class StageScenePresenter : IAsyncStartable, IDisposable
         _timelineController.FieldCharacterCount
                 .Subscribe(_generatorPortal.OnUpdateCharacterCount).AddTo(_disposables);
 
-        _generatorPortal.Initialize(_timelineController, _animationAssetManager);
+        _generatorPortal.OnStart(_timelineController, _animationAssetManager);
 
         //フォルダとファイルの作成
-        await _fileAccessManager.Initialize(_animationAssetManager, _textureAssetManager, cancellation);
+        await _fileAccessManager.OnStartAsync(_animationAssetManager, _textureAssetManager, cancellation);
 
         UnityEngine.Debug.Log("Trace: StageScenePresenter.StartAsync");
     }

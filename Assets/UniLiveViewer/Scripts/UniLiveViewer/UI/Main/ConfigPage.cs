@@ -41,7 +41,7 @@ namespace UniLiveViewer
         [SerializeField] UniversalRendererData frd;
 
         TimelineController _timeline;
-        QuasiShadow _quasiShadow;
+        QuasiShadowSetting _quasiShadowSetting;
         PassthroughService _passthroughService;
 
         Material _matMirrore;//LiveScene用
@@ -53,7 +53,7 @@ namespace UniLiveViewer
         {
             var container = LifetimeScope.Find<TimeLineLifetimeScope>().Container;
             _timeline = container.Resolve<TimelineController>();
-            _quasiShadow = container.Resolve<QuasiShadow>();
+            _quasiShadowSetting = container.Resolve<QuasiShadowSetting>();
             _cancellation = this.GetCancellationTokenOnDestroy();
 
             slider_OutLine.ValueUpdate += () =>
@@ -260,10 +260,10 @@ namespace UniLiveViewer
             Update_InitCharaSize();
 
             //キャラ影
-            slider_CharaShadow.Value = _quasiShadow.shadowScale;
+            slider_CharaShadow.Value = _quasiShadowSetting.ShadowScale;
             Update_CharaShadow();
 
-            textMeshs[3].text = $"FootShadow:\n{_quasiShadow.ShadowType}";
+            textMeshs[3].text = $"FootShadow:\n{_quasiShadowSetting.ShadowType}";
 
             //VMD拡縮
             slider_VMDScale.Value = SystemInfo.userProfile.VMDScale;
@@ -302,17 +302,17 @@ namespace UniLiveViewer
             //キャラ影デクリ
             else if (btn == btn_General[3])
             {
-                _quasiShadow.ShadowType -= 1;
-                textMeshs[3].text = $"FootShadow:\n{_quasiShadow.ShadowType}";
-                SystemInfo.userProfile.CharaShadowType = (int)_quasiShadow.ShadowType;
+                _quasiShadowSetting.ShadowType -= 1;
+                textMeshs[3].text = $"FootShadow:\n{_quasiShadowSetting.ShadowType}";
+                SystemInfo.userProfile.CharaShadowType = (int)_quasiShadowSetting.ShadowType;
                 FileReadAndWriteUtility.WriteJson(SystemInfo.userProfile);
             }
             //キャラ影インクリ
             else if (btn == btn_General[4])
             {
-                _quasiShadow.ShadowType += 1;
-                textMeshs[3].text = $"FootShadow:\n{_quasiShadow.ShadowType}";
-                SystemInfo.userProfile.CharaShadowType = (int)_quasiShadow.ShadowType;
+                _quasiShadowSetting.ShadowType += 1;
+                textMeshs[3].text = $"FootShadow:\n{_quasiShadowSetting.ShadowType}";
+                SystemInfo.userProfile.CharaShadowType = (int)_quasiShadowSetting.ShadowType;
                 FileReadAndWriteUtility.WriteJson(SystemInfo.userProfile);
             }
 
@@ -515,7 +515,7 @@ namespace UniLiveViewer
                     SystemInfo.userProfile.scene_gym_whitelight = btnE[0].isEnable;
                     break;
                 case 1:
-                    _timeline.GetComponent<QuasiShadow>().isStepSE = btnE[1].isEnable;
+                    _quasiShadowSetting.SetStepSE(btnE[1].isEnable);
                     SystemInfo.userProfile.StepSE = btnE[1].isEnable;
                     break;
             }
@@ -569,7 +569,7 @@ namespace UniLiveViewer
         /// </summary>
         void Update_CharaShadow()
         {
-            _quasiShadow.shadowScale = slider_CharaShadow.Value;
+            _quasiShadowSetting.SetShadowScale(slider_CharaShadow.Value);
             textMeshs[4].text = $"{slider_CharaShadow.Value:0.00}";
         }
 

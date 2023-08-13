@@ -3,63 +3,30 @@ using UnityEngine;
 
 namespace UniLiveViewer
 {
-    public class QuasiShadow : MonoBehaviour
+    // AudioSourceが消せれば
+    public class QuasiShadowService : MonoBehaviour
     {
-        public enum SHADOWTYPE
-        {
-            NONE,
-            CIRCLE,
-            CROSS,
-            NONE_CIRCLE,
-            NONE_CROSS,
-            CIRCLE_CIRCLE,
-            CROSS_CROSS,
-            CIRCLE_CROSS,
-            CROSS_CIRCLE,
-        }
-
-        public SHADOWTYPE ShadowType
-        {
-            get { return _shadowType; }
-            set
-            {
-                _shadowType = value;
-                if ((int)_shadowType >= _typeLength) _shadowType = 0;
-                else if ((int)_shadowType < 0) _shadowType = (SHADOWTYPE)(_typeLength - 1);
-
-                Update_MeshRenderers();
-            }
-        }
-        [SerializeField] MeshRenderer meshRendererPrefab;
-        public float shadowScale = 1.0f;
-
-        [SerializeField] Preset[] preset;
-
-        [Header("確認用露出(readonly)")]
-        [SerializeField] SHADOWTYPE _shadowType = SHADOWTYPE.NONE;
-
         const string TEXTURE_NAME = "_MainTex";
-        int _typeLength = Enum.GetNames(typeof(SHADOWTYPE)).Length;
+        QuasiShadowSetting _setting;
+
         TimelineController _timeline;
         ShadowData[] _shadowDatas;
 
         RaycastHit _hitCollider;
         Collider[] _hitCollider_L = new Collider[5], hitCollider_R = new Collider[5];
-        [SerializeField] float footRay = 0.05f;
-        public bool isStepSE = false;
 
         [Space(10), Header("サウンド")]
-        [SerializeField] AudioClip[] Sound;//UI開く,UI閉じる
         [SerializeField] AudioSource[] audioSource = new AudioSource[5];
 
-        public void Initialize(TimelineController timeline)
+        public void OnStart(TimelineController timeline, QuasiShadowSetting quasiShadowSetting)
         {
             _timeline = timeline;
+            _setting = quasiShadowSetting;
 
             GameObject anchor = new GameObject("Shadows");
 
             //メッシュ消え対策
-            var prefab = Instantiate(meshRendererPrefab);
+            var prefab = Instantiate<MeshRenderer>(_setting.MeshRendererPrefab);
             var meshFilter = prefab.GetComponent<MeshFilter>();
             var bounds = meshFilter.mesh.bounds;
             bounds.Expand(100);
@@ -75,9 +42,13 @@ namespace UniLiveViewer
 
             Destroy(prefab.gameObject);
 
-            isStepSE = SystemInfo.userProfile.StepSE;
-            shadowScale = SystemInfo.userProfile.CharaShadow;
-            ShadowType = (SHADOWTYPE)SystemInfo.userProfile.CharaShadowType;
+            UpdateShadowType(SystemInfo.userProfile.CharaShadowType);
+        }
+
+        void UpdateShadowType(int shadowType)
+        {
+            _setting.ShadowType = (SHADOWTYPE)shadowType;
+            Update_MeshRenderers();
         }
 
         public void OnFieldCharacterCount()
@@ -95,33 +66,33 @@ namespace UniLiveViewer
         void Update_MeshRenderers()
         {
             bool isEnable;
-            int index = (int)_shadowType;
+            int index = (int)_setting.ShadowType;
             for (int i = 0; i < _shadowDatas.Length; i++)
             {
                 if (i == TimelineController.PORTAL_INDEX) continue;
                 var chara = _timeline.BindCharaMap[i];
-                if (chara && _shadowType != SHADOWTYPE.NONE) isEnable = true;
+                if (chara && _setting.ShadowType != SHADOWTYPE.NONE) isEnable = true;
                 else isEnable = false;
-                _shadowDatas[i].SetMeshRenderers(isEnable, preset[index].texture_Body, preset[index].texture_Foot);
+                _shadowDatas[i].SetMeshRenderers(isEnable, _setting.Presets[index].texture_Body, _setting.Presets[index].texture_Foot);
             }
         }
 
         // Update is called once per frame
         void Update()
         {
-            if (_shadowType == SHADOWTYPE.NONE) return;
-            int index = (int)_shadowType;
+            if (_setting.ShadowType == SHADOWTYPE.NONE) return;
+            int index = (int)_setting.ShadowType;
             for (int i = 0; i < _shadowDatas.Length; i++)
             {
                 if (_shadowDatas[i].charaCon)
                 {
-                    Transforming(_shadowDatas[i].charaCon, _shadowDatas[i].spine, _shadowDatas[i].meshRenderer_c, preset[index].scala_Body);
-                    Transforming(_shadowDatas[i].charaCon, _shadowDatas[i].leftFoot, _shadowDatas[i].meshRenderer_l, preset[index].scala_Foot);
-                    Transforming(_shadowDatas[i].charaCon, _shadowDatas[i].rightFoot, _shadowDatas[i].meshRenderer_r, preset[index].scala_Foot);
+                    Transforming(_shadowDatas[i].charaCon, _shadowDatas[i].spine, _shadowDatas[i].meshRenderer_c, _setting.Presets[index].scala_Body);
+                    Transforming(_shadowDatas[i].charaCon, _shadowDatas[i].leftFoot, _shadowDatas[i].meshRenderer_l, _setting.Presets[index].scala_Foot);
+                    Transforming(_shadowDatas[i].charaCon, _shadowDatas[i].rightFoot, _shadowDatas[i].meshRenderer_r, _setting.Presets[index].scala_Foot);
                 }
             }
 
-            if (SystemInfo.sceneMode == SceneMode.GYMNASIUM && isStepSE) FootSound();
+            if (SystemInfo.sceneMode == SceneMode.GYMNASIUM && _setting.IsStepSE) FootSound();
         }
 
         void FootSound()
@@ -130,24 +101,24 @@ namespace UniLiveViewer
             {
                 if (!_shadowDatas[i].charaCon) continue;
                 //床に向かってrayを飛ばす
-                Physics.Raycast(_shadowDatas[i].leftFoot.position, Vector3.down, out _hitCollider, footRay, SystemInfo.layerMask_StageFloor);
+                Physics.Raycast(_shadowDatas[i].leftFoot.position, Vector3.down, out _hitCollider, _setting.FootRay, SystemInfo.layerMask_StageFloor);
                 if (_hitCollider.collider != _hitCollider_L[i])
                 {
                     _hitCollider_L[i] = _hitCollider.collider;
                     if (_hitCollider_L[i])
                     {
                         audioSource[i].transform.position = _shadowDatas[i].leftFoot.position;
-                        audioSource[i].PlayOneShot(Sound[UnityEngine.Random.Range(0, Sound.Length)]);
+                        audioSource[i].PlayOneShot(_setting.Sounds[UnityEngine.Random.Range(0, _setting.Sounds.Length)]);
                     }
                 }
-                Physics.Raycast(_shadowDatas[i].rightFoot.position, Vector3.down, out _hitCollider, footRay, SystemInfo.layerMask_StageFloor);
+                Physics.Raycast(_shadowDatas[i].rightFoot.position, Vector3.down, out _hitCollider, _setting.FootRay, SystemInfo.layerMask_StageFloor);
                 if (_hitCollider.collider != hitCollider_R[i])
                 {
                     hitCollider_R[i] = _hitCollider.collider;
                     if (hitCollider_R[i])
                     {
                         audioSource[i].transform.position = _shadowDatas[i].rightFoot.position;
-                        audioSource[i].PlayOneShot(Sound[UnityEngine.Random.Range(0, Sound.Length)]);
+                        audioSource[i].PlayOneShot(_setting.Sounds[UnityEngine.Random.Range(0, _setting.Sounds.Length)]);
                     }
                 }
             }
@@ -155,7 +126,7 @@ namespace UniLiveViewer
 
         void Transforming(CharaController charaCon, Transform targetBone, MeshRenderer targetMesh, float presetScale)
         {
-            float scale = presetScale * shadowScale * charaCon.CustomScalar;
+            float scale = presetScale * _setting.ShadowScale * charaCon.CustomScalar;
             Vector3 offset = targetBone.position;
             offset.y = charaCon.transform.position.y;
             float distance = (targetBone.position.y - charaCon.transform.position.y) / charaCon.CustomScalar;

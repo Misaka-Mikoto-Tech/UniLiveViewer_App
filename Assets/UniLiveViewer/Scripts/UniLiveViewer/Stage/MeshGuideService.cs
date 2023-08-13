@@ -3,7 +3,7 @@
 namespace UniLiveViewer
 {
     //暫定的
-    public class MeshGuide : MonoBehaviour
+    public class MeshGuideService
     {
         GameObject _guidePrefab;
         bool _isShow = false;
@@ -29,21 +29,17 @@ namespace UniLiveViewer
         Vector3 _distance = Vector3.zero;
         TimelineController _timeline;
 
-        public void Initialize(TimelineController timeline)
+        public void OnStart(TimelineController timeline)
         {
             _timeline = timeline;
             _guidePrefab = Resources.Load<GameObject>("Prefabs/GuideBody");
             _pair = new Pair[_timeline.BindCharaMap.Count];
-        }
 
-        void Start()
-        {
             var anchor = new GameObject("GuideMeshs");
-
             for (int i = 0; i < _pair.Length; i++)
             {
                 _pair[i] = new Pair();
-                _pair[i].guideMesh = Instantiate(_guidePrefab).GetComponent<MeshRenderer>();
+                _pair[i].guideMesh = GameObject.Instantiate(_guidePrefab).GetComponent<MeshRenderer>();
                 _pair[i].guideMesh.transform.parent = anchor.transform;
                 _pair[i].guideMesh.enabled = false;//非表示にしておく
             }
@@ -69,8 +65,7 @@ namespace UniLiveViewer
             }
         }
 
-        // Update is called once per frame
-        void Update()
+        public void OnTick()
         {
             if (!_isShow) return;
 

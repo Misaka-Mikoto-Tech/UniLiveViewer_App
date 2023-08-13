@@ -4,15 +4,15 @@ using UniRx;
 using VContainer;
 using VContainer.Unity;
 
-public class MeshGuidePresenter : IStartable, IDisposable
+public class MeshGuidePresenter : IStartable, ITickable , IDisposable
 {
-    readonly MeshGuide _meshGuide;
+    readonly MeshGuideService _meshGuide;
     readonly TimelineController _timelineController;
 
     readonly CompositeDisposable _disposables;
 
     [Inject]
-    public MeshGuidePresenter(MeshGuide meshGuide,
+    public MeshGuidePresenter(MeshGuideService meshGuide,
         TimelineController timelineController)
     {
         _meshGuide = meshGuide;
@@ -30,12 +30,17 @@ public class MeshGuidePresenter : IStartable, IDisposable
             .Subscribe(_ => _meshGuide.OnFieldCharacterCount())
             .AddTo(_disposables);
 
-        _meshGuide.Initialize(_timelineController);
+        _meshGuide.OnStart(_timelineController);
 
         UnityEngine.Debug.Log("Trace: MeshGuidePresenter.Start");
     }
 
-    public void Dispose()
+    void ITickable.Tick()
+    {
+        _meshGuide.OnTick();
+    }
+
+    void IDisposable.Dispose()
     {
         _disposables.Dispose();
     }
