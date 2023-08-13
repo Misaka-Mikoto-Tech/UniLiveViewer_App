@@ -14,9 +14,6 @@ namespace UniLiveViewer
 
         [SerializeField] Button_Switch[] _switchChara = new Button_Switch[2];
         [SerializeField] Button_Switch[] _switchAnime = new Button_Switch[2];
-        bool _isPresetChara;
-        bool _isPresetAnime;
-
 
         int _fieldCharaCount;
 
@@ -272,15 +269,15 @@ namespace UniLiveViewer
                 _generatorPortal.SetCurrentCharaList(CurrentMode.PRESET);
                 _switchChara[0].isEnable = true;
                 _switchChara[1].isEnable = false;
-                _menuManager.jumpList.Close();
             }
             else
             {
                 _generatorPortal.SetCurrentCharaList(CurrentMode.CUSTOM);
                 _switchChara[0].isEnable = false;
                 _switchChara[1].isEnable = true;
-                _menuManager.jumpList.Close();
             }
+            _menuManager.jumpList.Close();
+            _menuManager.PlayOneShot(SoundType.BTN_CLICK);
             _generatorPortal.SetChara(0).Forget();
         }
 
@@ -291,15 +288,16 @@ namespace UniLiveViewer
                 _generatorPortal.SetCurrentAnimeList(CurrentMode.PRESET);
                 _switchAnime[0].isEnable = true;
                 _switchAnime[1].isEnable = false;
-                _menuManager.jumpList.Close();
+                
             }
             else
             {
                 _generatorPortal.SetCurrentAnimeList(CurrentMode.CUSTOM);
                 _switchAnime[0].isEnable = false;
                 _switchAnime[1].isEnable = true;
-                _menuManager.jumpList.Close();
             }
+            _menuManager.jumpList.Close();
+            _menuManager.PlayOneShot(SoundType.BTN_CLICK);
             _generatorPortal.SetAnimation(0).Forget();
         }
 

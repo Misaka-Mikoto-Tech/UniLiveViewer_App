@@ -203,15 +203,15 @@ namespace UniLiveViewer
                 _isPresetAudio = true;
                 _switchAudio[0].isEnable = true;
                 _switchAudio[1].isEnable = false;
-                _menuManager.jumpList.Close();
             }
             else
             {
                 _isPresetAudio = false;
                 _switchAudio[0].isEnable = false;
                 _switchAudio[1].isEnable = true;
-                _menuManager.jumpList.Close();
             }
+            _menuManager.jumpList.Close();
+            _menuManager.PlayOneShot(SoundType.BTN_CLICK);
             ChangeAuido(_isPresetAudio, 0);
         }
 

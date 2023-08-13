@@ -1,4 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
+using System.Threading;
 using UnityEngine;
 
 namespace UniLiveViewer
@@ -8,23 +9,23 @@ namespace UniLiveViewer
         public int materialIndex;
         public string targetName = "_Amplitude";
         public AnimationCurve floatCurve = AnimationCurve.Linear(0, 0, 1, 2);
-        private Material material;
+        Material _material;
 
-        private void Awake()
+        void Awake()
         {
-            material = GetComponent<Renderer>().materials[materialIndex];
-            UpdateMaterial().Forget();
+            _material = GetComponent<Renderer>().materials[materialIndex];
+            UpdateMaterial(this.GetCancellationTokenOnDestroy()).Forget();
         }
 
-        private async UniTask UpdateMaterial()
+        async UniTask UpdateMaterial(CancellationToken cancellationToken)
         {
-            float t = 0;
+            var timer = 0.0f;
 
             while (gameObject)
             {
-                material.SetFloat(targetName, floatCurve.Evaluate(t));
-                t += 0.1f;
-                await UniTask.Delay(100);
+                _material.SetFloat(targetName, floatCurve.Evaluate(timer));
+                timer += 0.1f;
+                await UniTask.Delay(100, cancellationToken: cancellationToken);
             }
         }
     }
