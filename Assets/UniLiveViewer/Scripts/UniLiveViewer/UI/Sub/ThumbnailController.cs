@@ -5,15 +5,19 @@ using System.Linq;
 using System.Threading;
 using UnityEngine;
 using NanaCiel;
+using UniRx;
 
 namespace UniLiveViewer
 {
-    public class ThumbnailController : MonoBehaviour
+    public class ThumbnailController
     {
-        public event Action OnGenerated;
+        public IObservable<Unit> OnGeneratedAsObservable => _generatedStream;
+        Subject<Unit> _generatedStream;
+
+        public IObservable<Button_Base> OnClickAsObservable => _clickStream;
+        Subject<Button_Base> _clickStream;
 
         Button_Base _btnPrefab;
-        Transform parent;
         List<TextMesh> _texts = new List<TextMesh>();
         Button_Base[] _buttons = new Button_Base[15];
 
@@ -22,14 +26,21 @@ namespace UniLiveViewer
 
         int[] _randomBox;
         string[] _vrmNames;
-        CancellationToken _cancellation;
 
         TextureAssetManager _textureAssetManager;
 
-        public void Initialize(TextureAssetManager textureAssetManager)
+
+        ThumbnailController()
         {
-            _textureAssetManager = textureAssetManager;
+            _generatedStream = new Subject<Unit>();
+            _clickStream = new Subject<Button_Base>();
+        }
+
+        public void OnStart(TextureAssetManager textureAssetManager,Transform thumbnailRoot, CancellationToken cancellation)
+        {
             _btnPrefab = Resources.Load<Button_Base>("Prefabs/Button/btnVRM");
+            _textureAssetManager = textureAssetManager;
+            CreateThumbnailButtons(thumbnailRoot, cancellation).Forget();
         }
 
         /// <summary>
@@ -37,12 +48,9 @@ namespace UniLiveViewer
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async UniTask<Button_Base[]> CreateThumbnailButtons()
+        public async UniTask<Button_Base[]> CreateThumbnailButtons(Transform parent, CancellationToken cancellation)
         {
-            _cancellation = this.GetCancellationTokenOnDestroy();
-            parent = transform;
-
-            int index = 0;
+            var index = 0;
             for (int i = 0; i < 3; i++)
             {
                 for (int j = 0; j < 5; j++)
@@ -50,7 +58,7 @@ namespace UniLiveViewer
                     index = (i * 5) + j;
 
                     //生成
-                    _buttons[index] = Instantiate(_btnPrefab);
+                    _buttons[index] = GameObject.Instantiate<Button_Base>(_btnPrefab);
                     _buttons[index].transform.Also((it) =>
                     {
                         it.parent = parent;
@@ -58,8 +66,11 @@ namespace UniLiveViewer
                         it.localRotation = Quaternion.identity;
                         _texts.Add(it.GetChild(1).GetComponent<TextMesh>());
                     });
+
+                    // TODO: 整理する
+                    _buttons[index].onTrigger += (b) => _clickStream.OnNext(b);
                 }
-                await UniTask.Yield(PlayerLoopTiming.Update, _cancellation);
+                await UniTask.Yield(PlayerLoopTiming.Update, cancellation);
             }
             return _buttons;
         }
@@ -67,7 +78,7 @@ namespace UniLiveViewer
         /// <summary>
         /// VRMの数だけサムネボタンを生成する
         /// </summary>
-        public async UniTask SetThumbnail(string[] vrmNames)
+        public async UniTask SetThumbnail(string[] vrmNames,CancellationToken cancellation)
         {
             //一旦全部非表示
             ThumbnailShow(false);
@@ -80,10 +91,10 @@ namespace UniLiveViewer
             _randomBox = new int[_vrmNames.Length];
             for (int i = 0; i < _randomBox.Length; i++) _randomBox[i] = i;
             _randomBox = Shuffle(_randomBox);
-            await UniTask.Delay(10, cancellationToken: _cancellation);
+            await UniTask.Delay(10, cancellationToken: cancellation);
 
-            int index = 0;
-            int r = UnityEngine.Random.Range(0, 3);
+            var index = 0;
+            var random = UnityEngine.Random.Range(0, 3);
             
             //必要なボタンのみ有効化して設定する
             for (int i = 0; i < _buttons.Length; i++)
@@ -100,8 +111,8 @@ namespace UniLiveViewer
                     _texts[index].fontSize = _texts[index].text.FontSizeMatch(500, 25, 40);
                     UpdateSprite(index);
 
-                    if (i % GENERATE_COUNT[r] == 0) OnGenerated?.Invoke();
-                    if (i % GENERATE_COUNT[r] == GENERATE_COUNT[r] - 1) await UniTask.Delay(GENERATE_INTERVAL[r], cancellationToken: _cancellation);
+                    if (i % GENERATE_COUNT[random] == 0) _generatedStream.OnNext(Unit.Default);
+                    if (i % GENERATE_COUNT[random] == GENERATE_COUNT[random] - 1) await UniTask.Delay(GENERATE_INTERVAL[random], cancellationToken: cancellation);
                 }
             }
         }
@@ -110,7 +121,7 @@ namespace UniLiveViewer
         /// 表示するサムネを更新
         /// </summary>
         /// <param name="index"></param>
-        private void UpdateSprite(int index)
+        void UpdateSprite(int index)
         {
             try
             {
@@ -133,7 +144,7 @@ namespace UniLiveViewer
         /// 一括表示変更
         /// </summary>
         /// <param name="isEnabel"></param>
-        private void ThumbnailShow(bool isEnabel)
+        void ThumbnailShow(bool isEnabel)
         {
             for (int i = 0; i < _texts.Count; i++)
             {
@@ -148,7 +159,7 @@ namespace UniLiveViewer
         /// ランダムシャッフル（ランダムな2要素を交換→シャッフルされない要素もありえる）
         /// </summary>
         /// <param name="num"></param>
-        private int[] Shuffle(int[] inputArray)
+        int[] Shuffle(int[] inputArray)
         {
             for (int i = 0; i < inputArray.Length; i++)
             {

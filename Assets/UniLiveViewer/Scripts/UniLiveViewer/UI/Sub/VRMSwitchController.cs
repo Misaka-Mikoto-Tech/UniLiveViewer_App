@@ -29,7 +29,6 @@ namespace UniLiveViewer
         [Space(1), Header("＜1ページ＞")]
         [SerializeField] TextMesh[] _textDirectory;
         IVRMLoaderUI _vrmLoaderUI;
-        ThumbnailController _thumbnailController;
         [SerializeField] LoadAnimation _anime_Loading;
         [Space(1), Header("＜2ページ＞")]
         [SerializeField] Button_Base _btnApply;
@@ -52,9 +51,11 @@ namespace UniLiveViewer
         public IObservable<CharaController> AddPrefabAsObservable => _addPrefabStream;
         Subject<CharaController> _addPrefabStream;
 
+        public IObservable<int> OnOpenPageAsObservable => _pageStream;
+        Subject<int> _pageStream;
+
         //ファイルアクセスとサムネの管理
         FileAccessManager _fileManager;
-        TextureAssetManager _textureAssetManager;
         //当たり判定
         VRMTouchColliders _touchCollider;
 
@@ -66,17 +67,14 @@ namespace UniLiveViewer
 
         public async UniTask InitializeAsync(IVRMLoaderUI vrmLoaderUI,
             FileAccessManager fileAccessManager,
-            TextureAssetManager textureAssetManager,
-            ThumbnailController thumbnailController,
             CancellationToken cancellation)
         {
             _vrmLoaderUI = vrmLoaderUI;
             _fileManager = fileAccessManager;
-            _textureAssetManager = textureAssetManager;
-            _thumbnailController = thumbnailController;
 
             _addCharacterStream = new Subject<CharaController>();
             _addPrefabStream = new Subject<CharaController>();
+            _pageStream = new Subject<int>();
 
             _audioSource = GetComponent<AudioSource>();
             _audioSource.volume = SystemInfo.soundVolume_SE;
@@ -87,20 +85,20 @@ namespace UniLiveViewer
 
             _touchCollider = LifetimeScope.Find<PlayerLifetimeScope>().Container.Resolve<VRMTouchColliders>();
 
-            var btns = await _thumbnailController.CreateThumbnailButtons();
-
-            for (int i = 0; i < btns.Length; i++)
-            {
-                btns[i].onTrigger += (b) => LoadVRM(b, cancellation).Forget();
-            }
-
-            _thumbnailController.OnGenerated += async () =>
-            {
-                await UniTask.Delay(500, cancellationToken: cancellation);
-                _audioSource.PlayOneShot(_sound[1]);
-            };
-
             UIShow(false);
+
+            await UniTask.CompletedTask;
+        }
+
+        public async void OnGeneratedThumbnail(CancellationToken cancellation)
+        {
+            await UniTask.Delay(500, cancellationToken: cancellation);
+            _audioSource.PlayOneShot(_sound[1]);
+        }
+
+        public void OnClickThumbnail(string buttonName, CancellationToken cancellation)
+        {
+            LoadVRM(buttonName, cancellation).Forget();
         }
 
         /// <summary>
@@ -143,15 +141,7 @@ namespace UniLiveViewer
                     _textDirectory[1].text = $"/Download...[{_fileManager.CountVRM(PathsInfo.GetFullPath_Download() + "/")} VRMs]";
 
                     //ローディングアニメーションを無効状態
-                    _anime_Loading.gameObject.SetActive(false);
-
-                    //サムネボタンアンカーを有効状態
-                    _thumbnailController.gameObject.SetActive(true);
-
-                    //VRM選択ボタンを生成する
-
-                    string[] names = _textureAssetManager.VrmNames;
-                    _thumbnailController.SetThumbnail(names).Forget();
+                    _anime_Loading.gameObject.SetActive(false);                  
                     break;
                 case 1:
                     //prefabEditor.Init();
@@ -162,20 +152,19 @@ namespace UniLiveViewer
                 case 2:
                     break;
             }
+
+            _pageStream.OnNext(currentPage);
         }
 
         /// <summary>
         /// VRMを読み込む
         /// </summary>
-        /// <param name="btn">該当サムネボタン</param>
-        async UniTaskVoid LoadVRM(Button_Base btn, CancellationToken cancellation)
+        /// <param name="buttonName">該当サムネボタン</param>
+        async UniTaskVoid LoadVRM(string buttonName, CancellationToken cancellation)
         {
             cancellation.ThrowIfCancellationRequested();
 
             _currentVrmInstance = null;
-
-            //重複クリックできないようにボタンを無効化
-            _thumbnailController.gameObject.SetActive(false);
 
             //クリック音
             _audioSource.PlayOneShot(_sound[0]);
@@ -193,11 +182,11 @@ namespace UniLiveViewer
             cancellation.ThrowIfCancellationRequested();
 
             //指定パスのVRMのみ読み込む
-            var fileName = btn.transform.name;
-            var fullPath = PathsInfo.GetFullPath(FOLDERTYPE.CHARA) + "/" + fileName;
+            var fullPath = PathsInfo.GetFullPath(FOLDERTYPE.CHARA) + "/" + buttonName;
 
             var instance = await _vrmLoaderUI.GetURPVRMAsync(fullPath, cancellation)
                 .OnError(_ => OnError(new Exception("Vrm Loader"), cancellation));
+
             cancellation.ThrowIfCancellationRequested();
 
             if (instance)
@@ -207,7 +196,7 @@ namespace UniLiveViewer
 
                 //最低限の設定
                 _currentVrmInstance = instance.gameObject;
-                _currentVrmInstance.name = fileName;
+                _currentVrmInstance.name = buttonName;
                 _currentVrmInstance.tag = SystemInfo.tag_GrabChara;
                 _currentVrmInstance.layer = SystemInfo.layerNo_GrabObject;
 
