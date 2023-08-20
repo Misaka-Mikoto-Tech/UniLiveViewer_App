@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 namespace UniLiveViewer
@@ -59,7 +59,7 @@ namespace UniLiveViewer
         {
             for (int i = 0; i < colorSetting.Length; i++)
             {
-                colorSetting[i].Init(SystemInfo.btnColor_Ena_sky);
+                colorSetting[i].Init(Constants.btnColor_Ena_sky);
             }
         }
 
@@ -138,7 +138,7 @@ namespace UniLiveViewer
             {
                 drawType = DRAWTYPE.TEXTMESH;
                 EnableColor = enableColor;
-                DisableColor = SystemInfo.btnColor_Dis;
+                DisableColor = Constants.btnColor_Dis;
             }
 
             materialPropertyBlock = new MaterialPropertyBlock();

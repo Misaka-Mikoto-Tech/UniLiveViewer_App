@@ -13,14 +13,14 @@ namespace UniLiveViewer
             public DecorationItemInfo[] ItemPrefab;
         }
         [SerializeField] private MenuManager menuManager;
-        private const int SUBPAGE_ITEMS_ROW = 2;
-        private const int SUBPAGE_ITEMS_COL = 3;
-        private int SUBPAGE_ITEMS_MAX = SUBPAGE_ITEMS_ROW * SUBPAGE_ITEMS_COL;
-        private static readonly Vector2[] itemOffsetPos = { 
+        const int SUBPAGE_ITEMS_ROW = 2;
+        const int SUBPAGE_ITEMS_COL = 3;
+        int SUBPAGE_ITEMS_MAX = SUBPAGE_ITEMS_ROW * SUBPAGE_ITEMS_COL;
+        static readonly Vector2[] itemOffsetPos = { 
             new Vector2(-0.24f, 0.08f), new Vector2(0, 0.08f), new Vector2(0.24f, 0.08f),    
             new Vector2(-0.24f,-0.10f), new Vector2(0,-0.10f),new Vector2(0.24f,-0.10f),
         };
-        private static readonly Quaternion reverseQuaternion = Quaternion.Euler(new Vector3(0, 180, 0));
+        static readonly Quaternion reverseQuaternion = Quaternion.Euler(new Vector3(0, 180, 0));
         [SerializeField] private Button_Base[] btn_Item = new Button_Base[2];
         [SerializeField] private TextMesh textMesh;
 
@@ -33,20 +33,17 @@ namespace UniLiveViewer
         [SerializeField] private DecorationItems[] decorationItems;
 
         PassthroughService _passthroughService;
-        private CancellationToken cancellation_token;
-        private int languageCurrent;
+        int _languageCurrent;
 
-        private void Awake()
+        void Awake()
         {
-            cancellation_token = this.GetCancellationTokenOnDestroy();
-
             //その他
             for (int i = 0; i < btn_Item.Length; i++)
             {
                 btn_Item[i].onTrigger += MoveIndex_Item;
             }
 
-            languageCurrent = (int)SystemInfo.userProfile.LanguageCode - 1;
+            _languageCurrent = (int)StageSettingService.UserProfile.LanguageCode - 1;
             currentSubPage = new int[decorationItems.Length];
 
             // TODO: UI作り直す時にまともにする
@@ -63,7 +60,7 @@ namespace UniLiveViewer
             
         }
 
-        private void Init()
+        void Init()
         {
             EnablePassthrough(_passthroughService.IsInsightPassthroughEnabled());
 
@@ -87,7 +84,7 @@ namespace UniLiveViewer
 #elif UNITY_ANDROID
 #endif
         }
-        private void EnablePassthrough(bool isEnable)
+        void EnablePassthrough(bool isEnable)
         {
             if (pageController.BtnTab[5].gameObject.activeSelf != isEnable)
             {
@@ -100,7 +97,7 @@ namespace UniLiveViewer
         /// アイテム変更ボタン
         /// </summary>
         /// <param name="btn"></param>
-        private void MoveIndex_Item(Button_Base btn)
+        void MoveIndex_Item(Button_Base btn)
         {
             int nowSubPage = currentSubPage[pageController.current];
             int itemLength = decorationItems[pageController.current].ItemPrefab.Length;
@@ -137,7 +134,7 @@ namespace UniLiveViewer
         /// <summary>
         /// 現在のページとサブページを基準にアイテムを全削除
         /// </summary>
-        private void DeleteItems()
+        void DeleteItems()
         {
             Transform targetPage = pageController.GetCurrentPage();
             int max = targetPage.childCount;
@@ -151,7 +148,7 @@ namespace UniLiveViewer
         /// <summary>
         /// 現在のページとサブページを基準にアイテムが無ければ生成
         /// </summary>
-        private void GenerateItems()
+        void GenerateItems()
         {
             int nowSubPage = currentSubPage[pageController.current];
             int itemLength = decorationItems[pageController.current].ItemPrefab.Length;
@@ -171,7 +168,7 @@ namespace UniLiveViewer
                 if (index >= currentItems.ItemPrefab.Length) return;
 
                 //重複生成しない
-                currentName = currentItems.ItemPrefab[index].ItemName[languageCurrent];
+                currentName = currentItems.ItemPrefab[index].ItemName[_languageCurrent];
                 if (CheckGenerated(currentName)) continue;
 
                 var instance = Instantiate(currentItems.ItemPrefab[index]).transform;
@@ -189,7 +186,7 @@ namespace UniLiveViewer
         /// </summary>
         /// <param name="targetName"></param>
         /// <returns></returns>
-        private bool CheckGenerated(string targetName)
+        bool CheckGenerated(string targetName)
         {
             foreach (Transform instance in pageController.GetCurrentPage())
             {
@@ -198,7 +195,7 @@ namespace UniLiveViewer
             return false;
         }
 
-        private void DebugInput()
+        void DebugInput()
         {
             //if (Input.GetKeyDown(KeyCode.I)) ChangeItem(1);
             //if (Input.GetKeyDown(KeyCode.K)) ChangeItem(-1);

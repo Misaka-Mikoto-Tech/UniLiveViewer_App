@@ -81,7 +81,7 @@ namespace UniLiveViewer
 
                     //PNG保存
                     var binary = texture.EncodeToPNG();
-                    var path = Path.Combine(PathsInfo.GetFullPath_ThumbnailCache() + "/", $"{vrmNames[i]}.png");
+                    var path = Path.Combine(PathsInfo.GetFullPath_ThumbnailCache() + "/", $"{_vrmNames[i]}.png");
                     File.WriteAllBytes(path, binary);
 #endif
                 }

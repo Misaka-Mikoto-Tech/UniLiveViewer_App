@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
 
 namespace UniLiveViewer
 {
@@ -37,7 +38,7 @@ namespace UniLiveViewer
 
         async void Start()
         {
-            if (GlobalConfig.GetActiveSceneName() == "TitleScene") return;
+            if (SceneManager.GetActiveScene().name == "TitleScene") return;
 
             // NOTE: 負荷分散で遅延させておく
             await UniTask.Delay(1000);

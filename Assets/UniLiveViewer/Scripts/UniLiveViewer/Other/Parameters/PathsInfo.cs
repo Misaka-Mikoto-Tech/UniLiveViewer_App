@@ -10,17 +10,8 @@ namespace UniLiveViewer
         SETTING
     }
 
-    class PathsInfo
+    public class PathsInfo
     {
-
-#if UNITY_EDITOR
-        static string folderPath_Custom = "D:/User/UniLiveViewer";
-        static string folderPath_Download = "D:/User/Download";
-#elif UNITY_ANDROID
-        private static string folderPath_Custom = "/storage/emulated/0/UniLiveViewer";
-        private static string folderPath_Download = "/storage/emulated/0/Download";
-#endif
-
         static string folderPath_Persistent = UnityEngine.Application.persistentDataPath;
         //static string folderPath_Persistent = UnityEngine.Application.temporaryCachePath;
 
@@ -37,35 +28,49 @@ namespace UniLiveViewer
         const string defect = "不具合・Defect.txt";
         const string json = "System.json";
 
+        public static string AppFolderPath;
+        public static string DownloadFolderPath;
+
+        static PathsInfo()
+        {
+#if UNITY_EDITOR
+            AppFolderPath = "D:/User/UniLiveViewer";
+            DownloadFolderPath = "D:/User/Download";
+#elif UNITY_ANDROID
+            AppFolderPath = "/storage/emulated/0/UniLiveViewer";
+            DownloadFolderPath = "/storage/emulated/0/Download";
+#endif
+        }
+
         public static string GetFullPath(FOLDERTYPE type)
         {
-            return Path.Combine(folderPath_Custom + "/", folderName[(int)type]);
+            return Path.Combine(AppFolderPath + "/", folderName[(int)type]);
         }
 
         public static string GetFullPath_ThumbnailCache()
         {
-            return Path.Combine(folderPath_Custom + "/", folderName[(int)FOLDERTYPE.CHARA] + "/", cachePath);
+            return Path.Combine(AppFolderPath + "/", folderName[(int)FOLDERTYPE.CHARA] + "/", cachePath);
         }
 
         public static string GetFullPath_LipSync()
         {
-            return Path.Combine(folderPath_Custom + "/", folderName[(int)FOLDERTYPE.MOTION] + "/", lipSyncPath);
+            return Path.Combine(AppFolderPath + "/", folderName[(int)FOLDERTYPE.MOTION] + "/", lipSyncPath);
         }
 
         public static string GetFullPath_Download()
         {
-            return folderPath_Download;
+            return DownloadFolderPath;
         }
 
         public static string GetFullPath_README(USE_LANGUAGE language)
         {
-            if (language == USE_LANGUAGE.EN) return Path.Combine(folderPath_Custom + "/", readme_en);
-            else if (language == USE_LANGUAGE.JP) return Path.Combine(folderPath_Custom + "/", readme_ja);
+            if (language == USE_LANGUAGE.EN) return Path.Combine(AppFolderPath + "/", readme_en);
+            else if (language == USE_LANGUAGE.JP) return Path.Combine(AppFolderPath + "/", readme_ja);
             else return "";
         }
         public static string GetFullPath_DEFECT()
         {
-            return Path.Combine(folderPath_Custom + "/", defect);
+            return Path.Combine(AppFolderPath + "/", defect);
         }
 
         public static string GetFullPath_JSON()

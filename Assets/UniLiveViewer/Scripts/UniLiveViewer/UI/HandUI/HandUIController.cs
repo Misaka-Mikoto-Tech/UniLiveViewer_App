@@ -37,7 +37,7 @@ namespace UniLiveViewer
             for (int i = 0; i < handUI_CharaAdjustment.Length; i++)
             {
                 handUI_CharaAdjustment[i].Init(Instantiate(handUI_CharaAdjustment[i].prefab));
-                handUI_CharaAdjustment[i].textMesh.text = $"{SystemInfo.userProfile.InitCharaSize}0.00";
+                handUI_CharaAdjustment[i].textMesh.text = $"{StageSettingService.UserProfile.InitCharaSize}0.00";
                 handUI_CharaAdjustment[i].Show = false;
             }
 

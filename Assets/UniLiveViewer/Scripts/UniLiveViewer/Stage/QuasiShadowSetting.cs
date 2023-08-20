@@ -54,8 +54,8 @@ namespace UniLiveViewer
 
         public void OnStart()
         {
-            _isStepSE = SystemInfo.userProfile.StepSE;
-            _shadowScale = SystemInfo.userProfile.CharaShadow;
+            _isStepSE = StageSettingService.UserProfile.StepSE;
+            _shadowScale = StageSettingService.UserProfile.CharaShadow;
         }
 
         [Serializable]

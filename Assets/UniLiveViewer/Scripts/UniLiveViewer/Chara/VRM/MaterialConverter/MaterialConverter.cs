@@ -127,7 +127,7 @@ namespace UniLiveViewer
                     || mesh.transform.name.Contains("face", StringComparison.OrdinalIgnoreCase))
                 {
                     //目や顔にアウトラインは残念な感じになりやすいので
-                    mesh.gameObject.layer = SystemInfo.layerNo_UnRendererFeature;
+                    mesh.gameObject.layer = Constants.LayerNoUnRendererFeature;
                 }
                 else mesh.gameObject.layer = _myLayer;
 

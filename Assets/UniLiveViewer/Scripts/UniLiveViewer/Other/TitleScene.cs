@@ -53,7 +53,7 @@ namespace UniLiveViewer
 
         public void Begin()
         {
-            if (SystemInfo.userProfile.LanguageCode != (int)USE_LANGUAGE.NULL)
+            if (StageSettingService.UserProfile.LanguageCode != (int)USE_LANGUAGE.NULL)
             {
                 //2回目以降
                 _spriteRendererSwitcher.gameObject.SetActive(false);
@@ -74,15 +74,15 @@ namespace UniLiveViewer
         {
             if (btn.name.Contains("_JP"))
             {
-                SystemInfo.userProfile.LanguageCode = (int)USE_LANGUAGE.JP;
-                FileReadAndWriteUtility.WriteJson(SystemInfo.userProfile);
+                StageSettingService.UserProfile.LanguageCode = (int)USE_LANGUAGE.JP;
+                FileReadAndWriteUtility.WriteJson(StageSettingService.UserProfile);
                 //差し替える
                 _spriteRendererSwitcher.SetSprite(1);
             }
             else
             {
-                SystemInfo.userProfile.LanguageCode = (int)USE_LANGUAGE.EN;
-                FileReadAndWriteUtility.WriteJson(SystemInfo.userProfile);
+                StageSettingService.UserProfile.LanguageCode = (int)USE_LANGUAGE.EN;
+                FileReadAndWriteUtility.WriteJson(StageSettingService.UserProfile);
                 //差し替える
                 _spriteRendererSwitcher.SetSprite(0);
             }
@@ -101,7 +101,7 @@ namespace UniLiveViewer
             if (_uiRoot.gameObject.activeSelf) _uiRoot.gameObject.SetActive(false);
 
             await UniTask.Delay(1000, cancellationToken: _cancellationToken);
-            _changeSceneStream.OnNext(SystemInfo.userProfile.LastSceneName);
+            _changeSceneStream.OnNext(StageSettingService.UserProfile.LastSceneName);
         }
     }
 }

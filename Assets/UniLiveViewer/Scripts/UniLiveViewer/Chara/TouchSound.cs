@@ -36,7 +36,7 @@ namespace UniLiveViewer
                 //コライダーを付ける
                 parent.gameObject.AddComponent(typeof(SphereCollider));
                 var col = parent.GetComponent<SphereCollider>();
-                col.gameObject.layer = SystemInfo.layerNo_UI;
+                col.gameObject.layer = Constants.LayerNoUI;
                 col.radius = colliderRadius;
                 col.isTrigger = true;
 
@@ -50,7 +50,7 @@ namespace UniLiveViewer
 
         void OnTriggerEnter(Collider other)
         {
-            if (!this.enabled || other.gameObject.layer != SystemInfo.layerNo_IgnoreRaycats) return;
+            if (!this.enabled || other.gameObject.layer != Constants.LayerNoIgnoreRaycats) return;
             //タッチ音をランダムにならす
             int i = Random.Range(0, Sound.Length);
             _audioSource.PlayOneShot(Sound[i]);

@@ -29,12 +29,17 @@ namespace UniLiveViewer
         Vector3 _distance = Vector3.zero;
         TimelineController _timeline;
 
+        MeshGuideService()
+        {
+            
+        }
+
         public void OnStart(TimelineController timeline)
         {
             _timeline = timeline;
-            _guidePrefab = Resources.Load<GameObject>("Prefabs/GuideBody");
             _pair = new Pair[_timeline.BindCharaMap.Count];
-
+            _guidePrefab = Resources.Load<GameObject>("Prefabs/GuideBody");
+            
             var anchor = new GameObject("GuideMeshs");
             for (int i = 0; i < _pair.Length; i++)
             {

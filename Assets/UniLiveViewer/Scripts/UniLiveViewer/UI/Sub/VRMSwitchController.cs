@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using NanaCiel;
 using System;
 using System.Threading;
@@ -184,6 +184,7 @@ namespace UniLiveViewer
             //指定パスのVRMのみ読み込む
             var fullPath = PathsInfo.GetFullPath(FOLDERTYPE.CHARA) + "/" + buttonName;
 
+            Debug.LogError("NOTE:ここで死ぬ、Materialエラってるがキャッチはされてない");
             var instance = await _vrmLoaderUI.GetURPVRMAsync(fullPath, cancellation)
                 .OnError(_ => OnError(new Exception("Vrm Loader"), cancellation));
             cancellation.ThrowIfCancellationRequested();
@@ -196,8 +197,8 @@ namespace UniLiveViewer
                 //最低限の設定
                 _currentVrmInstance = instance.gameObject;
                 _currentVrmInstance.name = buttonName;
-                _currentVrmInstance.tag = SystemInfo.tag_GrabChara;
-                _currentVrmInstance.layer = SystemInfo.layerNo_GrabObject;
+                _currentVrmInstance.tag = Constants.TagGrabChara;
+                _currentVrmInstance.layer = Constants.LayerNoGrabObject;
 
                 var attacher = Instantiate(_attacherPrefab.gameObject).GetComponent<ComponentAttacher_VRM>();
                 await attacher.Init(_currentVrmInstance.transform, instance.SkinnedMeshRenderers, cancellation)

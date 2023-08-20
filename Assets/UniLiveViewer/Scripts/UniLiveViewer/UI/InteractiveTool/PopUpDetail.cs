@@ -13,7 +13,7 @@ namespace UniLiveViewer
         // Start is called before the first frame update
         void Awake()
         {
-            hitLayer = SystemInfo.layerNo_IgnoreRaycats;
+            hitLayer = Constants.LayerNoIgnoreRaycats;
         }
 
         private void OnTriggerEnter(Collider other)

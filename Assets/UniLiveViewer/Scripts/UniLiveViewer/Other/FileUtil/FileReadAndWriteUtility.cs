@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,8 +8,8 @@ namespace UniLiveViewer
 {
     public static class FileReadAndWriteUtility
     {
-        static string path_Offset = PathsInfo.GetFullPath(FOLDERTYPE.SETTING) + "/" + "MotionOffset.txt";
-        static string path_Pair = PathsInfo.GetFullPath(FOLDERTYPE.SETTING) + "/" + "MotionFacialPair.txt";
+        static string PathOffset = PathsInfo.GetFullPath(FOLDERTYPE.SETTING) + "/" + "MotionOffset.txt";
+        static string PathPair = PathsInfo.GetFullPath(FOLDERTYPE.SETTING) + "/" + "MotionFacialPair.txt";
 
         /// <summary>
         /// モーションファイル名とoffset値
@@ -30,8 +30,8 @@ namespace UniLiveViewer
         {
             UserProfile result;
 
-            string path = PathsInfo.GetFullPath_JSON();
-            string datastr = "";
+            var path = PathsInfo.GetFullPath_JSON();
+            var datastr = "";
             StreamReader reader = null;
             if (File.Exists(path))
             {
@@ -86,7 +86,7 @@ namespace UniLiveViewer
         public static void SaveMotionOffset()
         {
             //書き込み
-            using (StreamWriter writer = new StreamWriter(path_Offset, false, System.Text.Encoding.UTF8))
+            using (StreamWriter writer = new StreamWriter(PathOffset, false, System.Text.Encoding.UTF8))
             {
                 foreach (var e in map_MotionOffset)
                 {
@@ -97,6 +97,7 @@ namespace UniLiveViewer
 
         /// <summary>
         /// ダンスモーションのオフセット情報を読み込み直す
+        /// そもそもファイルが無ければfalse
         /// </summary>
         public static bool TryLoadMotionOffset()
         {
@@ -107,9 +108,9 @@ namespace UniLiveViewer
             }
 
             //offset情報ファイルがあれば読み込む
-            if (!File.Exists(path_Offset)) return false;
+            if (!File.Exists(PathOffset)) return false;
 
-            foreach (string line in File.ReadLines(path_Offset))
+            foreach (string line in File.ReadLines(PathOffset))
             {
                 string[] spl = line.Split(',');
                 if (spl.Length != 2) return false;
@@ -129,7 +130,7 @@ namespace UniLiveViewer
             map_MotionFacialPair[motionfileName] = faciaFileName;
 
             //書き込み
-            using (StreamWriter writer = new StreamWriter(path_Pair, false, System.Text.Encoding.UTF8))
+            using (StreamWriter writer = new StreamWriter(PathPair, false, System.Text.Encoding.UTF8))
             {
                 foreach (var e in map_MotionFacialPair)
                 {
@@ -140,6 +141,7 @@ namespace UniLiveViewer
 
         /// <summary>
         /// ダンスモーションのオフセット情報を読み込み直す
+        /// そもそもファイルが無ければfalse
         /// </summary>
         public static bool TryLoadMotionFacialPair()
         {
@@ -150,9 +152,9 @@ namespace UniLiveViewer
             }
 
             //offset情報ファイルがあれば読み込む
-            if (!File.Exists(path_Pair)) return false;
+            if (!File.Exists(PathPair)) return false;
 
-            foreach (string line in File.ReadLines(path_Pair))
+            foreach (string line in File.ReadLines(PathPair))
             {
                 string[] spl = line.Split(',');
                 if (spl.Length != 2) return false;

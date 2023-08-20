@@ -34,7 +34,7 @@ namespace UniLiveViewer
             _playerStateManager.MainUISwitchingAsObservable
                 .Subscribe(SwitchEnable).AddTo(_disposables);
 
-            switch (SystemInfo.sceneMode)
+            switch (SceneManagerService.Current.Mode)
             {
                 case SceneMode.CANDY_LIVE:
                     EndPoint = new Vector3(4, 1.0f, 5.5f);

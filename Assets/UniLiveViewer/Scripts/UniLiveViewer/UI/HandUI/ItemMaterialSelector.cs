@@ -16,7 +16,7 @@ namespace UniLiveViewer
 
         void Awake()
         {
-            _languageCode = SystemInfo.userProfile.LanguageCode - 1;
+            _languageCode = StageSettingService.UserProfile.LanguageCode - 1;
         }
 
         /// <summary>

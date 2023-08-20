@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -16,12 +16,19 @@ namespace UniLiveViewer
         /// </summary>
         public bool CheckOffsetFile()
         {
-            if (!FileReadAndWriteUtility.TryLoadMotionOffset()) return false;
-            if (!FileReadAndWriteUtility.TryLoadMotionFacialPair()) return false;
+            if (!FileReadAndWriteUtility.TryLoadMotionOffset())
+            {
+                Debug.Log("モーション設定ファイルなし");
+            }
 
+            if (!FileReadAndWriteUtility.TryLoadMotionFacialPair())
+            {
+                Debug.Log("モーションペア設定ファイルなし");
+            }
             _vmdList.Clear();
 
             var folderPath = PathsInfo.GetFullPath(FOLDERTYPE.MOTION) + "/";
+
             try
             {
                 var names = Directory.GetFiles(folderPath, "*.vmd", SearchOption.TopDirectoryOnly);
@@ -54,6 +61,7 @@ namespace UniLiveViewer
             }
 
             GetAllVMDLipSyncNames();//仮でここ
+
             return true;
         }
 
@@ -63,9 +71,9 @@ namespace UniLiveViewer
         /// <returns></returns>
         void GetAllVMDLipSyncNames()
         {
-            var folderPath = PathsInfo.GetFullPath_LipSync() + "/";
             try
             {
+                var folderPath = PathsInfo.GetFullPath_LipSync() + "/";
                 var names = Directory.GetFiles(folderPath, "*.vmd", SearchOption.TopDirectoryOnly);
 
                 //ファイルパスからファイル名の抽出

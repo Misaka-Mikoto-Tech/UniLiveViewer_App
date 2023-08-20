@@ -76,7 +76,7 @@ public class StageScenePresenter : IAsyncStartable, IDisposable
         _generatorPortal.OnLoadEnd();
     }
 
-    public void Dispose()
+    void IDisposable.Dispose()
     {
         _disposables.Dispose();
     }

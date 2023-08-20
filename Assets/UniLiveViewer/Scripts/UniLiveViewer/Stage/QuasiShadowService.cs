@@ -42,7 +42,7 @@ namespace UniLiveViewer
 
             Destroy(prefab.gameObject);
 
-            UpdateShadowType(SystemInfo.userProfile.CharaShadowType);
+            UpdateShadowType(StageSettingService.UserProfile.CharaShadowType);
         }
 
         void UpdateShadowType(int shadowType)
@@ -92,7 +92,7 @@ namespace UniLiveViewer
                 }
             }
 
-            if (SystemInfo.sceneMode == SceneMode.GYMNASIUM && _setting.IsStepSE) FootSound();
+            if (SceneManagerService.Current.Mode == SceneMode.GYMNASIUM && _setting.IsStepSE) FootSound();
         }
 
         void FootSound()
@@ -101,7 +101,7 @@ namespace UniLiveViewer
             {
                 if (!_shadowDatas[i].charaCon) continue;
                 //床に向かってrayを飛ばす
-                Physics.Raycast(_shadowDatas[i].leftFoot.position, Vector3.down, out _hitCollider, _setting.FootRay, SystemInfo.layerMask_StageFloor);
+                Physics.Raycast(_shadowDatas[i].leftFoot.position, Vector3.down, out _hitCollider, _setting.FootRay, Constants.LayerMaskStageFloor);
                 if (_hitCollider.collider != _hitCollider_L[i])
                 {
                     _hitCollider_L[i] = _hitCollider.collider;
@@ -111,7 +111,7 @@ namespace UniLiveViewer
                         audioSource[i].PlayOneShot(_setting.Sounds[UnityEngine.Random.Range(0, _setting.Sounds.Length)]);
                     }
                 }
-                Physics.Raycast(_shadowDatas[i].rightFoot.position, Vector3.down, out _hitCollider, _setting.FootRay, SystemInfo.layerMask_StageFloor);
+                Physics.Raycast(_shadowDatas[i].rightFoot.position, Vector3.down, out _hitCollider, _setting.FootRay, Constants.LayerMaskStageFloor);
                 if (_hitCollider.collider != hitCollider_R[i])
                 {
                     hitCollider_R[i] = _hitCollider.collider;

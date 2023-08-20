@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using System;
@@ -90,7 +90,7 @@ namespace UniLiveViewer
             _bothHandsCenterAnchor = new GameObject("BothHandsCenter").transform;
 
             //初期座標
-            switch (SystemInfo.sceneMode)
+            switch (SceneManagerService.Current.Mode)
             {
                 case SceneMode.CANDY_LIVE:
                     transform.position = new Vector3(0, 0.4f, 6.5f);

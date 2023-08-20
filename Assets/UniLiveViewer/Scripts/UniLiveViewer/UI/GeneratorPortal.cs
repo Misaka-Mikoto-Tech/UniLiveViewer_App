@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -448,13 +448,13 @@ namespace UniLiveViewer
             {
                 //使いまわしてVMDプレイヤースタート
                 await vmdPlayer.Starter(dic_VMDReader[fileName], folderPath, fileName,
-                    SystemInfo.userProfile.VMDScale, ConfigPage.isSmoothVMD, isNormalVMD, token);
+                    StageSettingService.UserProfile.VMDScale, ConfigPage.isSmoothVMD, isNormalVMD, token);
             }
             else
             {
                 //新規なら読み込んでVMDプレイヤースタート
                 var newVMD = await vmdPlayer.Starter(null, folderPath, fileName,
-                    SystemInfo.userProfile.VMDScale, ConfigPage.isSmoothVMD, isNormalVMD, token);
+                    StageSettingService.UserProfile.VMDScale, ConfigPage.isSmoothVMD, isNormalVMD, token);
                 //新規VMDを登録
                 dic_VMDReader.Add(fileName, newVMD);
             }

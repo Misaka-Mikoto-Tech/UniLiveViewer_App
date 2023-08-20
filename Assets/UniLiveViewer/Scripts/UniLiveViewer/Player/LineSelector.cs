@@ -83,7 +83,7 @@ namespace UniLiveViewer
             }
 
             //床に向かってrayを飛ばす
-            Physics.Raycast(rayOrigin.position, rayDirection, out hitCollider, 3.0f, SystemInfo.layerMask_StageFloor);
+            Physics.Raycast(rayOrigin.position, rayDirection, out hitCollider, 3.0f, Constants.LayerMaskStageFloor);
             //Debug.DrawRay(rayOrigin.position, rayDirection, Color.red);
             //床の高さに合わせる
             if (hitCollider.collider) BezierCurvePoint[2].y = hitCollider.point.y;
@@ -93,7 +93,7 @@ namespace UniLiveViewer
 
             //衝突検知(なるべく短くしてる)
             //Physics.Raycast(LineEndAnchor.position, Vector3.up, out hitCollider, 2.0f, SystemInfo.layerMask_FieldObject);
-            Physics.BoxCast(LineEndAnchor.position, Vector3.one * 0.1f ,Vector3.up, out hitCollider, transform.rotation,1.5f, SystemInfo.layerMask_FieldObject);
+            Physics.BoxCast(LineEndAnchor.position, Vector3.one * 0.1f ,Vector3.up, out hitCollider, transform.rotation,1.5f, Constants.LayerMaskFieldObject);
             //Debug.DrawRay(LineEndAnchor.position, Vector3.up, Color.red);
         }
 

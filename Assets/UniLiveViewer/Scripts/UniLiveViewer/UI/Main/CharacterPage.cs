@@ -209,7 +209,7 @@ namespace UniLiveViewer
             if (_vrmOptionAnchor.gameObject.activeSelf) _vrmOptionAnchor.gameObject.SetActive(false);
 
             //マニュアル生成
-            Instantiate(_bookPrefab[SystemInfo.userProfile.LanguageCode - 1], _bookGrabAnchor.transform);
+            Instantiate(_bookPrefab[StageSettingService.UserProfile.LanguageCode - 1], _bookGrabAnchor.transform);
 
             
         }

@@ -41,14 +41,14 @@ namespace UniLiveViewer
             virtualChest.forward = transform.forward;
             virtualChest.parent = chestAnchor;
             virtualChest.localPosition = Vector3.zero;
-            virtualChest.gameObject.layer = SystemInfo.layerNo_VirtualHead;
+            virtualChest.gameObject.layer = Constants.LayerNoVirtualHead;
 
             //仮想ヘッドを生成(目の正面用)
             virtualHead = new GameObject("[Normalized] VirtualHead").transform;
             virtualHead.forward = transform.forward;
             virtualHead.parent = headAnchor;
             virtualHead.localPosition = Vector3.zero;
-            virtualHead.gameObject.layer = SystemInfo.layerNo_VirtualHead;
+            virtualHead.gameObject.layer = Constants.LayerNoVirtualHead;
             virtualHead.gameObject.AddComponent(typeof(SphereCollider));
             var col = virtualHead.GetComponent<SphereCollider>();
             col.radius = 0.06f;
@@ -57,7 +57,7 @@ namespace UniLiveViewer
             //仮想アイを生成
             virtualEye = new GameObject("[Normalized] VirtualEye").transform;
             virtualEye.parent = headAnchor;
-            virtualEye.gameObject.layer = SystemInfo.layerNo_VirtualHead;
+            virtualEye.gameObject.layer = Constants.LayerNoVirtualHead;
             virtualEye.localPosition = Vector3.zero;
             virtualEye.rotation = transform.rotation;
 

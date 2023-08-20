@@ -71,11 +71,11 @@ namespace UniLiveViewer
         /// </summary>
         public void ShowErrorMessage()
         {
-            Debug.Log("読み込み失敗発生:" + SystemInfo.userProfile.LanguageCode);
+            Debug.Log("読み込み失敗発生:" + StageSettingService.UserProfile.LanguageCode);
 
             if (loadAnimation.gameObject.activeSelf) loadAnimation.gameObject.SetActive(false);
 
-            int index = SystemInfo.userProfile.LanguageCode - 1;
+            int index = StageSettingService.UserProfile.LanguageCode - 1;
             vmdError[index].gameObject.SetActive(true);
         }
 
@@ -141,8 +141,8 @@ namespace UniLiveViewer
             var async = SceneManager.LoadSceneAsync(sceneName);
             async.allowSceneActivation = false;
             await UniTask.Delay(1000, cancellationToken: cancellation_Token);
-            SystemInfo.userProfile.LastSceneName = sceneName;
-            FileReadAndWriteUtility.WriteJson(SystemInfo.userProfile);
+            StageSettingService.UserProfile.LastSceneName = sceneName;
+            FileReadAndWriteUtility.WriteJson(StageSettingService.UserProfile);
             async.allowSceneActivation = true;
         }
     }

@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -448,7 +448,7 @@ namespace UniLiveViewer
             (oldAudioClip.asset as AudioPlayableAsset).clip = newAudioClip;
 
             //スペクトル用
-            if (SystemInfo.sceneMode == SceneMode.CANDY_LIVE)
+            if (SceneManagerService.Current.Mode == SceneMode.CANDY_LIVE)
             {
                 if (newAudioClip.name.Contains(".mp3") || newAudioClip.name.Contains(".wav"))
                 {

@@ -19,7 +19,7 @@ namespace UniLiveViewer
                 targets[i] = transform.GetChild(i);
             }
 
-            SetStageLight(0, SystemInfo.userProfile.scene_gym_whitelight, out string str);
+            SetStageLight(0, StageSettingService.UserProfile.scene_gym_whitelight, out string str);
         }
 
         // Update is called once per frame

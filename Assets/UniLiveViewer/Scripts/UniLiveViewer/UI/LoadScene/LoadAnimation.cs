@@ -21,17 +21,7 @@ namespace UniLiveViewer
 
         void OnEnable()
         {
-            if (_sceneName)
-            {
-                _sceneName.text = SystemInfo.sceneMode switch
-                {
-                    SceneMode.CANDY_LIVE => "★CRS Live★",
-                    SceneMode.KAGURA_LIVE => "★KAGURA Live★",
-                    SceneMode.VIEWER => "★ViewerScene★",
-                    SceneMode.GYMNASIUM => "★Gymnasium★",
-                    _ => "",
-                };
-            }
+            if (_sceneName) _sceneName.text = SceneManagerService.Current.VisualName;
 
             //ローディングアニメーションをランダム設定
             _current = Random.Range(0, 2);

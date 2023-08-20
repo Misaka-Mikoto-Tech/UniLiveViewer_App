@@ -82,7 +82,7 @@ namespace UniLiveViewer
             _canHeadLookAt = false;
             _canEyeLookAt = false;
 
-            _customScalar = SystemInfo.userProfile.InitCharaSize;
+            _customScalar = StageSettingService.UserProfile.InitCharaSize;
         }
 
         public void SetLookAt(bool isEnable)
@@ -160,7 +160,7 @@ namespace UniLiveViewer
                 case CharaEnums.STATE.NULL:
                     //VRMとPrefab用
                     globalScale = Vector3.one;
-                    gameObject.layer = SystemInfo.layerNo_Default;
+                    gameObject.layer = Constants.LayerNoDefault;
                     //リセットして無効化しておく
                     LookAtVRM.EyeReset();
                     LookAtVRM.SetEnable(false);
@@ -168,7 +168,7 @@ namespace UniLiveViewer
                     break;
                 case CharaEnums.STATE.MINIATURE:
                     globalScale = new Vector3(0.26f, 0.26f, 0.26f);
-                    gameObject.layer = SystemInfo.layerNo_GrabObject;
+                    gameObject.layer = Constants.LayerNoGrabObject;
                     break;
                 case CharaEnums.STATE.HOLD:
                     globalScale = new Vector3(0.26f, 0.26f, 0.26f);
@@ -178,7 +178,7 @@ namespace UniLiveViewer
                     break;
                 case CharaEnums.STATE.FIELD:
                     globalScale = new Vector3(1.0f, 1.0f, 1.0f);
-                    gameObject.layer = SystemInfo.layerNo_FieldObject;
+                    gameObject.layer = Constants.LayerNoFieldObject;
                     break;
             }
 

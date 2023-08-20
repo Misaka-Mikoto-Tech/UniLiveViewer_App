@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UniLiveViewer;
 using VContainer;
 using VContainer.Unity;
@@ -37,7 +37,7 @@ public class TitleScenePresenter : IAsyncStartable, IDisposable
         _titleScene.Begin();
     }
 
-    public void Dispose()
+    void IDisposable.Dispose()
     {
         _disposable.Dispose();
     }

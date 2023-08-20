@@ -95,7 +95,7 @@ namespace UniLiveViewer
             if (grabbedObject)
             {
                 //キャラ以外
-                if (!grabbedObject.gameObject.CompareTag(SystemInfo.tag_GrabChara))
+                if (!grabbedObject.gameObject.CompareTag(Constants.TagGrabChara))
                 {
                     // TODO:ここ仕様から練り直したい
                     //両手掴みはアイテムという仕様で

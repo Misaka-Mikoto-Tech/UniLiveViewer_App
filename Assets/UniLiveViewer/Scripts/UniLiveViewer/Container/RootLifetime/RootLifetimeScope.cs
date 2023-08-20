@@ -6,6 +6,9 @@ public class RootLifetimeScope : LifetimeScope
 {
     protected override void Configure(IContainerBuilder builder)
     {
-        //builder.Register<TimelineInfo>(Lifetime.Singleton);
+        builder.Register<SceneManagerService>(Lifetime.Singleton);
+        builder.Register<StageSettingService>(Lifetime.Singleton);
+
+        builder.RegisterEntryPoint<SystemPresenter>();
     }
 }

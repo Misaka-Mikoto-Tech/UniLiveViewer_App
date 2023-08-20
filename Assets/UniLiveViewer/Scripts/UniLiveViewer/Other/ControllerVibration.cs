@@ -15,7 +15,7 @@ namespace UniLiveViewer
         /// <param name="time">振動時間、上限2秒らしい</param>
         public static void Execute(OVRInput.Controller touch, float frequency, float amplitude, float time)
         {
-            if (!SystemInfo.userProfile.TouchVibration) return;
+            if (!StageSettingService.UserProfile.TouchVibration) return;
 
             ExecuteInternal(touch, frequency, amplitude, time);
         }
