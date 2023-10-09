@@ -1,13 +1,14 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using UniLiveViewer.SceneLoader;
 using UniRx;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.Timeline;
 
-namespace UniLiveViewer
+namespace UniLiveViewer.Timeline
 {
     // NOTE: まだカオス
     public class TimelineController : MonoBehaviour
@@ -416,6 +417,10 @@ namespace UniLiveViewer
         /// <summary>
         /// 指定CurrentのBGMをセットする
         /// </summary>
+        /// <param name="token"></param>
+        /// <param name="isPreset"></param>
+        /// <param name="moveCurrent"></param>
+        /// <returns>ない場合は""</returns>
         public async UniTask<string> NextAudioClip(CancellationToken token, bool isPreset, int moveCurrent)
         {
             token.ThrowIfCancellationRequested();
@@ -448,7 +453,7 @@ namespace UniLiveViewer
             (oldAudioClip.asset as AudioPlayableAsset).clip = newAudioClip;
 
             //スペクトル用
-            if (SceneManagerService.Current.Mode == SceneMode.CANDY_LIVE)
+            if (SceneChangeService.GetSceneType == SceneType.CANDY_LIVE)
             {
                 if (newAudioClip.name.Contains(".mp3") || newAudioClip.name.Contains(".wav"))
                 {

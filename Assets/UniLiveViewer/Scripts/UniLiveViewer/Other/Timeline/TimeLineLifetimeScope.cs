@@ -1,26 +1,28 @@
-﻿using VContainer;
-using VContainer.Unity;
-using UniLiveViewer;
+﻿using UnityEngine;
 using UnityEngine.Playables;
+using VContainer;
+using VContainer.Unity;
 
-/// <summary>
-/// PlayableDirectorが欲しいだけだったりする
-/// </summary>
-public class TimeLineLifetimeScope : LifetimeScope
+namespace UniLiveViewer.Timeline
 {
-    protected override void Configure(IContainerBuilder builder)
+    [RequireComponent(typeof(AudioAssetManager), typeof(TimelineController), typeof(PlayableDirector))]
+    [RequireComponent(typeof(QuasiShadowService), typeof(QuasiShadowSetting))]
+    public class TimelineLifetimeScope : LifetimeScope
     {
-        builder.Register<MeshGuideService>(Lifetime.Singleton);
+        protected override void Configure(IContainerBuilder builder)
+        {
+            builder.Register<MeshGuideService>(Lifetime.Singleton);
 
-        builder.RegisterComponentInHierarchy<TimelineController>();
-        builder.RegisterComponentInHierarchy<AudioAssetManager>();
-        builder.RegisterComponentInHierarchy<PlayableDirector>();
-        builder.RegisterComponentInHierarchy<QuasiShadowSetting>();
-        builder.RegisterComponentInHierarchy<QuasiShadowService>();
+            builder.RegisterComponent(GetComponent<TimelineController>());
+            builder.RegisterComponent(GetComponent<AudioAssetManager>());
+            builder.RegisterComponent(GetComponent<PlayableDirector>());
 
-        // ここの並び順模様確認
-        builder.RegisterEntryPoint<TimelinePresenter>();
-        builder.RegisterEntryPoint<MeshGuidePresenter>();
-        builder.RegisterEntryPoint<QuasiShadowPresenter>();
+            builder.RegisterComponent(GetComponent<QuasiShadowService>());
+            builder.RegisterComponent(GetComponent<QuasiShadowSetting>());
+
+            builder.RegisterEntryPoint<TimelinePresenter>();
+            builder.RegisterEntryPoint<MeshGuidePresenter>();
+            builder.RegisterEntryPoint<QuasiShadowPresenter>();
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UniLiveViewer.SceneLoader;
+using UnityEngine;
 using UnityEngine.Profiling;
 
 namespace UniLiveViewer
@@ -11,13 +12,13 @@ namespace UniLiveViewer
         // Start is called before the first frame update
         void Start()
         {
-            textMeshes_maxChara[0].text = GetMaxChara(SceneMode.CANDY_LIVE).ToString();
-            textMeshes_maxChara[1].text = GetMaxChara(SceneMode.KAGURA_LIVE).ToString();
-            textMeshes_maxChara[2].text = GetMaxChara(SceneMode.VIEWER).ToString();
-            textMeshes_maxChara[3].text = GetMaxChara(SceneMode.GYMNASIUM).ToString();
+            textMeshes_maxChara[0].text = GetMaxChara(SceneType.CANDY_LIVE).ToString();
+            textMeshes_maxChara[1].text = GetMaxChara(SceneType.KAGURA_LIVE).ToString();
+            textMeshes_maxChara[2].text = GetMaxChara(SceneType.VIEWER).ToString();
+            textMeshes_maxChara[3].text = GetMaxChara(SceneType.GYMNASIUM).ToString();
         }
 
-        int GetMaxChara(SceneMode mode)
+        int GetMaxChara(SceneType mode)
         {
             int result = 0;
 #if UNITY_EDITOR

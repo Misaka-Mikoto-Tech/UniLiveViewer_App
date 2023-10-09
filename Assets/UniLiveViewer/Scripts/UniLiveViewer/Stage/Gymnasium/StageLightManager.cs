@@ -1,49 +1,51 @@
-﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace UniLiveViewer
 {
     public class StageLightManager : MonoBehaviour
     {
-        [SerializeField] private Material[] shadowMat = new Material[5];
-        [SerializeField] private int currnt = 0;
-        private Transform[] targets;
+        [SerializeField] int currnt = 0;
+        [SerializeField] Transform[] _lights = new Transform[5];
+        IStageLight[] _stagelights;
 
-        // Start is called before the first frame update
         void Start()
         {
-            targets = new Transform[transform.childCount];
-            for (int i = 0;i<targets.Length;i++)
-            {
-                targets[i] = transform.GetChild(i);
-            }
+            SetStageLight(0, FileReadAndWriteUtility.UserProfile.scene_gym_whitelight, out string str);
 
-            SetStageLight(0, StageSettingService.UserProfile.scene_gym_whitelight, out string str);
+            _stagelights = _lights
+                .Select(t => t.GetComponent<IStageLight>())
+                .Where(i => i != null)
+                .ToArray();
         }
 
-        // Update is called once per frame
+        public void OnUpdateSummonedCount(int count)
+        {
+            if (currnt < _lights.Length) return;
+            _stagelights[currnt]?.ChangeCount(count);
+        }
+
         public void SetStageLight(int moveIndex, bool isWhite, out string resultName)
         {
             resultName = "";
             currnt += moveIndex;
-            if (targets.Length <= currnt) currnt = 0;
-            else if (currnt < 0) currnt = targets.Length - 1;
+            if (_lights.Length <= currnt) currnt = 0;
+            else if (currnt < 0) currnt = _lights.Length - 1;
 
-            bool isEnabel;
-            for (int i = 0;i< targets.Length;i++)
-            {
-                isEnabel = i == currnt;
-                if (targets[i].gameObject.activeSelf != isEnabel) targets[i].gameObject.SetActive(isEnabel);
-                if(isEnabel) resultName = targets[currnt].name;
-            }
             SetLightColor(isWhite);
         }
 
         public void SetLightColor(bool isWhite)
         {
-            var lightBase = targets[currnt].GetComponent<LightBase>();
-            if (lightBase) lightBase.SetLightCollar(isWhite);
+            if (currnt < _lights.Length) return;
+            _stagelights[currnt]?.ChangeColor(isWhite);
+        }
+
+        void Update()
+        {
+            if (currnt < _lights.Length) return;
+            _stagelights[currnt]?.OnUpdate();
         }
     }
 }

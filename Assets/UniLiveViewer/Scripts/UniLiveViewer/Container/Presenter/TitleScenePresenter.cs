@@ -1,44 +1,36 @@
-using System;
+﻿using Cysharp.Threading.Tasks;
+using System.Threading;
 using UniLiveViewer;
+using UniLiveViewer.SceneLoader;
+using UnityEngine;
 using VContainer;
 using VContainer.Unity;
-using UniRx;
-using Cysharp.Threading.Tasks;
-using System.Threading;
 
-public class TitleScenePresenter : IAsyncStartable, IDisposable
+/// <summary>
+/// シーン遷移・ファイル準備のみ
+/// </summary>
+public class TitleScenePresenter : IAsyncStartable
 {
-    readonly FileAccessManager _fileAccessManager;
-    readonly TitleScene _titleScene;
     readonly SceneChangeService _sceneChangeService;
-
-    readonly CompositeDisposable _disposable;
+    readonly FileAccessManager _fileAccessManager;
+    readonly OVRScreenFade _ovrScreenFade;
 
     [Inject]
-    public TitleScenePresenter( FileAccessManager fileAccessManager,
-                                TitleScene titleScene,
-                                SceneChangeService sceneChangeService)
+    public TitleScenePresenter(
+        SceneChangeService sceneChangeService,
+        FileAccessManager fileAccessManager,
+        OVRScreenFade ovrScreenFade)
     {
-        _fileAccessManager = fileAccessManager;
-        _titleScene = titleScene;
         _sceneChangeService = sceneChangeService;
-
-        _disposable = new CompositeDisposable();
+        _fileAccessManager = fileAccessManager;
+        _ovrScreenFade = ovrScreenFade;
     }
 
     async UniTask IAsyncStartable.StartAsync(CancellationToken cancellation)
     {
-        _titleScene.ChangeSceneAsObservable
-            .Subscribe(async x => await _sceneChangeService.Change(x, 5000, cancellation))
-            .AddTo(_disposable);
-
-        //フォルダとファイルの作成
-        await _fileAccessManager.OnStartAsync(null, null, cancellation);
-        _titleScene.Begin();
-    }
-
-    void IDisposable.Dispose()
-    {
-        _disposable.Dispose();
+        _sceneChangeService.Setup(_ovrScreenFade);
+        _sceneChangeService.SetupFirstScene();
+        // TODO: この段階でフォルダ必要？（stage入ってからNGは面倒なのはある）
+        //await _fileAccessManager.OnStartAsync(null, null, cancellation);
     }
 }

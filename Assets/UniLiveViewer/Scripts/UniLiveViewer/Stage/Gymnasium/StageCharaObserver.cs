@@ -3,6 +3,7 @@ using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 using UniRx;
+using UniLiveViewer.Timeline;
 
 namespace UniLiveViewer
 {
@@ -23,7 +24,7 @@ namespace UniLiveViewer
         {
             if (!_timeline)
             {
-                var container = LifetimeScope.Find<TimeLineLifetimeScope>().Container;
+                var container = LifetimeScope.Find<TimelineLifetimeScope>().Container;
                 _timeline = container.Resolve<TimelineController>();
 
                 _timeline.FieldCharacterCount

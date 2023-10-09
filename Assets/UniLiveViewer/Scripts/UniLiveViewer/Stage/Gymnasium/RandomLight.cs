@@ -4,60 +4,112 @@ using UnityEngine;
 
 namespace UniLiveViewer
 {
-    public class RandomLight : LightBase
+    public class RandomLight : MonoBehaviour, IStageLight
     {
-        [SerializeField] private readonly float MAX_INTERVAL = 0.25f;
-        [SerializeField] private float MAXLIFETIME = 1.00f;
-        private float interval;
-        private float[] timer;
+        const float MAX_INTERVAL = 0.25f;
+        const string PropertyName = "_TintColor";
 
-        protected override void Init()
+        [SerializeField] MeshRenderer[] _lights;
+        [SerializeField] AnimationCurve _collarCurveR = AnimationCurve.Linear(0, 0, 1, 1);
+        [SerializeField] AnimationCurve _collarCurveG = AnimationCurve.Linear(0, 0, 1, 1);
+        [SerializeField] AnimationCurve _collarCurveB = AnimationCurve.Linear(0, 0, 1, 1);
+        [SerializeField] float _colorSpeed = 1;
+        [SerializeField] float _maxLifeTime = 1.00f;
+
+        bool _isWhitelight = true;
+        float _colorTimer = 0;
+        float _interval;
+        float[] _timer;
+
+        void Start()
         {
-            interval = MAX_INTERVAL;
-            timer = new float[lights.Length];
-            for (int i = 0; i < timer.Length; i++)
+            _interval = MAX_INTERVAL;
+            _timer = new float[_lights.Length];
+            for (int i = 0; i < _timer.Length; i++)
             {
-                timer[i] = MAXLIFETIME;
+                _timer[i] = _maxLifeTime;
             }
         }
 
-        // Update is called once per frame
-        protected override void Update()
+        public void ChangeCount(int count)
         {
-            interval -= Time.deltaTime;
-            if (interval < 0)
+            for (int i = 0; i < _lights.Length; i++)
             {
-                interval = MAX_INTERVAL;
+                var enable = i < count;
+                if (_lights[i].gameObject.activeSelf == enable) continue;
+                _lights[i].gameObject.SetActive(enable);
+            }
+        }
 
-                int index = Random.Range(0, lights.Length);
-                if (!lights[index].gameObject.activeSelf) lights[index].gameObject.SetActive(true);
-                lights[index].transform.localRotation = Quaternion.Euler(new Vector3(0,0,Random.Range(-205,-155)));
+        public void ChangeColor(bool isWhite)
+        {
+            _isWhitelight = isWhite;
+            if (!_isWhitelight) return;
 
-                if(!isWhitelight)
+            for (int i = 0; i < _lights.Length; i++)
+            {
+                _lights[i].sharedMaterial.SetColor(PropertyName, Color.white);
+                _lights[i].sharedMaterial.color = Color.white;
+            }
+        }
+
+        public void OnUpdate()
+        {
+            _interval -= Time.deltaTime;
+            if (_interval < 0)
+            {
+                _interval = MAX_INTERVAL;
+
+                int index = Random.Range(0, _lights.Length);
+                if (!_lights[index].gameObject.activeSelf) _lights[index].gameObject.SetActive(true);
+                _lights[index].transform.localRotation = Quaternion.Euler(new Vector3(0, 0, Random.Range(-205, -155)));
+
+                if (!_isWhitelight)
                 {
-                    lights[index].sharedMaterial.SetColor
-                            (propertyName,
+                    _lights[index].sharedMaterial.SetColor
+                            (PropertyName,
                             new Color(
                                 Random.Range(0, 1.0f),
                                 Random.Range(0, 1.0f),
                                 Random.Range(0, 1.0f)
                                 )
                             );
-                }                
+                }
             }
 
-            for (int i = 0;i< lights.Length; i++)
+            for (int i = 0; i < _lights.Length; i++)
             {
-                if(lights[i].gameObject.activeSelf)
+                if (_lights[i].gameObject.activeSelf)
                 {
-                    timer[i] -= Time.deltaTime;
-                    if (timer[i] < 0)
+                    _timer[i] -= Time.deltaTime;
+                    if (_timer[i] < 0)
                     {
-                        timer[i] = MAXLIFETIME;
-                        lights[i].gameObject.SetActive(false);
+                        _timer[i] = _maxLifeTime;
+                        _lights[i].gameObject.SetActive(false);
                     }
                 }
             }
+
+            UpdateColor();
+        }
+
+        void UpdateColor()
+        {
+            if (_isWhitelight) return;
+
+            for (int i = 0; i < _lights.Length; i++)
+            {
+                _lights[i].sharedMaterial.SetColor
+                    (PropertyName,
+                    new Color(
+                        _collarCurveR.Evaluate(_colorTimer),
+                        _collarCurveG.Evaluate(_colorTimer),
+                        _collarCurveB.Evaluate(_colorTimer)
+                        )
+                    );
+            }
+            _colorTimer += Time.deltaTime * _colorSpeed;
+            if (_colorTimer > 1.05f) _colorTimer = 0;
         }
     }
 }

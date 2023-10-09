@@ -27,7 +27,7 @@ namespace UniLiveViewer
         List<Button_Base> btnList = new List<Button_Base>();
 
         [Inject]
-        void Constructor(AudioAssetManager audioAssetManager)
+        void Construct(AudioAssetManager audioAssetManager)
         {
             _audioAssetManager = audioAssetManager;
         }

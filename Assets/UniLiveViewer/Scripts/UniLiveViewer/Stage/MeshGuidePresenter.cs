@@ -1,47 +1,50 @@
-﻿using System;
-using UniLiveViewer;
+using System;
+using UniLiveViewer.Timeline;
 using UniRx;
 using VContainer;
 using VContainer.Unity;
 
-public class MeshGuidePresenter : IStartable, ITickable , IDisposable
+namespace UniLiveViewer
 {
-    readonly MeshGuideService _meshGuide;
-    readonly TimelineController _timelineController;
-
-    readonly CompositeDisposable _disposables;
-
-    [Inject]
-    public MeshGuidePresenter(MeshGuideService meshGuide,
-        TimelineController timelineController)
+    public class MeshGuidePresenter : IStartable, ITickable, IDisposable
     {
-        _meshGuide = meshGuide;
-        _timelineController = timelineController;
+        readonly MeshGuideService _meshGuide;
+        readonly TimelineController _timelineController;
 
-        _disposables = new CompositeDisposable();
-    }
+        readonly CompositeDisposable _disposables;
 
-    void IStartable.Start()
-    {
-        UnityEngine.Debug.Log("Trace: MeshGuidePresenter.Start");
+        [Inject]
+        public MeshGuidePresenter(MeshGuideService meshGuide,
+            TimelineController timelineController)
+        {
+            _meshGuide = meshGuide;
+            _timelineController = timelineController;
 
-        _timelineController.FieldCharacterCount
-            .SkipLatestValueOnSubscribe()
-            .Subscribe(_ => _meshGuide.OnFieldCharacterCount())
-            .AddTo(_disposables);
+            _disposables = new CompositeDisposable();
+        }
 
-        _meshGuide.OnStart(_timelineController);
+        void IStartable.Start()
+        {
+            UnityEngine.Debug.Log("Trace: MeshGuidePresenter.Start");
 
-        UnityEngine.Debug.Log("Trace: MeshGuidePresenter.Start");
-    }
+            _timelineController.FieldCharacterCount
+                .SkipLatestValueOnSubscribe()
+                .Subscribe(_ => _meshGuide.OnFieldCharacterCount())
+                .AddTo(_disposables);
 
-    void ITickable.Tick()
-    {
-        _meshGuide.OnTick();
-    }
+            _meshGuide.OnStart(_timelineController);
 
-    void IDisposable.Dispose()
-    {
-        _disposables.Dispose();
+            UnityEngine.Debug.Log("Trace: MeshGuidePresenter.Start");
+        }
+
+        void ITickable.Tick()
+        {
+            _meshGuide.OnTick();
+        }
+
+        void IDisposable.Dispose()
+        {
+            _disposables.Dispose();
+        }
     }
 }

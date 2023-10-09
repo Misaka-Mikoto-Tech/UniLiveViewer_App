@@ -1,5 +1,7 @@
 ﻿using Cysharp.Threading.Tasks;
+using MessagePipe;
 using System.Threading;
+using UniLiveViewer.Timeline;
 using UniRx;
 using UnityEngine;
 using VContainer;
@@ -31,7 +33,7 @@ namespace UniLiveViewer
         // Start is called before the first frame update
         void Start()
         {
-            var container = LifetimeScope.Find<TimeLineLifetimeScope>().Container;
+            var container = LifetimeScope.Find<TimelineLifetimeScope>().Container;
             _timeline = container.Resolve<TimelineController>();
             _cancellationToken = this.GetCancellationTokenOnDestroy();
 

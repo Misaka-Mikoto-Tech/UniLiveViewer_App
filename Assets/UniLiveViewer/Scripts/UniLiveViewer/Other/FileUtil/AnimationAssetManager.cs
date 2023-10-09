@@ -4,88 +4,77 @@ using UnityEngine;
 
 namespace UniLiveViewer
 {
+    /// <summary>
+    /// MotionOffsetがcsv管理の都合上ファイル名にカンマ禁止（ロード時点で除外する）
+    /// 引用符は説明が面倒なのでしない
+    /// 隠蔽しつつjsonでもいいがUI用意必至なのが悩む..先々のことも懸念でとりあえず誰でもなcsv
+    /// </summary>
     public class AnimationAssetManager
     {
         public IReadOnlyList<string> VmdList => _vmdList;
         List<string> _vmdList = new List<string>();
-        public IReadOnlyList<string> VmdLipSyncList => _vmdLipSyncList;
-        List<string> _vmdLipSyncList = new List<string>();
+        public IReadOnlyList<string> VmdSyncList => _vmdSyncList;
+        List<string> _vmdSyncList = new List<string>();
 
         /// <summary>
-        /// アプリフォルダ内のVMDファイル名を取得
+        /// 各ファイルのリストを最新状態に
         /// </summary>
-        public bool CheckOffsetFile()
+        public void Setup()
+        {
+            UpdateMotionList();
+            UpdateSyncMotionList();
+        }
+
+        /// <summary>
+        /// モーションファイルのリストを最新状態に
+        /// </summary>
+        void UpdateMotionList()
         {
             if (!FileReadAndWriteUtility.TryLoadMotionOffset())
             {
                 Debug.Log("モーション設定ファイルなし");
             }
+            _vmdList.Clear();
 
+            var folderPath = PathsInfo.GetFullPath(FOLDERTYPE.MOTION) + "/";
+            var names = Directory.GetFiles(folderPath, "*.vmd", SearchOption.TopDirectoryOnly);
+
+            for (int i = 0; i < names.Length; i++)
+            {
+                names[i] = names[i].Replace(folderPath, "");
+                
+                if (names[i].Contains(",")) continue;
+                _vmdList.Add(names[i]);
+                //既存offset情報がなければ追加
+                if (!FileReadAndWriteUtility.GetMotionOffset.ContainsKey(names[i]))
+                {
+                    FileReadAndWriteUtility.SetMotionOffset(names[i], 0);
+                }
+            }
+            //一旦保存
+            FileReadAndWriteUtility.SaveMotionOffset();
+        }
+
+        /// <summary>
+        /// モーションと同期するファイルのリストを最新状態に
+        /// </summary>
+        void UpdateSyncMotionList()
+        {
             if (!FileReadAndWriteUtility.TryLoadMotionFacialPair())
             {
                 Debug.Log("モーションペア設定ファイルなし");
             }
-            _vmdList.Clear();
+            _vmdSyncList.Clear();
 
-            var folderPath = PathsInfo.GetFullPath(FOLDERTYPE.MOTION) + "/";
+            var folderPath = PathsInfo.GetFullPath_LipSync() + "/";
+            var names = Directory.GetFiles(folderPath, "*.vmd", SearchOption.TopDirectoryOnly);
 
-            try
+            for (int i = 0; i < names.Length; i++)
             {
-                var names = Directory.GetFiles(folderPath, "*.vmd", SearchOption.TopDirectoryOnly);
+                names[i] = names[i].Replace(folderPath, "");
 
-                //ファイルパスからファイル名の抽出
-                for (int i = 0; i < names.Length; i++)
-                {
-                    names[i] = names[i].Replace(folderPath, "");
-
-                    //ファイル名に区切りのカンマが含まれると困る
-                    if (names[i].Contains(",")) return false;
-                    else
-                    {
-                        _vmdList.Add(names[i]);
-
-                        //既存offset情報がなければ追加
-                        if (!FileReadAndWriteUtility.GetMotionOffset.ContainsKey(names[i]))
-                        {
-                            FileReadAndWriteUtility.SetMotionOffset(names[i], 0);
-                        }
-                    }
-                }
-                //一旦保存
-                FileReadAndWriteUtility.SaveMotionOffset();
-            }
-            catch
-            {
-                Debug.Log("VMDファイル読み込みに失敗しました");
-                return false;
-            }
-
-            GetAllVMDLipSyncNames();//仮でここ
-
-            return true;
-        }
-
-        /// <summary>
-        /// アプリフォルダ内のVMDファイル名を取得
-        /// </summary>
-        /// <returns></returns>
-        void GetAllVMDLipSyncNames()
-        {
-            try
-            {
-                var folderPath = PathsInfo.GetFullPath_LipSync() + "/";
-                var names = Directory.GetFiles(folderPath, "*.vmd", SearchOption.TopDirectoryOnly);
-
-                //ファイルパスからファイル名の抽出
-                for (int i = 0; i < names.Length; i++)
-                {
-                    names[i] = names[i].Replace(folderPath, "");
-                    _vmdLipSyncList.Add(names[i]);
-                }
-            }
-            catch
-            {
-                Debug.Log("VMDLipSyncファイル読み込みに失敗しました");
+                if (names[i].Contains(",")) continue;
+                _vmdSyncList.Add(names[i]);
             }
         }
     }

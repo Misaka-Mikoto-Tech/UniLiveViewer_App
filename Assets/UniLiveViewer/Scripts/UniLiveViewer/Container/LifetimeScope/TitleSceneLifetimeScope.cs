@@ -1,17 +1,17 @@
 ﻿using VContainer;
 using VContainer.Unity;
-using UniLiveViewer;
+using UnityEngine;
 
-public class TitleSceneLifetimeScope : LifetimeScope
+namespace UniLiveViewer
 {
-    protected override void Configure(IContainerBuilder builder)
+    public class TitleSceneLifetimeScope : LifetimeScope
     {
-        builder.Register<SceneChangeService>(Lifetime.Singleton);
-        builder.Register<FileAccessManager>(Lifetime.Singleton);
+        [SerializeField] OVRScreenFade _ovrScreenFade;
 
-        builder.RegisterComponentInHierarchy<TitleScene>();
-        builder.RegisterComponentInHierarchy<OVRScreenFade>();
-
-        builder.RegisterEntryPoint<TitleScenePresenter>();
+        protected override void Configure(IContainerBuilder builder)
+        {
+            builder.RegisterComponent(_ovrScreenFade);
+            builder.RegisterEntryPoint<TitleScenePresenter>();
+        }
     }
 }

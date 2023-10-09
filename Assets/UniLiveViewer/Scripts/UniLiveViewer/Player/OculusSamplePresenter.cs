@@ -1,59 +1,63 @@
 ﻿using System;
-using UniLiveViewer;
 using UniRx;
-using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
-public class OculusSamplePresenter : IStartable, IDisposable
+namespace UniLiveViewer.Player
 {
-    readonly Camera _camera;
-    readonly OVRManager _ovrManager;
-    readonly PlayerStateManager _playerStateManager;
-    readonly MovementRestrictionService _movementRestrictionService;
-    readonly PassthroughService _passthroughService;
-    readonly HandUIController _handUIController;
-    readonly CharacterCameraConstraint_Custom _characterCameraConstraintCustom;
-
-    readonly CompositeDisposable _disposables;
-
-    [Inject]
-    public OculusSamplePresenter(Camera camera,
-        OVRManager ovrManager,
-        PlayerStateManager playerStateManager,
-        MovementRestrictionService movementRestrictionService,
-        PassthroughService passthroughService,
-        HandUIController handUIController,
-        CharacterCameraConstraint_Custom characterCameraConstraintCustom)
+    public class OculusSamplePresenter : IStartable, IDisposable
     {
-        _camera = camera;
-        _ovrManager = ovrManager;
-        _playerStateManager = playerStateManager;
-        _movementRestrictionService = movementRestrictionService;
-        _passthroughService = passthroughService;
-        _handUIController = handUIController;
-        _characterCameraConstraintCustom = characterCameraConstraintCustom;
+        readonly FileAccessManager _fileAccessManager;
 
-        _disposables = new CompositeDisposable();
+        readonly PlayerStateManager _playerStateManager;
+        readonly LocomotionRestrictionService _movementRestrictionService;
+        readonly PassthroughService _passthroughService;
+        readonly HandUIController _handUIController;
+
+        readonly CompositeDisposable _disposables;
+
+        [Inject]
+        public OculusSamplePresenter(
+            FileAccessManager fileAccessManager,
+            PlayerStateManager playerStateManager,
+            LocomotionRestrictionService movementRestrictionService,
+            PassthroughService passthroughService,
+            HandUIController handUIController)
+        {
+            _fileAccessManager = fileAccessManager;
+            _playerStateManager = playerStateManager;
+            _movementRestrictionService = movementRestrictionService;
+            _passthroughService = passthroughService;
+            _handUIController = handUIController;
+
+            _disposables = new CompositeDisposable();
+        }
+
+        void IStartable.Start()
+        {
+            UnityEngine.Debug.Log("Trace: OculusSamplePresenter.Start");
+
+            _playerStateManager.enabled = false;
+
+            _fileAccessManager.LoadEndAsObservable
+                .Subscribe(_ => _playerStateManager.enabled = true)
+                .AddTo(_disposables);
+
+            _playerStateManager.PlayerInputAsObservable
+                .Subscribe(_ => _movementRestrictionService.MovementRestrictions())
+                .AddTo(_disposables);
+
+            _passthroughService.OnStart();
+            _playerStateManager.OnStart();
+            _handUIController.OnStart();
+
+            UnityEngine.Debug.Log("Trace: OculusSamplePresenter.Start");
+        }
+
+        public void Dispose()
+        {
+            _disposables.Dispose();
+        }
     }
 
-    void IStartable.Start()
-    {
-        UnityEngine.Debug.Log("Trace: OculusSamplePresenter.Start");
-
-        _playerStateManager.PlayerInputAsObservable
-            .Subscribe(_ => _movementRestrictionService.MovementRestrictions())
-            .AddTo(_disposables);
-
-        _passthroughService.Initialize(_ovrManager, _camera);
-        _playerStateManager.Initialize(_handUIController);
-        _handUIController.Initialize(_characterCameraConstraintCustom, _camera);
-
-        UnityEngine.Debug.Log("Trace: OculusSamplePresenter.Start");
-    }
-
-    public void Dispose()
-    {
-        _disposables.Dispose();
-    }
 }

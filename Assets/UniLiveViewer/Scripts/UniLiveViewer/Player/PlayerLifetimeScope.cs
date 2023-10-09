@@ -1,26 +1,30 @@
-﻿using VContainer;
-using VContainer.Unity;
-using UniLiveViewer;
+using UniLiveViewer.Kari;
+using UniLiveViewer.OVRCustom;
 using UnityEngine;
+using VContainer;
+using VContainer.Unity;
 
-public class PlayerLifetimeScope : LifetimeScope
+namespace UniLiveViewer.Player
 {
-    protected override void Configure(IContainerBuilder builder)
+    public class PlayerLifetimeScope : LifetimeScope
     {
-        var camera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
-        builder.RegisterComponent<Camera>(camera);
+        protected override void Configure(IContainerBuilder builder)
+        {
+            builder.RegisterComponent<Camera>(Camera.main);
 
-        builder.Register<MovementRestrictionService>(Lifetime.Singleton);
+            builder.Register<LocomotionRestrictionService>(Lifetime.Singleton);
 
-        builder.RegisterComponentInHierarchy<OVRManager>();
-        builder.RegisterComponentInHierarchy<PassthroughService>();
-        builder.RegisterComponentInHierarchy<CharacterCameraConstraint_Custom>();
+            builder.RegisterComponentInHierarchy<OVRManager>();
+            builder.RegisterComponentInHierarchy<CharacterCameraConstraint_Custom>();
+            builder.RegisterComponentInHierarchy<SimpleCapsuleWithStickMovement>();
 
-        builder.RegisterComponentInHierarchy<VRMTouchColliders>();
-        builder.RegisterComponentInHierarchy<PlayerStateManager>();
-        builder.RegisterComponentInHierarchy<SimpleCapsuleWithStickMovement>();
-        builder.RegisterComponentInHierarchy<HandUIController>();
+            builder.RegisterComponentInHierarchy<VRMTouchColliders>();
+            builder.RegisterComponentInHierarchy<PlayerStateManager>();
+            builder.RegisterComponentInHierarchy<HandUIController>();
+            builder.RegisterComponentInHierarchy<PassthroughService>();
 
-        builder.RegisterEntryPoint<OculusSamplePresenter>();
+            builder.RegisterEntryPoint<OculusSamplePresenter>();
+        }
     }
+
 }

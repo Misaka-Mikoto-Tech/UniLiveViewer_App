@@ -1,46 +1,47 @@
 ﻿using System;
-using UniLiveViewer;
+using UniLiveViewer.Timeline;
 using UniRx;
 using VContainer;
 using VContainer.Unity;
 
-public class QuasiShadowPresenter : IStartable, IDisposable
+namespace UniLiveViewer
 {
-    readonly QuasiShadowSetting _setting;
-    readonly QuasiShadowService _quasiShadow;
-    readonly TimelineController _timelineController;
-
-    readonly CompositeDisposable _disposables;
-
-    [Inject]
-    public QuasiShadowPresenter(
-        QuasiShadowSetting quasiShadowSetting,
-        QuasiShadowService quasiShadow,
-        TimelineController timelineController)
+    public class QuasiShadowPresenter : IStartable, IDisposable
     {
-        _setting = quasiShadowSetting;
-        _quasiShadow = quasiShadow;
-        _timelineController = timelineController;
+        readonly QuasiShadowService _quasiShadow;
+        readonly TimelineController _timelineController;
 
-        _disposables = new CompositeDisposable();
+        readonly CompositeDisposable _disposables;
+
+        [Inject]
+        public QuasiShadowPresenter(
+            QuasiShadowService quasiShadow,
+            TimelineController timelineController)
+        {
+            _quasiShadow = quasiShadow;
+            _timelineController = timelineController;
+
+            _disposables = new CompositeDisposable();
+        }
+
+        void IStartable.Start()
+        {
+            UnityEngine.Debug.Log("Trace: QuasiShadowPresenter.Start");
+
+            _timelineController.FieldCharacterCount
+                .SkipLatestValueOnSubscribe()
+                .Subscribe(_ => _quasiShadow.OnFieldCharacterCount())
+                .AddTo(_disposables);
+
+            _quasiShadow.OnStart();
+
+            UnityEngine.Debug.Log("Trace: QuasiShadowPresenter.Start");
+        }
+
+        public void Dispose()
+        {
+            _disposables.Dispose();
+        }
     }
 
-    void IStartable.Start()
-    {
-        UnityEngine.Debug.Log("Trace: QuasiShadowPresenter.Start");
-
-        _timelineController.FieldCharacterCount
-            .SkipLatestValueOnSubscribe()
-            .Subscribe(_ => _quasiShadow.OnFieldCharacterCount())
-            .AddTo(_disposables);
-
-        _quasiShadow.OnStart(_timelineController, _setting);
-
-        UnityEngine.Debug.Log("Trace: QuasiShadowPresenter.Start");
-    }
-
-    public void Dispose()
-    {
-        _disposables.Dispose();
-    }
 }

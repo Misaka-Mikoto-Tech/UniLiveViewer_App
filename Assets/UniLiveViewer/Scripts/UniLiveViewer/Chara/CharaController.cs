@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using VRM;
 using NanaCiel;
@@ -82,7 +82,7 @@ namespace UniLiveViewer
             _canHeadLookAt = false;
             _canEyeLookAt = false;
 
-            _customScalar = StageSettingService.UserProfile.InitCharaSize;
+            _customScalar = FileReadAndWriteUtility.UserProfile.InitCharaSize;
         }
 
         public void SetLookAt(bool isEnable)
@@ -199,8 +199,6 @@ namespace UniLiveViewer
 
             if(_charaState == CharaEnums.STATE.MINIATURE || _charaState == CharaEnums.STATE.HOLD) transform.localScale = globalScale;
             else transform.localScale = globalScale * CustomScalar;
-
-            Debug.LogWarning(transform.position);
         }
 
         // Update is called once per frame

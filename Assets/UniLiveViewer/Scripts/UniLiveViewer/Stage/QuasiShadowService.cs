@@ -1,5 +1,8 @@
 ﻿using System;
+using UniLiveViewer.SceneLoader;
+using UniLiveViewer.Timeline;
 using UnityEngine;
+using VContainer;
 
 namespace UniLiveViewer
 {
@@ -7,9 +10,10 @@ namespace UniLiveViewer
     public class QuasiShadowService : MonoBehaviour
     {
         const string TEXTURE_NAME = "_MainTex";
-        QuasiShadowSetting _setting;
 
         TimelineController _timeline;
+        QuasiShadowSetting _setting;
+
         ShadowData[] _shadowDatas;
 
         RaycastHit _hitCollider;
@@ -18,11 +22,15 @@ namespace UniLiveViewer
         [Space(10), Header("サウンド")]
         [SerializeField] AudioSource[] audioSource = new AudioSource[5];
 
-        public void OnStart(TimelineController timeline, QuasiShadowSetting quasiShadowSetting)
+        [Inject]
+        void Construct(TimelineController timeline, QuasiShadowSetting setting)
         {
             _timeline = timeline;
-            _setting = quasiShadowSetting;
+            _setting = setting;
+        }
 
+        public void OnStart()
+        {
             GameObject anchor = new GameObject("Shadows");
 
             //メッシュ消え対策
@@ -42,7 +50,7 @@ namespace UniLiveViewer
 
             Destroy(prefab.gameObject);
 
-            UpdateShadowType(StageSettingService.UserProfile.CharaShadowType);
+            UpdateShadowType(FileReadAndWriteUtility.UserProfile.CharaShadowType);
         }
 
         void UpdateShadowType(int shadowType)
@@ -77,7 +85,6 @@ namespace UniLiveViewer
             }
         }
 
-        // Update is called once per frame
         void Update()
         {
             if (_setting.ShadowType == SHADOWTYPE.NONE) return;
@@ -92,7 +99,7 @@ namespace UniLiveViewer
                 }
             }
 
-            if (SceneManagerService.Current.Mode == SceneMode.GYMNASIUM && _setting.IsStepSE) FootSound();
+            if (SceneChangeService.GetSceneType == SceneType.GYMNASIUM && _setting.IsStepSE) FootSound();
         }
 
         void FootSound()

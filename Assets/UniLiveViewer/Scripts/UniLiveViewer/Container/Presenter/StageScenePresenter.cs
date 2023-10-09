@@ -1,83 +1,64 @@
 ﻿using Cysharp.Threading.Tasks;
+using NanaCiel;
 using System;
 using System.Threading;
-using UniLiveViewer;
-using UniRx;
+using UniLiveViewer.SceneLoader;
+using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
-public class StageScenePresenter : IAsyncStartable, IDisposable
+namespace UniLiveViewer
 {
-    readonly FileAccessManager _fileAccessManager;
-    readonly AnimationAssetManager _animationAssetManager;
-    readonly TextureAssetManager _textureAssetManager;
-    readonly DirectUI _directUI;
-    readonly BlackoutCurtain _blackoutCurtain;
-    readonly GeneratorPortal _generatorPortal;
-    readonly TimelineController _timelineController;
-
-    readonly CompositeDisposable _disposables;
-
-    [Inject]
-    public StageScenePresenter( FileAccessManager fileAccessManager,
-                                AnimationAssetManager animationAssetManager,
-                                TextureAssetManager textureAssetManager,
-                                DirectUI directUI,
-                                BlackoutCurtain blackoutCurtain,
-                                GeneratorPortal generatorPortal,
-                                TimelineController timelineController)
+    /// <summary>
+    /// シーン遷移・ファイル準備のみ
+    /// </summary>
+    public class StageScenePresenter : IAsyncStartable
     {
-        _fileAccessManager = fileAccessManager;
-        _animationAssetManager = animationAssetManager;
-        _textureAssetManager = textureAssetManager;
-        _timelineController = timelineController;
+        readonly SceneChangeService _sceneChangeService;
+        readonly FileAccessManager _fileAccessManager;
+        readonly OVRScreenFade _ovrScreenFade;
+        readonly AnimationAssetManager _animationAssetManager;
+        readonly TextureAssetManager _textureAssetManager;
 
-        _directUI = directUI;
-        _blackoutCurtain = blackoutCurtain;
-        _generatorPortal = generatorPortal;
+        [Inject]
+        public StageScenePresenter(
+            FileAccessManager fileAccessManager,
+            AnimationAssetManager animationAssetManager,
+            TextureAssetManager textureAssetManager,
+            SceneChangeService sceneChangeService)
+        {
+            _sceneChangeService = sceneChangeService;
+            _fileAccessManager = fileAccessManager;
+            _animationAssetManager = animationAssetManager;
+            _textureAssetManager = textureAssetManager;
+        }
 
-        _disposables = new CompositeDisposable();
-    }
+        async UniTask IAsyncStartable.StartAsync(CancellationToken cancellation)
+        {
+            UnityEngine.Debug.Log("Trace: StageScenePresenter.StartAsync");
 
-    async UniTask IAsyncStartable.StartAsync(CancellationToken cancellation)
-    {
-        UnityEngine.Debug.Log("Trace: StageScenePresenter.StartAsync");
 
-        //ロード開始
-        _fileAccessManager.LoadStartAsObservable
-            .Subscribe(_ => _blackoutCurtain.Staging())
-            .AddTo(_disposables);
+            _sceneChangeService.SetupFirstScene();
 
-        //ロードエラー
-        _fileAccessManager.LoadErrorAsObservable
-            .Subscribe(_ => _blackoutCurtain.ShowErrorMessage())
-            .AddTo(_disposables);
 
-        //ロード完了
-        _fileAccessManager.LoadEndAsObservable
-            .Subscribe(_ => OnLoadEnd())
-            .AddTo(_disposables);
+            await _fileAccessManager.PreparationStart(cancellation).OnError(OnFolderError);
+            _animationAssetManager.Setup();
+            await _textureAssetManager.CacheThumbnails(cancellation).OnError(OnThumbnailsError);
+            _fileAccessManager.PreparationEnd();
 
-        _timelineController.FieldCharacterCount
-                .Subscribe(_generatorPortal.OnUpdateCharacterCount).AddTo(_disposables);
+            //await _fileAccessManager.OnStartAsync(_animationAssetManager, _textureAssetManager, cancellation);
 
-        _generatorPortal.OnStart(_timelineController, _animationAssetManager);
+            UnityEngine.Debug.Log("Trace: StageScenePresenter.StartAsync");
+        }
 
-        //フォルダとファイルの作成
-        await _fileAccessManager.OnStartAsync(_animationAssetManager, _textureAssetManager, cancellation);
+        void OnFolderError(Exception e)
+        {
+            Debug.Log($"フォルダ準備エラー:{e}");
+        }
 
-        UnityEngine.Debug.Log("Trace: StageScenePresenter.StartAsync");
-    }
-
-    void OnLoadEnd()
-    {
-        _blackoutCurtain.Ending().Forget();
-        _directUI.Initialize();
-        _generatorPortal.OnLoadEnd();
-    }
-
-    void IDisposable.Dispose()
-    {
-        _disposables.Dispose();
+        void OnThumbnailsError(Exception e)
+        {
+            Debug.Log($"サムネイルチェックエラー:{e}");
+        }
     }
 }

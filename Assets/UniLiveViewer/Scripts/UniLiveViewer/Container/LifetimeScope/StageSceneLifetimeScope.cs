@@ -1,19 +1,17 @@
-﻿using UniLiveViewer;
+﻿using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
-public class StageSceneLifetimeScope : LifetimeScope
+namespace UniLiveViewer
 {
-    protected override void Configure(IContainerBuilder builder)
+    public class StageSceneLifetimeScope : LifetimeScope
     {
-        builder.Register<FileAccessManager>(Lifetime.Singleton);
-        builder.Register<AnimationAssetManager>(Lifetime.Singleton);
-        builder.Register<TextureAssetManager>(Lifetime.Singleton);
+        protected override void Configure(IContainerBuilder builder)
+        {
+            builder.Register<AnimationAssetManager>(Lifetime.Singleton);
+            builder.Register<TextureAssetManager>(Lifetime.Singleton);
 
-        builder.RegisterComponentInHierarchy<DirectUI>();
-        builder.RegisterComponentInHierarchy<BlackoutCurtain>();
-        builder.RegisterComponentInHierarchy<GeneratorPortal>();
-
-        builder.RegisterEntryPoint<StageScenePresenter>();
+            builder.RegisterEntryPoint<StageScenePresenter>();
+        }
     }
 }

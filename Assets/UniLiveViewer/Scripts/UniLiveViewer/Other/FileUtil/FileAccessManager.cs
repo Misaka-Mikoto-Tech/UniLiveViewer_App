@@ -8,52 +8,65 @@ using UnityEngine.SceneManagement;
 
 namespace UniLiveViewer 
 {
+    /// <summary>
+    /// 専用フォルダ作成削除・ファイル数カウント
+    /// </summary>
     public class FileAccessManager
     {
+        /// <summary>
+        /// TODO: なにこれ消したい
+        /// </summary>
         public bool isSuccess { get; private set; } = false;
 
         Subject<Unit> _onLoadStart = new Subject<Unit>();
         public IObservable<Unit> LoadStartAsObservable => _onLoadStart;
         Subject<Unit> _onLoadEnd = new Subject<Unit>();
         public IObservable<Unit> LoadEndAsObservable => _onLoadEnd;
-        Subject<Unit> _onVMDLoadError = new Subject<Unit>();
-        public IObservable<Unit> LoadErrorAsObservable => _onVMDLoadError;
+        //Subject<Unit> _onVMDLoadError = new Subject<Unit>();
+        //public IObservable<Unit> LoadErrorAsObservable => _onVMDLoadError;
 
-        FileAccessManager()
+        public async UniTask PreparationStart(CancellationToken cancellation)
         {
+            _onLoadStart?.OnNext(Unit.Default);
+
+            TryCreateCustomFolder();
+            await TryCreateReadmeFile(cancellation);
+        }
+
+        public void PreparationEnd()
+        {
+            isSuccess = true;
+            _onLoadEnd?.OnNext(Unit.Default);
         }
 
         public async UniTask OnStartAsync(AnimationAssetManager animationAssetManager, TextureAssetManager textureAssetManager,CancellationToken cancellation)
         {
-            try
-            {
-                _onLoadStart?.OnNext(Unit.Default);
+            //try
+            //{
+            //    _onLoadStart?.OnNext(Unit.Default);
 
-                //フォルダ作成
-                TryCreateCustomFolder();
+            //    TryCreateCustomFolder();
+            //    await TryCreateReadmeFile(cancellation);
 
-                //リードミー作成
-                await TryCreateReadmeFile();
-
-                //タイトルシーン以外
-                if (SceneManager.GetActiveScene().name != "TitleScene")
-                {
-                    //VMDファイルを確認
-                    if (!animationAssetManager.CheckOffsetFile())
-                    {
-                        _onVMDLoadError?.OnNext(Unit.Default);//フォーマットエラー
-                        throw new Exception("CheckOffsetFile");
-                    }
-                    await textureAssetManager.CacheThumbnails(cancellation);
-                }
-                isSuccess = true;
-                Debug.Log("ロード成功");
-                _onLoadEnd?.OnNext(Unit.Default);
-            }
-            catch
-            {
-                Debug.Log("ロード失敗");
-            }
+            //    //タイトルシーン以外
+            //    if (SceneManager.GetActiveScene().name != "TitleScene")
+            //    {
+            //        //VMDファイルを確認
+            //        if (!animationAssetManager.Setup())
+            //        {
+            //            _onVMDLoadError?.OnNext(Unit.Default);//フォーマットエラー
+            //            throw new Exception("CheckOffsetFile");
+            //        }
+            //        await textureAssetManager.CacheThumbnails(cancellation);
+            //    }
+            //    isSuccess = true;
+            //    Debug.Log("ロード成功");
+            //    _onLoadEnd?.OnNext(Unit.Default);
+            //}
+            //catch(Exception e)
+            //{
+            //    Debug.Log("ロード失敗:" + e);
+            //}
         }
 
         /// <summary>
@@ -109,14 +122,15 @@ namespace UniLiveViewer
 
         /// <summary>
         /// デフォルトファイル作成
+        /// リードミー
         /// </summary>
         /// <returns></returns>
-        async UniTask TryCreateReadmeFile()
+        async UniTask TryCreateReadmeFile(CancellationToken cancellation)
         {
             try
             {
-                await ResourcesLoadText("readme_ja", PathsInfo.GetFullPath_README(USE_LANGUAGE.JP));
-                await ResourcesLoadText("readme_en", PathsInfo.GetFullPath_README(USE_LANGUAGE.EN));
+                await ResourcesLoadText("readme_ja", PathsInfo.GetFullPath_README(USE_LANGUAGE.JP), cancellation);
+                await ResourcesLoadText("readme_en", PathsInfo.GetFullPath_README(USE_LANGUAGE.EN), cancellation);
                 DeleteFile(PathsInfo.GetFullPath_DEFECT());
             }
             catch
@@ -127,7 +141,7 @@ namespace UniLiveViewer
         }
 
         //TODO:わざわざ書き込む必要ないし解放必要では
-        async UniTask ResourcesLoadText(string fileName, string path)
+        async UniTask ResourcesLoadText(string fileName, string path, CancellationToken cancellation)
         {
             var resourceFile = (TextAsset)await Resources.LoadAsync<TextAsset>(fileName);
             using (StreamWriter writer = new StreamWriter(path, false, System.Text.Encoding.UTF8))

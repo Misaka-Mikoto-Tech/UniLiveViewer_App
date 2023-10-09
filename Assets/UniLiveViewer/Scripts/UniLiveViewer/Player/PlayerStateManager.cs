@@ -1,13 +1,14 @@
-using UnityEngine;
-using System.Threading;
-using Cysharp.Threading.Tasks;
-using System;
+﻿using System;
+using UniLiveViewer.OVRCustom;
+using UniLiveViewer.SceneLoader;
+using UniLiveViewer.Timeline;
 using UniRx;
+using UnityEngine;
+using UnityEngine.Playables;
 using VContainer;
 using VContainer.Unity;
-using UnityEngine.Playables;
 
-namespace UniLiveViewer 
+namespace UniLiveViewer.Player
 {
     public class PlayerStateManager : MonoBehaviour
     {
@@ -41,7 +42,7 @@ namespace UniLiveViewer
         //UI
         [SerializeField] KeyCode uiKey_win = KeyCode.U;
 
-        [Space(10) , Header("サウンド")]
+        [Space(10), Header("サウンド")]
         [SerializeField] AudioClip[] Sound;//UI開く,UI閉じる
         AudioSource _audioSource;
 
@@ -66,17 +67,21 @@ namespace UniLiveViewer
             _bothHandsCandidate = new OVRGrabbable_Custom[2];
         }
 
-        public void Initialize(HandUIController handUIController)
+        [Inject]
+        void Construct(HandUIController handUIController)
         {
             _handUIController = handUIController;
+        }
 
+        public void OnStart()
+        {
             _isMoveUI = true;
 
-            var container = LifetimeScope.Find<TimeLineLifetimeScope>().Container;
+            var container = LifetimeScope.Find<TimelineLifetimeScope>().Container;
             _timeline = container.Resolve<TimelineController>();
             _playableDirector = container.Resolve<PlayableDirector>();
             _meshGuide = container.Resolve<MeshGuideService>();
-            
+
             _audioSource = GetComponent<AudioSource>();
             _audioSource.volume = SystemInfo.soundVolume_SE;
 
@@ -90,21 +95,21 @@ namespace UniLiveViewer
             _bothHandsCenterAnchor = new GameObject("BothHandsCenter").transform;
 
             //初期座標
-            switch (SceneManagerService.Current.Mode)
+            switch (SceneChangeService.GetSceneType)
             {
-                case SceneMode.CANDY_LIVE:
+                case SceneType.CANDY_LIVE:
                     transform.position = new Vector3(0, 0.4f, 6.5f);
                     transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
                     break;
-                case SceneMode.KAGURA_LIVE:
+                case SceneType.KAGURA_LIVE:
                     transform.position = new Vector3(0, 1, 5);
                     transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
                     break;
-                case SceneMode.VIEWER:
+                case SceneType.VIEWER:
                     transform.position = new Vector3(0, 0.5f, 5.5f);
                     transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
                     break;
-                case SceneMode.GYMNASIUM:
+                case SceneType.GYMNASIUM:
                     transform.position = new Vector3(0, 0.5f, 5.5f);
                     transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
                     break;
@@ -144,7 +149,7 @@ namespace UniLiveViewer
             }
         }
 
-        void CheckInput_GrabbedChara(PlayerEnums.HandType handType, KeyConfig key,OVRGrabber_UniLiveViewer hand)
+        void CheckInput_GrabbedChara(PlayerEnums.HandType handType, KeyConfig key, OVRGrabber_UniLiveViewer hand)
         {
             //魔法陣と十字を表示してキャラを乗せる
             if (OVRInput.GetDown(key.action))
@@ -234,7 +239,7 @@ namespace UniLiveViewer
                     {
                         float rad = Mathf.Atan2(stick.x, stick.y);
                         float degree = rad * Mathf.Rad2Deg;
-                        if (degree < 0 - ( PIECE_ANGLE / 2) ) degree += 360;
+                        if (degree < 0 - (PIECE_ANGLE / 2)) degree += 360;
                         int current = (int)System.Math.Round(degree / PIECE_ANGLE);//Mathfは四捨五入ではない→.NET使用
                         if (_handUIController.TrySetItemTexture((int)handType, current))
                         {

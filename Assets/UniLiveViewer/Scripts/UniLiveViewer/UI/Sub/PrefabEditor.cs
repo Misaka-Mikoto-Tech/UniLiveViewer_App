@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using NanaCiel;
@@ -119,7 +119,7 @@ namespace UniLiveViewer
         private void MaterialInfoUpdate()
         {
             currentMatName = rollSelector.GetCurrentMatName();
-            localOffset = matManager.matLocation[currentMatName] * StageSettingService.UserProfile.InitCharaSize;
+            localOffset = matManager.matLocation[currentMatName] * FileReadAndWriteUtility.UserProfile.InitCharaSize;
 
             onCurrentUpdate?.Invoke();
 

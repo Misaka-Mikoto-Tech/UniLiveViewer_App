@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,13 +14,15 @@ namespace UniLiveViewer
         /// <summary>
         /// モーションファイル名とoffset値
         /// </summary>
-        public static IReadOnlyDictionary<string, int> GetMotionOffset => map_MotionOffset;
-        static Dictionary<string, int> map_MotionOffset = new Dictionary<string, int>();
+        public static IReadOnlyDictionary<string, int> GetMotionOffset => _motionOffsetMap;
+        static Dictionary<string, int> _motionOffsetMap = new Dictionary<string, int>();
         /// <summary>
         /// モーションファイル名と表情ファイル名
         /// </summary>
         public static IReadOnlyDictionary<string, string> GetMotionFacialPair => map_MotionFacialPair;
         public static Dictionary<string, string> map_MotionFacialPair = new Dictionary<string, string>();
+
+        public static UserProfile UserProfile { get; private set; }
 
         /// <summary>
         /// Jsonファイルを読み込んでクラスに変換
@@ -48,6 +50,7 @@ namespace UniLiveViewer
                 result = new UserProfile();
                 WriteJson(result);
             }
+            UserProfile = result;
             return result;
         }
 
@@ -76,7 +79,7 @@ namespace UniLiveViewer
         public static void SetMotionOffset(string sName, int val)
         {
             if (!sName.Contains(".vmd")) return;
-            map_MotionOffset[sName] = val;
+            _motionOffsetMap[sName] = val;
         }
 
         
@@ -88,7 +91,7 @@ namespace UniLiveViewer
             //書き込み
             using (StreamWriter writer = new StreamWriter(PathOffset, false, System.Text.Encoding.UTF8))
             {
-                foreach (var e in map_MotionOffset)
+                foreach (var e in _motionOffsetMap)
                 {
                     writer.WriteLine(e.Key + "," + e.Value);
                 }
@@ -102,9 +105,9 @@ namespace UniLiveViewer
         public static bool TryLoadMotionOffset()
         {
             //初期化
-            if (map_MotionOffset.Count != 0)
+            if (_motionOffsetMap.Count != 0)
             {
-                map_MotionOffset.Clear();
+                _motionOffsetMap.Clear();
             }
 
             //offset情報ファイルがあれば読み込む
@@ -115,7 +118,7 @@ namespace UniLiveViewer
                 string[] spl = line.Split(',');
                 if (spl.Length != 2) return false;
                 if (spl[0] == "" || spl[1] == "") return false;
-                map_MotionOffset.Add(spl[0], int.Parse(spl[1]));
+                _motionOffsetMap.Add(spl[0], int.Parse(spl[1]));
             }
             return true;
         }
