@@ -1,28 +1,27 @@
-﻿using UniLiveViewer;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
-public class SystemSettingPresenter : IStartable
+namespace UniLiveViewer
 {
-    readonly StageSettingService _stageSettingService;
-
-    [Inject]
-    public SystemSettingPresenter(
-        StageSettingService stageSettingService)
+    /// <summary>
+    /// 全シーンの最初に走る
+    /// </summary>
+    public class SystemSettingPresenter : IStartable
     {
-        _stageSettingService = stageSettingService;
-    }
+        [Inject]
+        public SystemSettingPresenter()
+        {
+        }
 
-    void IStartable.Start()
-    {
+        void IStartable.Start()
+        {
 #if UNITY_EDITOR
-        Debug.Log("Windowsとして認識しています");
-#elif UNITY_ANDROID    
+            Debug.Log("Windowsとして認識しています");
+#elif UNITY_ANDROID
         Debug.Log("Questとして認識しています");
 #endif
-
-        FileReadAndWriteUtility.ReadJson();
-        //_stageSettingService.Initialize();
+            FileReadAndWriteUtility.ReadJson();
+        }
     }
 }

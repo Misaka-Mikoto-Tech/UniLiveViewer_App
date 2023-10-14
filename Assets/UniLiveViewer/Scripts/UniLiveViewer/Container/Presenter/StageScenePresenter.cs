@@ -16,7 +16,6 @@ namespace UniLiveViewer
     {
         readonly SceneChangeService _sceneChangeService;
         readonly FileAccessManager _fileAccessManager;
-        readonly OVRScreenFade _ovrScreenFade;
         readonly AnimationAssetManager _animationAssetManager;
         readonly TextureAssetManager _textureAssetManager;
 
@@ -37,9 +36,7 @@ namespace UniLiveViewer
         {
             UnityEngine.Debug.Log("Trace: StageScenePresenter.StartAsync");
 
-
-            _sceneChangeService.SetupFirstScene();
-
+            _sceneChangeService.SetSceneIfNecessary();
 
             await _fileAccessManager.PreparationStart(cancellation).OnError(OnFolderError);
             _animationAssetManager.Setup();

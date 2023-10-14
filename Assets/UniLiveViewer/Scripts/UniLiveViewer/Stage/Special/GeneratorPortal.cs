@@ -107,21 +107,14 @@ namespace UniLiveViewer.Stage
         void OnEnable()
         {
             //リトライ処理
-            if (_retryVMD)
-            {
-                _retryVMD = false;
-                SetAnimation(0).Forget();
-            }
-            else
-            {
-                //キャラが存在していなければ生成しておく
-                if (_timeline && !_timeline.GetCharacterInPortal)//初回は生成しない仕様
-                {
-                    SetChara(0).Forget();
-                }
-            }
+            if (!_retryVMD) return;
+            _retryVMD = false;
+            SetAnimation(0).Forget();
         }
 
+        /// <summary>
+        /// シーン読み込み完了時
+        /// </summary>
         public void OnLoadEnd()
         {
             //VMD枠はダミーアニメーションを追加しておく
@@ -145,6 +138,12 @@ namespace UniLiveViewer.Stage
 
                 string[] dummy = { LIPSYNC_NONAME };
                 _vmdLipSync = dummy.Concat(lipSyncs).ToArray();
+            }
+
+            //キャラ不在なら生成しておく
+            if (_timeline.GetCharacterInPortal == null)
+            {
+                SetChara(0).Forget();
             }
         }
 

@@ -30,6 +30,7 @@ namespace UniLiveViewer
         void Construct(AudioAssetManager audioAssetManager)
         {
             _audioAssetManager = audioAssetManager;
+            Close();
         }
 
         /// <summary>

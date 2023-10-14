@@ -2,11 +2,10 @@
 using System;
 using System.IO;
 using System.Threading;
-using UnityEngine;
 using UniRx;
-using UnityEngine.SceneManagement;
+using UnityEngine;
 
-namespace UniLiveViewer 
+namespace UniLiveViewer
 {
     /// <summary>
     /// 専用フォルダ作成削除・ファイル数カウント
@@ -22,9 +21,12 @@ namespace UniLiveViewer
         public IObservable<Unit> LoadStartAsObservable => _onLoadStart;
         Subject<Unit> _onLoadEnd = new Subject<Unit>();
         public IObservable<Unit> LoadEndAsObservable => _onLoadEnd;
-        //Subject<Unit> _onVMDLoadError = new Subject<Unit>();
-        //public IObservable<Unit> LoadErrorAsObservable => _onVMDLoadError;
 
+        /// <summary>
+        /// 準備開始(シーン冒頭に呼ばれる)
+        /// </summary>
+        /// <param name="cancellation"></param>
+        /// <returns></returns>
         public async UniTask PreparationStart(CancellationToken cancellation)
         {
             _onLoadStart?.OnNext(Unit.Default);
@@ -33,40 +35,13 @@ namespace UniLiveViewer
             await TryCreateReadmeFile(cancellation);
         }
 
+        /// <summary>
+        /// 準備完了(シーン冒頭に呼ばれる)
+        /// </summary>
         public void PreparationEnd()
         {
             isSuccess = true;
             _onLoadEnd?.OnNext(Unit.Default);
-        }
-
-        public async UniTask OnStartAsync(AnimationAssetManager animationAssetManager, TextureAssetManager textureAssetManager,CancellationToken cancellation)
-        {
-            //try
-            //{
-            //    _onLoadStart?.OnNext(Unit.Default);
-
-            //    TryCreateCustomFolder();
-            //    await TryCreateReadmeFile(cancellation);
-
-            //    //タイトルシーン以外
-            //    if (SceneManager.GetActiveScene().name != "TitleScene")
-            //    {
-            //        //VMDファイルを確認
-            //        if (!animationAssetManager.Setup())
-            //        {
-            //            _onVMDLoadError?.OnNext(Unit.Default);//フォーマットエラー
-            //            throw new Exception("CheckOffsetFile");
-            //        }
-            //        await textureAssetManager.CacheThumbnails(cancellation);
-            //    }
-            //    isSuccess = true;
-            //    Debug.Log("ロード成功");
-            //    _onLoadEnd?.OnNext(Unit.Default);
-            //}
-            //catch(Exception e)
-            //{
-            //    Debug.Log("ロード失敗:" + e);
-            //}
         }
 
         /// <summary>
@@ -96,7 +71,7 @@ namespace UniLiveViewer
                 throw new Exception("CreateCustomFolder");
             }
         }
-        
+
         /// <summary>
         /// フォルダ生成
         /// </summary>

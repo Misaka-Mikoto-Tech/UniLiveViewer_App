@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using System.Threading;
 using UniLiveViewer;
 using UniLiveViewer.SceneLoader;
@@ -29,7 +29,7 @@ public class TitleScenePresenter : IAsyncStartable
     async UniTask IAsyncStartable.StartAsync(CancellationToken cancellation)
     {
         _sceneChangeService.Setup(_ovrScreenFade);
-        _sceneChangeService.SetupFirstScene();
+
         // TODO: この段階でフォルダ必要？（stage入ってからNGは面倒なのはある）
         //await _fileAccessManager.OnStartAsync(null, null, cancellation);
     }

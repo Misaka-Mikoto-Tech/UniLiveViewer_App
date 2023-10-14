@@ -1,6 +1,7 @@
 ﻿using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
+using UnityEngine;
 using VContainer;
 
 namespace UniLiveViewer.SceneLoader
@@ -20,7 +21,7 @@ namespace UniLiveViewer.SceneLoader
         OVRScreenFade _screenFade;
 
         readonly Dictionary<string, IScene> _map;
-        StageSettingService _stageSetting;
+
 
         [Inject]
         public SceneChangeService()
@@ -33,18 +34,6 @@ namespace UniLiveViewer.SceneLoader
                 { "ViewerScene", new ViewerScene() },
                 { "GymnasiumScene", new GymnasiumScene() }
             };
-        }
-
-        public void SetupFirstScene()
-        {
-            //if (_current != null) return;
-            //_stageSetting.Initialize();
-        }
-
-        [Inject]
-        public void Construct(StageSettingService stageSetting)
-        {
-            _stageSetting = stageSetting;
         }
 
         /// <summary>
@@ -65,11 +54,24 @@ namespace UniLiveViewer.SceneLoader
 
         async UniTask InternalChange(IScene nextScene, CancellationToken token)
         {
-            _screenFade.FadeOut();
+            _screenFade?.FadeOut();
             await nextScene.BeginAsync(token);
             _current = nextScene;
-            //_stageSetting.Initialize();
             SystemInfo.CheckMaxFieldChara(_current.GetSceneType());
+            Debug.Log($"CurrentScene:{_current.GetVisualName()}");
+        }
+
+        /// <summary>
+        /// 直接Sceneから再生するEditor限定
+        /// </summary>
+        public void SetSceneIfNecessary()
+        {
+            if (_current != null) return;
+            var name = FileReadAndWriteUtility.UserProfile.LastSceneName;
+            var scene = _map[name];
+            _current = scene;
+            SystemInfo.CheckMaxFieldChara(_current.GetSceneType());
+            Debug.Log($"CurrentScene:{scene.GetVisualName()}");
         }
 
         public static string GetVisualName => _current.GetVisualName();

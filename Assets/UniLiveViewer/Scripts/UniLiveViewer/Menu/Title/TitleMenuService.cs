@@ -52,11 +52,11 @@ namespace UniLiveViewer.Menu
             else
             {
                 _uiRoot.gameObject.SetActive(false);
-                aa(_cancellationToken).Forget();
+                LoadScenesAutoAsync(_cancellationToken).Forget();
             }
         }
 
-        async UniTask aa(CancellationToken cancellationToken)
+        async UniTask LoadScenesAutoAsync(CancellationToken cancellationToken)
         {
             var name = FileReadAndWriteUtility.UserProfile.LastSceneName;
             await _sceneChangeService.Change(name, cancellationToken);

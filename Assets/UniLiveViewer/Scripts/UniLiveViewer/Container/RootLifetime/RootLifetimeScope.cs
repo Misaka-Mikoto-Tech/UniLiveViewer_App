@@ -1,21 +1,22 @@
-﻿using UniLiveViewer;
+﻿using MessagePipe;
+using UniLiveViewer.Kari;
+using UniLiveViewer.SceneLoader;
 using VContainer;
 using VContainer.Unity;
-using MessagePipe;
-using UniLiveViewer.SceneLoader;
-using UniLiveViewer.Kari;
 
-public class RootLifetimeScope : LifetimeScope
+namespace UniLiveViewer
 {
-    protected override void Configure(IContainerBuilder builder)
+    public class RootLifetimeScope : LifetimeScope
     {
-        var options = builder.RegisterMessagePipe();
-        builder.RegisterMessageBroker<SummonedCount>(options);
+        protected override void Configure(IContainerBuilder builder)
+        {
+            var options = builder.RegisterMessagePipe();
+            builder.RegisterMessageBroker<SummonedCount>(options);
 
-        builder.Register<SceneChangeService>(Lifetime.Singleton);
-        builder.Register<FileAccessManager>(Lifetime.Singleton);
-        builder.Register<StageSettingService>(Lifetime.Singleton);
+            builder.Register<SceneChangeService>(Lifetime.Singleton);
+            builder.Register<FileAccessManager>(Lifetime.Singleton);
 
-        builder.RegisterEntryPoint<SystemSettingPresenter>();
+            builder.RegisterEntryPoint<SystemSettingPresenter>();
+        }
     }
 }
