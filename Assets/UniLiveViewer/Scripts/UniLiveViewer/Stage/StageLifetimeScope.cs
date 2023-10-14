@@ -6,9 +6,10 @@ namespace UniLiveViewer.Stage
 {
     public class StageLifetimeScope : LifetimeScope
     {
+        [SerializeField] BlackoutCurtain _blackoutCurtain;
         protected override void Configure(IContainerBuilder builder)
         {
-            builder.RegisterComponentInHierarchy<BlackoutCurtain>();
+            builder.RegisterComponent(_blackoutCurtain);
 
             builder.RegisterEntryPoint<StagePresenter>();
         }

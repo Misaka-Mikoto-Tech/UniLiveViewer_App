@@ -10,7 +10,7 @@ using VContainer.Unity;
 
 namespace UniLiveViewer.Menu
 {
-    public class MainMenuPresenter : IAsyncStartable, IDisposable
+    public class MainMenuPresenter : IStartable, IDisposable
     {
         readonly FileAccessManager _fileAccessManager;
         readonly TimelineController _timelineController;
@@ -44,7 +44,7 @@ namespace UniLiveViewer.Menu
             _disposables = new CompositeDisposable();
         }
 
-        async UniTask IAsyncStartable.StartAsync(CancellationToken cancellation)
+        void IStartable.Start()
         {
             _fileAccessManager.LoadEndAsObservable
                 .Subscribe(_ => _generatorPortal.OnLoadEnd())
@@ -55,7 +55,6 @@ namespace UniLiveViewer.Menu
             _playerStateManager.MainUISwitchingAsObservable
                 .Subscribe(SwitchEnable)
                 .AddTo(_disposables);
-
 
             _characterPage.OnStart();
             _audioPlaybackPage.OnStart();

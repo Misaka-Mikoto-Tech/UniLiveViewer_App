@@ -6,10 +6,19 @@ using VRM.FirstPersonSample;
 
 namespace UniLiveViewer.Menu
 {
+    [RequireComponent(typeof(MenuManager))]
     public class MenuLifetimeScope : LifetimeScope
     {
         [SerializeField] MeneRoot _menuRoot;
         [SerializeField] Transform _thumbnailRoot;
+        
+
+        [SerializeField] CharacterPage _characterPage;
+        [SerializeField] AudioPlaybackPage _audioPlaybackPage;
+        [SerializeField] JumpList _jumpList;
+        [SerializeField] VRMSwitchController _vrmSwitchController;
+        [SerializeField] VRMRuntimeLoader_Custom _vrmRuntimeLoader_Custom;
+        [SerializeField] GeneratorPortal _generatorPortal;
 
         protected override void Configure(IContainerBuilder builder)
         {
@@ -18,16 +27,14 @@ namespace UniLiveViewer.Menu
             builder.RegisterComponent<MeneRoot>(_menuRoot);
             builder.RegisterComponent<Transform>(_thumbnailRoot);
 
-            builder.RegisterComponentInHierarchy<MenuManager>();
-            builder.RegisterComponentInHierarchy<CharacterPage>();
-            builder.RegisterComponentInHierarchy<AudioPlaybackPage>();
+            builder.RegisterComponent(GetComponent<MenuManager>());
 
-            builder.RegisterComponentInHierarchy<JumpList>();
-
-            builder.RegisterComponentInHierarchy<VRMSwitchController>();
-            builder.RegisterComponentInHierarchy<VRMRuntimeLoader_Custom>().As<IVRMLoaderUI>();
-
-            builder.RegisterComponentInHierarchy<GeneratorPortal>();
+            builder.RegisterComponent(_characterPage);
+            builder.RegisterComponent(_audioPlaybackPage);
+            builder.RegisterComponent(_jumpList);
+            builder.RegisterComponent(_vrmSwitchController);
+            builder.RegisterComponent(_vrmRuntimeLoader_Custom).As<IVRMLoaderUI>();
+            builder.RegisterComponent(_generatorPortal);
 
             builder.RegisterEntryPoint<VRMPresenter>();
             builder.RegisterEntryPoint<ThumbnailPresenter>();

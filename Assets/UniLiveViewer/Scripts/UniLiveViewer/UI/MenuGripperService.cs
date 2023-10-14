@@ -1,6 +1,5 @@
-﻿using Cysharp.Threading.Tasks;
-using UniLiveViewer.SceneLoader;
-using UniRx;
+﻿using UniLiveViewer.Menu;
+using UniLiveViewer.Player;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
@@ -8,78 +7,57 @@ using VContainer.Unity;
 namespace UniLiveViewer.Stage
 {
     public class MenuGripperService
-    {        
-        Vector3 EndPoint = new Vector3(0, 0.7f, 5);
-        Vector3 keepDistance;
+    {
+        Vector3 _distance;
 
-        bool isInit = false;
-        CompositeDisposable _disposables;
-
-        readonly Transform _transform;
         readonly Renderer _renderer;
+        readonly Transform _transform;
+        readonly Transform _anchor;
+        readonly Transform _player;
+        readonly Transform _menu;
 
         [Inject]
-        MenuGripperService(Transform transform, Renderer renderer)
-        {
-            _transform = transform;
-            _renderer = renderer;
-        }
+        MenuGripperService(
 
-        public void OnStart()
+            Renderer renderer,
+
+            LifetimeScope lifetimeScope,
+            Transform anchor,
+            PlayerLifetimeScope playerLifetimeScope,
+            MenuLifetimeScope menuLifetimeScope)
         {
-            switch (SceneChangeService.GetSceneType)
-            {
-                case SceneType.CANDY_LIVE:
-                    EndPoint = new Vector3(4, 1.0f, 5.5f);
-                    _transform.position = EndPoint + (Vector3.up * 2);
-                    _transform.rotation = Quaternion.Euler(new Vector3(0, 90, 0));
-                    break;
-                case SceneType.KAGURA_LIVE:
-                    EndPoint = new Vector3(0, 1.35f, 3);
-                    _transform.position = EndPoint + (Vector3.up * 2);
-                    _transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
-                    break;
-                case SceneType.VIEWER:
-                    EndPoint = new Vector3(0, 1.0f, 4);
-                    _transform.position = EndPoint + (Vector3.up * 2);
-                    _transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
-                    break;
-                case SceneType.GYMNASIUM:
-                    EndPoint = new Vector3(0, 1.0f, 4);
-                    _transform.position = EndPoint + (Vector3.up * 2);
-                    _transform.rotation = Quaternion.Euler(new Vector3(0, 180, 0));
-                    break;
-            }
+            _renderer = renderer;
+            _transform = lifetimeScope.transform;
+            _anchor = anchor;
+            _player = playerLifetimeScope.transform;
+            _menu = menuLifetimeScope.transform;
         }
 
         public void Initialize()
         {
-            _transform.position = EndPoint;
-            DelayUIOpen().Forget();
+            OnSwitchEnable(true);
         }
 
         public void OnSwitchEnable(bool isEnable)
         {
             _renderer.enabled = isEnable;
+
+            if (isEnable)
+            {
+                if (1 < _distance.sqrMagnitude) _distance = _distance.normalized;
+                var worldPosition = _player.position + _distance;
+                _transform.position = worldPosition;
+            }
+            else
+            {
+                _distance = _transform.position - _player.position;
+            }
         }
 
-        /// <summary>
-        /// 時間差でUIを表示する
-        /// </summary>
-        async UniTask DelayUIOpen()
+        public void OnLateTick()
         {
-            //時間差でUIを表示する
-            //SwitchEnable(false);
-            //await UniTask.Delay(800);
-            //SwitchEnable(true);
-            //isInit = true;
+            _menu.SetPositionAndRotation(_anchor.position, _anchor.rotation);
         }
 
-        //void Update()
-        //{
-        //    if (!isInit) return;
-        //    guideTarget.position = guideParent.position;
-        //    guideTarget.rotation = guideParent.rotation;
-        //}
     }
 }

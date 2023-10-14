@@ -49,13 +49,13 @@ namespace UniLiveViewer
 
         //VRM読み込み時イベント
         public IObservable<CharaController> AddCharacterAsObservable => _addCharacterStream;
-        Subject<CharaController> _addCharacterStream;
+        Subject<CharaController> _addCharacterStream = new Subject<CharaController>();
 
         public IObservable<CharaController> AddPrefabAsObservable => _addPrefabStream;
-        Subject<CharaController> _addPrefabStream;
+        Subject<CharaController> _addPrefabStream = new Subject<CharaController>();
 
         public IObservable<int> OnOpenPageAsObservable => _pageStream;
-        Subject<int> _pageStream;
+        Subject<int> _pageStream = new Subject<int>();
 
         //ファイルアクセスとサムネの管理
         FileAccessManager _fileManager;
@@ -75,9 +75,9 @@ namespace UniLiveViewer
             _vrmLoaderUI = vrmLoaderUI;
             _fileManager = fileAccessManager;
 
-            _addCharacterStream = new Subject<CharaController>();
-            _addPrefabStream = new Subject<CharaController>();
-            _pageStream = new Subject<int>();
+            //_addCharacterStream = new Subject<CharaController>();
+            //_addPrefabStream = new Subject<CharaController>();
+            //_pageStream = new Subject<int>();
 
             _audioSource = GetComponent<AudioSource>();
             _audioSource.volume = SystemInfo.soundVolume_SE;

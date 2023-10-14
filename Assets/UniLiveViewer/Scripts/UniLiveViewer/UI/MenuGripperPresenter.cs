@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System;
 using UniLiveViewer.Player;
 using UniRx;
@@ -7,7 +7,7 @@ using VContainer.Unity;
 
 namespace UniLiveViewer.Stage
 {
-    public class MenuGripperPresenter : IStartable, IDisposable
+    public class MenuGripperPresenter : IStartable, ILateTickable, IDisposable
     {
         readonly FileAccessManager _fileAccessManager;
         readonly MenuGripperService _menuGripperService;
@@ -36,12 +36,19 @@ namespace UniLiveViewer.Stage
                 .Subscribe(_menuGripperService.OnSwitchEnable)
                 .AddTo(_disposables);
 
-            _menuGripperService.OnStart();
+            _menuGripperService.OnSwitchEnable(false);
+        }
+
+        void ILateTickable.LateTick()
+        {
+            _menuGripperService.OnLateTick();
         }
 
         void IDisposable.Dispose()
         {
             _disposables.Dispose();
         }
+
+        
     }
 }
