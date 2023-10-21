@@ -6,7 +6,6 @@ using UniRx;
 using UnityEngine;
 using UnityEngine.Playables;
 using VContainer;
-using VContainer.Unity;
 
 namespace UniLiveViewer.Player
 {
@@ -68,20 +67,21 @@ namespace UniLiveViewer.Player
         }
 
         [Inject]
-        void Construct(HandUIController handUIController)
+        void Construct(
+            TimelineController timelineController,
+            PlayableDirector playableDirector,
+            HandUIController handUIController,
+            MeshGuideService meshGuideService)
         {
+            _timeline = timelineController;
+            _playableDirector = playableDirector;
             _handUIController = handUIController;
+            _meshGuide = meshGuideService;
         }
 
         public void OnStart()
         {
             _isMoveUI = true;
-
-            var container = LifetimeScope.Find<TimelineLifetimeScope>().Container;
-            _timeline = container.Resolve<TimelineController>();
-            _playableDirector = container.Resolve<PlayableDirector>();
-            _meshGuide = container.Resolve<MeshGuideService>();
-
             _audioSource = GetComponent<AudioSource>();
             _audioSource.volume = SystemInfo.soundVolume_SE;
 

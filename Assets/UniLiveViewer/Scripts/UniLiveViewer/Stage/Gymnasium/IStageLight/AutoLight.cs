@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UniLiveViewer
+namespace UniLiveViewer.Stage.Gymnasium
 {
-    public class LightBase : MonoBehaviour, IStageLight
+    public class AutoLight : MonoBehaviour, IStageLight
     {
         const string PropertyName = "_TintColor";
 
         [SerializeField] MeshRenderer[] _lights;
-        [SerializeField] AnimationCurve _collarCurveR = AnimationCurve.Linear(0, 0, 1, 1);
-        [SerializeField] AnimationCurve _collarCurveG = AnimationCurve.Linear(0, 0, 1, 1);
-        [SerializeField] AnimationCurve _collarCurveB = AnimationCurve.Linear(0, 0, 1, 1);
+        [SerializeField] AnimationCurve _colorCurveR = AnimationCurve.Linear(0, 0, 1, 1);
+        [SerializeField] AnimationCurve _colorCurveG = AnimationCurve.Linear(0, 0, 1, 1);
+        [SerializeField] AnimationCurve _colorCurveB = AnimationCurve.Linear(0, 0, 1, 1);
         [SerializeField] float _colorSpeed = 1;
 
         bool _isWhitelight = true;
@@ -21,17 +21,17 @@ namespace UniLiveViewer
         {
         }
 
-        public void ChangeCount(int count)
+        void IStageLight.ChangeCount(int count)
         {
-            for (int i = 0; i < _lights.Length; i++)
-            {
-                var enable = i < count;
-                if (_lights[i].gameObject.activeSelf == enable) continue;
-                _lights[i].gameObject.SetActive(enable);
-            }
+            //for (int i = 0; i < _lights.Length; i++)
+            //{
+            //    var enable = i < count;
+            //    if (_lights[i].gameObject.activeSelf == enable) continue;
+            //    _lights[i].gameObject.SetActive(enable);
+            //}
         }
 
-        public void ChangeColor(bool isWhite)
+        void IStageLight.ChangeColor(bool isWhite)
         {
             _isWhitelight = isWhite;
             if (!_isWhitelight) return;
@@ -39,11 +39,10 @@ namespace UniLiveViewer
             for (int i = 0; i < _lights.Length; i++)
             {
                 _lights[i].sharedMaterial.SetColor(PropertyName, Color.white);
-                _lights[i].sharedMaterial.color = Color.white;
             }
         }
 
-        public void OnUpdate()
+        void IStageLight.OnUpdate()
         {
             UpdateColor();
         }
@@ -57,9 +56,9 @@ namespace UniLiveViewer
                 _lights[i].sharedMaterial.SetColor
                     (PropertyName,
                     new Color(
-                        _collarCurveR.Evaluate(_colorTimer),
-                        _collarCurveG.Evaluate(_colorTimer),
-                        _collarCurveB.Evaluate(_colorTimer)
+                        _colorCurveR.Evaluate(_colorTimer),
+                        _colorCurveG.Evaluate(_colorTimer),
+                        _colorCurveB.Evaluate(_colorTimer)
                         )
                     );
             }

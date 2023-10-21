@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace UniLiveViewer
+namespace UniLiveViewer.Stage.Gymnasium
 {
     public class NonLight : MonoBehaviour, IStageLight
     {

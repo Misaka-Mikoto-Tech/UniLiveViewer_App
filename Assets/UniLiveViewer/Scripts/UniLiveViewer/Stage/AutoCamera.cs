@@ -9,6 +9,9 @@ using VContainer.Unity;
 
 namespace UniLiveViewer
 {
+    /// <summary>
+    /// TODO: LS化する
+    /// </summary>
     public class AutoCamera : MonoBehaviour
     {
         enum SWITCHTYPE
@@ -30,9 +33,9 @@ namespace UniLiveViewer
         CancellationToken _cancellationToken;
         TimelineController _timeline;
 
-        // Start is called before the first frame update
         void Start()
         {
+            // NOTE: globalにchara[]取れないと厳しいので配下にするか、ユニーク設定はinterface
             var container = LifetimeScope.Find<TimelineLifetimeScope>().Container;
             _timeline = container.Resolve<TimelineController>();
             _cancellationToken = this.GetCancellationTokenOnDestroy();

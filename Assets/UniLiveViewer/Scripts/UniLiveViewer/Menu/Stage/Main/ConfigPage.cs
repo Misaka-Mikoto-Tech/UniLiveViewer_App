@@ -1,13 +1,14 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
+using System;
 using System.Threading;
 using UniLiveViewer.Player;
 using UniLiveViewer.SceneLoader;
 using UniLiveViewer.Stage;
 using UniLiveViewer.Timeline;
+using UniRx;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 using VContainer;
-using VContainer.Unity;
 
 namespace UniLiveViewer.Menu
 {
@@ -48,16 +49,26 @@ namespace UniLiveViewer.Menu
         QuasiShadowSetting _quasiShadowSetting;
         PassthroughService _passthroughService;
 
+        public IObservable<int> StageLightIndexAsObservable => _stageLightIndex;
+        Subject<int> _stageLightIndex = new Subject<int>();
+        public IObservable<bool> StageLightIsWhiteAsObservable => _stageLightIsWhite;
+        Subject<bool> _stageLightIsWhite = new Subject<bool>();
+
         Material _matMirrore;//LiveScene用
         BackGroundController _backGroundCon;
-        StageLightManager _stageLightManager;
         CancellationToken _cancellation;
 
-        void Awake()
+        [Inject]
+        void Construct(
+            TimelineController timelineController,
+            QuasiShadowSetting quasiShadowSetting)
         {
-            var container = LifetimeScope.Find<TimelineLifetimeScope>().Container;
-            _timeline = container.Resolve<TimelineController>();
-            _quasiShadowSetting = container.Resolve<QuasiShadowSetting>();
+            _timeline = timelineController;
+            _quasiShadowSetting = quasiShadowSetting;
+        }
+
+        public void OnStart()
+        {
             _cancellation = this.GetCancellationTokenOnDestroy();
 
             slider_OutLine.ValueUpdate += () =>
@@ -188,7 +199,6 @@ namespace UniLiveViewer.Menu
                 {
                     btnE[i] = sceneAnchor[current].GetChild(i).GetComponent<Button_Base>();
                 }
-                _stageLightManager = GameObject.FindGameObjectWithTag("BackGroundController").GetComponent<StageLightManager>();
             }
 
 
@@ -491,23 +501,18 @@ namespace UniLiveViewer.Menu
             menuManager.PlayOneShot(SoundType.BTN_CLICK);
         }
 
+        // 雑
+        int _lightIndex = StageEnums.StageLightDefaultIndex;
         public void Click_ChangeStageLight(int i)
         {
-            if (!_stageLightManager) return;
-            string str;
+            var moveIndex = i == 0 ? -1 : 1;
+            _lightIndex += moveIndex;
+            var max = Enum.GetValues(typeof(StageEnums.StageLight)).Length;
+            if (max <= _lightIndex) _lightIndex = 0;
+            else if (_lightIndex < 0) _lightIndex = max - 1;
 
-            switch (i)
-            {
-                case 0:
-                    _stageLightManager.SetStageLight(-1, btnE[0].isEnable, out str);
-                    textMeshs_Gym[0].text = "SpotLight_" + str;
-                    break;
-                case 1:
-                    _stageLightManager.SetStageLight(1, btnE[0].isEnable, out str);
-                    textMeshs_Gym[0].text = "SpotLight_" + str;
-                    break;
-            }
-
+            _stageLightIndex.OnNext(_lightIndex);
+            textMeshs_Gym[0].text = $"SpotLight_{Enum.GetName(typeof(StageEnums.StageLight), _lightIndex)}";
             menuManager.PlayOneShot(SoundType.BTN_CLICK_LIGHT);
         }
 
@@ -516,7 +521,7 @@ namespace UniLiveViewer.Menu
             switch (i)
             {
                 case 0:
-                    _stageLightManager.SetLightColor(btnE[0].isEnable);
+                    _stageLightIsWhite.OnNext(btnE[0].isEnable);
                     FileReadAndWriteUtility.UserProfile.scene_gym_whitelight = btnE[0].isEnable;
                     break;
                 case 1:

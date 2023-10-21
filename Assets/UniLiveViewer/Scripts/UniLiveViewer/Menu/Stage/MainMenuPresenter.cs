@@ -19,6 +19,8 @@ namespace UniLiveViewer.Menu
         readonly MeneRoot _meneRoot;
         readonly CharacterPage _characterPage;
         readonly AudioPlaybackPage _audioPlaybackPage;
+        readonly ItemPage _itemPage;
+        readonly ConfigPage _configPage;
         readonly GeneratorPortal _generatorPortal;
 
         readonly CompositeDisposable _disposables;
@@ -31,6 +33,8 @@ namespace UniLiveViewer.Menu
             MeneRoot meneRoot,
             CharacterPage characterPage,
             AudioPlaybackPage audioPlaybackPage,
+            ItemPage itemPage,
+            ConfigPage configPage,
             GeneratorPortal generatorPortal)
         {
             _fileAccessManager = fileAccessManager;
@@ -39,6 +43,8 @@ namespace UniLiveViewer.Menu
             _meneRoot = meneRoot;
             _characterPage = characterPage;
             _audioPlaybackPage = audioPlaybackPage;
+            _itemPage = itemPage;
+            _configPage = configPage;
             _generatorPortal = generatorPortal;
 
             _disposables = new CompositeDisposable();
@@ -58,6 +64,8 @@ namespace UniLiveViewer.Menu
 
             _characterPage.OnStart();
             _audioPlaybackPage.OnStart();
+            _itemPage.OnStart();
+            _configPage.OnStart();
         }
 
         void SwitchEnable(bool isEnable)

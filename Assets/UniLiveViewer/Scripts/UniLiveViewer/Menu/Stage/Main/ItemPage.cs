@@ -36,7 +36,7 @@ namespace UniLiveViewer.Menu
         PassthroughService _passthroughService;
         int _languageCurrent;
 
-        void Awake()
+        public void OnStart()
         {
             //その他
             for (int i = 0; i < btn_Item.Length; i++)
@@ -54,11 +54,6 @@ namespace UniLiveViewer.Menu
             EnablePassthrough(_passthroughService.IsInsightPassthroughEnabled());
 
             pageController.onSwitchPage += Init;
-        }
-        // Start is called before the first frame update
-        void Start()
-        {
-            
         }
 
         void Init()

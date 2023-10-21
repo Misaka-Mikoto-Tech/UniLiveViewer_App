@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
@@ -7,14 +7,14 @@ namespace UniLiveViewer
     /// <summary>
     /// 全シーンの最初に走る
     /// </summary>
-    public class SystemSettingPresenter : IStartable
+    public class SystemSettingPresenter : IInitializable
     {
         [Inject]
         public SystemSettingPresenter()
         {
         }
 
-        void IStartable.Start()
+        void IInitializable.Initialize()
         {
 #if UNITY_EDITOR
             Debug.Log("Windowsとして認識しています");

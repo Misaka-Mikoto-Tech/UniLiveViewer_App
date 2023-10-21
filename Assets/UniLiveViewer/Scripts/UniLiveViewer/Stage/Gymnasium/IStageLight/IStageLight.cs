@@ -1,4 +1,4 @@
-﻿namespace UniLiveViewer
+﻿namespace UniLiveViewer.Stage.Gymnasium
 {
     public interface IStageLight
     {

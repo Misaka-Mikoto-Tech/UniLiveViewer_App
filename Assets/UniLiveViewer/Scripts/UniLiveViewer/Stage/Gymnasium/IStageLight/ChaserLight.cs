@@ -1,40 +1,40 @@
-using System.Collections.Generic;
-using UniLiveViewer.Timeline;
-using UnityEngine;
-using VContainer;
+﻿using UnityEngine;
 using VContainer.Unity;
+using VContainer;
+using UniLiveViewer.Timeline;
 
-namespace UniLiveViewer
+namespace UniLiveViewer.Stage.Gymnasium
 {
-    public class LookAtLight : MonoBehaviour, IStageLight
+    public class ChaserLight : MonoBehaviour, IStageLight
     {
         const HumanBodyBones TargetHumanBodyBone = HumanBodyBones.Spine;
         const string PropertyName = "_TintColor";
 
         [SerializeField] MeshRenderer[] _lights;
-        [SerializeField] AnimationCurve _collarCurveR = AnimationCurve.Linear(0, 0, 1, 1);
-        [SerializeField] AnimationCurve _collarCurveG = AnimationCurve.Linear(0, 0, 1, 1);
-        [SerializeField] AnimationCurve _collarCurveB = AnimationCurve.Linear(0, 0, 1, 1);
+        [SerializeField] AnimationCurve _colorCurveR = AnimationCurve.Linear(0, 0, 1, 1);
+        [SerializeField] AnimationCurve _colorCurveG = AnimationCurve.Linear(0, 0, 1, 1);
+        [SerializeField] AnimationCurve _colorrCurveB = AnimationCurve.Linear(0, 0, 1, 1);
         [SerializeField] float _colorSpeed = 1;
 
         bool _isWhitelight = true;
         float _colorTimer = 0;
-        Vector3 _distance;
+        Vector3 _pos;
 
         Transform[] _targetBones;
-        List<Transform> _targetList;
         TimelineController _timeline;
 
-        void Start()
+        /// <summary>
+        /// hierarchy上の方にしたら多分container間に合わないので注意
+        /// </summary>
+        void Awake()
         {
             _targetBones = new Transform[SystemInfo.MaxFieldChara];
-            _targetList = new List<Transform>();
 
             var container = LifetimeScope.Find<TimelineLifetimeScope>().Container;
             _timeline = container.Resolve<TimelineController>();
         }
 
-        public void ChangeCount(int count)
+        void IStageLight.ChangeCount(int count)
         {
             for (int i = 0; i < _lights.Length; i++)
             {
@@ -43,8 +43,6 @@ namespace UniLiveViewer
                 _lights[i].gameObject.SetActive(enable);
             }
 
-
-            _targetList.Clear();
             for (int i = 0; i < _targetBones.Length; i++)
             {
                 var portalChara = _timeline.BindCharaMap[i + 1];
@@ -52,12 +50,11 @@ namespace UniLiveViewer
                 else
                 {
                     _targetBones[i] = portalChara.GetAnimator.GetBoneTransform(TargetHumanBodyBone);
-                    _targetList.Add(_targetBones[i]);
                 }
             }
         }
 
-        public void ChangeColor(bool isWhite)
+        void IStageLight.ChangeColor(bool isWhite)
         {
             _isWhitelight = isWhite;
             if (!_isWhitelight) return;
@@ -65,16 +62,17 @@ namespace UniLiveViewer
             for (int i = 0; i < _lights.Length; i++)
             {
                 _lights[i].sharedMaterial.SetColor(PropertyName, Color.white);
-                _lights[i].sharedMaterial.color = Color.white;
             }
         }
 
-        public void OnUpdate()
+        void IStageLight.OnUpdate()
         {
-            for (int i = 0; i < _targetList.Count; i++)
+            for (int i = 0; i < _targetBones.Length; i++)
             {
-                _distance = _targetList[i].position - _lights[i].transform.position;
-                _lights[i].transform.up = _distance;
+                if (!_targetBones[i]) continue;
+                _pos = _targetBones[i].position;
+                _pos.y = _lights[i].transform.position.y;
+                _lights[i].transform.position = _pos;
             }
             UpdateColor();
         }
@@ -88,9 +86,9 @@ namespace UniLiveViewer
                 _lights[i].sharedMaterial.SetColor
                     (PropertyName,
                     new Color(
-                        _collarCurveR.Evaluate(_colorTimer),
-                        _collarCurveG.Evaluate(_colorTimer),
-                        _collarCurveB.Evaluate(_colorTimer)
+                        _colorCurveR.Evaluate(_colorTimer),
+                        _colorCurveG.Evaluate(_colorTimer),
+                        _colorrCurveB.Evaluate(_colorTimer)
                         )
                     );
             }

@@ -9,16 +9,19 @@ namespace UniLiveViewer.Menu
     [RequireComponent(typeof(MenuManager))]
     public class MenuLifetimeScope : LifetimeScope
     {
-        [SerializeField] MeneRoot _menuRoot;
-        [SerializeField] Transform _thumbnailRoot;
-        
-
+        [Header("各ページ")]
         [SerializeField] CharacterPage _characterPage;
         [SerializeField] AudioPlaybackPage _audioPlaybackPage;
-        [SerializeField] JumpList _jumpList;
-        [SerializeField] VRMSwitchController _vrmSwitchController;
-        [SerializeField] VRMRuntimeLoader_Custom _vrmRuntimeLoader_Custom;
+        [SerializeField] ItemPage _itemPage;
+        [SerializeField] ConfigPage _configPage;
+
+        [Header("その他")]
+        [SerializeField] MeneRoot _menuRoot;
         [SerializeField] GeneratorPortal _generatorPortal;
+        [SerializeField] VRMSwitchController _vrmSwitchController;
+        [SerializeField] Transform _thumbnailRoot;
+        [SerializeField] JumpList _jumpList;
+        [SerializeField] VRMRuntimeLoader_Custom _vrmRuntimeLoader_Custom;
 
         protected override void Configure(IContainerBuilder builder)
         {
@@ -31,6 +34,9 @@ namespace UniLiveViewer.Menu
 
             builder.RegisterComponent(_characterPage);
             builder.RegisterComponent(_audioPlaybackPage);
+            builder.RegisterComponent(_itemPage);
+            builder.RegisterComponent(_configPage);
+
             builder.RegisterComponent(_jumpList);
             builder.RegisterComponent(_vrmSwitchController);
             builder.RegisterComponent(_vrmRuntimeLoader_Custom).As<IVRMLoaderUI>();

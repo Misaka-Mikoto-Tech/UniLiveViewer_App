@@ -1,13 +1,17 @@
-﻿using VContainer;
+﻿using UnityEngine;
+using VContainer;
 using VContainer.Unity;
-using UniLiveViewer;
 
-public class StageLightLifetimeScope : LifetimeScope
+namespace UniLiveViewer.Stage.Gymnasium
 {
-    protected override void Configure(IContainerBuilder builder)
+    [RequireComponent(typeof(StageLightChangeService))]
+    public class StageLightLifetimeScope : LifetimeScope
     {
-        builder.RegisterComponentInHierarchy<StageLightManager>();
+        protected override void Configure(IContainerBuilder builder)
+        {
+            builder.RegisterComponent(GetComponent<StageLightChangeService>());
 
-        builder.RegisterEntryPoint<StageLightPresenter>();
+            builder.RegisterEntryPoint<StageLightPresenter>();
+        }
     }
 }
