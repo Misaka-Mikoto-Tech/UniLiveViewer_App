@@ -140,7 +140,7 @@ PlayerSettings:
   preloadedAssets:
   - {fileID: 3400459051955892214, guid: 4b37281877dad80499e039077a686bfe, type: 2}
   - {fileID: 11400000, guid: 61c208025619b1f4580060058fdb9fd3, type: 2}
-  - {fileID: 11400000, guid: 596f8e202ad5ca549b98c174ab5ad8ed, type: 2}
+  - {fileID: 11400000, guid: 35ecb5a9a00f52d4fad961c2b4aa1a3d, type: 2}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -150,11 +150,13 @@ PlayerSettings:
     enable360StereoCapture: 0
   isWsaHolographicRemotingEnabled: 0
   enableFrameTimingStats: 0
+  enableOpenGLProfilerGPURecorders: 1
   useHDRDisplay: 0
   D3DHDRBitDepth: 0
   m_ColorGamuts: 0000000003000000
   targetPixelDensity: 30
   resolutionScalingMode: 0
+  resetResolutionOnWindowResize: 0
   androidSupportedAspectRatio: 1
   androidMaxAspectRatio: 2.1
   applicationIdentifier:
@@ -683,6 +685,7 @@ PlayerSettings:
   ps4videoRecordingFeaturesUsed: 0
   ps4contentSearchFeaturesUsed: 0
   ps4CompatibilityPS5: 0
+  ps4AllowPS5Detection: 0
   ps4GPU800MHz: 1
   ps4attribEyeToEyeDistanceSettingVR: 0
   ps4IncludedModules:

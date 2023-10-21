@@ -22,8 +22,6 @@ namespace UniLiveViewer.SceneLoader
 
         readonly Dictionary<string, IScene> _map;
 
-
-        [Inject]
         public SceneChangeService()
         {
             _map = new Dictionary<string, IScene>
