@@ -11,7 +11,6 @@ namespace UniLiveViewer
         protected override void Configure(IContainerBuilder builder)
         {
             builder.RegisterComponent(_ovrScreenFade);
-            builder.RegisterEntryPoint<TitleScenePresenter>();
         }
     }
 }

@@ -21,6 +21,7 @@ namespace UniLiveViewer.Menu
         CancellationToken _cancellationToken;
 
         SceneChangeService _sceneChangeService;
+        OVRScreenFade _ovrScreenFade;
 
         void Awake()
         {
@@ -32,9 +33,10 @@ namespace UniLiveViewer.Menu
         }
 
         [Inject]
-        void Construct(SceneChangeService sceneChangeService)
+        void Construct(SceneChangeService sceneChangeService, OVRScreenFade ovrScreenFade)
         {
             _sceneChangeService = sceneChangeService;
+            _ovrScreenFade = ovrScreenFade;
         }
 
         void Start()
@@ -58,6 +60,7 @@ namespace UniLiveViewer.Menu
 
         async UniTask LoadScenesAutoAsync(CancellationToken cancellationToken)
         {
+            _ovrScreenFade.FadeOut();
             var name = FileReadAndWriteUtility.UserProfile.LastSceneName;
             await _sceneChangeService.Change(name, cancellationToken);
         }
@@ -75,6 +78,7 @@ namespace UniLiveViewer.Menu
             await UniTask.Delay(500, cancellationToken: cancellationToken);
             if (_uiRoot.gameObject.activeSelf) _uiRoot.gameObject.SetActive(false);
 
+            _ovrScreenFade.FadeOut();
             var name = FileReadAndWriteUtility.UserProfile.LastSceneName;
             await _sceneChangeService.Change(name, cancellationToken);
         }

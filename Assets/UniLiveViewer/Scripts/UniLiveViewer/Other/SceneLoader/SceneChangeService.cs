@@ -17,8 +17,10 @@ namespace UniLiveViewer.SceneLoader
 
     public class SceneChangeService
     {
+        //雑
+        public static string[] NameList = new string[] { "LiveScene", "KAGURAScene", "ViewerScene", "GymnasiumScene" };
+
         static IScene _current;
-        OVRScreenFade _screenFade;
 
         readonly Dictionary<string, IScene> _map;
 
@@ -34,16 +36,6 @@ namespace UniLiveViewer.SceneLoader
             };
         }
 
-        /// <summary>
-        /// ちょい変則的なので渡してもらう必要がある
-        /// 他シーンではboxなのでパネルはTitleでしか使ってない
-        /// </summary>
-        /// <param name="screenFade"></param>
-        public void Setup(OVRScreenFade screenFade)
-        {
-            _screenFade = screenFade;
-        }
-
         public async UniTask Change(string nextSceneName, CancellationToken token)
         {
             var scene = _map[nextSceneName];
@@ -52,7 +44,6 @@ namespace UniLiveViewer.SceneLoader
 
         async UniTask InternalChange(IScene nextScene, CancellationToken token)
         {
-            _screenFade?.FadeOut();
             await nextScene.BeginAsync(token);
             _current = nextScene;
             SystemInfo.CheckMaxFieldChara(_current.GetSceneType());

@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System;
 using UniRx;
 using VContainer;
@@ -25,9 +25,6 @@ namespace UniLiveViewer.Stage
 
         void IStartable.Start()
         {
-            _fileAccessManager.LoadStartAsObservable
-                .Subscribe(_ => _blackoutCurtain.Staging())
-                .AddTo(_disposables);
             _fileAccessManager.LoadEndAsObservable
                 .Subscribe(_ => _blackoutCurtain.Ending().Forget())
                 .AddTo(_disposables);

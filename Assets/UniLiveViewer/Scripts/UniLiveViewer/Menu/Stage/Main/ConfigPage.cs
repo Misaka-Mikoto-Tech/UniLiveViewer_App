@@ -48,6 +48,7 @@ namespace UniLiveViewer.Menu
         TimelineController _timeline;
         QuasiShadowSetting _quasiShadowSetting;
         PassthroughService _passthroughService;
+        SceneChangeService _sceneChangeService;
 
         public IObservable<int> StageLightIndexAsObservable => _stageLightIndex;
         Subject<int> _stageLightIndex = new Subject<int>();
@@ -61,10 +62,12 @@ namespace UniLiveViewer.Menu
         [Inject]
         void Construct(
             TimelineController timelineController,
-            QuasiShadowSetting quasiShadowSetting)
+            QuasiShadowSetting quasiShadowSetting,
+            SceneChangeService sceneChangeService)
         {
             _timeline = timelineController;
             _quasiShadowSetting = quasiShadowSetting;
+            _sceneChangeService = sceneChangeService;
         }
 
         public void OnStart()
@@ -541,9 +544,7 @@ namespace UniLiveViewer.Menu
             menuManager.PlayOneShot(SoundType.BTN_CLICK);
 
             if (!btnE_SecenChange[i]) return;
-
-            string[] str = new string[] { "LiveScene", "KAGURAScene", "ViewerScene", "GymnasiumScene" };
-            SceneChange(str[i]).Forget();
+            SceneChangeAsync(SceneChangeService.NameList[i], _cancellation).Forget();
         }
 
         /// <summary>
@@ -551,19 +552,18 @@ namespace UniLiveViewer.Menu
         /// </summary>
         /// <param name="sceneName"></param>
         /// <returns></returns>
-        async UniTask SceneChange(string sceneName)
+        async UniTask SceneChangeAsync(string sceneName, CancellationToken cancellation)
         {
-            await UniTask.Delay(100, cancellationToken: _cancellation);
+            await UniTask.Delay(100, cancellationToken: cancellation);
 
-            BlackoutCurtain.instance.StartBlackout(sceneName).Forget();
-            await UniTask.Delay(200, cancellationToken: _cancellation);
+            await BlackoutCurtain.instance.FadeoutAsync(cancellation);
 
-            //音が割れるので止める
+            // 音が割れるので止める
             _timeline.TimelineManualMode().Forget();
-            await UniTask.Delay(200, cancellationToken: _cancellation);
 
             //UIが透けて見えるので隠す
             menuManager.gameObject.SetActive(false);
+            await _sceneChangeService.Change(sceneName, cancellation);
         }
 
         /// <summary>

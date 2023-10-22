@@ -1,13 +1,13 @@
 ﻿using Cysharp.Threading.Tasks;
 using System.Threading;
-using UniLiveViewer.Player;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using VContainer;
-using VContainer.Unity;
 
 namespace UniLiveViewer.Stage
 {
+    /// <summary>
+    /// シーン遷移時のPlayerの視界を遮る
+    /// TODO: まだ仮
+    /// </summary>
     public class BlackoutCurtain : MonoBehaviour
     {
         [SerializeField] LoadAnimation loadAnimation;
@@ -18,19 +18,13 @@ namespace UniLiveViewer.Stage
         [SerializeField] AnimationCurve curve;
         public static BlackoutCurtain instance;
 
-        
+
         MaterialPropertyBlock _materialPropertyBlock;
         Color _color;
         CancellationToken _cancellation;
 
 
         void Start()
-        {
-            Initialize();
-        }
-
-
-        void Initialize()
         {
             _cancellation = this.GetCancellationTokenOnDestroy();
 
@@ -43,27 +37,16 @@ namespace UniLiveViewer.Stage
 
             renderer_Brack.enabled = true;
             renderer_Cutoff.enabled = false;
-            if (loadAnimation.gameObject.activeSelf) loadAnimation.gameObject.SetActive(false);
 
             foreach (var e in vmdError)
             {
                 if (e.gameObject.activeSelf) e.gameObject.SetActive(false);
             }
 
-            instance = this;
-        }
-
-        /// <summary>
-        /// 演出開始
-        /// </summary>
-        public void Staging()
-        {
-            // ちゃんとカメラ渡したい
-            transform.parent = Camera.main.transform;
-            transform.localPosition = Vector3.zero;
-            transform.localRotation = Quaternion.identity;
-
+            // 演出開始
             loadAnimation.gameObject.SetActive(true);
+
+            instance = this;
         }
 
         /// <summary>
@@ -106,11 +89,11 @@ namespace UniLiveViewer.Stage
         }
 
         /// <summary>
-        /// 暗転しシーンを遷移する
+        /// 暗転させる
         /// </summary>
         /// <param name="sceneName"></param>
         /// <returns></returns>
-        public async UniTask StartBlackout(string sceneName)
+        public async UniTask FadeoutAsync(CancellationToken cancellation)
         {
             //_playerStateManager.enabled = false;// TODO: 操作不可にしないといけない
             renderer_Brack.enabled = false;
@@ -130,19 +113,13 @@ namespace UniLiveViewer.Stage
             _color.a = 1;//不透明
             _materialPropertyBlock.SetColor("_BaseColor", _color);
             renderer_Brack.SetPropertyBlock(_materialPropertyBlock);
-            
+
             renderer_Cutoff.sharedMaterial.SetFloat("_Scala", 0);
             renderer_Cutoff.enabled = false;
 
             //ローディングアニメーション
             loadAnimation.gameObject.SetActive(true);
-            //ロードが早すぎても最低演出分は待機する
-            var async = SceneManager.LoadSceneAsync(sceneName);
-            async.allowSceneActivation = false;
-            await UniTask.Delay(1000, cancellationToken: _cancellation);
-            FileReadAndWriteUtility.UserProfile.LastSceneName = sceneName;
-            FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
-            async.allowSceneActivation = true;
+            await UniTask.Delay(200, cancellationToken: cancellation);
         }
     }
 
