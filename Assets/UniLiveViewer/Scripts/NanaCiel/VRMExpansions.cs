@@ -8,36 +8,29 @@ using VRMShaders;
 
 namespace NanaCiel
 {
-    /// <summary>
-    /// 旧公式サンプルをURP用に改造したもの、UniVRM更新したら多分もういらない
-    /// </summary>
     public static class VRMExpansions
     {
         /// <summary>
         /// サムネイルのみ取得する
+        /// TODO: 旧APIだとコレクションエラー出るが解決法あった気がする(NativeArrayManager.cs:64-71)
+        /// あとは生パースでもしない限り速度誤差なのでとりまこれで
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        public static async Task<Texture2D> GetThumbnail(string path, CancellationToken cancellation)
+        public static async Task<Texture2D> GetThumbnailAsync(string path, CancellationToken cancellation)
         {
             if (string.IsNullOrEmpty(path)) return null;
             if (!File.Exists(path)) return null;
 
-            // GLB形式でJSONを取得しParseします
-            var data = new GlbFileParser(path).Parse();
-
             try
             {
-                // VRM extension を parse します
-                var vrm = new VRMData(data);
+                var gltfData = new GlbFileParser(path).Parse();
+                var vrmData = new VRMData(gltfData);
+                var context = new VRMImporterContext(vrmData);
 
-                using (var loader = new VRMImporterContext(vrm))
-                {
-                    //サムネイルだけ取得する
-                    return await loader.ReadMetaAsync_Thumbnail(new ImmediateCaller(), true);
-                    //VRMMetaObject vrmMetaObject = await loader.ReadMetaAsync(new ImmediateCaller(), true);
-                    //result = vrmMetaObject.Thumbnail;
-                }
+                var meta = await context.ReadMetaAsync(new RuntimeOnlyAwaitCaller());
+                var texture = meta.Thumbnail;
+                return texture;
             }
             catch (NotVrm0Exception)
             {
@@ -50,35 +43,5 @@ namespace NanaCiel
             }
             return null;
         }
-
-        //public async Task<Texture2D> GetThumbnail(string path)
-        //{
-        //    Texture2D result = null;
-
-        //    if (string.IsNullOrEmpty(path)) return result;
-        //    if (!File.Exists(path)) return result;
-
-        //    // GLB形式でJSONを取得しParseします
-        //    var data = new GlbFileParser(path).Parse();
-
-        //    try
-        //    {
-        //        // VRM extension を parse します
-        //        var vrm = new VRMData(data);
-
-        //        using (var loader = new VRMImporterContext(vrm))
-        //        {
-        //            //サムネイルだけ取得する
-        //            result = await loader.ReadMetaAsync_Thumbnail(new ImmediateCaller(), true);
-        //            //VRMMetaObject vrmMetaObject = await loader.ReadMetaAsync(new ImmediateCaller(), true);
-        //            //result = vrmMetaObject.Thumbnail;
-        //        }
-        //    }
-        //    catch (NotVrm0Exception)
-        //    {
-
-        //    }
-        //    return result;
-        //}
     }
 }

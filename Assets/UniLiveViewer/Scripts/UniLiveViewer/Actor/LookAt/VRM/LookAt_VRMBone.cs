@@ -5,9 +5,9 @@ namespace UniLiveViewer.Actor.LookAt
 {
     public class LookAt_VRMBone : LookAtBase, IHeadLookAt, IEyeLookAt
     {
-        [SerializeField] VRMLookAtBoneApplyer_Custom _applyer;
+        [SerializeField] VRMLookAtBoneApplyer _applyer;
 
-        public void Setup(VRMLookAtBoneApplyer_Custom applyer)
+        public void Setup(VRMLookAtBoneApplyer applyer)
         {
             _applyer = applyer;
         }

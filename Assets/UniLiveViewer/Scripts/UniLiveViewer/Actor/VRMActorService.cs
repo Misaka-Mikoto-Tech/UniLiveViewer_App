@@ -107,7 +107,7 @@ namespace UniLiveViewer.Actor
         /// 各種設定
         /// </summary>
         /// <param name="instance"></param>
-        async UniTask SetupInternalAsync(RuntimeGltfInstance_Custom instance, CancellationToken cancellation)
+        async UniTask SetupInternalAsync(RuntimeGltfInstance instance, CancellationToken cancellation)
         {
             var go = instance.gameObject;
             go.transform.SetParent(_lifetimeScope.transform, false);

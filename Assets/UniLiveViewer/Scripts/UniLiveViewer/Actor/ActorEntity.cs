@@ -59,7 +59,7 @@ namespace UniLiveViewer.Actor
             else if (charaInfoData.ActorType == ActorType.VRM)
             {
                 var go = animator.gameObject;
-                if (go.TryGetComponent<VRMLookAtBoneApplyer_Custom>(out var boneApplyer))
+                if (go.TryGetComponent<VRMLookAtBoneApplyer>(out var boneApplyer))
                 {
                     var eyeLookAt = go.AddComponent<LookAt_VRMBone>();
                     _lookAtBase = eyeLookAt.GetComponent<LookAtBase>();
@@ -69,7 +69,7 @@ namespace UniLiveViewer.Actor
                     charaInfoData.ExpressionType = ExpressionType.VRM_Bone;
                     eyeLookAt.Setup(boneApplyer);
                 }
-                else if (go.TryGetComponent<VRMLookAtBlendShapeApplyer_Custom>(out var blendShapeApplyer))
+                else if (go.TryGetComponent<VRMLookAtBlendShapeApplyer>(out var blendShapeApplyer))
                 {
                     var eyeLookAt = go.AddComponent<LookAt_VRMBlendShape>();
                     _lookAtBase = eyeLookAt.GetComponent<LookAtBase>();
@@ -101,7 +101,7 @@ namespace UniLiveViewer.Actor
             //lookAtBaseのメソッドInject待ち
             await UniTask.Yield(cancellation);
 
-            var headLookAt = go.GetComponent<VRMLookAtHead_Custom>();
+            var headLookAt = go.GetComponent<VRMLookAtHead>();
             headLookAt.Target = _lookAtBase.LookTarget;
             headLookAt.UpdateType = UpdateType.LateUpdate;
         }

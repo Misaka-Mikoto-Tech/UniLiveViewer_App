@@ -5,9 +5,9 @@ namespace UniLiveViewer.Actor.LookAt
 {
     public class LookAt_VRMBlendShape : LookAtBase, IHeadLookAt, IEyeLookAt
     {
-        [SerializeField] VRMLookAtBlendShapeApplyer_Custom _applyer;
+        [SerializeField] VRMLookAtBlendShapeApplyer _applyer;
 
-        public void Setup(VRMLookAtBlendShapeApplyer_Custom applyer)
+        public void Setup(VRMLookAtBlendShapeApplyer applyer)
         {
             _applyer = applyer;
         }

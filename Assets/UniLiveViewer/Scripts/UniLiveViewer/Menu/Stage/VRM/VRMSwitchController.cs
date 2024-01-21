@@ -1,26 +1,18 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System.Threading;
 using UniLiveViewer.Actor;
-using UniLiveViewer.Player;
 using UniLiveViewer.Stage;
 using UnityEngine;
-using VContainer;
-using VContainer.Unity;
 
 namespace UniLiveViewer.Menu
 {
     /// <summary>
     /// VRMサムネメニュー画面
     /// 
-    /// TODO: UI切り替えくらいしか機能ないのでUniVRM更新の妨げにならないがきれいにしたい
+    /// TODO: もうUI切り替えくらいしか機能ないのできれいにしたい
     /// </summary>
     public class VRMSwitchController : MonoBehaviour
     {
-        /// <summary>
-        /// 一括削除とかできなくなるけど一旦削除でOK
-        /// </summary>
-        //public static int loadVRMID = 0;
-
         /// <summary>
         /// 各ページ
         /// </summary>
@@ -38,26 +30,9 @@ namespace UniLiveViewer.Menu
         [Header("＜その他＞")]
         //特殊表情用サウンド
         [SerializeField] AudioClip[] _specialFaceAudioClip;
-        //クリックSE
-        //AudioSource _audioSource;
-        //[SerializeField] AudioClip[] _sound;//ボタン音,読み込み音,クリック音
-
-        //VRM読み込み時イベント
-        //public IObservable<CharaController> AddCharacterAsObservable => _addCharacterStream;
-        //Subject<CharaController> _addCharacterStream = new Subject<CharaController>();
-
-        //public IObservable<CharaController> AddPrefabAsObservable => _addPrefabStream;
-        //Subject<CharaController> _addPrefabStream = new Subject<CharaController>();
 
         //ファイルアクセスとサムネの管理
         FileAccessManager _fileManager;
-        //当たり判定
-        VRMTouchColliders _touchCollider;
-
-        /// <summary>
-        /// 最後に生成したVRM
-        /// </summary>
-        GameObject _currentVrmInstance;
 
         AudioSourceService _audioSourceService;
 
@@ -77,20 +52,11 @@ namespace UniLiveViewer.Menu
             _btnApply.onTrigger += (btn) => PrefabApply(btn, cancellation).Forget();
             _prefabEditor.onCurrentUpdate += () => { _audioSourceService.PlayOneShot(0); };//クリック音
 
-            _touchCollider = LifetimeScope.Find<PlayerLifetimeScope>().Container.Resolve<VRMTouchColliders>();
-
-            //SetEnableRoot(false);
-
             await UniTask.CompletedTask;
         }
 
         public void OnClickThumbnail(string buttonName, CancellationToken cancellation)
         {
-            //_vrmLoadDataStream.OnNext(new VRMLoadData(buttonName));
-            //LoadVRM(buttonName, cancellation).Forget();
-
-            //クリック音
-            //_audioSourceService.PlayOneShot(0);
             //ローディングアニメーション開始
             _anime_Loading.gameObject.SetActive(true);
         }
@@ -150,70 +116,6 @@ namespace UniLiveViewer.Menu
                 case 2:
                     break;
             }
-        }
-
-        /// <summary>
-        /// VRMを読み込む
-        /// </summary>
-        /// <param name="buttonName">該当サムネボタン</param>
-        async UniTaskVoid LoadVRM(string buttonName, CancellationToken cancellation)
-        {
-            //cancellation.ThrowIfCancellationRequested();
-
-            //_currentVrmInstance = null;
-
-            ////クリック音
-            //_audioSource.PlayOneShot(_sound[0]);
-            //await UniTask.Yield(PlayerLoopTiming.Update, cancellation);
-
-            //cancellation.ThrowIfCancellationRequested();
-
-            ////ローディングアニメーション開始
-            //_anime_Loading.gameObject.SetActive(true);
-
-            ////SampleUIを有効化
-            //_vrmLoaderUI.SetUIActive(true);
-            //await UniTask.Delay(10, cancellationToken: cancellation);
-
-            //cancellation.ThrowIfCancellationRequested();
-
-            ////指定パスのVRMのみ読み込む
-            //var fullPath = PathsInfo.GetFullPath(FOLDERTYPE.CHARA) + "/" + buttonName;
-
-            //Debug.LogError("NOTE:ここで死ぬ、Materialエラってるがキャッチはされてない");
-            //var instance = await _vrmLoaderUI.GetURPVRMAsync(fullPath, cancellation)
-            //    .OnError(_ => OnError(new Exception("Vrm Loader"), cancellation));
-            //cancellation.ThrowIfCancellationRequested();
-
-            //if (instance)
-            //{
-            //    //Meshが消える対策
-            //    instance.EnableUpdateWhenOffscreen();
-
-            //    //最低限の設定
-            //    _currentVrmInstance = instance.gameObject;
-            //    _currentVrmInstance.name = buttonName;
-            //    _currentVrmInstance.tag = Constants.TagGrabChara;
-            //    _currentVrmInstance.layer = Constants.LayerNoGrabObject;
-
-            //    var attacher = Instantiate(_attacherPrefab.gameObject).GetComponent<ComponentAttacher_VRM>();
-            //    await attacher.Init(_currentVrmInstance.transform, instance.SkinnedMeshRenderers, cancellation)
-            //        .OnError(_ => OnError(new Exception("Attacher Initialize"), cancellation));
-            //    cancellation.ThrowIfCancellationRequested();
-
-            //    await attacher.Attachment(_touchCollider, cancellation)
-            //        .OnError(_ => OnError(new Exception("Attacher Attachment"), cancellation));
-            //    cancellation.ThrowIfCancellationRequested();
-
-            //    _addCharacterStream.OnNext(attacher.CharaCon);
-            //    Destroy(attacher);
-            //}
-
-            ////UIを非表示にする
-            //UIShow(false);
-
-            ////ローディングアニメーション終了
-            //_anime_Loading.gameObject.SetActive(false);
         }
 
         async UniTask OnError(CancellationToken cancellation)

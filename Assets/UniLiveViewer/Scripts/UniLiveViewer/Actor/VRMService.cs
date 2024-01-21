@@ -1,9 +1,9 @@
 ﻿using Cysharp.Threading.Tasks;
 using System;
+using System.IO;
 using System.Threading;
 using UniGLTF;
 using UnityEngine;
-using VContainer;
 using VRM;
 using VRMShaders;
 
@@ -16,25 +16,25 @@ namespace UniLiveViewer.Actor
         }
 
         /// <summary>
-        /// URPモードでVRMのみを読み込む
+        /// 簡易版APIでロード
+        /// VRM1.0だとさらに完結に、旧APIはエラー出るので避ける
         /// </summary>
         /// <param name="path"></param>
-        public async UniTask<RuntimeGltfInstance_Custom> LoadAsync(string path, CancellationToken cancellation)
+        public async UniTask<RuntimeGltfInstance> LoadAsync(string path, CancellationToken cancellation)
         {
             try
             {
-                if (string.IsNullOrEmpty(path))
+                if (string.IsNullOrEmpty(path)) return null;
+                if (!File.Exists(path))
                 {
+                    Debug.LogWarning("指定ファイルが存在しない");
                     return null;
                 }
-                var data = new GlbFileParser(path).Parse();
-                var vrm = new VRMData(data);
-                var context = new VRMImporterContext_Custom(vrm, materialGenerator: GetVrmMaterialGenerator(false, vrm.VrmExtension));
-
-                var loaded = default(RuntimeGltfInstance_Custom);
-                loaded = await context.LoadAsync(GetIAwaitCaller(true));
+                var bytes = File.ReadAllBytes(path);
+                var size = bytes != null ? bytes.Length : 0;
+                var instance = await VrmUtility.LoadBytesAsync(path, bytes, GetIAwaitCaller(true));
                 await UniTask.Yield(cancellation);// 負荷分散
-                return loaded;
+                return instance;
             }
             catch (OperationCanceledException)
             {
@@ -45,24 +45,6 @@ namespace UniLiveViewer.Actor
             {
                 Debug.Log("VRM Loadエラー");
                 throw;
-            }
-        }
-
-        /// <summary>
-        /// URP読み込みに必要
-        /// </summary>
-        /// <param name="useUrp"></param>
-        /// <param name="vrm"></param>
-        /// <returns></returns>
-        static IMaterialDescriptorGenerator GetVrmMaterialGenerator(bool useUrp, glTF_VRM_extensions vrm)
-        {
-            if (useUrp)
-            {
-                return new VRMUrpMaterialDescriptorGenerator(vrm);
-            }
-            else
-            {
-                return new VRMMaterialDescriptorGenerator(vrm);
             }
         }
 
