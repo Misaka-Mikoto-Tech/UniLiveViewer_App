@@ -1,82 +1,64 @@
 ﻿using Cysharp.Threading.Tasks;
+using MessagePipe;
 using System;
 using System.Threading;
 using UniLiveViewer.Player;
-using UniLiveViewer.Stage;
-using UniLiveViewer.Timeline;
 using UniRx;
 using VContainer;
 using VContainer.Unity;
 
 namespace UniLiveViewer.Menu
 {
-    public class MainMenuPresenter : IStartable, IDisposable
+    /// <summary>
+    /// 全体とactor以外用（未整理）
+    /// </summary>
+    public class MainMenuPresenter : IAsyncStartable, IDisposable
     {
-        readonly FileAccessManager _fileAccessManager;
-        readonly TimelineController _timelineController;
         readonly PlayerStateManager _playerStateManager;
-
         readonly MeneRoot _meneRoot;
-        readonly CharacterPage _characterPage;
         readonly AudioPlaybackPage _audioPlaybackPage;
         readonly ItemPage _itemPage;
         readonly ConfigPage _configPage;
-        readonly GeneratorPortal _generatorPortal;
+        readonly JumpList _jumpList;
 
-        readonly CompositeDisposable _disposables;
+        readonly CompositeDisposable _disposables = new();
 
         [Inject]
         public MainMenuPresenter(
-            FileAccessManager fileAccessManager,
-            TimelineController timelineController,
             PlayerStateManager playerStateManager,
             MeneRoot meneRoot,
-            CharacterPage characterPage,
             AudioPlaybackPage audioPlaybackPage,
             ItemPage itemPage,
             ConfigPage configPage,
-            GeneratorPortal generatorPortal)
+            JumpList jumpList)
         {
-            _fileAccessManager = fileAccessManager;
-            _timelineController = timelineController;
             _playerStateManager = playerStateManager;
             _meneRoot = meneRoot;
-            _characterPage = characterPage;
             _audioPlaybackPage = audioPlaybackPage;
             _itemPage = itemPage;
             _configPage = configPage;
-            _generatorPortal = generatorPortal;
-
-            _disposables = new CompositeDisposable();
+            _jumpList = jumpList;
         }
 
-        void IStartable.Start()
+        async UniTask IAsyncStartable.StartAsync(CancellationToken cancellation)
         {
-            _fileAccessManager.LoadEndAsObservable
-                .Subscribe(_ => _generatorPortal.OnLoadEnd())
-                .AddTo(_disposables);
-            _timelineController.FieldCharacterCount
-                .Subscribe(OnFieldCharacterCount)
-                .AddTo(_disposables);
             _playerStateManager.MainUISwitchingAsObservable
                 .Subscribe(SwitchEnable)
                 .AddTo(_disposables);
 
-            _characterPage.OnStart();
-            _audioPlaybackPage.OnStart();
+            _jumpList.OnSelectAsObservable
+                .Subscribe(_audioPlaybackPage.OnJumpSelect).AddTo(_disposables);
+
+            _audioPlaybackPage.StartAsync(cancellation).Forget();
             _itemPage.OnStart();
             _configPage.OnStart();
+
+            await UniTask.CompletedTask;
         }
 
         void SwitchEnable(bool isEnable)
         {
             if (_meneRoot.gameObject.activeSelf != isEnable) _meneRoot.gameObject.SetActive(isEnable);
-        }
-
-        void OnFieldCharacterCount(int i)
-        {
-            _characterPage.OnUpdateCharacterCount(i);
-            _generatorPortal.OnUpdateCharacterCount(i);
         }
 
         void IDisposable.Dispose()

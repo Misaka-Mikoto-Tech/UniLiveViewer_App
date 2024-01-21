@@ -1,7 +1,8 @@
 ﻿using Cysharp.Threading.Tasks;
+using MessagePipe;
 using NanaCiel;
-using System.Threading;
-using UniLiveViewer.Stage;
+using UniLiveViewer.Actor;
+using UniLiveViewer.MessagePipe;
 using UniLiveViewer.Timeline;
 using UniRx;
 using UnityEngine;
@@ -12,66 +13,100 @@ namespace UniLiveViewer.Menu
     public class CharacterPage : MonoBehaviour
     {
         MenuManager _menuManager;
-
+        [Header("--- Preset or Custom ---")]
         [SerializeField] Button_Switch[] _switchChara = new Button_Switch[2];
         [SerializeField] Button_Switch[] _switchAnime = new Button_Switch[2];
 
         int _fieldCharaCount;
 
+        [Header("--- JumpList ---")]
         /// <summary>
         /// キャラ、モーション、リップ
         /// </summary>
         [SerializeField] Button_Base[] _btnJumpList;
 
+        [Header("--- MoveIndex ---")]
         [SerializeField] Button_Base[] _btnChara = new Button_Base[2];
         [SerializeField] Button_Base[] _btnAnime = new Button_Base[2];
+
+        [Header("--- ---")]
         [SerializeField] Button_Base[] _btnOffset = new Button_Base[2];
         [SerializeField] Button_Switch _switchReverse;
         [SerializeField] Button_Base _btnVRMLoad;
         [SerializeField] Button_Base _btnDeleteAll;
         [SerializeField] TextMesh[] textMeshs = null;
+
+        [Header("--- Slider ---")]
         [SerializeField] SliderGrabController _sliderOffset;
         [SerializeField] SliderGrabController _sliderHeadLook;
         [SerializeField] SliderGrabController _sliderEyeLook;
 
-        [Header("＜VRM用＞")]
+        [Header("--- VRM用 ---")]
         [SerializeField] Button_Base _btnVRMSetting;
         [SerializeField] Button_Base _btnVRMDelete;
         [SerializeField] Button_Base _btnFaceUpdate;
         [SerializeField] Button_Base _btnMouthUpdate;
 
-        [Header("＜マニュアル用＞")]
+        [Header("--- マニュアル用 ---")]
         [SerializeField] GameObject[] _bookPrefab;
         [SerializeField] GameObject _bookGrabAnchor;
 
         Transform _offsetAnchor;
         Transform _vrmOptionAnchor;
 
-        TimelineController _timeline;
-        [SerializeField] GeneratorPortal _generatorPortal;
-        VRMSwitchController _vrmSelectUI;
-        CancellationToken _cancellationToken;
+        public IReadOnlyReactiveProperty<int> FBXIndex => _fbxIndex;
+        readonly ReactiveProperty<int> _fbxIndex = new();
+        public IReadOnlyReactiveProperty<int> VRMIndex => _vrmIndex;
+        readonly ReactiveProperty<int> _vrmIndex = new();
+        CurrentMode _currentActorMode = CurrentMode.PRESET;
 
-        CompositeDisposable _disposable;
+        public IReadOnlyReactiveProperty<bool> IsReverse => _isReverse;
+        readonly ReactiveProperty<bool> _isReverse = new();
 
+        public IReadOnlyReactiveProperty<int> ClipIndex => _clipIndex;
+        readonly ReactiveProperty<int> _clipIndex = new();
+        public IReadOnlyReactiveProperty<int> VMDIndex => _vmdIndex;
+        readonly ReactiveProperty<int> _vmdIndex = new();
+        CurrentMode _animationMode = CurrentMode.PRESET;
+
+        PlayableBinderService _playableBinderService;
+        PresetResourceData _presetResourceData;
+        ActorEntityManagerService _actorEntityManagerService;
+        AnimationAssetManager _animationAssetManager;
+        IPublisher<AllActorOperationMessage> _allPublisher;
+        IPublisher<ActorOperationMessage> _publisher;
 
         [Inject]
-        void Construct(
-            TimelineController timelineController,
+        public void Construct(
+            PlayableBinderService playableBinderService,
             MenuManager menuManager,
-            VRMSwitchController vrmSelectUI)
+            PresetResourceData presetResourceData,
+            ActorEntityManagerService actorEntityManagerService,
+            AnimationAssetManager animationAssetManager,
+            IPublisher<AllActorOperationMessage> actorOperationPublisher,
+            IPublisher<ActorOperationMessage> publisher)
         {
-            _timeline = timelineController;
+            _playableBinderService = playableBinderService;
             _menuManager = menuManager;
-            _vrmSelectUI = vrmSelectUI;
+            _presetResourceData = presetResourceData;
+            _actorEntityManagerService = actorEntityManagerService;
+            _animationAssetManager = animationAssetManager;
+            _allPublisher = actorOperationPublisher;
+            _publisher = publisher;
+        }
+
+        async void OnEnable()
+        {
+            var data = _playableBinderService.BindingData[TimelineConstants.PortalIndex];
+            if (data != null) return;
+
+            //初期召喚と未生成を想定した自動生成
+            await UniTask.Delay(500);
+            EvaluateActorIndex(0);
         }
 
         public void OnStart()
         {
-            _disposable = new CompositeDisposable();
-
-            _cancellationToken = this.GetCancellationTokenOnDestroy();
-
             _fieldCharaCount = 0;
 
             //ジャンプリスト
@@ -80,38 +115,10 @@ namespace UniLiveViewer.Menu
                 e.onTrigger += OpenJumplist;
             }
 
-            //ジャンプリストから選択された時
-            _menuManager.jumpList.onSelect += (jumpCurrent) =>
-            {
-                int moveIndex = 0;
-                switch (_menuManager.jumpList.target)
-                {
-                    case JumpList.TARGET.CHARA:
-                        moveIndex = jumpCurrent - _generatorPortal.CurrentChara;
-                        _generatorPortal.SetChara(moveIndex).Forget();
-                        break;
-                    case JumpList.TARGET.ANIME:
-                        moveIndex = jumpCurrent - _generatorPortal.CurrentAnime;
-                        _generatorPortal.SetAnimation(moveIndex).Forget();
-                        break;
-                    // TODO:作業中・・・少し修正大変そう
-                    case JumpList.TARGET.VMD_LIPSYNC:
-                        moveIndex = jumpCurrent - _generatorPortal.CurrentVMDLipSync;
-                        ChangeFacialVMD(moveIndex);
-                        break;
-                }
-                _menuManager.PlayOneShot(SoundType.BTN_CLICK);
-            };
-
             //その他
-            for (int i = 0; i < _btnChara.Length; i++)
-            {
-                _btnChara[i].onTrigger += MoveIndex;
-            }
-            for (int i = 0; i < _btnAnime.Length; i++)
-            {
-                _btnAnime[i].onTrigger += MoveIndex;
-            }
+            for (int i = 0; i < _btnChara.Length; i++) _btnChara[i].onTrigger += MoveIndexActor;
+            for (int i = 0; i < _btnAnime.Length; i++) _btnAnime[i].onTrigger += MoveIndexAnimation;
+
             for (int i = 0; i < _btnOffset.Length; i++)
             {
                 _btnOffset[i].onTrigger += ChangeOffset_Anime;
@@ -128,85 +135,66 @@ namespace UniLiveViewer.Menu
                 _switchAnime[i].onTrigger += OnClickSwitchAnime;
             }
 
-            _switchReverse.onTrigger += (b) => ChangeReverse_Anime(b).Forget();
+            _switchReverse.onTrigger += (b) => ChangeReverseAnimation(b);
             _switchReverse.isEnable = false;
 
-            _timeline.FieldCharacterCount
-                .SkipLatestValueOnSubscribe()
-                .Subscribe(_ => Add_FieldChara().Forget())
-                .AddTo(this);
+            _playableBinderService.BindingToAsObservable
+                .Subscribe(_ =>
+                {
+                    if (!transform.root.gameObject.activeSelf) return;
+                    textMeshs[2].text = $"{_fieldCharaCount}/{SystemInfo.MaxFieldChara}";
+                }).AddTo(this);
 
             _sliderOffset.ValueUpdate += () =>
             {
-                var portalChara = _timeline.BindCharaMap[TimelineController.PORTAL_INDEX];
-                if (!portalChara) return;
+                var data = _playableBinderService.BindingData[TimelineConstants.PortalIndex];
+                if (data == null) return;
+
+                var baseMotion = textMeshs[1].name;
                 //オフセットを設定
-                FileReadAndWriteUtility.SetMotionOffset(_generatorPortal.GetNowAnimeInfo().viewName, (int)_sliderOffset.Value);
+                FileReadAndWriteUtility.SetMotionOffset(baseMotion, (int)_sliderOffset.Value);
                 textMeshs[3].text = $"{_sliderOffset.Value:0000}";
             };
             _sliderOffset.UnControled += () => { FileReadAndWriteUtility.SaveMotionOffset(); };
             _offsetAnchor = _sliderOffset.transform.parent;
             _sliderEyeLook.ValueUpdate += () =>
             {
-                var portalChara = _timeline.BindCharaMap[TimelineController.PORTAL_INDEX];
-                if (!portalChara) return;
+                var data = _playableBinderService.BindingData[TimelineConstants.PortalIndex];
+                if (data == null) return;
                 //目の向く量をセット
-                portalChara.LookAt.inputWeight_Eye = _sliderEyeLook.Value;
+                var lookAt = data.ActorService.ActorEntity().Value.LookAtBase;
+                lookAt.SetEyeWeight(_sliderEyeLook.Value);
             };
             _sliderHeadLook.ValueUpdate += () =>
             {
-                var portalChara = _timeline.BindCharaMap[TimelineController.PORTAL_INDEX];
-                if (!portalChara) return;
+                var data = _playableBinderService.BindingData[TimelineConstants.PortalIndex];
+                if (data == null) return;
                 //顔の向く量をセット
-                portalChara.LookAt.inputWeight_Head = _sliderHeadLook.Value;
+                var lookAt = data.ActorService.ActorEntity().Value.LookAtBase;
+                lookAt.SetHeadWeight(_sliderHeadLook.Value);
             };
-            _btnVRMLoad.onTrigger += VRMLoad;
             _btnVRMSetting.onTrigger += VRMSetting;
             _btnVRMDelete.onTrigger += DeleteModel;
-            _btnDeleteAll.onTrigger += DeleteModel;
+            _btnDeleteAll.onTrigger += DeleteAll;
             _btnFaceUpdate.onTrigger += Switch_Mouth;
-            _vrmOptionAnchor = _btnFaceUpdate.transform.parent;
             _btnMouthUpdate.onTrigger += Switch_Mouth;
 
-            _vrmSelectUI.AddCharacterAsObservable
-                .Subscribe(x =>
-                {
-                    _generatorPortal.AddVRMList(x);//VRMを追加
-                    _generatorPortal.SetChara(0).Forget();//追加されたVRMを生成する
-                }).AddTo(_disposable);
+            _vrmOptionAnchor = _btnFaceUpdate.transform.parent;
 
-            _vrmSelectUI.AddPrefabAsObservable
-                .Subscribe(x =>
-                {
-                    _timeline.ClearCaracter();
-                    //VRMのPrefabを差し替える
-                    _generatorPortal.ChangeCurrentVRM(x);
-                    _generatorPortal.SetChara(0).Forget();
+            //_vrmSelectUI.AddPrefabAsObservable
+            //    .Subscribe(x =>
+            //    {
+            //        _timeline.ClearCaracter();
+            //        //VRMのPrefabを差し替える
+            //        _generatorPortal.ChangeCurrentVRM(x);
 
-                    //var instance = Instantiate(vrm).GetComponent<CharaController>();
-                    //instance.SetState(CharaController.CHARASTATE.MINIATURE, generatorPortal.transform);
-                }).AddTo(_disposable);
-
-            _generatorPortal.GenerateEmptyCharacterAsObservable
-                .Subscribe(_ =>
-                {
-                    //VRM選択画面を非表示(開いたまま別キャラは確認できない仕様)
-                    _vrmSelectUI.UIShow(false);
-
-                    textMeshs[0].text = "VRM Load";
-                    textMeshs[0].fontSize = textMeshs[0].text.FontSizeMatch(600, 30, 50);
-
-                    //生成ボタンの表示
-                    if (_fieldCharaCount < SystemInfo.MaxFieldChara) _btnVRMLoad.gameObject.SetActive(true);
-                    if (_vrmOptionAnchor.gameObject.activeSelf) _vrmOptionAnchor.gameObject.SetActive(false);
-                }).AddTo(_disposable);
-
-            _generatorPortal.GenerateCharacterAsObservable
-                .Subscribe(_ => DrawCharaInfo()).AddTo(_disposable);
-            _generatorPortal.EndAnimationSetAsObservable
-                .Subscribe(_ => DrawAnimeInfo()).AddTo(_disposable);
-            _generatorPortal.SubAnimationName
-                .Subscribe(DrawAnimePairInfo).AddTo(_disposable);
+            //        if (_currentActorMode == CurrentMode.CUSTOM)
+            //        {
+            //            _vrmIndex.SetValueAndForceNotify(_vrmIndex.Value);
+            //        }
+            //        //var instance = Instantiate(vrm).GetComponent<CharaController>();
+            //        //instance.SetState(CharaController.CHARASTATE.MINIATURE, generatorPortal.transform);
+            //    }).AddTo(_disposable);
 
             //VRMロードの画面とボタンを非表示
             _btnVRMLoad.gameObject.SetActive(false);
@@ -216,13 +204,52 @@ namespace UniLiveViewer.Menu
 
             //マニュアル生成
             Instantiate(_bookPrefab[FileReadAndWriteUtility.UserProfile.LanguageCode - 1], _bookGrabAnchor.transform);
-
-
         }
 
-        void Start()
+        public void OnJumpSelect((JumpList.TARGET, int) select)
         {
+            var target = select.Item1;
+            var index = select.Item2;
 
+            switch (target)
+            {
+                case JumpList.TARGET.CHARA:
+                    if (_currentActorMode == CurrentMode.PRESET)
+                    {
+                        var moveIndex = index - _fbxIndex.Value;
+                        EvaluateActorIndex(moveIndex);
+                    }
+                    else if (_currentActorMode == CurrentMode.CUSTOM)
+                    {
+                        var moveIndex = index - _vrmIndex.Value;
+                        EvaluateActorIndex(moveIndex);
+                    }
+                    break;
+                case JumpList.TARGET.ANIME:
+                    if (_animationMode == CurrentMode.PRESET)
+                    {
+                        var moveIndex = index - _clipIndex.Value;
+                        EvaluateAnimationIndex(moveIndex);
+                    }
+                    else if (_animationMode == CurrentMode.CUSTOM)
+                    {
+                        var moveIndex = index - _vmdIndex.Value;
+                        EvaluateAnimationIndex(moveIndex);
+                    }
+                    break;
+                // TODO:作業中・・・少し修正大変そう
+                case JumpList.TARGET.VMD_LIPSYNC:
+                    if (_animationMode == CurrentMode.CUSTOM)
+                    {
+                        var baseMotionName = _animationAssetManager.VmdList[_vmdIndex.Value];
+                        var syncMotionName = _animationAssetManager.VmdSyncList[index];
+                        FileReadAndWriteUtility.SaveMotionFacialPair(baseMotionName, syncMotionName);
+                        // BaseVMDのまま更新したい
+                        EvaluateAnimationIndex(0);
+                    }
+                    break;
+            }
+            _menuManager.PlayOneShot(SoundType.BTN_CLICK);
         }
 
         public void OnClickManualBook()
@@ -231,7 +258,6 @@ namespace UniLiveViewer.Menu
             _bookGrabAnchor.SetActive(!_bookGrabAnchor.activeSelf);
         }
 
-        // Update is called once per frame
         void Update()
         {
 #if UNITY_EDITOR
@@ -255,15 +281,15 @@ namespace UniLiveViewer.Menu
 
             if (btn == _btnJumpList[0])
             {
-                _menuManager.jumpList.SetCharaDate(_generatorPortal.GetCharasInfo());
+                _menuManager.jumpList.SetCharaData(_currentActorMode == CurrentMode.PRESET);
             }
             else if (btn == _btnJumpList[1])
             {
-                _menuManager.jumpList.SetAnimeData(_generatorPortal.GetDanceInfoData());
+                _menuManager.jumpList.SetAnimeData(_animationMode == CurrentMode.PRESET);
             }
             else if (btn == _btnJumpList[2])
             {
-                _menuManager.jumpList.SetLipSyncNames(_generatorPortal.GetVmdLipSync());
+                _menuManager.jumpList.SetLipSyncNames();
             }
             _menuManager.PlayOneShot(SoundType.BTN_CLICK);
         }
@@ -272,79 +298,191 @@ namespace UniLiveViewer.Menu
         {
             if (_switchChara[0] == btn)
             {
-                _generatorPortal.SetCurrentCharaList(CurrentMode.PRESET);
+                _currentActorMode = CurrentMode.PRESET;
                 _switchChara[0].isEnable = true;
                 _switchChara[1].isEnable = false;
             }
             else
             {
-                _generatorPortal.SetCurrentCharaList(CurrentMode.CUSTOM);
+                _currentActorMode = CurrentMode.CUSTOM;
                 _switchChara[0].isEnable = false;
                 _switchChara[1].isEnable = true;
             }
             _menuManager.jumpList.Close();
-            _menuManager.PlayOneShot(SoundType.BTN_CLICK);
-            _generatorPortal.SetChara(0).Forget();
+            EvaluateActorIndex(0);
         }
 
         void OnClickSwitchAnime(Button_Base btn)
         {
             if (_switchAnime[0] == btn)
             {
-                _generatorPortal.SetCurrentAnimeList(CurrentMode.PRESET);
+                _animationMode = CurrentMode.PRESET;
                 _switchAnime[0].isEnable = true;
                 _switchAnime[1].isEnable = false;
             }
             else
             {
-                _generatorPortal.SetCurrentAnimeList(CurrentMode.CUSTOM);
+                _animationMode = CurrentMode.CUSTOM;
                 _switchAnime[0].isEnable = false;
                 _switchAnime[1].isEnable = true;
             }
             _menuManager.jumpList.Close();
-            _menuManager.PlayOneShot(SoundType.BTN_CLICK);
-            _generatorPortal.SetAnimation(0).Forget();
+            EvaluateAnimationIndex(0);
         }
 
-        /// <summary>
-        /// インデックスを前後に進める
-        /// </summary>
-        /// <param name="btn"></param>
-        void MoveIndex(Button_Base btn)
+        void MoveIndexActor(Button_Base btn)
         {
             for (int i = 0; i < _btnChara.Length; i++)
             {
-                if (_btnChara[i] == btn)
-                {
-                    var moveIndex = i == 0 ? -1 : 1;
-                    //キャラを変更する
-                    _generatorPortal.SetChara(moveIndex).Forget();
-                    _menuManager.PlayOneShot(SoundType.BTN_CLICK);
-                    return;
-                }
+                if (_btnChara[i] != btn) continue;
+                var moveIndex = i == 0 ? -1 : 1;
+                EvaluateActorIndex(moveIndex);
+                return;
             }
+        }
 
+        void MoveIndexAnimation(Button_Base btn)
+        {
             for (int i = 0; i < _btnAnime.Length; i++)
             {
-                if (_btnAnime[i] == btn)
-                {
-                    var moveIndex = i == 0 ? -1 : 1;
-                    //アニメーションを変更する
-                    _generatorPortal.SetAnimation(moveIndex).Forget();
-                    _menuManager.PlayOneShot(SoundType.BTN_CLICK);
-                    return;
-                }
+                if (_btnAnime[i] != btn) continue;
+                var moveIndex = i == 0 ? -1 : 1;
+                EvaluateAnimationIndex(moveIndex);
+                return;
+            }
+        }
+
+        public void OnVRMLoadFrame()
+        {
+            var s = MenuConstants.LoadVRM;
+            textMeshs[0].text = s;
+            textMeshs[0].fontSize = s.FontSizeMatch(600, 30, 50);
+        }
+
+        /// <summary>
+        /// Timelineにバインド完了した直後を想定
+        /// </summary>
+        /// <param name="actorEntity"></param>
+        public void UpdateActor(ActorEntity actorEntity)
+        {
+            if (_btnVRMLoad.gameObject.activeSelf) _btnVRMLoad.gameObject.SetActive(false);
+
+            var actorName = actorEntity?.CharaInfoData.viewName;
+            textMeshs[0].text = actorName;
+            textMeshs[0].fontSize = actorName.FontSizeMatch(600, 30, 50);
+            textMeshs[2].text = $"{_fieldCharaCount}/{SystemInfo.MaxFieldChara}";
+
+            if (actorEntity == null) return;
+            var lookAtBase = actorEntity.LookAtBase;
+            lookAtBase.SetHeadWeight(_sliderHeadLook.Value);
+            lookAtBase.SetEyeWeight(_sliderEyeLook.Value);
+
+            //モーフボタン初期化
+            if (actorEntity.CharaInfoData.ActorType == ActorType.FBX)
+            {
+                if (_vrmOptionAnchor.gameObject.activeSelf) _vrmOptionAnchor.gameObject.SetActive(false);
+            }
+            else
+            {
+                if (!_vrmOptionAnchor.gameObject.activeSelf) _vrmOptionAnchor.gameObject.SetActive(true);
+                _btnFaceUpdate.isEnable = true;
+                _btnMouthUpdate.isEnable = true;
+            }
+
+            //生成後にAnimation反映
+            if (_animationMode == CurrentMode.PRESET)
+            {
+                _clipIndex.SetValueAndForceNotify(_clipIndex.Value);
+            }
+            else if (_animationMode == CurrentMode.CUSTOM)
+            {
+                _vmdIndex.SetValueAndForceNotify(_vmdIndex.Value);
             }
         }
 
         /// <summary>
-        /// 表情用のVMDを変更
+        /// 何れかのサムネボタンクリック時
+        /// NOTE: サムネ表示中はCustomタブのIndex0扱い
         /// </summary>
-        /// <param name="moveIndex"></param>
-        void ChangeFacialVMD(int moveIndex)
+        public void OnClickThumbnail()
         {
-            //文字画像を差し替える
-            _generatorPortal.SetFacialAnimation(moveIndex).Forget();
+            var maxIndex = _actorEntityManagerService.NumRegisteredVRM - 1;
+            var moveIndex = maxIndex - _vrmIndex.Value;
+            EvaluateActorIndex(moveIndex);
+        }
+
+        void EvaluateActorIndex(int moveIndex)
+        {
+            if (_currentActorMode == CurrentMode.PRESET)
+            {
+                var pendingIndex = _fbxIndex.Value + moveIndex;
+                if (pendingIndex < 0) pendingIndex = _actorEntityManagerService.NumRegisteredFBX - 1;
+                else if (_actorEntityManagerService.NumRegisteredFBX <= pendingIndex) pendingIndex = 0;
+
+                _fbxIndex.SetValueAndForceNotify(pendingIndex);
+            }
+            else if (_currentActorMode == CurrentMode.CUSTOM)
+            {
+                var pendingIndex = _vrmIndex.Value + moveIndex;
+                if (pendingIndex < 0) pendingIndex = _actorEntityManagerService.NumRegisteredVRM - 1;
+                else if (_actorEntityManagerService.NumRegisteredVRM <= pendingIndex) pendingIndex = 0;
+
+                _vrmIndex.SetValueAndForceNotify(pendingIndex);
+            }
+            _menuManager.PlayOneShot(SoundType.BTN_CLICK);
+        }
+
+        /// <summary>
+        /// indexが範囲内に収まっているか評価する
+        /// 問題なければUIやクリック音に反映
+        /// </summary>
+        void EvaluateAnimationIndex(int moveIndex)
+        {
+            if (_animationMode == CurrentMode.PRESET)
+            {
+                var pendingIndex = _clipIndex.Value + moveIndex;
+                if (pendingIndex < 0) pendingIndex = _presetResourceData.DanceInfoData.Count - 1;
+                else if (_presetResourceData.DanceInfoData.Count <= pendingIndex) pendingIndex = 0;
+                _clipIndex.SetValueAndForceNotify(pendingIndex);
+
+                var data = _presetResourceData.DanceInfoData[_clipIndex.Value];
+                var baseMotionName = _isReverse.Value ? data.viewName + " R" : data.viewName;
+
+                textMeshs[1].text = baseMotionName;
+                textMeshs[1].fontSize = baseMotionName.FontSizeMatch(600, 30, 50);
+                //反転ボタン
+                if (!_switchReverse.gameObject.activeSelf) _switchReverse.gameObject.SetActive(true);
+                //Offset
+                if (_offsetAnchor.gameObject.activeSelf) _offsetAnchor.gameObject.SetActive(false);
+                _sliderOffset.Value = 0;
+                textMeshs[3].text = $"{_sliderOffset.Value:0000}";
+                //LipSyncボタン
+                if (_btnJumpList[2].gameObject.activeSelf) _btnJumpList[2].gameObject.SetActive(false);
+            }
+            else if (_animationMode == CurrentMode.CUSTOM)
+            {
+                var pendingIndex = _vmdIndex.Value + moveIndex;
+                if (pendingIndex < 0) pendingIndex = _animationAssetManager.VmdList.Count - 1;
+                else if (_animationAssetManager.VmdList.Count <= pendingIndex) pendingIndex = 0;
+                _vmdIndex.SetValueAndForceNotify(pendingIndex);
+
+                var baseMotionName = _animationAssetManager.VmdList[_vmdIndex.Value];
+                textMeshs[1].text = baseMotionName;
+                textMeshs[1].fontSize = baseMotionName.FontSizeMatch(600, 30, 50);
+                //反転ボタン
+                if (_switchReverse.gameObject.activeSelf) _switchReverse.gameObject.SetActive(false);
+                //Offset
+                if (!_offsetAnchor.gameObject.activeSelf) _offsetAnchor.gameObject.SetActive(true);
+                _sliderOffset.Value = FileReadAndWriteUtility.GetMotionOffset[baseMotionName];
+                textMeshs[3].text = $"{_sliderOffset.Value:0000}";
+                //Syncボタン
+                if (!_btnJumpList[2].gameObject.activeSelf) _btnJumpList[2].gameObject.SetActive(true);
+                var syncFileName = FileReadAndWriteUtility.TryGetSyncFileName(baseMotionName);
+                if (syncFileName == null) syncFileName = TimelineConstants.LIPSYNC_NONAME;
+                textMeshs[4].text = syncFileName;
+                textMeshs[4].fontSize = syncFileName.FontSizeMatch(600, 25, 40);
+            }
+            _menuManager.PlayOneShot(SoundType.BTN_CLICK);
         }
 
         /// <summary>
@@ -361,7 +499,8 @@ namespace UniLiveViewer.Menu
                     var moveIndex = i == 0 ? -1 : 1;
                     //オフセットを設定
                     _sliderOffset.Value += moveIndex;
-                    FileReadAndWriteUtility.SetMotionOffset(_generatorPortal.GetNowAnimeInfo().viewName, (int)_sliderOffset.Value);
+                    var baseMotion = textMeshs[1].name;
+                    FileReadAndWriteUtility.SetMotionOffset(baseMotion, (int)_sliderOffset.Value);
                     textMeshs[3].text = $"{_sliderOffset.Value:0000}";
                     _menuManager.PlayOneShot(SoundType.BTN_CLICK);
                     break;
@@ -370,58 +509,30 @@ namespace UniLiveViewer.Menu
             FileReadAndWriteUtility.SaveMotionOffset();
         }
 
-        /// <summary>
-        /// 次反転アニメーションに切り替える
-        /// </summary>
-        /// <param name="btn"></param>
-        async UniTaskVoid ChangeReverse_Anime(Button_Base btn)
+        void ChangeReverseAnimation(Button_Base btn)
         {
-            _generatorPortal.IsAnimationReverse = _switchReverse.isEnable;
+            if (_animationMode != CurrentMode.PRESET) return;
 
-            //反転ボタンの状態に合わせる
-            var portalChara = _timeline.BindCharaMap[TimelineController.PORTAL_INDEX];
-            if (portalChara)
-            {
-                //キャラを生成して反転を反映させる
-                await _generatorPortal.SetChara(0);
-                textMeshs[1].text = _generatorPortal.GetNowAnimeInfo().viewName;
-                textMeshs[1].fontSize = textMeshs[1].text.FontSizeMatch(600, 30, 50);
-
-                //スライダーの値を反映
-                portalChara.LookAt.inputWeight_Head = _sliderHeadLook.Value;
-                portalChara.LookAt.inputWeight_Eye = _sliderEyeLook.Value;
-            }
-            _menuManager.PlayOneShot(SoundType.BTN_CLICK);
+            _isReverse.Value = _switchReverse.isEnable;
+            EvaluateAnimationIndex(0);
         }
 
         /// <summary>
-        /// VRMをロード
-        /// </summary>
-        /// <param name="btn"></param>
-        void VRMLoad(Button_Base btn)
-        {
-            //ボタンを非表示にする
-            _btnVRMLoad.gameObject.SetActive(false);
-
-            //VRM選択画面を表示
-            _vrmSelectUI.InitPage(0);
-            _menuManager.PlayOneShot(SoundType.BTN_CLICK);
-        }
-        /// <summary>
-        /// VRM設定用画面を開く
+        /// VRM設定用画面を開く TODO:作り直す
         /// </summary>
         /// <param name="btn"></param>
         void VRMSetting(Button_Base btn)
         {
-            var portalChara = _timeline.BindCharaMap[TimelineController.PORTAL_INDEX];
-            if (portalChara && portalChara.charaInfoData.formatType == CharaInfoData.FORMATTYPE.VRM)
-            {
-                //コピーをVRM設定画面に渡す
-                _vrmSelectUI.VRMEditing(portalChara);
-                //マニュアル開始
-                _timeline.TimelineManualMode().Forget();
-            }
-            _menuManager.PlayOneShot(SoundType.BTN_CLICK);
+            //var portalChara = _timeline.BindCharaMap[TimelineController.PORTAL_INDEX];
+            //if (portalChara && portalChara.charaInfoData.formatType == CharaInfoData.FORMATTYPE.VRM)
+            //{
+            //    //コピーをVRM設定画面に渡す
+            //    _vrmSelectUI.VRMEditing(portalChara);
+            //    //マニュアル開始
+            //    var dummy = new CancellationToken();
+            //    _playableMusicService.ManualMode(dummy).Forget();
+            //}
+            //_menuManager.PlayOneShot(SoundType.BTN_CLICK);
         }
 
         /// <summary>
@@ -430,28 +541,23 @@ namespace UniLiveViewer.Menu
         /// <param name="btn"></param>
         void DeleteModel(Button_Base btn)
         {
-            if (btn == _btnVRMDelete && _timeline.GetCharacterInPortal)
-            {
-                var portalChara = _timeline.BindCharaMap[TimelineController.PORTAL_INDEX];
-                if (portalChara.charaInfoData.formatType != CharaInfoData.FORMATTYPE.VRM) return;
+            _actorEntityManagerService.DeleteVRM(_vrmIndex.Value);
+            EvaluateActorIndex(-1);
 
-                var id = portalChara.charaInfoData.vrmID;
-                //フィールド上に存在すれば削除
-                _timeline.DeletebindAsset_CleanUp(id);
-                //ポータル上のVRMを削除する
-                _generatorPortal.DeleteCurrenVRM();
-                //Prefabから削除
-                _vrmSelectUI.ClearVRMPrefab(id);
-
-                //未使用アセット削除
-                Resources.UnloadUnusedAssets();
-            }
-            else if (btn == _btnDeleteAll)
+            UniTask.Void(async () =>
             {
-                //フィールド上を一掃
-                _timeline.DeletebindAsset_FieldAll();
-            }
-            _menuManager.PlayOneShot(SoundType.BTN_CLICK);
+                await UniTask.Delay(1000);
+                _ = Resources.UnloadUnusedAssets();//明示的に消しておく
+            });
+        }
+
+        /// <summary>
+        /// フィールド一掃
+        /// </summary>
+        void DeleteAll(Button_Base btn)
+        {
+            var message = new AllActorOperationMessage(ActorState.FIELD, ActorCommand.DELETE);
+            _allPublisher.Publish(message);
         }
 
         /// <summary>
@@ -462,129 +568,27 @@ namespace UniLiveViewer.Menu
         {
             if (btn == _btnFaceUpdate)
             {
-                //口モーフの更新を切り替える
-                _timeline.SetMouthUpdate(true, _btnFaceUpdate.isEnable);
+                if (!_actorEntityManagerService.TryGetCurrentInstaceID(out var instanceId)) return;
+                var command = _btnFaceUpdate.isEnable ? ActorCommand.FACILSYNC_ENEBLE : ActorCommand.FACILSYNC_DISABLE;
+                var message = new ActorOperationMessage(instanceId, command);
+                _publisher.Publish(message);
             }
-            else if (btn = _btnMouthUpdate)
+            else if (btn == _btnMouthUpdate)
             {
-                //口モーフの更新を切り替える
-                _timeline.SetMouthUpdate(false, _btnMouthUpdate.isEnable);
+                if (!_actorEntityManagerService.TryGetCurrentInstaceID(out var instanceId)) return;
+                var command = _btnMouthUpdate.isEnable ? ActorCommand.LIPSYNC_ENEBLE : ActorCommand.LIPSYNC_DISABLE;
+                var message = new ActorOperationMessage(instanceId, command);
+                _publisher.Publish(message);
             }
             _menuManager.PlayOneShot(SoundType.BTN_CLICK);
         }
 
-        /// <summary>
-        /// キャラを追加する
-        /// </summary>
-        async UniTaskVoid Add_FieldChara()
-        {
-            if (transform.root.gameObject.activeSelf)
-            {
-                textMeshs[2].text = $"{_fieldCharaCount}/{SystemInfo.MaxFieldChara}";
-                //負荷が高いので削除処理とフレームをずらす
-                await UniTask.Delay(250, cancellationToken: _cancellationToken);
-                //ポータルにキャラが存在していなければ生成しておく
-                if (!_timeline.GetCharacterInPortal) _generatorPortal.SetChara(0).Forget();
-            }
-        }
-
-        /// <summary>
-        /// キャラ情報を更新する
-        /// </summary>
-        void DrawCharaInfo()
-        {
-            if (_btnVRMLoad.gameObject.activeSelf) _btnVRMLoad.gameObject.SetActive(false);
-
-            var portalChara = _timeline.BindCharaMap[TimelineController.PORTAL_INDEX];
-            if (!portalChara) return;
-            if (!_generatorPortal.GetNowCharaName(out var charaName)) return;
-
-            //VRM選択画面を非表示(開いたまま別キャラは確認できない仕様)
-            _vrmSelectUI.UIShow(false);
-
-            textMeshs[0].text = charaName;
-            textMeshs[0].fontSize = textMeshs[0].text.FontSizeMatch(600, 30, 50);
-            textMeshs[2].text = $"{_fieldCharaCount}/{SystemInfo.MaxFieldChara}";
-
-            //スライダーの値を反映
-            portalChara.LookAt.inputWeight_Head = _sliderHeadLook.Value;
-            portalChara.LookAt.inputWeight_Eye = _sliderEyeLook.Value;
-
-            //モーフボタン初期化
-            if (portalChara.charaInfoData.formatType == CharaInfoData.FORMATTYPE.FBX)
-            {
-                if (_vrmOptionAnchor.gameObject.activeSelf) _vrmOptionAnchor.gameObject.SetActive(false);
-            }
-            else
-            {
-                if (!_vrmOptionAnchor.gameObject.activeSelf) _vrmOptionAnchor.gameObject.SetActive(true);
-                _btnFaceUpdate.isEnable = true;
-                _btnMouthUpdate.isEnable = true;
-            }
-        }
-
-        /// <summary>
-        /// アニメーション情報を更新する
-        /// </summary>
-        void DrawAnimeInfo()
-        {
-            //表示更新
-            textMeshs[1].text = _generatorPortal.GetNowAnimeInfo().viewName;
-            textMeshs[1].fontSize = textMeshs[1].text.FontSizeMatch(600, 30, 50);
-
-            //FBXモーション
-            if (_generatorPortal.GetNowAnimeInfo().formatType == DanceInfoData.FORMATTYPE.FBX)
-            {
-                //反転ボタンを表示
-                if (!_switchReverse.gameObject.activeSelf) _switchReverse.gameObject.SetActive(true);
-
-                //offsetの非表示
-                if (_offsetAnchor.gameObject.activeSelf) _offsetAnchor.gameObject.SetActive(false);
-
-                //offset更新
-                _sliderOffset.Value = 0;
-                textMeshs[3].text = $"{_sliderOffset.Value:0000}";
-
-                //LipSyncボタンを非表示
-                if (_btnJumpList[2].gameObject.activeSelf) _btnJumpList[2].gameObject.SetActive(false);
-            }
-            //VMDモーション
-            else if (_generatorPortal.GetNowAnimeInfo().formatType == DanceInfoData.FORMATTYPE.VMD)
-            {
-                //反転ボタンを消す
-                if (_switchReverse.gameObject.activeSelf) _switchReverse.gameObject.SetActive(false);
-
-                //offsetの表示
-                if (!_offsetAnchor.gameObject.activeSelf) _offsetAnchor.gameObject.SetActive(true);
-
-                //offset更新
-                _sliderOffset.Value = FileReadAndWriteUtility.GetMotionOffset[_generatorPortal.GetNowAnimeInfo().viewName];
-                textMeshs[3].text = $"{_sliderOffset.Value:0000}";
-
-                //LipSyncボタンを表示
-                if (!_btnJumpList[2].gameObject.activeSelf) _btnJumpList[2].gameObject.SetActive(true);
-            }
-        }
-
-        void DrawAnimePairInfo(string name)
-        {
-            textMeshs[4].text = name;
-            textMeshs[4].fontSize = textMeshs[4].text.FontSizeMatch(600, 25, 40);
-        }
-
         void DebugInput()
         {
-            if (Input.GetKeyDown(KeyCode.I)) _generatorPortal.SetChara(1).Forget();
-            if (Input.GetKeyDown(KeyCode.K)) _generatorPortal.SetAnimation(1).Forget();
-            if (Input.GetKeyDown(KeyCode.L))
-            {
-                //ボタンを非表示にする
-                _btnVRMLoad.gameObject.SetActive(false);
-
-                //VRM選択画面を表示
-                _vrmSelectUI.InitPage(0);
-            }
+            if (Input.GetKeyDown(KeyCode.I)) EvaluateActorIndex(1);
+            else if (Input.GetKeyDown(KeyCode.U)) EvaluateActorIndex(-1);
+            else if (Input.GetKeyDown(KeyCode.K)) EvaluateAnimationIndex(1);
+            else if (Input.GetKeyDown(KeyCode.J)) EvaluateAnimationIndex(-1);
         }
     }
-
 }

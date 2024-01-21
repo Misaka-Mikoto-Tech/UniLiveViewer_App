@@ -6,7 +6,6 @@ using UnityEngine;
 using VRM;
 using VRMShaders;
 
-
 namespace NanaCiel
 {
     /// <summary>

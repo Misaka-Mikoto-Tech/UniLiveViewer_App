@@ -23,7 +23,7 @@ namespace UniLiveViewer.Stage.Gymnasium
 
         Transform[] _targetBones;
         List<Transform> _targetList;
-        TimelineController _timeline;
+        PlayableBinderService _playableBinderService;
 
         /// <summary>
         /// hierarchy上の方にしたら多分container間に合わないので注意
@@ -34,7 +34,7 @@ namespace UniLiveViewer.Stage.Gymnasium
             _targetList = new List<Transform>();
 
             var container = LifetimeScope.Find<TimelineLifetimeScope>().Container;
-            _timeline = container.Resolve<TimelineController>();
+            _playableBinderService = container.Resolve<PlayableBinderService>();
         }
 
         void IStageLight.ChangeCount(int count)
@@ -49,11 +49,11 @@ namespace UniLiveViewer.Stage.Gymnasium
             _targetList.Clear();
             for (int i = 0; i < _targetBones.Length; i++)
             {
-                var portalChara = _timeline.BindCharaMap[i + 1];
-                if (!portalChara) _targetBones[i] = null;
+                var data = _playableBinderService.BindingData[i + 1];
+                if (data == null) _targetBones[i] = null;
                 else
                 {
-                    _targetBones[i] = portalChara.GetAnimator.GetBoneTransform(TargetHumanBodyBone);
+                    _targetBones[i] = data.ActorService.ActorEntity().Value.BoneMap[TargetHumanBodyBone];
                     _targetList.Add(_targetBones[i]);
                 }
             }

@@ -1,7 +1,7 @@
 ﻿using Cysharp.Threading.Tasks;
 using MessagePipe;
 using System;
-using UniLiveViewer.Kari;
+using UniLiveViewer.Timeline;
 using UniLiveViewer.Menu;
 using UniRx;
 using UnityEngine;
@@ -14,29 +14,25 @@ namespace UniLiveViewer.Stage.Gymnasium
     {
         readonly ConfigPage _configPage;
         readonly StageLightChangeService _changeService;
-        readonly ISubscriber<SummonedCount> _subscriber;
+        readonly PlayableBinderService _playableBinderService;
 
-        readonly CompositeDisposable _disposable;
+        readonly CompositeDisposable _disposable = new();
 
         [Inject]
         public StageLightPresenter(
             ConfigPage configPage,
-            ISubscriber<SummonedCount> subscriber,
-            StageLightChangeService changeService)
+            StageLightChangeService changeService,
+            PlayableBinderService playableBinderService)
         {
             _configPage = configPage;
-            _subscriber = subscriber;
+            _playableBinderService = playableBinderService;
             _changeService = changeService;
-
-            _disposable = new CompositeDisposable();
         }
 
         void IStartable.Start()
         {
-            Debug.Log("Trace: StageLightPresenter.Start");
-
-            _subscriber
-                .Subscribe(x => _changeService.OnChangeSummonedCount(x.Value))
+            _playableBinderService.StageActorCount
+                .Subscribe(_changeService.OnChangeSummonedCount)
                 .AddTo(_disposable);
 
             _configPage.StageLightIsWhiteAsObservable
@@ -45,8 +41,6 @@ namespace UniLiveViewer.Stage.Gymnasium
             _configPage.StageLightIndexAsObservable
                 .Subscribe(_changeService.OnChangeStageLight)
                 .AddTo(_disposable);
-
-            Debug.Log("Trace: StageLightPresenter.Start");
         }
 
         void ITickable.Tick()

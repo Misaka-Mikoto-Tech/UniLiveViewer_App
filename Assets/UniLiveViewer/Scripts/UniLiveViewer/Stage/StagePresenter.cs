@@ -11,7 +11,7 @@ namespace UniLiveViewer.Stage
         readonly FileAccessManager _fileAccessManager;
         readonly BlackoutCurtain _blackoutCurtain;
 
-        readonly CompositeDisposable _disposables;
+        readonly CompositeDisposable _disposables = new();
 
         [Inject]
         public StagePresenter(
@@ -20,7 +20,6 @@ namespace UniLiveViewer.Stage
         {
             _fileAccessManager = fileAccessManager;
             _blackoutCurtain = blackoutCurtain;
-            _disposables = new CompositeDisposable();
         }
 
         void IStartable.Start()

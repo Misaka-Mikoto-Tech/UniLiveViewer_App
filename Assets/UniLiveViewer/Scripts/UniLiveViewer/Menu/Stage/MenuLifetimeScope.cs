@@ -1,8 +1,7 @@
-﻿using UniLiveViewer.Stage;
+﻿using MessagePipe;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
-using VRM.FirstPersonSample;
 
 namespace UniLiveViewer.Menu
 {
@@ -17,34 +16,41 @@ namespace UniLiveViewer.Menu
 
         [Header("その他")]
         [SerializeField] MeneRoot _menuRoot;
-        [SerializeField] GeneratorPortal _generatorPortal;
-        [SerializeField] VRMSwitchController _vrmSwitchController;
-        [SerializeField] Transform _thumbnailRoot;
         [SerializeField] JumpList _jumpList;
-        [SerializeField] VRMRuntimeLoader_Custom _vrmRuntimeLoader_Custom;
+        [SerializeField] VRMSwitchController _vrmSwitchController;
+        [SerializeField] AudioSourceService _audioSourceService;
 
         protected override void Configure(IContainerBuilder builder)
         {
-            builder.Register<ThumbnailController>(Lifetime.Singleton);
+            var options = builder.RegisterMessagePipe();
+            builder.RegisterMessageBroker<VRMMenuShowMessage>(options);
 
-            builder.RegisterComponent<MeneRoot>(_menuRoot);
-            builder.RegisterComponent<Transform>(_thumbnailRoot);
+            builder.RegisterComponent(_vrmSwitchController);
+            builder.RegisterComponent(_audioSourceService);
+
+            ActorPageConfigure(builder);
 
             builder.RegisterComponent(GetComponent<MenuManager>());
 
-            builder.RegisterComponent(_characterPage);
+            builder.RegisterComponent<MeneRoot>(_menuRoot);
             builder.RegisterComponent(_audioPlaybackPage);
             builder.RegisterComponent(_itemPage);
             builder.RegisterComponent(_configPage);
-
-            builder.RegisterComponent(_jumpList);
-            builder.RegisterComponent(_vrmSwitchController);
-            builder.RegisterComponent(_vrmRuntimeLoader_Custom).As<IVRMLoaderUI>();
-            builder.RegisterComponent(_generatorPortal);
-
-            builder.RegisterEntryPoint<VRMPresenter>();
-            builder.RegisterEntryPoint<ThumbnailPresenter>();
             builder.RegisterEntryPoint<MainMenuPresenter>();
+        }
+
+        /// <summary>
+        /// 理想はページごとにLS分けたい
+        /// </summary>
+        /// <param name="builder"></param>
+        void ActorPageConfigure(IContainerBuilder builder)
+        {
+            builder.RegisterComponent(_characterPage);
+            builder.RegisterComponent(_jumpList);
+            builder.Register<ActorEntityFactory>(Lifetime.Singleton);
+            builder.Register<ActorRegisterService>(Lifetime.Singleton);
+            builder.Register<ActorEntityManagerService>(Lifetime.Singleton);
+            builder.RegisterEntryPoint<ActorPresenter>();
         }
     }
 }

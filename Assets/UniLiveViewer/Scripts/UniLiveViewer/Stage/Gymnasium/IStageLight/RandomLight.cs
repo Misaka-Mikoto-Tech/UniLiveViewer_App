@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace UniLiveViewer.Stage.Gymnasium
 {
+    /// <summary>
+    /// sharedMaterial事故るから微妙かも..
+    /// </summary>
     public class RandomLight : MonoBehaviour, IStageLight
     {
         const string PropertyName = "_TintColor";
@@ -31,7 +34,11 @@ namespace UniLiveViewer.Stage.Gymnasium
             {
                 if (_lights[i].gameObject.activeSelf) _lights[i].gameObject.SetActive(false);
             }
-            Update(_cancellationToken).Forget();
+        }
+
+        void OnEnable()
+        {
+            UpdateAsyc(_cancellationToken).Forget();
         }
 
         void IStageLight.ChangeCount(int count)
@@ -55,9 +62,9 @@ namespace UniLiveViewer.Stage.Gymnasium
             // 何もしない
         }
 
-        async UniTask Update(CancellationToken token)
+        async UniTask UpdateAsyc(CancellationToken token)
         {
-            while (gameObject)
+            while (gameObject.activeSelf)
             {
                 await UniTask.Delay(_intervalTime, cancellationToken: token);
                 var index = Random.Range(0, _lights.Length);

@@ -1,4 +1,5 @@
-﻿using UniLiveViewer.OVRCustom;
+﻿using UniLiveViewer.Menu;
+using UniLiveViewer.OVRCustom;
 using UnityEngine;
 using VContainer;
 
@@ -14,10 +15,10 @@ namespace UniLiveViewer.Player
         CharacterCameraConstraint_Custom _characterCameraConstraintCustom;
 
         float _playerHeight = 0;
-        public float PlayerHeight 
-        { 
+        public float PlayerHeight
+        {
             get { return _playerHeight; }
-            set 
+            set
             {
                 _playerHeight = Mathf.Clamp(value, 0, 2.0f);
                 _characterCameraConstraintCustom.HeightOffset = _playerHeight;
@@ -28,7 +29,7 @@ namespace UniLiveViewer.Player
         Transform _lookTarget;
 
         [Inject]
-        void Construct(CharacterCameraConstraint_Custom characterCameraConstraintCustom, Camera camera)
+        public void Construct(CharacterCameraConstraint_Custom characterCameraConstraintCustom, Camera camera)
         {
             _lookTarget = camera.transform;
             _characterCameraConstraintCustom = characterCameraConstraintCustom;
@@ -54,10 +55,16 @@ namespace UniLiveViewer.Player
             }
         }
 
+        public void OnChangeActorSize(float v)
+        {
+            handUI_CharaAdjustment[0].textMesh.text = $"{v:0.00}";
+            handUI_CharaAdjustment[1].textMesh.text = $"{v:0.00}";
+        }
+
         void LateUpdate()
         {
             //表示中は全てカメラに向く
-            if(handUI_PlayerHeight.Show)
+            if (handUI_PlayerHeight.Show)
             {
                 handUI_PlayerHeight.instance.transform.LookAt(_lookTarget);
             }
@@ -95,7 +102,7 @@ namespace UniLiveViewer.Player
             if (handUI_PlayerHeight.Show) return true;
             for (int i = 0; i < handUI_CharaAdjustment.Length; i++)
             {
-                if(handUI_CharaAdjustment[i].Show) return true;
+                if (handUI_CharaAdjustment[i].Show) return true;
             }
             for (int i = 0; i < handUI_ItemMatSelecter.Length; i++)
             {
@@ -136,10 +143,10 @@ namespace UniLiveViewer.Player
         public bool Show
         {
             get { return isShow; }
-            set 
+            set
             {
                 isShow = value;
-                if(instance.activeSelf != isShow) instance.SetActive(isShow);
+                if (instance.activeSelf != isShow) instance.SetActive(isShow);
             }
         }
     }

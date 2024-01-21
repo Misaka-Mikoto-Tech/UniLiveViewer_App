@@ -33,7 +33,7 @@ namespace UniLiveViewer.Menu
         }
 
         [Inject]
-        void Construct(SceneChangeService sceneChangeService, OVRScreenFade ovrScreenFade)
+        public void Construct(SceneChangeService sceneChangeService, OVRScreenFade ovrScreenFade)
         {
             _sceneChangeService = sceneChangeService;
             _ovrScreenFade = ovrScreenFade;
@@ -46,7 +46,7 @@ namespace UniLiveViewer.Menu
                 _languageButton[i].onTrigger += (btn) => OnChangeLanguage(btn, _cancellationToken).Forget();
             }
 
-            if (FileReadAndWriteUtility.UserProfile.LanguageCode == (int)USE_LANGUAGE.NULL)
+            if (FileReadAndWriteUtility.UserProfile.LanguageCode == (int)LanguageType.NULL)
             {
                 //初回
                 _uiRoot.gameObject.SetActive(true);
@@ -67,7 +67,7 @@ namespace UniLiveViewer.Menu
 
         async UniTask OnChangeLanguage(Button_Base btn, CancellationToken cancellationToken)
         {
-            var code = btn.name.Contains("_JP") ? USE_LANGUAGE.JP : USE_LANGUAGE.EN;
+            var code = btn.name.Contains("_JP") ? LanguageType.JP : LanguageType.EN;
             FileReadAndWriteUtility.UserProfile.LanguageCode = (int)code;
             FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
 

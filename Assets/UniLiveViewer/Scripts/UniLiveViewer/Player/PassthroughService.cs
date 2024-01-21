@@ -1,6 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.Rendering.Universal;
 using VContainer;
 
 namespace UniLiveViewer.Player
@@ -10,9 +9,14 @@ namespace UniLiveViewer.Player
     {
         OVRManager _ovrManager;
         Camera _camera;
+        /// <summary>
+        /// パススルーとポスプロ共存できないので無効化しておく
+        /// </summary>
+        UniversalAdditionalCameraData _cameraData;
+        bool _cachePostProcessing;
 
         [Inject]
-        void Construct(OVRManager ovrManager, Camera camera)
+        public void Construct(OVRManager ovrManager, Camera camera)
         {
             _camera = camera;
             _ovrManager = ovrManager;
@@ -20,6 +24,8 @@ namespace UniLiveViewer.Player
 
         public void OnStart()
         {
+            _cameraData = _camera.GetComponent<UniversalAdditionalCameraData>();
+            _cachePostProcessing = _cameraData.renderPostProcessing;
             Switching(false);
         }
 
@@ -28,6 +34,7 @@ namespace UniLiveViewer.Player
             if (isEnable)
             {
                 _camera.clearFlags = CameraClearFlags.Color;
+                _cameraData.renderPostProcessing = false;
                 _ovrManager.isInsightPassthroughEnabled = true;
             }
             else
@@ -40,6 +47,7 @@ namespace UniLiveViewer.Player
                 }
 
                 _camera.clearFlags = CameraClearFlags.Skybox;
+                _cameraData.renderPostProcessing = _cachePostProcessing;
                 _ovrManager.isInsightPassthroughEnabled = false;
             }
         }

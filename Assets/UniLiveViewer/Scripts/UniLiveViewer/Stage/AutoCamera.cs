@@ -7,7 +7,7 @@ using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
-namespace UniLiveViewer
+namespace UniLiveViewer.Stage
 {
     /// <summary>
     /// TODO: LS化する
@@ -31,18 +31,18 @@ namespace UniLiveViewer
         [SerializeField] Camera[] _camera;
         [SerializeField] SpriteRenderer[] _spr;
         CancellationToken _cancellationToken;
-        TimelineController _timeline;
+        PlayableBinderService _playableBinderService;
 
         void Start()
         {
             // NOTE: globalにchara[]取れないと厳しいので配下にするか、ユニーク設定はinterface
             var container = LifetimeScope.Find<TimelineLifetimeScope>().Container;
-            _timeline = container.Resolve<TimelineController>();
+            _playableBinderService = container.Resolve<PlayableBinderService>();
             _cancellationToken = this.GetCancellationTokenOnDestroy();
 
             if (switchType != SWITCHTYPE.ALL)
             {
-                _timeline.FieldCharacterCount
+                _playableBinderService.BindingToAsObservable
                     .Subscribe(_ => OnUpdate())
                     .AddTo(this);
             }
@@ -61,14 +61,15 @@ namespace UniLiveViewer
         void OnUpdate()
         {
             if (target) return;
-            for (int i = 0; i < _timeline.BindCharaMap.Count; i++)
+            for (int i = 0; i < _playableBinderService.BindingData.Count; i++)
             {
-                if (i == TimelineController.PORTAL_INDEX) continue;
-                var chara = _timeline.BindCharaMap[i];
-                if (chara)
+                if (i == TimelineConstants.PortalIndex) continue;
+                var data = _playableBinderService.BindingData[i];
+                if (data != null)
                 {
-                    target = chara.LookAt.test.virtualHead;
-                    baseTransform = chara.LookAt.test.virtualChest;
+                    var lookAt = data.ActorService.ActorEntity().Value.LookAtBase;
+                    target = lookAt.Test.virtualHead;
+                    baseTransform = lookAt.Test.virtualChest;
                     break;
                 }
             }

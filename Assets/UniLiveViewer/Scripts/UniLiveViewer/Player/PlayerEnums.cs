@@ -1,5 +1,5 @@
 ﻿
-namespace UniLiveViewer
+namespace UniLiveViewer.Player
 {
     public class PlayerEnums
     {

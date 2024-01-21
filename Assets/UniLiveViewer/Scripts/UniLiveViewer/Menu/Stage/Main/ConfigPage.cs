@@ -12,6 +12,9 @@ using VContainer;
 
 namespace UniLiveViewer.Menu
 {
+    /// <summary>
+    /// TODO: いつか整理
+    /// </summary>
     public class ConfigPage : MonoBehaviour
     {
         public static bool isSmoothVMD = false;
@@ -45,10 +48,7 @@ namespace UniLiveViewer.Menu
         [SerializeField] Material material_OutLine;
         [SerializeField] UniversalRendererData frd;
 
-        TimelineController _timeline;
-        QuasiShadowSetting _quasiShadowSetting;
         PassthroughService _passthroughService;
-        SceneChangeService _sceneChangeService;
 
         public IObservable<int> StageLightIndexAsObservable => _stageLightIndex;
         Subject<int> _stageLightIndex = new Subject<int>();
@@ -59,13 +59,17 @@ namespace UniLiveViewer.Menu
         BackGroundController _backGroundCon;
         CancellationToken _cancellation;
 
+        PlayableMusicService _playableMusicService;
+        QuasiShadowSetting _quasiShadowSetting;
+        SceneChangeService _sceneChangeService;
+
         [Inject]
-        void Construct(
-            TimelineController timelineController,
+        public void Construct(
+            PlayableMusicService playableMusicService,
             QuasiShadowSetting quasiShadowSetting,
             SceneChangeService sceneChangeService)
         {
-            _timeline = timelineController;
+            _playableMusicService = playableMusicService;
             _quasiShadowSetting = quasiShadowSetting;
             _sceneChangeService = sceneChangeService;
         }
@@ -115,7 +119,6 @@ namespace UniLiveViewer.Menu
             Init().Forget();
         }
 
-        // Start is called before the first frame update
         void Start()
         {
             // Title分を除外で-1
@@ -290,7 +293,6 @@ namespace UniLiveViewer.Menu
             Update_FixedFoveated();
         }
 
-        // Update is called once per frame
         void Update()
         {
 #if UNITY_EDITOR
@@ -451,7 +453,7 @@ namespace UniLiveViewer.Menu
         {
             menuManager.PlayOneShot(SoundType.BTN_CLICK);
 
-            bool result = btnE[i].isEnable;
+            var result = btnE[i].isEnable;
             switch (i)
             {
                 //LED
@@ -528,7 +530,7 @@ namespace UniLiveViewer.Menu
                     FileReadAndWriteUtility.UserProfile.scene_gym_whitelight = btnE[0].isEnable;
                     break;
                 case 1:
-                    _quasiShadowSetting.SetStepSE(btnE[1].isEnable);
+                    FootstepAudio.SetEnable(btnE[1].isEnable);
                     FileReadAndWriteUtility.UserProfile.StepSE = btnE[1].isEnable;
                     break;
             }
@@ -554,12 +556,11 @@ namespace UniLiveViewer.Menu
         /// <returns></returns>
         async UniTask SceneChangeAsync(string sceneName, CancellationToken cancellation)
         {
-            await UniTask.Delay(100, cancellationToken: cancellation);
-
-            await BlackoutCurtain.instance.FadeoutAsync(cancellation);
-
             // 音が割れるので止める
-            _timeline.TimelineManualMode().Forget();
+            await _playableMusicService.ManualModeAsync(cancellation);
+
+            await UniTask.Delay(100, cancellationToken: cancellation);
+            await BlackoutCurtain.instance.FadeoutAsync(cancellation);
 
             //UIが透けて見えるので隠す
             menuManager.gameObject.SetActive(false);

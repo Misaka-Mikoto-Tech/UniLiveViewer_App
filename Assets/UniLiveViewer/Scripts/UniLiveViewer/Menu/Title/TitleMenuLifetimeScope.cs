@@ -17,9 +17,8 @@ namespace UniLiveViewer.Menu
             builder.RegisterComponent(_spriteRendererSwitcher);
             builder.RegisterComponent(_appVersion);
             builder.RegisterComponent(_titleMenuService);
-            
+
             builder.RegisterEntryPoint<TitleMenuPresenter>();
         }
     }
-
 }

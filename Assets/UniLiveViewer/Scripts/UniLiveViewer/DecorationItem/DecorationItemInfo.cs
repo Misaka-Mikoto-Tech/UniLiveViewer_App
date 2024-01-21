@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using UniLiveViewer.OVRCustom;
+﻿using UniLiveViewer.OVRCustom;
 using UnityEngine;
 
 namespace UniLiveViewer
 {
+    [RequireComponent(typeof(OVRGrabbable_Custom))]
     public class DecorationItemInfo : MonoBehaviour
     {
         public string[] ItemName => itemName;
@@ -13,13 +13,22 @@ namespace UniLiveViewer
         [SerializeField] RenderInfo[] renderInfo = new RenderInfo[0];
 
         [SerializeField] string[] flavorText = new string[2] { "何の変哲もないアイテム", "Unremarkable item" };//未使用
-        OVRGrabbable_Custom ovrGrab;
-        public bool isAttached;
+        OVRGrabbable_Custom _ovrGrabbableCustom;
+
+        MeshRenderer _meshRenderer;
+        bool _isAttached;
+
+
+        void Awake()
+        {
+            _ovrGrabbableCustom = GetComponent<OVRGrabbable_Custom>();
+            _meshRenderer = transform.GetComponent<MeshRenderer>();
+        }
 
         /// <summary>
         /// 指定テクスチャに変更
         /// </summary>
-        public void SetTexture(int renderInfoIndex,int textureCurrent)
+        public void SetTexture(int renderInfoIndex, int textureCurrent)
         {
             int i = renderInfoIndex;
             int matIndex = renderInfo[i].data.materialIndex;
@@ -27,29 +36,40 @@ namespace UniLiveViewer
 
             foreach (var renderer in renderInfo[i]._renderers)
             {
-                foreach (var shaderName in renderInfo[i].data.targetShaderName )
+                foreach (var shaderName in renderInfo[i].data.targetShaderName)
                 {
                     renderer.materials[matIndex].SetTexture(
-                        shaderName, 
+                        shaderName,
                         renderInfo[i].data.chooseableTexture[renderInfo[i].data.textureCurrent]);
                 }
             }
         }
 
+        public void OnGrabbed(Transform parent)
+        {
+            transform.parent = parent;
+            _meshRenderer.enabled = true;
+            _isAttached = false;
+        }
+
+        /// <summary>
+        /// TODO: これをここでやってるのもそもそも変だがLS化しないと厳しい
+        /// </summary>
+        /// <returns></returns>
         public bool TryAttachment()
         {
-            if (!ovrGrab) ovrGrab = GetComponent<OVRGrabbable_Custom>();
-            if(!ovrGrab || !ovrGrab.hitCollider) return false;
+            var collider = _ovrGrabbableCustom.HitCollider;
+            if (!collider) return false;
             //アタッチする
-            ovrGrab.transform.parent = ovrGrab.hitCollider.transform;
-            transform.GetComponent<MeshRenderer>().enabled = false;
-            isAttached = true;
+            _ovrGrabbableCustom.transform.parent = collider.transform;
+            _meshRenderer.enabled = false;
+            _isAttached = true;
             return true;
         }
 
         void OnDestroy()
         {
-            if (isAttached) return;
+            if (_isAttached) return;
 
             for (int i = 0; i < renderInfo.Length; i++)
             {

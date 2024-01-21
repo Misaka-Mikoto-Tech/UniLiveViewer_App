@@ -1,28 +1,27 @@
 ﻿using TunnelEffect;
 using UnityEngine;
 
-namespace UniLiveViewer
+namespace UniLiveViewer.Stage
 {
     public class BackGroundController : MonoBehaviour
     {
-        [SerializeField] private int currntMaster = 0;
-        [SerializeField] private int currntCubemap = 0;
-        [SerializeField] private int currntHole = 0;
-        [SerializeField] private int currntParticle = 0;
+        [SerializeField] int currntMaster = 0;
+        [SerializeField] int currntCubemap = 0;
+        [SerializeField] int currntHole = 0;
+        [SerializeField] int currntParticle = 0;
 
         [Header("＜キューブマップ＞")]
-        [SerializeField] private Material cubemap_Mat = null;
+        [SerializeField] Material cubemap_Mat = null;
         public Material GetCubemapMat() { return cubemap_Mat; }
-        [SerializeField] private Cubemap[] cubemapList = null;
+        [SerializeField] Cubemap[] cubemapList = null;
 
         [Header("＜トンネル＞")]
-        [SerializeField] private TunnelFX2 tunnelAnchor;
-        [SerializeField] private int[] tunnelList = new int[0];
+        [SerializeField] TunnelFX2 tunnelAnchor;
+        [SerializeField] int[] tunnelList = new int[0];
 
         [Header("＜パーティクル＞")]
-        [SerializeField] private Transform[] particleAnchors = new Transform[0];
+        [SerializeField] Transform[] particleAnchors = new Transform[0];
 
-        // Start is called before the first frame update
         void Start()
         {
             string str;
