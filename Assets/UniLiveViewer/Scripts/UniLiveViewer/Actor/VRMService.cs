@@ -17,7 +17,7 @@ namespace UniLiveViewer.Actor
 
         /// <summary>
         /// 簡易版APIでロード
-        /// VRM1.0だとさらに完結に、旧APIはエラー出るので避ける
+        /// VRM1.0だとさらに完結に
         /// </summary>
         /// <param name="path"></param>
         public async UniTask<RuntimeGltfInstance> LoadAsync(string path, CancellationToken cancellation)
@@ -27,7 +27,7 @@ namespace UniLiveViewer.Actor
                 if (string.IsNullOrEmpty(path)) return null;
                 if (!File.Exists(path))
                 {
-                    Debug.LogWarning("指定ファイルが存在しない");
+                    Debug.LogWarning("Specified file does not exist");
                     return null;
                 }
                 var bytes = File.ReadAllBytes(path);
@@ -36,14 +36,19 @@ namespace UniLiveViewer.Actor
                 await UniTask.Yield(cancellation);// 負荷分散
                 return instance;
             }
+            catch (NotVrm0Exception)
+            {
+                Debug.LogWarning("1.0無理だよぉ...");
+                throw;
+            }
             catch (OperationCanceledException)
             {
-                Debug.Log("キャンセルされた");
+                Debug.LogWarning("VRM load canceled");
                 throw;
             }
             catch
             {
-                Debug.Log("VRM Loadエラー");
+                Debug.LogWarning("vrm some kind of error");
                 throw;
             }
         }

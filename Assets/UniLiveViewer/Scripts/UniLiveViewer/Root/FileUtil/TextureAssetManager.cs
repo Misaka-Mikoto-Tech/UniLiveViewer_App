@@ -74,7 +74,7 @@ namespace UniLiveViewer
                     var path = Path.Combine(PathsInfo.GetFullPath_ThumbnailCache() + "/", $"{rawData[i]}.png");
                     File.WriteAllBytes(path, binary);
 #elif UNITY_ANDROID
-                    // NOTE: この処理Quesstキツイ
+                    // NOTE: この処理Quest1キツイ
                     //texture = TextureFormatter.Resize(texture);
 
                     //PNG保存

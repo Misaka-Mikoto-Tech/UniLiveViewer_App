@@ -147,13 +147,14 @@ namespace UniLiveViewer.Menu
 
             _sliderOffset.ValueUpdate += () =>
             {
-                var data = _playableBinderService.BindingData[TimelineConstants.PortalIndex];
-                if (data == null) return;
+                //var data = _playableBinderService.BindingData[TimelineConstants.PortalIndex];
+                //if (data == null) return;
 
-                var baseMotion = textMeshs[1].name;
+                var baseMotion = textMeshs[1].text;
+                var value = _sliderOffset.Value;
                 //オフセットを設定
-                FileReadAndWriteUtility.SetMotionOffset(baseMotion, (int)_sliderOffset.Value);
-                textMeshs[3].text = $"{_sliderOffset.Value:0000}";
+                FileReadAndWriteUtility.SetMotionOffset(baseMotion, (int)value);
+                textMeshs[3].text = $"{value:0000}";
             };
             _sliderOffset.UnControled += () => { FileReadAndWriteUtility.SaveMotionOffset(); };
             _offsetAnchor = _sliderOffset.transform.parent;

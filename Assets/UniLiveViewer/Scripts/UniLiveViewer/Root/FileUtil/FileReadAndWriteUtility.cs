@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -90,8 +90,7 @@ namespace UniLiveViewer
         /// </summary>
         public static void SaveMotionOffset()
         {
-            //書き込み
-            using (StreamWriter writer = new StreamWriter(PathOffset, false, System.Text.Encoding.UTF8))
+            using (var writer = new StreamWriter(PathOffset, false, System.Text.Encoding.UTF8))
             {
                 foreach (var e in _motionOffsetMap)
                 {

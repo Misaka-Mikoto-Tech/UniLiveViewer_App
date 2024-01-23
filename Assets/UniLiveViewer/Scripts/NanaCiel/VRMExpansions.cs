@@ -12,8 +12,7 @@ namespace NanaCiel
     {
         /// <summary>
         /// サムネイルのみ取得する
-        /// TODO: 旧APIだとコレクションエラー出るが解決法あった気がする(NativeArrayManager.cs:64-71)
-        /// あとは生パースでもしない限り速度誤差なのでとりまこれで
+        /// あとは直パースでもしない限り速度誤差なのでとりまこれで
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
@@ -24,22 +23,26 @@ namespace NanaCiel
 
             try
             {
-                var gltfData = new GlbFileParser(path).Parse();
-                var vrmData = new VRMData(gltfData);
-                var context = new VRMImporterContext(vrmData);
-
-                var meta = await context.ReadMetaAsync(new RuntimeOnlyAwaitCaller());
-                var texture = meta.Thumbnail;
-                return texture;
+                //https://indie-du.com/entry/2020/11/10/094145
+                using (var gltfData = new GlbFileParser(path).Parse())
+                using (var context = new VRMImporterContext(new VRMData(gltfData)))
+                {
+                    var meta = await context.ReadMetaAsync(new RuntimeOnlyAwaitCaller());
+                    var texture = meta.Thumbnail;
+                    return texture;
+                }
             }
             catch (NotVrm0Exception)
             {
-
+                Debug.LogWarning("1.0無理だよぉ...");
             }
             catch (System.OperationCanceledException)
             {
-                Debug.Log("vrmファイルからサムネイル抽出中に中断");
-                throw;
+                Debug.LogWarning("Thumbnail extraction canceled");
+            }
+            catch
+            {
+                Debug.LogWarning("vrm some kind of error");
             }
             return null;
         }
