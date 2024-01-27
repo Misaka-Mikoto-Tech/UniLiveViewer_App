@@ -25,12 +25,12 @@ namespace NanaCiel
             {
                 //https://indie-du.com/entry/2020/11/10/094145
                 using (var gltfData = new GlbFileParser(path).Parse())
-                using (var context = new VRMImporterContext(new VRMData(gltfData)))
                 {
+                    var context = new VRMImporterContext(new VRMData(gltfData));
                     var meta = await context.ReadMetaAsync(new RuntimeOnlyAwaitCaller());
                     var texture = meta.Thumbnail;
                     return texture;
-                }
+                }   
             }
             catch (NotVrm0Exception)
             {
