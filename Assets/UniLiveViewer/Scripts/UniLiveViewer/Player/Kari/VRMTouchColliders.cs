@@ -4,7 +4,7 @@ using VRM;
 namespace UniLiveViewer.Player
 {
     /// <summary>
-    /// 仮実装
+    /// VRM接触用のPlayerHandコライダー
     /// </summary>
     public class VRMTouchColliders : MonoBehaviour
     {

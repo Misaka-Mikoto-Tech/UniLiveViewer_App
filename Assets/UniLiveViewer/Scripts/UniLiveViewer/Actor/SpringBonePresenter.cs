@@ -1,15 +1,16 @@
-﻿using UniLiveViewer.Player;
+using System;
+using UniRx;
 using VContainer;
 using VContainer.Unity;
 
 namespace UniLiveViewer.Actor
 {
-    /// <summary>
-    /// TODO:ボーン触れるのVRMSpringBoneのまま改造だった、消しちゃった
-    /// </summary>
-    public class SpringBonePresenter : ITickable
+    public class SpringBonePresenter : IStartable, IDisposable
     {
+        CharaInfoData _charaInfoData;
+
         readonly IActorService _actorEntityService;
+        readonly CompositeDisposable _disposables = new();
 
         [Inject]
         public SpringBonePresenter(
@@ -18,27 +19,33 @@ namespace UniLiveViewer.Actor
             _actorEntityService = actorEntityService;
         }
 
-        void ITickable.Tick()
+        void IStartable.Start()
         {
-            if (_actorEntityService.ActorEntity().Value == null) return;
+            _actorEntityService.ActorEntity()
+                .Subscribe(OnChangeActorEntity).AddTo(_disposables);
+        }
+
+        void OnChangeActorEntity(ActorEntity actorEntity)
+        {
+            if (actorEntity == null) return;
 
             //揺れもの接触振動
-            var charaInfoData = _actorEntityService.ActorEntity().Value.CharaInfoData;
-            if (charaInfoData.ActorType != ActorType.VRM) return;
+            _charaInfoData = actorEntity.CharaInfoData;
+            foreach (var springBone in actorEntity.SpringBoneList)
+            {
+                springBone.OnHitLeftHand += OnHitLeftHand;
+                springBone.OnHitRightHand += OnHitRightHand;
+            }
+        }
 
-            //foreach (var springBone in _actorEntityService.ActorEntity().Value.SpringBoneList)
-            //{
-            //    if (springBone.isHit_Any == false) continue;
-            //    if (springBone.isLeft_Any)
-            //    {
-            //        ControllerVibration.Execute(OVRInput.Controller.LTouch, 1, charaInfoData.power, charaInfoData.time);
-            //    }
-            //    if (springBone.isRight_Any)
-            //    {
-            //        ControllerVibration.Execute(OVRInput.Controller.RTouch, 1, charaInfoData.power, charaInfoData.time);
-            //    }
-            //    break;
-            //}
+        void OnHitLeftHand()
+        {
+            ControllerVibration.Execute(OVRInput.Controller.LTouch, 1, _charaInfoData.power, _charaInfoData.time);
+        }
+
+        void OnHitRightHand()
+        {
+            ControllerVibration.Execute(OVRInput.Controller.RTouch, 1, _charaInfoData.power, _charaInfoData.time);
         }
 
         // TODO: 生成時とPrefab時に切り替えないといけないみたい、最終的に使うか微妙
@@ -48,6 +55,18 @@ namespace UniLiveViewer.Actor
             //{
             //    e.enabled = isEnabel;
             //}
+        }
+
+
+        void IDisposable.Dispose()
+        {
+            _disposables.Dispose();
+
+            foreach (var springBone in _actorEntityService.ActorEntity().Value.SpringBoneList)
+            {
+                springBone.OnHitLeftHand -= OnHitLeftHand;
+                springBone.OnHitRightHand -= OnHitRightHand;
+            }
         }
     }
 }

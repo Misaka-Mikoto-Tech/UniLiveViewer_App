@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using UniLiveViewer.Actor.LookAt;
+using UniLiveViewer.Player;
 using UnityEngine;
 using VRM;
 
@@ -38,7 +39,7 @@ namespace UniLiveViewer.Actor
         /// </summary>
         float _height;
 
-        public ActorEntity(Animator animator, CharaInfoData charaInfoData, VMDPlayer_Custom vmdPlayer)
+        public ActorEntity(Animator animator, CharaInfoData charaInfoData, VMDPlayer_Custom vmdPlayer, VRMTouchColliders touchCollider = null)
         {
             _animator = animator;
             _charaInfoData = charaInfoData;
@@ -83,10 +84,11 @@ namespace UniLiveViewer.Actor
                 {
                     //UV？知らない子ですね...
                 }
-
+                
                 var dummy = new CancellationToken();
                 SetupHeadLookAt(go, dummy).Forget();
-                SetupSpringBone();
+                _springBoneList = go.GetComponentsInChildren<VRMSpringBone>().ToList();
+                SetupSpringBone(touchCollider);
             }
         }
 
@@ -109,7 +111,7 @@ namespace UniLiveViewer.Actor
         /// <summary>
         /// VRM専用
         /// </summary>
-        void SetupSpringBone()
+        void SetupSpringBone(VRMTouchColliders touchCollider)
         {
             var colliderList = new List<VRMSpringBoneColliderGroup>();//統合用
             for (int i = 0; i < _springBoneList.Count; i++)
@@ -118,17 +120,14 @@ namespace UniLiveViewer.Actor
                 if (_springBoneList[i].ColliderGroups is VRMSpringBoneColliderGroup[] && _springBoneList[i].ColliderGroups.Length > 0)
                 {
                     colliderList.AddRange(_springBoneList[i].ColliderGroups);//既存コライダー
-                    //colliderList.AddRange(_touchCollider.colliders);//追加コライダー(PlayerHand)                                                                                                                                                                                                                        
+                    colliderList.AddRange(touchCollider.colliders);//追加コライダー(PlayerHand)                                                                                                                                                                                                                        
                     //リストから配列に戻す
                     _springBoneList[i].ColliderGroups = colliderList.ToArray();
                     colliderList.Clear();
-                    _springBoneList.Add(_springBoneList[i]);
                 }
                 else
                 {
-                    //そのまま追加
-                    //_springBoneList[i].ColliderGroups = _touchCollider.colliders;
-                    _springBoneList.Add(_springBoneList[i]);
+                    _springBoneList[i].ColliderGroups = touchCollider.colliders;
                 }
             }
         }

@@ -6,6 +6,7 @@ using System.Threading;
 using UniGLTF;
 using UniLiveViewer.Actor.AttachPoint;
 using UniLiveViewer.Actor.Expression;
+using UniLiveViewer.Player;
 using UniLiveViewer.Timeline;
 using UniRx;
 using UnityEngine;
@@ -144,7 +145,9 @@ namespace UniLiveViewer.Actor
             var vmdPlayer = go.AddComponent<VMDPlayer_Custom>();
             vmdPlayer.Initialize(_charaInfoData, _faceSync, _lipSync);
 
-            _actorEntity.Value = new ActorEntity(animator, _charaInfoData, vmdPlayer);
+            var lifetimeScope = LifetimeScope.FindObjectOfType<PlayerLifetimeScope>();//ﾕﾙｼﾃ
+            var colliders = lifetimeScope.Container.Resolve<VRMTouchColliders>();
+            _actorEntity.Value = new ActorEntity(animator, _charaInfoData, vmdPlayer, colliders);
 
             await _attachPointService.SetupAsync(_actorEntity.Value.BoneMap, cancellation);
 
