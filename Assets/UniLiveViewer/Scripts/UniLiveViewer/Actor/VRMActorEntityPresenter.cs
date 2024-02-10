@@ -25,14 +25,14 @@ namespace UniLiveViewer.Actor
 
         [Inject]
         public VRMActorEntityPresenter(
-            ISubscriber<AllActorOperationMessage> allSubscriber,
+            ISubscriber<AllActorOperationMessage> allSubScriber,
             ISubscriber<ActorOperationMessage> subscriber,
             ISubscriber<ActorResizeMessage> resizeSubscriber,
             IActorEntity actorEntity,
             InstanceId instanceId,
             GeneratorPortalAnchor firstParent)
         {
-            _allSubscriber = allSubscriber;
+            _allSubscriber = allSubScriber;
             _subscriber = subscriber;
             _resizeSubscriber = resizeSubscriber;
             _actorEntity = actorEntity;

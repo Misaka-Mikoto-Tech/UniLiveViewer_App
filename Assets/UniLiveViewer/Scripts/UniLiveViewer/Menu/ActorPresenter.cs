@@ -12,6 +12,8 @@ namespace UniLiveViewer.Menu
 {
     /// <summary>
     /// Actorページ用
+    /// 
+    /// NOTE: ロジック多くて既に悪い..
     /// </summary>
     public class ActorPresenter : IAsyncStartable, IDisposable
     {
@@ -19,7 +21,13 @@ namespace UniLiveViewer.Menu
         CurrentMode _animationCurrentMode = CurrentMode.PRESET;
         bool _isReverse;
         int _clipIndex = 0;
+        /// <summary>
+        /// 完了するまでCurrent操作無効化
+        /// TODO: 未対応
+        /// </summary>
+        bool _isVRMLoading;
 
+        readonly ISubscriber<VRMLoadResultData> _vrmLoadSubscriber;
         readonly IPublisher<VRMMenuShowMessage> _publisher;
         readonly IPublisher<ActorAnimationMessage> _animationPublisher;
         readonly VMDData _vmdData;
@@ -36,6 +44,7 @@ namespace UniLiveViewer.Menu
 
         [Inject]
         public ActorPresenter(
+            ISubscriber<VRMLoadResultData> vrmLoadSubscriber,
             IPublisher<VRMMenuShowMessage> publisher,
             IPublisher<ActorAnimationMessage> animationPublisher,
             VMDData vmdData,
@@ -44,6 +53,7 @@ namespace UniLiveViewer.Menu
             JumpList jumpList,
             PlayableBinderService playableBinderService)
         {
+            _vrmLoadSubscriber = vrmLoadSubscriber;
             _publisher = publisher;
             _animationPublisher = animationPublisher;
             _vmdData = vmdData;
@@ -55,6 +65,9 @@ namespace UniLiveViewer.Menu
 
         async UniTask IAsyncStartable.StartAsync(CancellationToken cancellation)
         {
+            _vrmLoadSubscriber
+                .Subscribe(_ => _isVRMLoading = false).AddTo(_disposables);
+
             // 購読より先に
             _actorEntityManager.RegisterFBX();
             //VRMロード枠用にnull登録

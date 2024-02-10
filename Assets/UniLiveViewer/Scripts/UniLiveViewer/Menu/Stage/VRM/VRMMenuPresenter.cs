@@ -11,7 +11,6 @@ namespace UniLiveViewer.Menu
 {
     public class VRMMenuPresenter : IAsyncStartable, IDisposable
     {
-        readonly ISubscriber<VRMLoadResultData> _vrmLoadsubscriber;
         readonly ISubscriber<VRMMenuShowMessage> _menuShowsubScriber;
         readonly MenuRootService _menuRootService;
         readonly ThumbnailService _thumbnailService;
@@ -21,13 +20,11 @@ namespace UniLiveViewer.Menu
 
         [Inject]
         public VRMMenuPresenter(
-            ISubscriber<VRMLoadResultData> vrmLoadsubscriber,
             ISubscriber<VRMMenuShowMessage> menuShowsubScriber,
             MenuRootService menuRootService,
             ThumbnailService thumbnailService,
             CharacterPage characterPage)
         {
-            _vrmLoadsubscriber = vrmLoadsubscriber;
             _menuShowsubScriber = menuShowsubScriber;
             _menuRootService = menuRootService;
             _thumbnailService = thumbnailService;
@@ -36,13 +33,6 @@ namespace UniLiveViewer.Menu
 
         async UniTask IAsyncStartable.StartAsync(CancellationToken cancellation)
         {
-            // TODO: そもそもいるか微妙
-            _vrmLoadsubscriber
-                .Subscribe(x =>
-                {
-                    //_switchController.OnVRMLoadEnd(x.Value);
-                }).AddTo(_disposables);
-
             _menuShowsubScriber
                 .Subscribe(x =>
                 {

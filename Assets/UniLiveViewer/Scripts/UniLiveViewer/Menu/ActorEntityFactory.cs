@@ -14,12 +14,12 @@ namespace UniLiveViewer.Menu
     /// </summary>
     public class ActorEntityFactory
     {
+        int _instanceId = 0;
+
         /// <summary>
         /// 見えないところで生成
         /// </summary>
         readonly Vector3 InitPos = new Vector3(0, 100, 0);
-
-        int _instanceId = 0;
 
         readonly ActorLifetimeScopeSetting _setting;
 

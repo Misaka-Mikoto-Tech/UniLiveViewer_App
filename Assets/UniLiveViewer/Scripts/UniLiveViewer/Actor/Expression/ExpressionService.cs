@@ -62,6 +62,12 @@ namespace UniLiveViewer.Actor.Expression
             _lipSync.MorphReset();
         }
 
+        public void MorphReset()
+        {
+            _facialSync.MorphReset();
+            _lipSync.MorphReset();
+        }
+
         public void OnLateTick()
         {
             if (Time.timeScale == 0) return; //ポーズ中なら以下処理しない

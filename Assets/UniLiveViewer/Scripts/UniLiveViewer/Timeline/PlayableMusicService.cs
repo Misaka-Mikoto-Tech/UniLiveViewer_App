@@ -109,14 +109,6 @@ namespace UniLiveViewer.Timeline
         /// </summary>
         public async UniTask PlayAsync(CancellationToken cancellation)
         {
-            //表情系をリセットしておく
-            //foreach (var chara in _bindCharaMap)
-            //{
-            //    if (chara.Value is null) continue;
-            //    chara.Value.FacialSync.MorphReset();
-            //    chara.Value.LipSync.MorphReset();
-            //}
-
             //モードをマニュアルからゲームタイマーへ
             if (_playableDirector.timeUpdateMode == DirectorUpdateMode.Manual)
             {
@@ -241,43 +233,5 @@ namespace UniLiveViewer.Timeline
             _playableDirector.ResumeTimeline();
             return newAudioClip.name;
         }
-
-        /// <summary>
-        /// TODO: 要確認
-        /// 
-        /// タイムラインの変更内容を強制的?に反映させる
-        /// AnimationClip変更だけ反映されないためリスタートが必要
-        /// </summary>
-        //void TimelineReStart()
-        //{
-        //    //再生時間の記録
-        //    var keepTime = _playableDirector.time;
-        //    ////初期化して入れ直し(これでいけちゃう謎)
-        //    //_playableDirector.playableAsset = null;
-        //    //_playableDirector.playableAsset = _timelineAsset;
-
-        //    // これでいけるかも
-        //    _playableDirector.RebuildGraph();
-
-        //    //前回の続きを指定
-        //    _playableDirector.time = keepTime;
-
-        //    ////Track情報を更新する
-        //    //TrackList_Update();
-
-        //    if (_playableDirector.timeUpdateMode == DirectorUpdateMode.GameTime)
-        //    {
-        //        //再生
-        //        _playableDirector.Play();
-
-        //        //速度更新(Play後は再度呼び出さないとダメみたい)
-        //        _playableDirector.playableGraph.GetRootPlayable(0).SetSpeed(1.0f);
-        //    }
-        //    else if (_playableDirector.timeUpdateMode == DirectorUpdateMode.Manual)
-        //    {
-        //        //更新
-        //        _playableDirector.Evaluate();
-        //    }
-        //}
     }
 }

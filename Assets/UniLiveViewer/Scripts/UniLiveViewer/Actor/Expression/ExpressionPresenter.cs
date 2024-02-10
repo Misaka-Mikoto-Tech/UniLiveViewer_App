@@ -16,6 +16,7 @@ namespace UniLiveViewer.Actor.Expression
         readonly InstanceId _instanceId;
         readonly IActorEntity _actorEntity;
         readonly ExpressionService _expressionService;
+        readonly ISubscriber<AllActorOperationMessage> _allSubscriber;
         readonly ISubscriber<ActorOperationMessage> _operationSubscriber;
         readonly CompositeDisposable _disposables = new();
 
@@ -24,11 +25,13 @@ namespace UniLiveViewer.Actor.Expression
             InstanceId instanceId,
             IActorEntity actorEntity,
             ExpressionService expressionService,
+            ISubscriber<AllActorOperationMessage> allSubscriber,
             ISubscriber<ActorOperationMessage> operationSubscriber)
         {
             _instanceId = instanceId;
             _actorEntity = actorEntity;
             _expressionService = expressionService;
+            _allSubscriber = allSubscriber;
             _operationSubscriber = operationSubscriber;
         }
 
@@ -56,6 +59,20 @@ namespace UniLiveViewer.Actor.Expression
                         _expressionService.OnChangeLipSync(false);
                     }
                 }).AddTo(_disposables);
+
+            //再生時は全員リセット
+            _allSubscriber
+                .Subscribe(x =>
+                {
+                    if (x.ActorCommand == ActorCommand.TIMELINE_PLAY)
+                    {
+                        _expressionService.MorphReset();
+                    }
+                }).AddTo(_disposables);
+            //召喚時
+            _actorEntity.ActorState()
+                .Where(x => x == ActorState.FIELD)
+                .Subscribe(_ => _expressionService.MorphReset()).AddTo(_disposables);
 
             _actorEntity.Active()
                 .Subscribe(x => _isTick = x)

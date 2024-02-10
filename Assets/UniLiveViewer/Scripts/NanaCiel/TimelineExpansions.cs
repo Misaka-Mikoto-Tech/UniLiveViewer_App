@@ -55,7 +55,7 @@ namespace NanaCiel
             if (playableDirector.timeUpdateMode == DirectorUpdateMode.GameTime)
             {
                 playableDirector.Play();
-                playableDirector.SetSpeedTimeline(CacheSpeed);
+                playableDirector.SetSpeedTimeline(CacheSpeed);//Play後に再適用必須
             }
             else if (playableDirector.timeUpdateMode == DirectorUpdateMode.Manual)
             {

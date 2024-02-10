@@ -152,13 +152,13 @@ namespace UniLiveViewer.Menu
 
         public async UniTask<IActorEntity> ActiveVRMAsync(int index, CancellationToken cancellation)
         {
-            AllActorDisable();
-
             if (index < 0 || _vrmList.Count <= index)
             {
                 Debug.LogWarning("indexどこかでズレた疑惑（ここ来たらおかしい）");
                 return null;
             }
+
+            AllActorDisable();
 
             // 既出ならアクティブ化のみ
             if (_vrmList[index] != null)
