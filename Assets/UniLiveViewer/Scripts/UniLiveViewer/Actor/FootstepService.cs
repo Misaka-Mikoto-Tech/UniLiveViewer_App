@@ -18,15 +18,15 @@ namespace UniLiveViewer.Actor
         List<FoodMap> _foodMap = new();
         ActorEntity _actorEntity;
 
-        readonly AudioSource _footstepsAudio;
+        readonly AudioSourceService _audioSourceService;
         readonly ActorOptionSetting _setting;
 
         [Inject]
         public FootstepService(
-            AudioSource footstepsAudio,
+            AudioSourceService audioSourceService,
             ActorOptionSetting setting)
         {
-            _footstepsAudio = footstepsAudio;
+            _audioSourceService = audioSourceService;
             _setting = setting;
         }
 
@@ -74,9 +74,9 @@ namespace UniLiveViewer.Actor
 
         void PlaySound(Vector3 hitPoint)
         {
-            _footstepsAudio.transform.position = hitPoint;
+            _audioSourceService.transform.position = hitPoint;
             var index = UnityEngine.Random.Range(0, _setting.FootstepAudioClips.Count);
-            _footstepsAudio.PlayOneShot(_setting.FootstepAudioClips[index]);
+            _audioSourceService.PlayOneShot(_setting.FootstepAudioClips[index]);
         }
 
         public class FoodMap

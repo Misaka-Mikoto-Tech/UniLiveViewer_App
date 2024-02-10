@@ -1,4 +1,4 @@
-using UniLiveViewer.Actor.Animation;
+﻿using UniLiveViewer.Actor.Animation;
 using UniLiveViewer.Actor.AttachPoint;
 using UniLiveViewer.Actor.Expression;
 using UniLiveViewer.Actor.LookAt;
@@ -57,7 +57,7 @@ namespace UniLiveViewer.Actor
         [SerializeField] Rigidbody _rigidbody;
         [SerializeField] CapsuleCollider _collider;
         [SerializeField] OVRGrabbable_Custom _ovrGrabbable;
-        [SerializeField] AudioSource _audioSource;
+        [SerializeField] AudioSourceService _audioSourceService;
 
         [Header("-----------")]
         [SerializeField] AttachPoint.AttachPoint _attachPoint;
@@ -122,7 +122,7 @@ namespace UniLiveViewer.Actor
 
         void FootstepConfigure(IContainerBuilder builder)
         {
-            builder.RegisterInstance(_audioSource);
+            builder.RegisterInstance(_audioSourceService);
             builder.Register<FootstepService>(Lifetime.Singleton);
             builder.RegisterEntryPoint<FootstepPresenter>(Lifetime.Singleton);
         }

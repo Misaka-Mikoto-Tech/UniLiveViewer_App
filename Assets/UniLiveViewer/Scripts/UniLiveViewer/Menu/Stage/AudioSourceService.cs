@@ -16,7 +16,13 @@ namespace UniLiveViewer
 
         public void PlayOneShot(int index)
         {
+            if (_sound.Length <= index) return;
             _audioSource.PlayOneShot(_sound[index]);
+        }
+
+        public void PlayOneShot(AudioClip audioClip)
+        {
+            _audioSource.PlayOneShot(audioClip);
         }
     }
 }
