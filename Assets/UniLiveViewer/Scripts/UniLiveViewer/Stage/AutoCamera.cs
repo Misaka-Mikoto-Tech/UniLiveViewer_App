@@ -67,7 +67,7 @@ namespace UniLiveViewer.Stage
                 var data = _playableBinderService.BindingData[i];
                 if (data != null)
                 {
-                    var lookAt = data.ActorService.ActorEntity().Value.LookAtBase;
+                    var lookAt = data.ActorEntity.ActorEntity().Value.LookAtBase;
                     target = lookAt.Test.virtualHead;
                     baseTransform = lookAt.Test.virtualChest;
                     break;

@@ -49,7 +49,7 @@ namespace UniLiveViewer.Stage.Gymnasium
                 if (data == null) _targetBones[i] = null;
                 else
                 {
-                    _targetBones[i] = data.ActorService.ActorEntity().Value.BoneMap[TargetHumanBodyBone];
+                    _targetBones[i] = data.ActorEntity.ActorEntity().Value.BoneMap[TargetHumanBodyBone];
                 }
             }
         }

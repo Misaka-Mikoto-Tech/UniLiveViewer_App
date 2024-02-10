@@ -179,7 +179,7 @@ namespace UniLiveViewer.Timeline
             var subAnimationTracks = parentTrack.GetChildTracks().OfType<AnimationTrack>();
             foreach (var subAnimationTrack in subAnimationTracks)
             {
-                SetOverrideAnimationClip(subAnimationTrack, danceInfoData, data.ActorService.ActorEntity().Value);
+                SetOverrideAnimationClip(subAnimationTrack, danceInfoData, data.ActorEntity.ActorEntity().Value);
             }
         }
 

@@ -11,9 +11,11 @@ namespace UniLiveViewer.Actor.LookAt
 {
     public class LookatPresenter : IStartable, ILateTickable, IDisposable
     {
+        bool _isTick;
+
         readonly InstanceId _instanceId;
         readonly ISubscriber<ActorAnimationMessage> _subscriber;
-        readonly IActorService _actorEntityService;
+        readonly IActorEntity _actorEntity;
         readonly LookatService _lookatService;
         readonly CharaInfoData _charaInfoData;
 
@@ -23,20 +25,20 @@ namespace UniLiveViewer.Actor.LookAt
         public LookatPresenter(
             InstanceId instanceId,
             ISubscriber<ActorAnimationMessage> subscriber,
-            IActorService actorEntityService,
+            IActorEntity actorEntity,
             LookatService lookatService,
             CharaInfoData charaInfoData)
         {
             _instanceId = instanceId;
             _subscriber = subscriber;
-            _actorEntityService = actorEntityService;
+            _actorEntity = actorEntity;
             _lookatService = lookatService;
             _charaInfoData = charaInfoData;
         }
 
         void IStartable.Start()
         {
-            _actorEntityService.ActorEntity()
+            _actorEntity.ActorEntity()
                 .Subscribe(x =>
                 {
                     x?.LookAtBase.Setup(x.GetAnimator, _charaInfoData, Camera.main.transform);//うーむ
@@ -56,10 +58,15 @@ namespace UniLiveViewer.Actor.LookAt
                         _lookatService.OnChangeHeadLookAt(false);
                     }
                 }).AddTo(_disposables);
+
+            _actorEntity.Active()
+                .Subscribe(x => _isTick = x)
+                .AddTo(_disposables);
         }
 
         void ILateTickable.LateTick()
         {
+            if (!_isTick) return;
             _lookatService.OnLateTick();
         }
 

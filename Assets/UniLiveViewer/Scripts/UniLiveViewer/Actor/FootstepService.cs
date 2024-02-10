@@ -82,9 +82,7 @@ namespace UniLiveViewer.Actor
         public class FoodMap
         {
             public Transform FootBone { get; private set; }
-
             public bool IsHitCache { get; private set; }
-
 
             public FoodMap(Transform footBone)
             {

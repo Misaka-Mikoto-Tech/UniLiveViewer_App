@@ -12,18 +12,18 @@ namespace UniLiveViewer.Actor
     /// <summary>
     /// 識別子がまだないので整理して作る
     /// </summary>
-    public class FBXActorService : IActorService
+    public class FBXActorService : IActorEntity
     {
-        IReactiveProperty<ActorEntity> IActorService.ActorEntity() => _actorEntity;
+        IReactiveProperty<ActorEntity> IActorEntity.ActorEntity() => _actorEntity;
         readonly ReactiveProperty<ActorEntity> _actorEntity = new();
 
-        IReactiveProperty<bool> IActorService.Active() => _active;
+        IReactiveProperty<bool> IActorEntity.Active() => _active;
         readonly ReactiveProperty<bool> _active = new(true);
 
-        IReactiveProperty<float> IActorService.RootScalar() => _rootScalar;
+        IReactiveProperty<float> IActorEntity.RootScalar() => _rootScalar;
         readonly ReactiveProperty<float> _rootScalar = new(FileReadAndWriteUtility.UserProfile.InitCharaSize);
 
-        IReactiveProperty<ActorState> IActorService.ActorState() => _actorState;
+        IReactiveProperty<ActorState> IActorEntity.ActorState() => _actorState;
         readonly ReactiveProperty<ActorState> _actorState = new(ActorState.NULL);
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace UniLiveViewer.Actor
         /// </summary>
         /// <param name="cancellation"></param>
         /// <returns></returns>
-        async UniTask IActorService.EditorOnlySetupAsync(Transform firstParent, CancellationToken cancellation)
+        async UniTask IActorEntity.EditorOnlySetupAsync(Transform firstParent, CancellationToken cancellation)
         {
 #if UNITY_EDITOR
             //何もしない   
@@ -101,7 +101,7 @@ namespace UniLiveViewer.Actor
             _lifetimeScope.transform.localRotation = Quaternion.identity;
         }
 
-        void IActorService.Activate(bool isActive)
+        void IActorEntity.Activate(bool isActive)
         {
             _active.Value = isActive;
 
@@ -109,7 +109,7 @@ namespace UniLiveViewer.Actor
             _lifetimeScope.gameObject.SetActive(isActive);
         }
 
-        void IActorService.AddRootScalar(float add)
+        void IActorEntity.AddRootScalar(float add)
         {
             _rootScalar.Value = Mathf.Clamp(_rootScalar.Value + add, 0.25f, 20.0f);
             _lifetimeScope.transform.localScale = Vector3.one * _rootScalar.Value;
@@ -185,7 +185,7 @@ namespace UniLiveViewer.Actor
             }
         }
 
-        void IActorService.OnTick()
+        void IActorEntity.OnTick()
         {
             //OVRgrab側で掴まれている為、常時上書き
             if (_actorState.Value == ActorState.ON_CIRCLE)
@@ -195,7 +195,7 @@ namespace UniLiveViewer.Actor
             }
         }
 
-        void IActorService.Delete()
+        void IActorEntity.Delete()
         {
             GameObject.Destroy(_lifetimeScope.gameObject);
         }

@@ -1,8 +1,9 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using MessagePipe;
 using System;
 using UniLiveViewer.MessagePipe;
 using UniRx;
+using UnityEngine;
 using UnityEngine.Playables;
 using VContainer;
 using VContainer.Unity;
@@ -11,7 +12,10 @@ namespace UniLiveViewer.Actor.AttachPoint
 {
     public class AttachPointPresenter : IStartable, ITickable, IDisposable
     {
+        bool _isTick;
+
         readonly ISubscriber<AttachPointMessage> _subscriber;
+        readonly IActorEntity _actorEntity;
         readonly AttachPointService _attachPointService;
         readonly PlayableDirector _playableDirector;
 
@@ -20,10 +24,12 @@ namespace UniLiveViewer.Actor.AttachPoint
         [Inject]
         public AttachPointPresenter(
             ISubscriber<AttachPointMessage> subscriber,
+            IActorEntity actorEntity,
             AttachPointService attachPointService,
             PlayableDirector playableDirector)
         {
             _subscriber = subscriber;
+            _actorEntity = actorEntity;
             _attachPointService = attachPointService;
             _playableDirector = playableDirector;
         }
@@ -36,10 +42,15 @@ namespace UniLiveViewer.Actor.AttachPoint
                     if (_playableDirector.timeUpdateMode != DirectorUpdateMode.Manual) return;
                     _attachPointService.SetActive(x.IsActive);
                 }).AddTo(_disposables);
+
+            _actorEntity.Active()
+                .Subscribe(x => _isTick = x)
+                .AddTo(_disposables);
         }
 
         void ITickable.Tick()
         {
+            if (!_isTick) return;
             _attachPointService.OnTick();
         }
 

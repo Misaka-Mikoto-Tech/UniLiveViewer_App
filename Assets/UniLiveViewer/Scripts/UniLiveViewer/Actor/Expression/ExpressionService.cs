@@ -10,17 +10,17 @@ namespace UniLiveViewer.Actor.Expression
         bool _canFacialSync = true;
         CurrentMode _animationMode = CurrentMode.PRESET;
 
-        readonly IActorService _actorService;
+        readonly IActorEntity _actorEntity;
         readonly ILipSync _lipSync;
         readonly IFacialSync _facialSync;
 
         [Inject]
         public ExpressionService(
-            IActorService actorService,
+            IActorEntity actorEntity,
             ILipSync lipSync,
             IFacialSync facialSync)
         {
-            _actorService = actorService;
+            _actorEntity = actorEntity;
             _lipSync = lipSync;
             _facialSync = facialSync;
         }
@@ -42,7 +42,7 @@ namespace UniLiveViewer.Actor.Expression
 
             if (_animationMode == CurrentMode.CUSTOM)
             {
-                var vmdPlayer = _actorService.ActorEntity().Value.GetVMDPlayer;
+                var vmdPlayer = _actorEntity.ActorEntity().Value.GetVMDPlayer;
                 if (vmdPlayer.morphPlayer_vrm == null) return;
                 vmdPlayer.morphPlayer_vrm.isUpdateFace = isEnable;
             }
@@ -55,7 +55,7 @@ namespace UniLiveViewer.Actor.Expression
 
             if (_animationMode == CurrentMode.CUSTOM)
             {
-                var vmdPlayer = _actorService.ActorEntity().Value.GetVMDPlayer;
+                var vmdPlayer = _actorEntity.ActorEntity().Value.GetVMDPlayer;
                 if (vmdPlayer.morphPlayer_vrm == null) return;
                 vmdPlayer.morphPlayer_vrm.isUpdateMouth = isEnable;
             }

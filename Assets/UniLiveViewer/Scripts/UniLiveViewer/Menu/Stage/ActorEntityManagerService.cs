@@ -71,14 +71,14 @@ namespace UniLiveViewer.Menu
         public string[] VRMViewNames =>
                 _actorRegisterService.RegisterDataVRM.Select(x => x.VRMLoadData.FileName).ToArray();
 
-        public IActorService EditorOnly_CurrentActorService(InstanceId instanceId)
+        public IActorEntity EditorOnly_CurrentActorService(InstanceId instanceId)
         {
 
             var data = _fbxList.Where(x => x != null).FirstOrDefault(x => x.GetInstanceId() == instanceId);
-            if (data != null) return data.ActorService;
+            if (data != null) return data.ActorEntity;
 
             data = _vrmList.Where(x => x != null).FirstOrDefault(x => x.GetInstanceId() == instanceId);
-            if (data != null) return data.ActorService;
+            if (data != null) return data.ActorEntity;
 
             return null;
         }
@@ -114,7 +114,7 @@ namespace UniLiveViewer.Menu
             _allPublisher.Publish(message);
         }
 
-        public async UniTask<IActorService> ActiveFBXAsync(int index, CancellationToken cancellation)
+        public async UniTask<IActorEntity> ActiveFBXAsync(int index, CancellationToken cancellation)
         {
             if (index < 0 || _fbxList.Count <= index)
             {
@@ -132,7 +132,7 @@ namespace UniLiveViewer.Menu
                 _publisher.Publish(message);
 
                 Debug.LogWarning($"tes:{index}:{_fbxList.Count}:{_currentInstaceID}");
-                return _fbxList[index].ActorService;
+                return _fbxList[index].ActorEntity;
             }
             // 生成(アクティブ状態で生成される)
             else
@@ -146,11 +146,11 @@ namespace UniLiveViewer.Menu
                 var actor = await _actorEntityFactory.GenerateFBXAsync(registerData, cancellation);
                 _fbxList[index] = new ActorData(registerData, actor);
                 _currentInstaceID = _fbxList[index].GetInstanceId();
-                return _fbxList[index].ActorService;
+                return _fbxList[index].ActorEntity;
             }
         }
 
-        public async UniTask<IActorService> ActiveVRMAsync(int index, CancellationToken cancellation)
+        public async UniTask<IActorEntity> ActiveVRMAsync(int index, CancellationToken cancellation)
         {
             AllActorDisable();
 
@@ -168,7 +168,7 @@ namespace UniLiveViewer.Menu
                 _publisher.Publish(message);
 
                 Debug.LogWarning($"tes:{index}:{_vrmList.Count}:{_currentInstaceID}");
-                return _vrmList[index].ActorService;
+                return _vrmList[index].ActorEntity;
             }
             // 生成(アクティブ状態で生成される)
             else
@@ -182,7 +182,7 @@ namespace UniLiveViewer.Menu
                 var actor = await _actorEntityFactory.GenerateVRMAsync(registerData, cancellation);
                 _vrmList[index] = new ActorData(registerData, actor);
                 _currentInstaceID = _vrmList[index].GetInstanceId();
-                return _vrmList[index].ActorService;
+                return _vrmList[index].ActorEntity;
             }
         }
 
@@ -222,7 +222,7 @@ namespace UniLiveViewer.Menu
         class ActorData : IDisposable
         {
             public RegisterData RegisterData { get; }
-            public IActorService ActorService { get; }
+            public IActorEntity ActorEntity { get; }
             readonly ActorLifetimeScope _actorLifetimeScope;
 
             public ActorData(RegisterData data, ActorLifetimeScope actorLifetimeScope)
@@ -230,7 +230,7 @@ namespace UniLiveViewer.Menu
                 RegisterData = data;
                 if (actorLifetimeScope == null) return;
                 _actorLifetimeScope = actorLifetimeScope;
-                ActorService = actorLifetimeScope.Container.Resolve<IActorService>();
+                ActorEntity = actorLifetimeScope.Container.Resolve<IActorEntity>();
             }
 
             public InstanceId GetInstanceId()

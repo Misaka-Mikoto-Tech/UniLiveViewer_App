@@ -163,7 +163,7 @@ namespace UniLiveViewer.Menu
                 var data = _playableBinderService.BindingData[TimelineConstants.PortalIndex];
                 if (data == null) return;
                 //目の向く量をセット
-                var lookAt = data.ActorService.ActorEntity().Value.LookAtBase;
+                var lookAt = data.ActorEntity.ActorEntity().Value.LookAtBase;
                 lookAt.SetEyeWeight(_sliderEyeLook.Value);
             };
             _sliderHeadLook.ValueUpdate += () =>
@@ -171,7 +171,7 @@ namespace UniLiveViewer.Menu
                 var data = _playableBinderService.BindingData[TimelineConstants.PortalIndex];
                 if (data == null) return;
                 //顔の向く量をセット
-                var lookAt = data.ActorService.ActorEntity().Value.LookAtBase;
+                var lookAt = data.ActorEntity.ActorEntity().Value.LookAtBase;
                 lookAt.SetHeadWeight(_sliderHeadLook.Value);
             };
             _btnVRMSetting.onTrigger += VRMSetting;

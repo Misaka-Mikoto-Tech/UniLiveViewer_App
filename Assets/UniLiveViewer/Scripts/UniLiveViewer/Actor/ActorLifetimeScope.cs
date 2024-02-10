@@ -1,4 +1,4 @@
-﻿using UniLiveViewer.Actor.Animation;
+using UniLiveViewer.Actor.Animation;
 using UniLiveViewer.Actor.AttachPoint;
 using UniLiveViewer.Actor.Expression;
 using UniLiveViewer.Actor.LookAt;
@@ -82,7 +82,7 @@ namespace UniLiveViewer.Actor
                 var animator = transform.GetComponentInChildren<Animator>();
                 builder.RegisterInstance(animator);
 
-                builder.Register<IActorService, FBXActorService>(Lifetime.Singleton);
+                builder.Register<IActorEntity, FBXActorService>(Lifetime.Singleton);
                 FBXFacialExpressionConfigure(builder);
                 builder.RegisterEntryPoint<FBXActorEntityPresenter>();
             }
@@ -92,7 +92,7 @@ namespace UniLiveViewer.Actor
                 builder.RegisterInstance(charaInfoData);
 
                 builder.Register<VRMService>(Lifetime.Singleton);
-                builder.Register<IActorService, VRMActorService>(Lifetime.Singleton);
+                builder.Register<IActorEntity, VRMActorService>(Lifetime.Singleton);
                 VRMFacialExpressionConfigure(builder);
                 builder.RegisterEntryPoint<VRMActorEntityPresenter>();
                 builder.RegisterEntryPoint<SpringBonePresenter>();
@@ -137,7 +137,6 @@ namespace UniLiveViewer.Actor
 
         void VRMFacialExpressionConfigure(IContainerBuilder builder)
         {
-            // TODO: Instanceでいいんだっけ
             var lipSync = GameObject.Instantiate(_lipSyncVRM.gameObject).GetComponent<LipSync_VRM>();
             builder.RegisterInstance(lipSync).As<ILipSync>();
             var faceSync = GameObject.Instantiate(_faceSyncVRM.gameObject).GetComponent<FacialSync_VRM>();

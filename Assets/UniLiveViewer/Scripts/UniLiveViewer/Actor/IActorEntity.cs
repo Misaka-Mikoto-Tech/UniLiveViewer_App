@@ -1,14 +1,18 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System.Threading;
 using UniRx;
 using UnityEngine;
 
 namespace UniLiveViewer.Actor
 {
-    public interface IActorService
+    public interface IActorEntity
     {
         IReactiveProperty<ActorEntity> ActorEntity();
 
+        /// <summary>
+        /// gameObject.activeSelfに連動して扱う
+        /// </summary>
+        /// <returns></returns>
         IReactiveProperty<bool> Active();
 
         IReactiveProperty<float> RootScalar();

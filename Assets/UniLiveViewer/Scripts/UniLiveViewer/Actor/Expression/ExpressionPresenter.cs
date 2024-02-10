@@ -11,7 +11,10 @@ namespace UniLiveViewer.Actor.Expression
 {
     public class ExpressionPresenter : IStartable, ILateTickable, IDisposable
     {
+        bool _isTick;
+
         readonly InstanceId _instanceId;
+        readonly IActorEntity _actorEntity;
         readonly ExpressionService _expressionService;
         readonly ISubscriber<ActorOperationMessage> _operationSubscriber;
         readonly CompositeDisposable _disposables = new();
@@ -19,10 +22,12 @@ namespace UniLiveViewer.Actor.Expression
         [Inject]
         public ExpressionPresenter(
             InstanceId instanceId,
+            IActorEntity actorEntity,
             ExpressionService expressionService,
             ISubscriber<ActorOperationMessage> operationSubscriber)
         {
             _instanceId = instanceId;
+            _actorEntity = actorEntity;
             _expressionService = expressionService;
             _operationSubscriber = operationSubscriber;
         }
@@ -51,10 +56,15 @@ namespace UniLiveViewer.Actor.Expression
                         _expressionService.OnChangeLipSync(false);
                     }
                 }).AddTo(_disposables);
+
+            _actorEntity.Active()
+                .Subscribe(x => _isTick = x)
+                .AddTo(_disposables);
         }
 
         void ILateTickable.LateTick()
         {
+            if (!_isTick) return;
             _expressionService.OnLateTick();
         }
 

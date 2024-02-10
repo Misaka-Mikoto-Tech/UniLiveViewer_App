@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UniRx;
 using VContainer;
 using VContainer.Unity;
@@ -9,19 +9,19 @@ namespace UniLiveViewer.Actor
     {
         CharaInfoData _charaInfoData;
 
-        readonly IActorService _actorEntityService;
+        readonly IActorEntity _actorEntity;
         readonly CompositeDisposable _disposables = new();
 
         [Inject]
         public SpringBonePresenter(
-            IActorService actorEntityService)
+            IActorEntity actorEntity)
         {
-            _actorEntityService = actorEntityService;
+            _actorEntity = actorEntity;
         }
 
         void IStartable.Start()
         {
-            _actorEntityService.ActorEntity()
+            _actorEntity.ActorEntity()
                 .Subscribe(OnChangeActorEntity).AddTo(_disposables);
         }
 
@@ -57,12 +57,11 @@ namespace UniLiveViewer.Actor
             //}
         }
 
-
         void IDisposable.Dispose()
         {
             _disposables.Dispose();
 
-            foreach (var springBone in _actorEntityService.ActorEntity().Value.SpringBoneList)
+            foreach (var springBone in _actorEntity.ActorEntity().Value.SpringBoneList)
             {
                 springBone.OnHitLeftHand -= OnHitLeftHand;
                 springBone.OnHitRightHand -= OnHitRightHand;

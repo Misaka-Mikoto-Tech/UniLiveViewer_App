@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using System.Threading;
 using UniLiveViewer.Actor;
 using UniLiveViewer.Stage;
@@ -61,9 +61,9 @@ namespace UniLiveViewer.Menu
             _anime_Loading.gameObject.SetActive(true);
         }
 
-        public void OnVRMLoadEnd(IActorService actorEntityService)
+        public void OnVRMLoadEnd(IActorEntity actorEntity)
         {
-            if (actorEntityService == null)
+            if (actorEntity == null)
             {
                 var dummyToken = new CancellationToken();
                 OnError(dummyToken).Forget();

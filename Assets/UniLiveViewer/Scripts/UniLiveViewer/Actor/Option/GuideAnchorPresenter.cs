@@ -9,25 +9,27 @@ namespace UniLiveViewer.Actor.Option
 {
     public class GuideAnchorPresenter : IStartable, ITickable, IDisposable
     {
+        bool _isTick;
+
         readonly ISubscriber<AllActorOptionMessage> _subscriber;
-        readonly IActorService _actorService;
+        readonly IActorEntity _actorEntity;
         readonly GuideAnchorService _guideAnchorService;
         readonly CompositeDisposable _disposables = new();
 
         [Inject]
         public GuideAnchorPresenter(
             ISubscriber<AllActorOptionMessage> subscriber,
-            IActorService actorService,
+            IActorEntity actorEntity,
             GuideAnchorService guideAnchorService)
         {
             _subscriber = subscriber;
-            _actorService = actorService;
+            _actorEntity = actorEntity;
             _guideAnchorService = guideAnchorService;
         }
 
         void IStartable.Start()
         {
-            _actorService.ActorEntity()
+            _actorEntity.ActorEntity()
                 .Subscribe(_guideAnchorService.OnChangeActorEntity)
                 .AddTo(_disposables);
 
@@ -35,15 +37,20 @@ namespace UniLiveViewer.Actor.Option
                 .Subscribe(x =>
                 {
                     if (x.ActorState == ActorState.NULL) return;
-                    if (x.ActorState != _actorService.ActorState().Value) return;
+                    if (x.ActorState != _actorEntity.ActorState().Value) return;
                     _guideAnchorService.SetEnable(x.ActorCommand == ActorOptionCommand.GUID_ANCHOR_ENEBLE);
                 }).AddTo(_disposables);
+
+            _actorEntity.Active()
+                .Subscribe(x => _isTick = x)
+                .AddTo(_disposables);
 
             _guideAnchorService.Setup();
         }
 
         void ITickable.Tick()
         {
+            if (!_isTick) return;
             _guideAnchorService.OnTick();
         }
 

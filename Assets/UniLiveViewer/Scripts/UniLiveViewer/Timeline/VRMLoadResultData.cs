@@ -4,10 +4,10 @@ namespace UniLiveViewer.Timeline
 {
     public class VRMLoadResultData
     {
-        public IActorService Value => _value;
-        IActorService _value;
+        public IActorEntity Value => _value;
+        IActorEntity _value;
 
-        public VRMLoadResultData(IActorService value)
+        public VRMLoadResultData(IActorEntity value)
         {
             _value = value;
         }

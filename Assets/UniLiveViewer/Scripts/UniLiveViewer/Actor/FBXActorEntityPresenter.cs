@@ -13,10 +13,12 @@ namespace UniLiveViewer.Actor
 {
     public class FBXActorEntityPresenter : IAsyncStartable, ITickable, IDisposable
     {
+        bool _isTick;
+
         readonly ISubscriber<AllActorOperationMessage> _allSubscriber;
         readonly ISubscriber<ActorOperationMessage> _subscriber;
         readonly ISubscriber<ActorResizeMessage> _resizeSubscriber;
-        readonly IActorService _actorEntityService;
+        readonly IActorEntity _actorEntity;
         readonly InstanceId _instanceId;
         readonly GeneratorPortalAnchor _firstParent;
 
@@ -27,14 +29,14 @@ namespace UniLiveViewer.Actor
             ISubscriber<AllActorOperationMessage> allSubscriber,
             ISubscriber<ActorOperationMessage> subscriber,
             ISubscriber<ActorResizeMessage> resizeSubscriber,
-            IActorService actorEntityService,
+            IActorEntity actorEntity,
             InstanceId instanceId,
             GeneratorPortalAnchor firstParent)
         {
             _allSubscriber = allSubscriber;
             _subscriber = subscriber;
             _resizeSubscriber = resizeSubscriber;
-            _actorEntityService = actorEntityService;
+            _actorEntity = actorEntity;
             _instanceId = instanceId;
             _firstParent = firstParent;
         }
@@ -45,13 +47,13 @@ namespace UniLiveViewer.Actor
                 .Subscribe(x =>
                 {
                     if (x.InstanceId != _instanceId) return;
-                    _actorEntityService.AddRootScalar(x.AddScale);
+                    _actorEntity.AddRootScalar(x.AddScale);
                 }).AddTo(_disposables);
 
             _allSubscriber
                 .Subscribe(x =>
                 {
-                    if (x.ActorState != _actorEntityService.ActorState().Value) return;
+                    if (x.ActorState != _actorEntity.ActorState().Value) return;
                     OnCommand(x.ActorCommand);
                 }).AddTo(_disposables);
             _subscriber
@@ -61,28 +63,33 @@ namespace UniLiveViewer.Actor
                     OnCommand(x.ActorCommand);
                 }).AddTo(_disposables);
 
-            await _actorEntityService.SetupAsync(_firstParent.transform, cancellation);
+            _actorEntity.Active()
+                .Subscribe(x => _isTick = x)
+                .AddTo(_disposables);
+
+            await _actorEntity.SetupAsync(_firstParent.transform, cancellation);
         }
 
         void OnCommand(ActorCommand command)
         {
             if (command == ActorCommand.ACTIVE)
             {
-                _actorEntityService.Activate(true);
+                _actorEntity.Activate(true);
             }
             if (command == ActorCommand.INACTIVE)
             {
-                _actorEntityService.Activate(false);
+                _actorEntity.Activate(false);
             }
             if (command == ActorCommand.DELETE)
             {
-                _actorEntityService.Delete();
+                _actorEntity.Delete();
             }
         }
 
         void ITickable.Tick()
         {
-            _actorEntityService.OnTick();
+            if (!_isTick) return;
+            _actorEntity.OnTick();
         }
 
         void IDisposable.Dispose()

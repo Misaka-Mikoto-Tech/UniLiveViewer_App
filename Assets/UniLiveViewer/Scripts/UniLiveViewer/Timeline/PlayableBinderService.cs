@@ -49,7 +49,7 @@ namespace UniLiveViewer.Timeline
         /// ActorEntityManagerService側で非Currentは非アクティブにしてるので削除なども不要
         /// </summary>
         /// <param name="actorEntityService"></param>
-        public void BindingNewActor(InstanceId instanceId, IActorService actorService)
+        public void BindingNewActor(InstanceId instanceId, IActorEntity actorEntity)
         {
             var outputs = _playableDirector.playableAsset.outputs;
             var baseName = TimelineConstants.TrackNames[TimelineConstants.PortalIndex];
@@ -64,9 +64,9 @@ namespace UniLiveViewer.Timeline
             //ClearCaracter();
 
             //オブジェクトをバインドする
-            _playableDirector.SetGenericBinding(playableBinding.sourceObject, actorService.ActorEntity().Value.GetAnimator);
+            _playableDirector.SetGenericBinding(playableBinding.sourceObject, actorEntity.ActorEntity().Value.GetAnimator);
 
-            var data = new BindingData(playableBinding.sourceObject, baseName, instanceId, actorService);
+            var data = new BindingData(playableBinding.sourceObject, baseName, instanceId, actorEntity);
             _bindingData[TimelineConstants.PortalIndex] = data;
             _playableDirector.ResumeTimeline();
 
@@ -82,7 +82,7 @@ namespace UniLiveViewer.Timeline
         {
             if (_bindingData[TimelineConstants.PortalIndex] == null) return null;
             var data = _bindingData[TimelineConstants.PortalIndex];
-            TrySwitchTrackBinding(data.InstanceId, data.ActorService);
+            TrySwitchTrackBinding(data.InstanceId, data.ActorEntity);
             return data.InstanceId;
         }
 
@@ -90,16 +90,16 @@ namespace UniLiveViewer.Timeline
         /// 別トラックにバインドを試みる（自動的にポータル以外の空き枠）
         /// </summary>
         /// <param name="instanceId"></param>
-        /// <param name="actorService"></param>
+        /// <param name="actorEntity"></param>
         /// <returns></returns>
-        public bool TrySwitchTrackBinding(InstanceId instanceId, IActorService actorService)
+        public bool TrySwitchTrackBinding(InstanceId instanceId, IActorEntity actorEntity)
         {
             // 空があるかチェック、無ければ失敗
             var freePlayable = TryGetFreePlayable();
             if (freePlayable == null) return false;
 
             Unbind(instanceId);
-            BindingTo(freePlayable.Value, instanceId, actorService);
+            BindingTo(freePlayable.Value, instanceId, actorEntity);
 
             _stageActorCount.Value += 1;
             _bindingToStream.OnNext(Unit.Default);
@@ -132,12 +132,12 @@ namespace UniLiveViewer.Timeline
         /// </summary>
         /// <param name="bindingSourceObject"></param>
         /// <param name="actorEntityService"></param>
-        void BindingTo(PlayableBinding playableBinding, InstanceId instanceId, IActorService actorService)
+        void BindingTo(PlayableBinding playableBinding, InstanceId instanceId, IActorEntity actorEntity)
         {
-            if (actorService.ActorEntity().Value.GetAnimator == null) return;
+            if (actorEntity.ActorEntity().Value.GetAnimator == null) return;
 
-            _playableDirector.SetGenericBinding(playableBinding.sourceObject, actorService.ActorEntity().Value.GetAnimator);
-            var data = new BindingData(playableBinding.sourceObject, playableBinding.streamName, instanceId, actorService);
+            _playableDirector.SetGenericBinding(playableBinding.sourceObject, actorEntity.ActorEntity().Value.GetAnimator);
+            var data = new BindingData(playableBinding.sourceObject, playableBinding.streamName, instanceId, actorEntity);
 
             var index = Array.IndexOf(TimelineConstants.TrackNames, playableBinding.streamName);
             if (index < 0) return;
@@ -198,14 +198,14 @@ namespace UniLiveViewer.Timeline
 
         public InstanceId InstanceId { get; }
 
-        public IActorService ActorService { get; }
+        public IActorEntity ActorEntity { get; }
 
-        public BindingData(UnityEngine.Object bindingSourceObject, string streamName, InstanceId instanceId, IActorService actorService)
+        public BindingData(UnityEngine.Object bindingSourceObject, string streamName, InstanceId instanceId, IActorEntity actorEntity)
         {
             BindingSource = bindingSourceObject;
             StreamName = streamName;
             InstanceId = instanceId;
-            ActorService = actorService;
+            ActorEntity = actorEntity;
         }
     }
 }

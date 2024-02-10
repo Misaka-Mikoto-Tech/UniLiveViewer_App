@@ -1,4 +1,4 @@
-﻿using MessagePipe;
+using MessagePipe;
 using System;
 using System.Collections.Generic;
 using UniLiveViewer.OVRCustom;
@@ -105,9 +105,9 @@ namespace UniLiveViewer.Player.HandMenu
             }
             else if (ovrGrabbableCustom.TryGetComponent<Actor.ActorLifetimeScope>(out var actor))
             {
-                var actorService = actor.Container.Resolve<Actor.IActorService>();
+                var actorEntity = actor.Container.Resolve<Actor.IActorEntity>();
 
-                _serialDisposable.Disposable = actorService.RootScalar()
+                _serialDisposable.Disposable = actorEntity.RootScalar()
                 .Subscribe(x =>
                 {
                     _actorManipulateService.OnChangeActorSize(x);

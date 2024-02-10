@@ -6,6 +6,7 @@ using UniLiveViewer.Actor.Expression;
 using UniLiveViewer.MessagePipe;
 using UniLiveViewer.ValueObject;
 using UniRx;
+using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
@@ -13,11 +14,13 @@ namespace UniLiveViewer.Actor.Animation
 {
     public class AnimationPresenter : IAsyncStartable, ILateTickable, IDisposable
     {
+        bool _isTick;
+
         readonly InstanceId _instanceId;
         readonly ISubscriber<AllActorOperationMessage> _allSubscriber;
         readonly AnimationService _animationService;
         readonly ExpressionService _expressionService;
-        readonly IActorService _actorEntityService;
+        readonly IActorEntity _actorEntity;
         readonly ISubscriber<ActorAnimationMessage> _subscriber;
         readonly CompositeDisposable _disposables = new();
 
@@ -27,24 +30,24 @@ namespace UniLiveViewer.Actor.Animation
             ISubscriber<AllActorOperationMessage> allSubscriber,
             AnimationService animationService,
             ExpressionService expressionService,
-            IActorService actorEntityService,
+            IActorEntity actorEntity,
             ISubscriber<ActorAnimationMessage> subscriber)
         {
             _instanceId = instanceId;
             _allSubscriber = allSubscriber;
             _animationService = animationService;
             _expressionService = expressionService;
-            _actorEntityService = actorEntityService;
+            _actorEntity = actorEntity;
             _subscriber = subscriber;
         }
 
         UniTask IAsyncStartable.StartAsync(CancellationToken cancellation)
         {
-            _actorEntityService.ActorEntity()
+            _actorEntity.ActorEntity()
                 .Subscribe(_animationService.OnChangeAnimator)
                 .AddTo(_disposables);
 
-            _actorEntityService.ActorState()
+            _actorEntity.ActorState()
                 .Subscribe();
 
             _subscriber
@@ -68,13 +71,19 @@ namespace UniLiveViewer.Actor.Animation
                         _animationService.RemoveRuntimeAnimatorController();
                     }
                 }).AddTo(_disposables);
+
+            _actorEntity.Active()
+                .Subscribe(x => _isTick = x)
+                .AddTo(_disposables);
+
             return UniTask.CompletedTask;
         }
 
         void ILateTickable.LateTick()
         {
+            if (!_isTick) return;
             //掴まれている時以外は常時
-            if (_actorEntityService.ActorState().Value == ActorState.HOLD) return;
+            if (_actorEntity.ActorState().Value == ActorState.HOLD) return;
             _animationService.OnLateTick();
         }
 
