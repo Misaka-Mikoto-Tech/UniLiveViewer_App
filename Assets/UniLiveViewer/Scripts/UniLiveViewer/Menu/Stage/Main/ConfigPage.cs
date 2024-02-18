@@ -44,11 +44,20 @@ namespace UniLiveViewer.Menu
         [SerializeField] SliderGrabController slider_VMDScale;
         [SerializeField] SliderGrabController slider_FixedFoveated;
         [Space(10)]
-        [SerializeField] ScriptableRendererFeature outlineRender;
+        [SerializeField] ScriptableRendererFeature _outlineRender;//TODO: GraphicsSettingsServiceに移す
         [SerializeField] Material material_OutLine;
         [SerializeField] UniversalRendererData frd;
 
         PassthroughService _passthroughService;
+
+        public IReadOnlyReactiveProperty<AntialiasingMode> AntialiasingMode => _antialiasingMode;
+        ReactiveProperty<AntialiasingMode> _antialiasingMode = new (UnityEngine.Rendering.Universal.AntialiasingMode.FastApproximateAntialiasing);
+
+        public IReadOnlyReactiveProperty<bool> Bloom => _bloom;
+        ReactiveProperty<bool> _bloom = new(false);
+
+        public IReadOnlyReactiveProperty<bool> Tonemapping => _tonemapping;
+        ReactiveProperty<bool> _tonemapping = new(false);
 
         public IObservable<int> StageLightIndexAsObservable => _stageLightIndex;
         Subject<int> _stageLightIndex = new Subject<int>();
@@ -82,10 +91,10 @@ namespace UniLiveViewer.Menu
             {
                 if (slider_OutLine.Value > 0)
                 {
-                    outlineRender.SetActive(true);//有効化
+                    _outlineRender.SetActive(true);//有効化
                     material_OutLine.SetFloat("_Edge", slider_OutLine.Value);//値の更新
                 }
-                else outlineRender.SetActive(false);//無効化
+                else _outlineRender.SetActive(false);//無効化
             };
             slider_InitCharaSize.ValueUpdate += Update_InitCharaSize;
             slider_InitCharaSize.UnControled += () =>
@@ -213,11 +222,11 @@ namespace UniLiveViewer.Menu
             {
                 if (renderObj.name == "Outline")
                 {
-                    outlineRender = renderObj;
+                    _outlineRender = renderObj;
                     break;
                 }
             }
-            outlineRender.SetActive(false);//無効化
+            _outlineRender.SetActive(false);//無効化
 
             //値の更新
             slider_OutLine.Value = 0;
@@ -334,6 +343,21 @@ namespace UniLiveViewer.Menu
                 textMeshs[3].text = $"FootShadow:\n{_quasiShadowSetting.ShadowType}";
                 FileReadAndWriteUtility.UserProfile.CharaShadowType = (int)_quasiShadowSetting.ShadowType;
                 FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
+            }
+            else if (btn == btn_General[5])
+            {
+                var mode = btn.isEnable ?
+                    UnityEngine.Rendering.Universal.AntialiasingMode.FastApproximateAntialiasing :
+                    UnityEngine.Rendering.Universal.AntialiasingMode.None;
+                _antialiasingMode.Value = mode;
+            }
+            else if (btn == btn_General[6])
+            {
+                _bloom.Value = btn.isEnable;
+            }
+            else if (btn == btn_General[7])
+            {
+                _tonemapping.Value = btn.isEnable;
             }
 
             menuManager.PlayOneShot(SoundType.BTN_CLICK);

@@ -1,6 +1,7 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UniLiveViewer.OVRCustom;
 using UnityEngine;
+using UnityEngine.Rendering;
 using VContainer;
 using VContainer.Unity;
 
@@ -12,6 +13,8 @@ namespace UniLiveViewer.Player
     [RequireComponent(typeof(SimpleCapsuleWithStickMovement))]
     public class PlayerLifetimeScope : LifetimeScope
     {
+        [SerializeField] VolumeProfile _volumeProfile;
+
         [SerializeField] PlayerHandMenuAnchorL _playerHandMenuAnchorL;
         [SerializeField] PlayerHandMenuAnchorR _playerHandMenuAnchorR;
 
@@ -40,6 +43,10 @@ namespace UniLiveViewer.Player
             builder.RegisterComponent(GetComponent<SimpleCapsuleWithStickMovement>());
 
             builder.RegisterEntryPoint<OculusSamplePresenter>();
+
+            builder.RegisterInstance(_volumeProfile);
+            builder.Register<GraphicsSettingsService>(Lifetime.Singleton);
+            builder.RegisterEntryPoint<GraphicsSettingsPresenter>();
         }
     }
 }

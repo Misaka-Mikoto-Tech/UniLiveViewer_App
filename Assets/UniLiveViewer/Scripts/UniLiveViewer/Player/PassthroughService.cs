@@ -1,5 +1,5 @@
-﻿using UnityEngine;
-using UnityEngine.Rendering.Universal;
+﻿using UniRx;
+using UnityEngine;
 using VContainer;
 
 namespace UniLiveViewer.Player
@@ -7,13 +7,14 @@ namespace UniLiveViewer.Player
     [RequireComponent(typeof(OVRManager))]
     public class PassthroughService : MonoBehaviour
     {
+        public IReadOnlyReactiveProperty<bool> IsEnable => _isEnable;
+        ReactiveProperty<bool> _isEnable = new(false);
+
         OVRManager _ovrManager;
         Camera _camera;
         /// <summary>
         /// パススルーとポスプロ共存できないので無効化しておく
         /// </summary>
-        UniversalAdditionalCameraData _cameraData;
-        bool _cachePostProcessing;
 
         [Inject]
         public void Construct(OVRManager ovrManager, Camera camera)
@@ -22,10 +23,8 @@ namespace UniLiveViewer.Player
             _ovrManager = ovrManager;
         }
 
-        public void OnStart()
+        public void Initialize()
         {
-            _cameraData = _camera.GetComponent<UniversalAdditionalCameraData>();
-            _cachePostProcessing = _cameraData.renderPostProcessing;
             Switching(false);
         }
 
@@ -34,20 +33,20 @@ namespace UniLiveViewer.Player
             if (isEnable)
             {
                 _camera.clearFlags = CameraClearFlags.Color;
-                _cameraData.renderPostProcessing = false;
+                _isEnable.Value = true;
                 _ovrManager.isInsightPassthroughEnabled = true;
             }
             else
             {
-                var e = GameObject.FindGameObjectsWithTag("Passthrough");
-                int max = e.Length;
+                var go = GameObject.FindGameObjectsWithTag("Passthrough");
+                int max = go.Length;
                 for (int i = 0; i < max; i++)
                 {
-                    Destroy(e[max - i - 1]);
+                    Destroy(go[max - i - 1]);
                 }
 
                 _camera.clearFlags = CameraClearFlags.Skybox;
-                _cameraData.renderPostProcessing = _cachePostProcessing;
+                _isEnable.Value = false;
                 _ovrManager.isInsightPassthroughEnabled = false;
             }
         }
@@ -57,5 +56,4 @@ namespace UniLiveViewer.Player
             return _ovrManager.isInsightPassthroughEnabled;
         }
     }
-
 }

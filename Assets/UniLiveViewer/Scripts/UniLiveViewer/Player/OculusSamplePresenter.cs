@@ -1,4 +1,4 @@
-﻿using MessagePipe;
+using MessagePipe;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +15,6 @@ namespace UniLiveViewer.Player
         readonly IPublisher<AttachPointMessage> _publisher;
         readonly FileAccessManager _fileAccessManager;
         readonly PlayerStateManager _playerStateManager;
-        readonly PassthroughService _passthroughService;
         readonly List<OVRGrabber_UniLiveViewer> _ovrGrabbers;
 
         readonly CompositeDisposable _disposables = new();
@@ -25,14 +24,12 @@ namespace UniLiveViewer.Player
             IPublisher<AttachPointMessage> publisher,
             FileAccessManager fileAccessManager,
             PlayerStateManager playerStateManager,
-
-            PassthroughService passthroughService,
             List<OVRGrabber_UniLiveViewer> ovrGrabbers)
         {
             _publisher = publisher;
             _fileAccessManager = fileAccessManager;
             _playerStateManager = playerStateManager;
-            _passthroughService = passthroughService;
+            
             _ovrGrabbers = ovrGrabbers;
         }
 
@@ -43,19 +40,19 @@ namespace UniLiveViewer.Player
                 ovrGrabber.HandActionStateAsObservable
                     .Where(x => x.Target == HandTargetType.Item)
                     .Subscribe(x =>
-                   {
-                       if (x.Action == HandActionState.Grab)
-                       {
-                           var data = new AttachPointMessage(true);
-                           _publisher.Publish(data);
-                       }
-                       // MEMO: Statemanagerで両手checkしてるのでこれ多分不要
-                       //else if (x.Action == HandActionState.Release)
-                       //{
-                       //    var data = new AttachPointMessage(false);
-                       //    _publisher.Publish(data);
-                       //}
-                   }).AddTo(_disposables);
+                    {
+                        if (x.Action == HandActionState.Grab)
+                        {
+                            var data = new AttachPointMessage(true);
+                            _publisher.Publish(data);
+                        }
+                        // MEMO: Statemanagerで両手checkしてるのでこれ多分不要
+                        //else if (x.Action == HandActionState.Release)
+                        //{
+                        //    var data = new AttachPointMessage(false);
+                        //    _publisher.Publish(data);
+                        //}
+                    }).AddTo(_disposables);
             }
             // 離す時は両手確認
             _playerStateManager.CompletelyReleasedItemAsObservable
@@ -68,7 +65,7 @@ namespace UniLiveViewer.Player
 
             _playerStateManager.enabled = false;
 
-            _passthroughService.OnStart();
+            
             _playerStateManager.OnStart();
         }
 
