@@ -13,11 +13,11 @@ namespace UniLiveViewer.Menu
     public class ThumbnailService
     {
         public IObservable<Button_Base> OnClickAsObservable => _clickStream;
-        Subject<Button_Base> _clickStream = new();
+        readonly Subject<Button_Base> _clickStream = new();
 
         Button_Base _btnPrefab;
-        List<TextMesh> _texts = new();
-        Button_Base[] _buttons = new Button_Base[20];
+        readonly List<TextMesh> _texts = new();
+        readonly Button_Base[] _buttons = new Button_Base[20];
 
         int[] GENERATE_INTERVAL = { 70, 210, 350 };//ミリ秒
         int[] GENERATE_COUNT = { 1, 3, 5 };//一括表示数、1～15
@@ -52,8 +52,6 @@ namespace UniLiveViewer.Menu
         /// <summary>
         /// サムネ用の空ボタン生成
         /// </summary>
-        /// <param name="token"></param>
-        /// <returns></returns>
         async UniTask<Button_Base[]> CreateButtonAsync(CancellationToken cancellation)
         {
             var index = 0;
@@ -68,7 +66,7 @@ namespace UniLiveViewer.Menu
                     _buttons[index].transform.Also((it) =>
                     {
                         it.parent = _thumbnailAnchor.transform;
-                        it.localPosition = new Vector3(-0.3f + (j * 0.15f), 0 - (i * 0.12f));
+                        it.localPosition = new Vector3(-0.2f + (j * 0.12f), 0 - (i * 0.12f));
                         it.localRotation = Quaternion.identity;
                         _texts.Add(it.GetChild(1).GetComponent<TextMesh>());
                     });
@@ -141,7 +139,6 @@ namespace UniLiveViewer.Menu
         /// <summary>
         /// 表示するサムネを更新
         /// </summary>
-        /// <param name="index"></param>
         void UpdateSprite(string[] clampedData, int index)
         {
             try
@@ -163,7 +160,6 @@ namespace UniLiveViewer.Menu
         /// <summary>
         /// 一括表示変更
         /// </summary>
-        /// <param name="isEnabel"></param>
         void ThumbnailShow(bool isEnabel)
         {
             for (int i = 0; i < _texts.Count; i++)
@@ -176,7 +172,6 @@ namespace UniLiveViewer.Menu
         /// <summary>
         /// ランダムシャッフル（ランダムな2要素を交換→シャッフルされない要素もありえる）
         /// </summary>
-        /// <param name="num"></param>
         int[] Shuffle(int[] inputArray)
         {
             for (int i = 0; i < inputArray.Length; i++)

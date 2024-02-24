@@ -57,7 +57,7 @@ namespace UniLiveViewer.Actor.AttachPoint
             await SetupLeftHandAsync(cancellation);
             await SetupRightHandAsync(cancellation);
 
-            SetActive(true);
+            SetActive(false);
         }
 
         async UniTask SetupAsync(HumanBodyBones humanBodyBone, float scale, CancellationToken cancellation)

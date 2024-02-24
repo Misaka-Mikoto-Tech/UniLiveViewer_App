@@ -11,7 +11,7 @@ using VContainer.Unity;
 
 namespace UniLiveViewer.Actor
 {
-    public class VRMActorEntityPresenter : IAsyncStartable, ITickable, IDisposable
+    public class ActorEntityPresenter : IAsyncStartable, ITickable, IDisposable
     {
         bool _isTick;
 
@@ -21,18 +21,19 @@ namespace UniLiveViewer.Actor
         readonly IActorEntity _actorEntity;
         readonly InstanceId _instanceId;
         readonly GeneratorPortalAnchor _firstParent;
+
         readonly CompositeDisposable _disposables = new();
 
         [Inject]
-        public VRMActorEntityPresenter(
-            ISubscriber<AllActorOperationMessage> allSubScriber,
+        public ActorEntityPresenter(
+            ISubscriber<AllActorOperationMessage> allSubscriber,
             ISubscriber<ActorOperationMessage> subscriber,
             ISubscriber<ActorResizeMessage> resizeSubscriber,
             IActorEntity actorEntity,
             InstanceId instanceId,
             GeneratorPortalAnchor firstParent)
         {
-            _allSubscriber = allSubScriber;
+            _allSubscriber = allSubscriber;
             _subscriber = subscriber;
             _resizeSubscriber = resizeSubscriber;
             _actorEntity = actorEntity;
@@ -68,6 +69,7 @@ namespace UniLiveViewer.Actor
 
             await _actorEntity.SetupAsync(_firstParent.transform, cancellation);
         }
+
         void OnCommand(ActorCommand command)
         {
             if (command == ActorCommand.ACTIVE)

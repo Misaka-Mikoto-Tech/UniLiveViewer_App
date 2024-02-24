@@ -2,7 +2,6 @@
 using MessagePipe;
 using System;
 using System.Threading;
-using UniLiveViewer.Timeline;
 using UniRx;
 using VContainer;
 using VContainer.Unity;
@@ -11,21 +10,20 @@ namespace UniLiveViewer.Menu
 {
     public class VRMMenuPresenter : IAsyncStartable, IDisposable
     {
-        readonly ISubscriber<VRMMenuShowMessage> _menuShowsubScriber;
+        readonly ISubscriber<VRMMenuShowMessage> _menuShowSubscriber;
         readonly MenuRootService _menuRootService;
         readonly ThumbnailService _thumbnailService;
         readonly CharacterPage _characterPage;
-
         readonly CompositeDisposable _disposables = new();
 
         [Inject]
         public VRMMenuPresenter(
-            ISubscriber<VRMMenuShowMessage> menuShowsubScriber,
+            ISubscriber<VRMMenuShowMessage> menuShowSubscriber,
             MenuRootService menuRootService,
             ThumbnailService thumbnailService,
             CharacterPage characterPage)
         {
-            _menuShowsubScriber = menuShowsubScriber;
+            _menuShowSubscriber = menuShowSubscriber;
             _menuRootService = menuRootService;
             _thumbnailService = thumbnailService;
             _characterPage = characterPage;
@@ -33,7 +31,7 @@ namespace UniLiveViewer.Menu
 
         async UniTask IAsyncStartable.StartAsync(CancellationToken cancellation)
         {
-            _menuShowsubScriber
+            _menuShowSubscriber
                 .Subscribe(x =>
                 {
                     var isEnable = x.PageIndex == -1 ? false : true;

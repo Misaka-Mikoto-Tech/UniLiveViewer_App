@@ -5,6 +5,7 @@ using System.Threading;
 using UniLiveViewer.MessagePipe;
 using UniLiveViewer.Timeline;
 using UniRx;
+using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
@@ -22,8 +23,7 @@ namespace UniLiveViewer.Menu
         bool _isReverse;
         int _clipIndex = 0;
         /// <summary>
-        /// 完了するまでCurrent操作無効化
-        /// TODO: 未対応
+        /// TODO: 未対応、Func<Task>試行したけど制御キツイ
         /// </summary>
         bool _isVRMLoading;
 
@@ -66,7 +66,10 @@ namespace UniLiveViewer.Menu
         async UniTask IAsyncStartable.StartAsync(CancellationToken cancellation)
         {
             _vrmLoadSubscriber
-                .Subscribe(_ => _isVRMLoading = false).AddTo(_disposables);
+                .Subscribe(_ =>
+                {
+                    _isVRMLoading = false;
+                }).AddTo(_disposables);
 
             // 購読より先に
             _actorEntityManager.RegisterFBX();
@@ -80,10 +83,16 @@ namespace UniLiveViewer.Menu
 
             _characterPage.FBXIndex
                 .SkipLatestValueOnSubscribe()
-                .Subscribe(x => ActiveFBXAsync(x, cancellation).Forget()).AddTo(_disposables);
+                .Subscribe(x =>
+                {
+                    ActiveFBXAsync(x, cancellation).Forget();
+                }).AddTo(_disposables);
             _characterPage.VRMIndex
                 .SkipLatestValueOnSubscribe()
-                .Subscribe(x => ActiveVRMAsync(x, cancellation).Forget()).AddTo(_disposables);
+                .Subscribe(x =>
+                {
+                    ActiveVRMAsync(x, cancellation).Forget();
+                }).AddTo(_disposables);
 
             _characterPage.IsReverse
                 .SkipLatestValueOnSubscribe()
@@ -137,7 +146,7 @@ namespace UniLiveViewer.Menu
                 {
                     if (!_actorEntityManager.TryGetCurrentInstaceID(out var instanceId)) return;
                     _playableBinderService.BindingNewActor(instanceId, actor);
-                    _characterPage.UpdateActor(x);
+                    _characterPage.OnBindingNewActor(x);
                 });
         }
 
@@ -146,10 +155,11 @@ namespace UniLiveViewer.Menu
             if (SystemInfo.MaxFieldChara <= _playableBinderService.StageActorCount.Value) return;
 
             _actorCurrentMode = CurrentMode.CUSTOM;
+
             if (index == 0)
             {
                 _publisher.Publish(new VRMMenuShowMessage(0));
-                _actorEntityManager.AllActorDisable();
+                _actorEntityManager.SendAllActorDisableMessage();
                 _playableBinderService.PortalUnbind();
                 _characterPage.OnVRMLoadFrame();
             }
@@ -159,6 +169,7 @@ namespace UniLiveViewer.Menu
                 var actor = await _actorEntityManager.ActiveVRMAsync(index, cancellation);
                 if (actor == null) return;
 
+
                 // AddToは挙動異なるのでNG
                 _serialDisposable.Disposable = actor.ActorEntity()
                     .Where(x => x != null)
@@ -166,7 +177,7 @@ namespace UniLiveViewer.Menu
                     {
                         if (!_actorEntityManager.TryGetCurrentInstaceID(out var instanceId)) return;
                         _playableBinderService.BindingNewActor(instanceId, actor);
-                        _characterPage.UpdateActor(x);
+                        _characterPage.OnBindingNewActor(x);
                     });
             }
         }

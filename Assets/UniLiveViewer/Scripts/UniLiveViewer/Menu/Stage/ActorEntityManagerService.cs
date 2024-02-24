@@ -19,12 +19,12 @@ namespace UniLiveViewer.Menu
         /// 登録された件数（生成の可否は不定）
         /// </summary>
         public int NumRegisteredFBX => _actorRegisterService.RegisterDataFBX.Count;
-        List<ActorData> _fbxList = new();
+        readonly List<ActorData> _fbxList = new();
         /// <summary>
         /// 登録された件数（生成の可否は不定）
         /// </summary>
         public int NumRegisteredVRM => _actorRegisterService.RegisterDataVRM.Count;
-        List<ActorData> _vrmList = new();
+        readonly List<ActorData> _vrmList = new();
 
         /// <summary>
         /// 召喚時などは不在なのでnull
@@ -108,7 +108,7 @@ namespace UniLiveViewer.Menu
             _vrmList.Add(null);
         }
 
-        public void AllActorDisable()
+        public void SendAllActorDisableMessage()
         {
             var message = new AllActorOperationMessage(ActorState.MINIATURE, ActorCommand.INACTIVE);
             _allPublisher.Publish(message);
@@ -122,7 +122,7 @@ namespace UniLiveViewer.Menu
                 return null;
             }
 
-            AllActorDisable();
+            SendAllActorDisableMessage();
 
             // 既出ならアクティブ化のみ
             if (_fbxList[index] != null)
@@ -130,8 +130,6 @@ namespace UniLiveViewer.Menu
                 _currentInstaceID = _fbxList[index].GetInstanceId();
                 var message = new ActorOperationMessage(_currentInstaceID, ActorCommand.ACTIVE);
                 _publisher.Publish(message);
-
-                Debug.LogWarning($"tes:{index}:{_fbxList.Count}:{_currentInstaceID}");
                 return _fbxList[index].ActorEntity;
             }
             // 生成(アクティブ状態で生成される)
@@ -158,7 +156,7 @@ namespace UniLiveViewer.Menu
                 return null;
             }
 
-            AllActorDisable();
+            SendAllActorDisableMessage();
 
             // 既出ならアクティブ化のみ
             if (_vrmList[index] != null)
@@ -166,8 +164,6 @@ namespace UniLiveViewer.Menu
                 _currentInstaceID = _vrmList[index].GetInstanceId();
                 var message = new ActorOperationMessage(_currentInstaceID, ActorCommand.ACTIVE);
                 _publisher.Publish(message);
-
-                Debug.LogWarning($"tes:{index}:{_vrmList.Count}:{_currentInstaceID}");
                 return _vrmList[index].ActorEntity;
             }
             // 生成(アクティブ状態で生成される)

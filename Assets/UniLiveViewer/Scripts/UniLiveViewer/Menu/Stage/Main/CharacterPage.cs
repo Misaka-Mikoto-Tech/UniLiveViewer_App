@@ -12,6 +12,9 @@ namespace UniLiveViewer.Menu
 {
     public class CharacterPage : MonoBehaviour
     {
+        [SerializeField] Stage.LoadAnimation _loadingAnimation;
+        [SerializeField] TextMesh _pleasePushText;
+
         MenuManager _menuManager;
         [Header("--- Preset or Custom ---")]
         [SerializeField] Button_Switch[] _switchChara = new Button_Switch[2];
@@ -32,7 +35,6 @@ namespace UniLiveViewer.Menu
         [Header("--- ---")]
         [SerializeField] Button_Base[] _btnOffset = new Button_Base[2];
         [SerializeField] Button_Switch _switchReverse;
-        [SerializeField] Button_Base _btnVRMLoad;
         [SerializeField] Button_Base _btnDeleteAll;
         [SerializeField] TextMesh[] textMeshs = null;
 
@@ -101,7 +103,7 @@ namespace UniLiveViewer.Menu
             if (data != null) return;
 
             //初期召喚と未生成を想定した自動生成
-            await UniTask.Delay(500);
+            await UniTask.Delay(250);
             EvaluateActorIndex(0);
         }
 
@@ -196,9 +198,6 @@ namespace UniLiveViewer.Menu
             //        //var instance = Instantiate(vrm).GetComponent<CharaController>();
             //        //instance.SetState(CharaController.CHARASTATE.MINIATURE, generatorPortal.transform);
             //    }).AddTo(_disposable);
-
-            //VRMロードの画面とボタンを非表示
-            _btnVRMLoad.gameObject.SetActive(false);
 
             if (_offsetAnchor.gameObject.activeSelf) _offsetAnchor.gameObject.SetActive(false);
             if (_vrmOptionAnchor.gameObject.activeSelf) _vrmOptionAnchor.gameObject.SetActive(false);
@@ -364,10 +363,14 @@ namespace UniLiveViewer.Menu
         /// Timelineにバインド完了した直後を想定
         /// </summary>
         /// <param name="actorEntity"></param>
-        public void UpdateActor(ActorEntity actorEntity)
+        public void OnBindingNewActor(ActorEntity actorEntity)
         {
-            if (_btnVRMLoad.gameObject.activeSelf) _btnVRMLoad.gameObject.SetActive(false);
+            _loadingAnimation.gameObject.SetActive(false);
+            UpdateActorInfo(actorEntity);
+        }
 
+        void UpdateActorInfo(ActorEntity actorEntity)
+        {
             var actorName = actorEntity?.CharaInfoData.viewName;
             textMeshs[0].text = actorName;
             textMeshs[0].fontSize = actorName.FontSizeMatch(600, 30, 50);
@@ -407,6 +410,7 @@ namespace UniLiveViewer.Menu
         /// </summary>
         public void OnClickThumbnail()
         {
+            _pleasePushText.gameObject.SetActive(false);
             var maxIndex = _actorEntityManagerService.NumRegisteredVRM - 1;
             var moveIndex = maxIndex - _vrmIndex.Value;
             EvaluateActorIndex(moveIndex);
@@ -414,11 +418,15 @@ namespace UniLiveViewer.Menu
 
         void EvaluateActorIndex(int moveIndex)
         {
+            _pleasePushText.gameObject.SetActive(false);//非表示で初期化しておく
+
             if (_currentActorMode == CurrentMode.PRESET)
             {
                 var pendingIndex = _fbxIndex.Value + moveIndex;
                 if (pendingIndex < 0) pendingIndex = _actorEntityManagerService.NumRegisteredFBX - 1;
                 else if (_actorEntityManagerService.NumRegisteredFBX <= pendingIndex) pendingIndex = 0;
+
+                _loadingAnimation.gameObject.SetActive(true);
 
                 _fbxIndex.SetValueAndForceNotify(pendingIndex);
             }
@@ -427,6 +435,10 @@ namespace UniLiveViewer.Menu
                 var pendingIndex = _vrmIndex.Value + moveIndex;
                 if (pendingIndex < 0) pendingIndex = _actorEntityManagerService.NumRegisteredVRM - 1;
                 else if (_actorEntityManagerService.NumRegisteredVRM <= pendingIndex) pendingIndex = 0;
+
+                // 0はサムネページ
+                if (pendingIndex == 0) _pleasePushText.gameObject.SetActive(true);
+                else _loadingAnimation.gameObject.SetActive(true);
 
                 _vrmIndex.SetValueAndForceNotify(pendingIndex);
             }

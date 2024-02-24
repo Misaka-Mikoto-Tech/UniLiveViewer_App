@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System.Threading;
 using UniLiveViewer.Actor;
 using UniLiveViewer.Stage;
@@ -9,7 +9,7 @@ namespace UniLiveViewer.Menu
     /// <summary>
     /// VRMサムネメニュー画面
     /// 
-    /// TODO: もうUI切り替えくらいしか機能ないのできれいにしたい
+    /// TODO: 使ってないので一部引っ越して削除する
     /// </summary>
     public class VRMSwitchController : MonoBehaviour
     {
@@ -20,7 +20,6 @@ namespace UniLiveViewer.Menu
 
         [Space(1), Header("＜1ページ＞")]
         [SerializeField] TextMesh[] _textDirectory;
-        [SerializeField] LoadAnimation _anime_Loading;
         [Space(1), Header("＜2ページ＞")]
         [SerializeField] Button_Base _btnApply;
         [SerializeField] PrefabEditor _prefabEditor;
@@ -55,26 +54,6 @@ namespace UniLiveViewer.Menu
             await UniTask.CompletedTask;
         }
 
-        public void OnClickThumbnail(string buttonName, CancellationToken cancellation)
-        {
-            //ローディングアニメーション開始
-            _anime_Loading.gameObject.SetActive(true);
-        }
-
-        public void OnVRMLoadEnd(IActorEntity actorEntity)
-        {
-            if (actorEntity == null)
-            {
-                var dummyToken = new CancellationToken();
-                OnError(dummyToken).Forget();
-            }
-            else
-            {
-                //ローディングアニメーション終了
-                _anime_Loading.gameObject.SetActive(false);
-            }
-        }
-
         /// <summary>
         /// カレントページで開き直す（初期化）
         /// </summary>
@@ -103,9 +82,6 @@ namespace UniLiveViewer.Menu
                     //フォルダパスの表示を更新
                     _textDirectory[0].text = $"({PathsInfo.GetFullPath(FolderType.CHARA)}/)";
                     _textDirectory[1].text = $"/Download...[{_fileManager.CountVRM(PathsInfo.GetFullPath_Download() + "/")} VRMs]";
-
-                    //ローディングアニメーションを無効状態
-                    _anime_Loading.gameObject.SetActive(false);
                     break;
                 case 1:
                     //prefabEditor.Init();

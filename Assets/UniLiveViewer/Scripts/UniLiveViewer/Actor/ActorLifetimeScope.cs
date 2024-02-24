@@ -84,7 +84,6 @@ namespace UniLiveViewer.Actor
 
                 builder.Register<IActorEntity, FBXActorService>(Lifetime.Singleton);
                 FBXFacialExpressionConfigure(builder);
-                builder.RegisterEntryPoint<FBXActorEntityPresenter>();
             }
             else if (_charaInfoData.ActorType == ActorType.VRM)
             {
@@ -94,9 +93,10 @@ namespace UniLiveViewer.Actor
                 builder.Register<VRMService>(Lifetime.Singleton);
                 builder.Register<IActorEntity, VRMActorService>(Lifetime.Singleton);
                 VRMFacialExpressionConfigure(builder);
-                builder.RegisterEntryPoint<VRMActorEntityPresenter>();
                 builder.RegisterEntryPoint<SpringBonePresenter>();
             }
+
+            builder.RegisterEntryPoint<ActorEntityPresenter>();
 
             builder.Register<LookatService>(Lifetime.Singleton);
             builder.RegisterEntryPoint<LookatPresenter>();
