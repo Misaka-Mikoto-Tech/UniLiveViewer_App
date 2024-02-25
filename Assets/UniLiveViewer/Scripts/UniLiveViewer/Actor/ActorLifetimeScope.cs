@@ -1,4 +1,6 @@
-﻿using UniLiveViewer.Actor.Animation;
+﻿using Cysharp.Threading.Tasks;
+using System.Threading;
+using UniLiveViewer.Actor.Animation;
 using UniLiveViewer.Actor.AttachPoint;
 using UniLiveViewer.Actor.Expression;
 using UniLiveViewer.Actor.LookAt;
@@ -37,6 +39,23 @@ namespace UniLiveViewer.Actor
 
     public class ActorLifetimeScope : LifetimeScope
     {
+        protected override void Awake()
+        {
+            autoRun = false;
+            base.Awake();
+        }
+
+        public async UniTask BuildAsync(CancellationToken cancellation)
+        {
+            await UniTask.RunOnThreadPool(Build, cancellationToken: cancellation);
+
+            // 良い解決方法が思いつかない..
+            ActorId = Container.Resolve<ActorId>();
+            _actorId = ActorId.ID;
+            InstanceId = Container.Resolve<InstanceId>();
+            _instanceId = InstanceId.Id;
+        }
+
         public ActorId ActorId { get; private set; }
         public InstanceId InstanceId { get; private set; }
 
@@ -47,6 +66,8 @@ namespace UniLiveViewer.Actor
         [SerializeField] int _actorId;
         [SerializeField] int _instanceId;
         [SerializeField] CharaInfoData _charaInfoData;
+        [SerializeField] Animator _animator;//FBXのみ
+
         /// <summary>
         /// JumpList用
         /// </summary>
@@ -78,17 +99,14 @@ namespace UniLiveViewer.Actor
             if (_charaInfoData.ActorType == ActorType.FBX)
             {
                 builder.RegisterInstance(_charaInfoData);
-
-                var animator = transform.GetComponentInChildren<Animator>();
-                builder.RegisterInstance(animator);
+                builder.RegisterInstance(_animator);
 
                 builder.Register<IActorEntity, FBXActorService>(Lifetime.Singleton);
                 FBXFacialExpressionConfigure(builder);
             }
             else if (_charaInfoData.ActorType == ActorType.VRM)
             {
-                var charaInfoData = Instantiate(_charaInfoData);
-                builder.RegisterInstance(charaInfoData);
+                builder.RegisterInstance(_charaInfoData);
 
                 builder.Register<VRMService>(Lifetime.Singleton);
                 builder.Register<IActorEntity, VRMActorService>(Lifetime.Singleton);
@@ -104,14 +122,14 @@ namespace UniLiveViewer.Actor
             AttachPointConfigure(builder);
         }
 
-        void Start()
-        {
-            // 良い解決方法が思いつかない..
-            ActorId = Container.Resolve<ActorId>();
-            _actorId = ActorId.ID;
-            InstanceId = Container.Resolve<InstanceId>();
-            _instanceId = InstanceId.Id;
-        }
+        //void Start()
+        //{
+        //    // 良い解決方法が思いつかない..
+        //    ActorId = Container.Resolve<ActorId>();
+        //    _actorId = ActorId.ID;
+        //    InstanceId = Container.Resolve<InstanceId>();
+        //    _instanceId = InstanceId.Id;
+        //}
 
         void PhysicsConfigure(IContainerBuilder builder)
         {
@@ -137,10 +155,8 @@ namespace UniLiveViewer.Actor
 
         void VRMFacialExpressionConfigure(IContainerBuilder builder)
         {
-            var lipSync = GameObject.Instantiate(_lipSyncVRM.gameObject).GetComponent<LipSync_VRM>();
-            builder.RegisterInstance(lipSync).As<ILipSync>();
-            var faceSync = GameObject.Instantiate(_faceSyncVRM.gameObject).GetComponent<FacialSync_VRM>();
-            builder.RegisterInstance(faceSync).As<IFacialSync>();
+            builder.RegisterInstance(_lipSyncVRM).As<ILipSync>();
+            builder.RegisterInstance(_faceSyncVRM).As<IFacialSync>();
             builder.Register<ExpressionService>(Lifetime.Singleton);
             builder.RegisterEntryPoint<ExpressionPresenter>();
         }

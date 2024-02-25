@@ -41,7 +41,7 @@ namespace UniLiveViewer.Menu
             using (LifetimeScope.Enqueue(installer))
             {
                 var instance = GameObject.Instantiate(actorLifetimeScope, InitPos, Quaternion.identity);
-                await UniTask.Yield(cancellation);
+                await instance.BuildAsync(cancellation);
                 var option = instance.CreateChildFromPrefab(_setting.OptionLifetimeScope);
                 option.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
                 _instanceId++;
@@ -59,7 +59,7 @@ namespace UniLiveViewer.Menu
             using (LifetimeScope.Enqueue(installer))
             {
                 var instance = GameObject.Instantiate(_setting.VrmActorLifetimeScopePrefab, InitPos, Quaternion.identity);
-                await UniTask.Yield(cancellation);
+                await instance.BuildAsync(cancellation);
                 var option = instance.CreateChildFromPrefab(_setting.OptionLifetimeScope);
                 option.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
                 _instanceId++;

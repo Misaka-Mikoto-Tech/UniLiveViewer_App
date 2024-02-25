@@ -11,19 +11,19 @@ namespace UniLiveViewer.Actor.Option
         GameObject _anchor;
         ActorEntity _actorEntity;
 
-        readonly Transform _parent;
+        readonly LifetimeScope _parent;
 
         [Inject]
         public GuideAnchorService(LifetimeScope lifetimeScope)
         {
-            _parent = lifetimeScope.transform;
+            _parent = lifetimeScope;
         }
 
         public void Setup()
         {
             if (_anchor != null) return;
             _anchor = GameObject.Instantiate(Resources.Load<GameObject>(Path));
-            _anchor.transform.parent = _parent;
+            _anchor.transform.parent = _parent.transform;
             SetEnable(false);
         }
 

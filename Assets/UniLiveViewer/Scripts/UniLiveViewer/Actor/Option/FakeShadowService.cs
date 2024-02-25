@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UniLiveViewer.Actor;
 using UnityEngine;
 using VContainer;
@@ -18,13 +18,13 @@ namespace UniLiveViewer.Timeline
         ShadowData _shadowData;
         ActorEntity _actorEntity;
 
-        readonly Transform _parent;
+        readonly LifetimeScope _parent;
         readonly QuasiShadowSetting _setting;
 
         [Inject]
         public FakeShadowService(LifetimeScope lifetimeScope, QuasiShadowSetting setting)
         {
-            _parent = lifetimeScope.transform;
+            _parent = lifetimeScope;
             _setting = setting;
         }
 
@@ -38,7 +38,7 @@ namespace UniLiveViewer.Timeline
             //bounds.Expand(100);
             //meshFilter.mesh.bounds = bounds;
 
-            _shadowData = new ShadowData(meshRenderer, _parent);
+            _shadowData = new ShadowData(meshRenderer, _parent.transform);
             _shadowData.SetMeshRenderers(false, null, null);
             SetEnable(false);
 

@@ -91,7 +91,8 @@ namespace UniLiveViewer.Actor
             await UniTask.Delay(100);
 
             var vmdPlayer = go.AddComponent<VMDPlayer_Custom>();
-            vmdPlayer.Initialize(_charaInfoData, _faceSync, _lipSync);
+            var charaInfoData = GameObject.Instantiate(_charaInfoData);
+            vmdPlayer.Initialize(charaInfoData, _faceSync, _lipSync);
             _actorEntity.Value = new ActorEntity(_animatorCache, _charaInfoData, vmdPlayer);
 
             await _attachPointService.SetupAsync(_actorEntity.Value.BoneMap, cancellation);

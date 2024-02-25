@@ -115,12 +115,15 @@ namespace UniLiveViewer.Actor
             go.name = go.GetComponent<VRMMeta>().Meta.Title;
             go.layer = Constants.LayerNoGrabObject;//オートカメラ識別にも利用
 
+            var lipSync = GameObject.Instantiate(_lipSync);
+            var faceSync = GameObject.Instantiate(_faceSync);
+
             var animator = instance.GetComponent<Animator>();
             {
                 // 表情系
                 var vrmBlendShape = go.GetComponent<VRMBlendShapeProxy>();
-                _lipSync.Setup(instance.transform, vrmBlendShape);
-                _faceSync.Setup(instance.transform, vrmBlendShape);
+                lipSync.Setup(instance.transform, vrmBlendShape);
+                faceSync.Setup(instance.transform, vrmBlendShape);
             }
 
             // TODO: 最後に調整、デバッグ用
@@ -143,7 +146,8 @@ namespace UniLiveViewer.Actor
             _charaInfoData.viewName = go.name;
 
             var vmdPlayer = go.AddComponent<VMDPlayer_Custom>();
-            vmdPlayer.Initialize(_charaInfoData, _faceSync, _lipSync);
+            var charaInfoData = GameObject.Instantiate(_charaInfoData);
+            vmdPlayer.Initialize(charaInfoData, faceSync, lipSync);
 
             var lifetimeScope = LifetimeScope.FindObjectOfType<PlayerLifetimeScope>();//ﾕﾙｼﾃ
             var colliders = lifetimeScope.Container.Resolve<VRMTouchColliders>();
