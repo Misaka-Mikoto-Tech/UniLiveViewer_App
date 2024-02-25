@@ -17,7 +17,6 @@ namespace UniLiveViewer.Menu
     /// </summary>
     public class ConfigPage : MonoBehaviour
     {
-        public static bool isSmoothVMD = false;
         [SerializeField] private MenuManager menuManager;
 
         [Header("＜シーン別＞")]
@@ -119,9 +118,8 @@ namespace UniLiveViewer.Menu
 
             for (int i = 0; i < btn_General.Length; i++)
             {
-                btn_General[i].onTrigger += Click_Action;
+                btn_General[i].onTrigger += OnClickButtonAction;
             }
-            btn_General[0].isEnable = isSmoothVMD;//スムースは毎回無効化
         }
         void OnEnable()
         {
@@ -282,6 +280,7 @@ namespace UniLiveViewer.Menu
             }
 
             //共用
+            btn_General[0].isEnable = FileReadAndWriteUtility.UserProfile.IsSmoothVMD;
             btn_General[1].isEnable = _passthroughService.IsInsightPassthroughEnabled();
             btn_General[2].isEnable = FileReadAndWriteUtility.UserProfile.TouchVibration;
 
@@ -310,12 +309,13 @@ namespace UniLiveViewer.Menu
 #endif
         }
 
-        void Click_Action(Button_Base btn)
+        void OnClickButtonAction(Button_Base btn)
         {
             //スムース
             if (btn == btn_General[0])
             {
-                isSmoothVMD = btn.isEnable;
+                FileReadAndWriteUtility.UserProfile.IsSmoothVMD = btn.isEnable;
+                FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
             }
             //パススルー
             else if (btn == btn_General[1])

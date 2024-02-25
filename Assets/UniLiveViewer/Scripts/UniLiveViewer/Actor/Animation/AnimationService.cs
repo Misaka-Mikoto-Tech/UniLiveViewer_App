@@ -1,4 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
+using System.IO;
 using System.Threading;
 using UniLiveViewer.Menu;
 using UniLiveViewer.Timeline;
@@ -89,30 +90,44 @@ namespace UniLiveViewer.Actor.Animation
         /// VMDを再生する
         /// TODO: いつかちゃんとする
         /// </summary>
-        /// <param name="vmd">nullなら新規扱い</param>
+        /// <param name="vmd"></param>
         /// <param name="folderPath"></param>
         /// <param name="fileName"></param>
-        /// <param name="isBaseMotion">通常か表情か</param>
+        /// <param name="isBaseMotion"></param>
         /// <param name="cancellation"></param>
         /// <returns></returns>
         async UniTask PlayVMDAsync(VMD vmd, string folderPath, string fileName, bool isBaseMotion, CancellationToken cancellation)
         {
+            var isSmoothVMD = FileReadAndWriteUtility.UserProfile.IsSmoothVMD;
+            var boneAmplifier = FileReadAndWriteUtility.UserProfile.VMDScale;
+
             //新規
             if (vmd == null)
             {
-                var isSmoothVMD = true;
-                var boneAmplifier = FileReadAndWriteUtility.UserProfile.VMDScale;
-                var newVMD = await _actorEntity.GetVMDPlayer.Starter(
-                    null, folderPath, fileName, boneAmplifier, isSmoothVMD, isBaseMotion, cancellation);
+                var info = new VMDSetupInfo(null, folderPath, fileName, boneAmplifier, isSmoothVMD);
+                VMD newVMD = null;
+                if (isBaseMotion)
+                {
+                    newVMD = await _actorEntity.GetVMDPlayer.SetupBaseMotion(info, cancellation);
+                }
+                else
+                {
+                    newVMD = await _actorEntity.GetVMDPlayer.SetupExpression(info, cancellation);
+                }
                 _vmdData.Add(fileName, newVMD);
             }
             //既存は使いまわす
             else
             {
-                var isSmoothVMD = true;
-                var boneAmplifier = FileReadAndWriteUtility.UserProfile.VMDScale;
-                await _actorEntity.GetVMDPlayer.Starter(
-                    vmd, folderPath, fileName, boneAmplifier, isSmoothVMD, isBaseMotion, cancellation);
+                var info = new VMDSetupInfo(vmd, folderPath, fileName, boneAmplifier, isSmoothVMD);
+                if (isBaseMotion)
+                {
+                    await _actorEntity.GetVMDPlayer.SetupBaseMotion(info, cancellation);
+                }
+                else
+                {
+                    await _actorEntity.GetVMDPlayer.SetupExpression(info, cancellation);
+                }
             }
         }
 
@@ -127,8 +142,15 @@ namespace UniLiveViewer.Actor.Animation
             }
             else
             {
-                var vmd = _vmdData.TryGetCurrentSyncVMD(syncFileName);
                 var folderPath = PathsInfo.GetFullPath_LipSync() + "/";
+                var fullPath = folderPath + syncFileName;
+                if (!File.Exists(fullPath))
+                {
+                    Debug.LogWarning($"file does not exist:{fullPath}");
+                    return;
+                }
+
+                var vmd = _vmdData.TryGetCurrentSyncVMD(syncFileName);
                 await PlayVMDAsync(vmd, folderPath, syncFileName, false, cancellation);
             }
         }

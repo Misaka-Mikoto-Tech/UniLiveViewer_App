@@ -189,6 +189,7 @@ namespace UniLiveViewer.Menu
             _clipIndex = index;
             var message = new ActorAnimationMessage(instanceId, _animationCurrentMode, _isReverse, _clipIndex);
             _animationPublisher.Publish(message);
+            _characterPage.OnBindingNewAnimation();
         }
 
         void ReverseClipAsync(bool isReverse)
@@ -197,6 +198,7 @@ namespace UniLiveViewer.Menu
             if (!_actorEntityManager.TryGetCurrentInstaceID(out var instanceId)) return;
             var message = new ActorAnimationMessage(instanceId, _animationCurrentMode, _isReverse, _clipIndex);
             _animationPublisher.Publish(message);
+            _characterPage.OnBindingNewAnimation();
         }
 
         void ActiveVMDAsync(int index)
@@ -206,6 +208,7 @@ namespace UniLiveViewer.Menu
             if (!_actorEntityManager.TryGetCurrentInstaceID(out var instanceId)) return;
             var message = new ActorAnimationMessage(instanceId, _animationCurrentMode, false, index);
             _animationPublisher.Publish(message);
+            _characterPage.OnBindingNewAnimation();
         }
 
         void IDisposable.Dispose()

@@ -8,6 +8,7 @@ namespace UniLiveViewer
         public float InitCharaSize = 1.15f;
         public float CharaShadow = 1.25f;
         public int CharaShadowType = 1;
+        public bool IsSmoothVMD = false;
         public float VMDScale = 0.750f;
         public bool TouchVibration = true;
         public bool StepSE = true;
