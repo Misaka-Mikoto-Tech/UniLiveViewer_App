@@ -1,6 +1,7 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using VRM;
+using System.Linq;
 
 namespace UniLiveViewer.Actor.Expression
 {
@@ -13,36 +14,52 @@ namespace UniLiveViewer.Actor.Expression
         [Header("<keyName不要>")]
         [SerializeField] BindInfo[] _bindInfo;
 
-        public readonly Dictionary<LIPTYPE, BlendShapePreset> dicVMRMorph = new Dictionary<LIPTYPE, BlendShapePreset>()
+        readonly Dictionary<LIPTYPE, BlendShapePreset> _presetMap = new()
         {
-            {LIPTYPE.A ,BlendShapePreset.A},
-            {LIPTYPE.I ,BlendShapePreset.I},
-            {LIPTYPE.U ,BlendShapePreset.U},
-            {LIPTYPE.E ,BlendShapePreset.E},
-            {LIPTYPE.O ,BlendShapePreset.O}
+            { LIPTYPE.A, BlendShapePreset.A },
+            { LIPTYPE.I, BlendShapePreset.I },
+            { LIPTYPE.U, BlendShapePreset.U },
+            { LIPTYPE.E, BlendShapePreset.E },
+            { LIPTYPE.O, BlendShapePreset.O }
         };
 
-        public void Setup(Transform parent, VRMBlendShapeProxy blendShape)
+        string[] ILipSync.GetKeyArray() => _customMap.Keys?.ToArray();
+        readonly Dictionary<string, BlendShapePreset> _customMap = new()
+        {
+            { "あ", BlendShapePreset.A },
+            { "い", BlendShapePreset.I },
+            { "う", BlendShapePreset.U },
+            { "え", BlendShapePreset.E },
+            { "お", BlendShapePreset.O },
+        };
+
+        void ILipSync.Setup(Transform parent, VRMBlendShapeProxy blendShape)
         {
             _blendShapeProxy = blendShape;
             transform.SetParent(parent);
             transform.name = ActorConstants.LipSyncController;
         }
 
-        void ILipSync.MorphUpdate()
+        void ILipSync.Morph()
         {
             if (_blendShapeProxy == null) return;
 
             var total = 1.0f;
             var w = 0.0f;
-            foreach (var e in _bindInfo)
+            foreach (var info in _bindInfo)
             {
-                w = total * GetWeight(e.node);
-                var preset = dicVMRMorph[e.lipType];
+                w = total * GetWeight(info.node);
+                var preset = _presetMap[info.lipType];
                 var blendShapeKey = BlendShapeKey.CreateFromPreset(preset);
                 _blendShapeProxy.ImmediatelySetValue(blendShapeKey, w);
                 total -= w;
             }
+        }
+
+        void ILipSync.Morph(string key, float weight)
+        {
+            var preset = _customMap[key];
+            _blendShapeProxy.ImmediatelySetValue(BlendShapeKey.CreateFromPreset(preset), weight);
         }
 
         /// <summary>
@@ -52,9 +69,9 @@ namespace UniLiveViewer.Actor.Expression
         {
             if (_blendShapeProxy == null) return;
 
-            foreach (var e in dicVMRMorph.Values)
+            foreach (var preset in _presetMap.Values)
             {
-                _blendShapeProxy.ImmediatelySetValue(BlendShapeKey.CreateFromPreset(e), 0);
+                _blendShapeProxy.ImmediatelySetValue(BlendShapeKey.CreateFromPreset(preset), 0);
             }
         }
 

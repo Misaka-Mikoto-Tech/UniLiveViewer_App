@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using VRM;
 
@@ -13,8 +14,7 @@ namespace UniLiveViewer.Actor.Expression
         [Header("<keyName不要>")]
         [SerializeField] SkinBindInfo[] _skinBindInfo;
         
-
-        public readonly Dictionary<FACIALTYPE, BlendShapePreset> dicVMRMorph = new Dictionary<FACIALTYPE, BlendShapePreset>()
+        readonly Dictionary<FACIALTYPE, BlendShapePreset> _presetMap = new ()
         {
             {FACIALTYPE.BLINK,BlendShapePreset.Blink},
             {FACIALTYPE.JOY,BlendShapePreset.Joy},
@@ -24,28 +24,45 @@ namespace UniLiveViewer.Actor.Expression
             {FACIALTYPE.FUN,BlendShapePreset.Fun}
         };
 
-        public void Setup(Transform parent, VRMBlendShapeProxy blendShape)
+        string[] IFacialSync.GetKeyArray() => _customMap.Keys?.ToArray();
+        public IReadOnlyDictionary<string, BlendShapePreset> CustomMap => _customMap;
+        readonly Dictionary<string, BlendShapePreset> _customMap = new ()
         {
+             //{ "ウィンク" ,FacialSyncController.FACIALTYPE.BLINK },    
+            { "まばたき" ,BlendShapePreset.Blink },
+            { "笑い" ,BlendShapePreset.Joy },
+            { "怒り" ,BlendShapePreset.Angry },
+            { "困る" ,BlendShapePreset.Sorrow },
+            { "にやり" ,BlendShapePreset.Fun },
+        };
+
+        void IFacialSync.Setup(Transform parent, VRMBlendShapeProxy blendShape)
+        {
+            if (blendShape == null) return;
             _blendShapeProxy = blendShape;
             transform.SetParent(parent);
             transform.name = ActorConstants.FaceSyncController;
         }
 
-        void IFacialSync.MorphUpdate()
+        void IFacialSync.Morph()
         {
             if (_blendShapeProxy == null) return;
-
             var total = 1.0f;
             var w = 0.0f;
-
             // 0許して...
-            foreach (var e in _skinBindInfo[0].bindInfo)
+            foreach (var info in _skinBindInfo[0].bindInfo)
             {
-                w = total * GetWeight(e.node);
-                var preset = dicVMRMorph[e.facialType];
+                w = total * GetWeight(info.node);
+                var preset = _presetMap[info.facialType];
                 _blendShapeProxy.ImmediatelySetValue(BlendShapeKey.CreateFromPreset(preset), w);
                 total -= w;
             }
+        }
+
+        void IFacialSync.Morph(string key, float weight)
+        {
+            var preset = _customMap[key];
+            _blendShapeProxy.ImmediatelySetValue(BlendShapeKey.CreateFromPreset(preset), weight);
         }
 
         /// <summary>
@@ -55,9 +72,9 @@ namespace UniLiveViewer.Actor.Expression
         {
             if (_blendShapeProxy == null) return;
 
-            foreach (var e in dicVMRMorph.Values)
+            foreach (var preset in _presetMap.Values)
             {
-                _blendShapeProxy.ImmediatelySetValue(BlendShapeKey.CreateFromPreset(e), 0);
+                _blendShapeProxy.ImmediatelySetValue(BlendShapeKey.CreateFromPreset(preset), 0);
             }
         }
 

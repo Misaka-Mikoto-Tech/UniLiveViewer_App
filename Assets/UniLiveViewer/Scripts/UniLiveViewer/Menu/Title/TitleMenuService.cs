@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using System;
 using System.Threading;
 using UniLiveViewer.SceneLoader;
@@ -41,6 +41,8 @@ namespace UniLiveViewer.Menu
 
         void Start()
         {
+            _sceneChangeService.SetupTitleScene();
+
             for (int i = 0; i < _languageButton.Length; i++)
             {
                 _languageButton[i].onTrigger += (btn) => OnChangeLanguage(btn, _cancellationToken).Forget();

@@ -44,8 +44,8 @@ namespace UniLiveViewer.Actor
         readonly CharaInfoData _charaInfoData;
         readonly AttachPointService _attachPointService;
         readonly VRMLoadData _data;
-        readonly LipSync_VRM _lipSync;
-        readonly FacialSync_VRM _faceSync;
+        readonly ILipSync _lipSync;
+        readonly IFacialSync _faceSync;
 
         //VRMUI非表示専用
         readonly IPublisher<VRMLoadResultData> _publisher;
@@ -56,7 +56,7 @@ namespace UniLiveViewer.Actor
             VRMService vrmService,
             CharaInfoData charaInfoData,
             VRMLoadData data,
-            LipSync_VRM lipSync,
+            ILipSync lipSync,
             FacialSync_VRM facialSync,
             AttachPointService attachPointService,
             IPublisher<VRMLoadResultData> publisher)
@@ -115,15 +115,12 @@ namespace UniLiveViewer.Actor
             go.name = go.GetComponent<VRMMeta>().Meta.Title;
             go.layer = Constants.LayerNoGrabObject;//オートカメラ識別にも利用
 
-            var lipSync = GameObject.Instantiate(_lipSync);
-            var faceSync = GameObject.Instantiate(_faceSync);
-
             var animator = instance.GetComponent<Animator>();
             {
                 // 表情系
                 var vrmBlendShape = go.GetComponent<VRMBlendShapeProxy>();
-                lipSync.Setup(instance.transform, vrmBlendShape);
-                faceSync.Setup(instance.transform, vrmBlendShape);
+                _lipSync.Setup(instance.transform, vrmBlendShape);
+                _faceSync.Setup(instance.transform, vrmBlendShape);
             }
 
             // TODO: 最後に調整、デバッグ用
@@ -147,7 +144,7 @@ namespace UniLiveViewer.Actor
 
             var vmdPlayer = go.AddComponent<VMDPlayer_Custom>();
             var charaInfoData = GameObject.Instantiate(_charaInfoData);
-            vmdPlayer.Initialize(charaInfoData, faceSync, lipSync);
+            vmdPlayer.Initialize(charaInfoData, _faceSync, _lipSync);
 
             var lifetimeScope = LifetimeScope.FindObjectOfType<PlayerLifetimeScope>();//ﾕﾙｼﾃ
             var colliders = lifetimeScope.Container.Resolve<VRMTouchColliders>();

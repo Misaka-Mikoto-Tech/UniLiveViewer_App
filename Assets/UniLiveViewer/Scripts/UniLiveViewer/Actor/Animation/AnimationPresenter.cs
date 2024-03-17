@@ -14,7 +14,7 @@ namespace UniLiveViewer.Actor.Animation
 {
     public class AnimationPresenter : IAsyncStartable, ILateTickable, IDisposable
     {
-        bool _isTick;
+        bool _isActive;
 
         readonly InstanceId _instanceId;
         readonly ISubscriber<AllActorOperationMessage> _allSubscriber;
@@ -54,8 +54,10 @@ namespace UniLiveViewer.Actor.Animation
                 .Subscribe(async x =>
                 {
                     if (_instanceId != x.InstanceId) return;
+                    if (!_isActive) return;
                     await _animationService.SetAnimationAsync(x.Mode, x.AnimationIndex, x.IsReverse, cancellation);
                     _expressionService.OnChangeMode(x.Mode);
+
                 }).AddTo(_disposables);
 
             _allSubscriber
@@ -73,7 +75,7 @@ namespace UniLiveViewer.Actor.Animation
                 }).AddTo(_disposables);
 
             _actorEntity.Active()
-                .Subscribe(x => _isTick = x)
+                .Subscribe(x => _isActive = x)
                 .AddTo(_disposables);
 
             return UniTask.CompletedTask;
@@ -81,7 +83,7 @@ namespace UniLiveViewer.Actor.Animation
 
         void ILateTickable.LateTick()
         {
-            if (!_isTick) return;
+            if (!_isActive) return;
             //掴まれている時以外は常時
             if (_actorEntity.ActorState().Value == ActorState.HOLD) return;
             _animationService.OnLateTick();

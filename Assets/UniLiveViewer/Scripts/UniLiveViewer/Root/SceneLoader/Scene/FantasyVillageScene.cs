@@ -4,12 +4,12 @@ using UnityEngine.SceneManagement;
 
 namespace UniLiveViewer.SceneLoader
 {
-    public class TestScene : IScene
+    public class FantasyVillageScene : IScene
     {
         const int BufferTime = 5000;
-        const string SceneName = "TestScene";
+        const string SceneName = "FantasyVillage";
 
-        public TestScene()
+        public FantasyVillageScene()
         {
 
         }
@@ -30,6 +30,6 @@ namespace UniLiveViewer.SceneLoader
 
         SceneType IScene.GetSceneType() => SceneType.TEST;
 
-        string IScene.GetVisualName() => "★TestScene★";
+        string IScene.GetVisualName() => "★FantasyVillage★";
     }
 }

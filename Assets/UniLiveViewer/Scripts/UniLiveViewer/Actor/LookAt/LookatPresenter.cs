@@ -11,7 +11,7 @@ namespace UniLiveViewer.Actor.LookAt
 {
     public class LookatPresenter : IStartable, ILateTickable, IDisposable
     {
-        bool _isTick;
+        bool _isActive;
 
         readonly InstanceId _instanceId;
         readonly ISubscriber<ActorAnimationMessage> _subscriber;
@@ -49,6 +49,7 @@ namespace UniLiveViewer.Actor.LookAt
                 .Subscribe(x =>
                 {
                     if (_instanceId != x.InstanceId) return;
+                    if (!_isActive) return;
                     if (x.Mode == Menu.CurrentMode.PRESET)
                     {
                         _lookatService.OnChangeHeadLookAt(true);
@@ -60,13 +61,13 @@ namespace UniLiveViewer.Actor.LookAt
                 }).AddTo(_disposables);
 
             _actorEntity.Active()
-                .Subscribe(x => _isTick = x)
+                .Subscribe(x => _isActive = x)
                 .AddTo(_disposables);
         }
 
         void ILateTickable.LateTick()
         {
-            if (!_isTick) return;
+            if (!_isActive) return;
             _lookatService.OnLateTick();
         }
 

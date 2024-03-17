@@ -1,7 +1,6 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
-using UnityEngine;
 
 namespace UniLiveViewer.SceneLoader
 {
@@ -18,7 +17,8 @@ namespace UniLiveViewer.SceneLoader
     public class SceneChangeService
     {
         //雑
-        public static string[] NameList = new string[] { "LiveScene", "KAGURAScene", "ViewerScene", "GymnasiumScene" };
+        public static string[] NameList = new string[]
+        { "LiveScene", "KAGURAScene", "ViewerScene", "GymnasiumScene", "FantasyVillage" };
 
         static IScene _current;
 
@@ -33,8 +33,13 @@ namespace UniLiveViewer.SceneLoader
                 { "KAGURAScene", new KaguraLiveScene() },
                 { "ViewerScene", new ViewerScene() },
                 { "GymnasiumScene", new GymnasiumScene() },
-                { "TestScene", new TestScene() }
+                { "FantasyVillage", new FantasyVillageScene() }
             };
+        }
+
+        public void SetupTitleScene()
+        {
+            _current = _map["TitleScene"];
         }
 
         public async UniTask Change(string nextSceneName, CancellationToken token)

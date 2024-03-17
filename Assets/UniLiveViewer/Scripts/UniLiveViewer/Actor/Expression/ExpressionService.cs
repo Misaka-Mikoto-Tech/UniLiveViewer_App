@@ -43,8 +43,8 @@ namespace UniLiveViewer.Actor.Expression
             if (_animationMode == CurrentMode.CUSTOM)
             {
                 var vmdPlayer = _actorEntity.ActorEntity().Value.GetVMDPlayer;
-                if (vmdPlayer.morphPlayer_vrm == null) return;
-                vmdPlayer.morphPlayer_vrm.isUpdateFace = isEnable;
+                if (vmdPlayer.MorphPlayerVRM == null) return;
+                vmdPlayer.MorphPlayerVRM.SetFaceUpdate(isEnable);
             }
             _facialSync.MorphReset();
         }
@@ -56,8 +56,8 @@ namespace UniLiveViewer.Actor.Expression
             if (_animationMode == CurrentMode.CUSTOM)
             {
                 var vmdPlayer = _actorEntity.ActorEntity().Value.GetVMDPlayer;
-                if (vmdPlayer.morphPlayer_vrm == null) return;
-                vmdPlayer.morphPlayer_vrm.isUpdateMouth = isEnable;
+                if (vmdPlayer.MorphPlayerVRM == null) return;
+                vmdPlayer.MorphPlayerVRM.SetLipUpdate(isEnable);
             }
             _lipSync.MorphReset();
         }
@@ -72,9 +72,8 @@ namespace UniLiveViewer.Actor.Expression
         {
             if (Time.timeScale == 0) return; //ポーズ中なら以下処理しない
             if (_animationMode != CurrentMode.PRESET) return;
-
-            if (_canFacialSync) _facialSync.MorphUpdate();
-            if (_canLipSync) _lipSync.MorphUpdate();
+            if (_canFacialSync) _facialSync.Morph();
+            if (_canLipSync) _lipSync.Morph();
         }
     }
 }

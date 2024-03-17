@@ -1,15 +1,29 @@
-﻿using System;
+using System;
 using UnityEngine;
+using VRM;
 
 namespace UniLiveViewer.Actor.Expression
 {
     public interface IFacialSync
     {
-        public void MorphUpdate();
+        //TODO: 抽象化できてない
+        void Setup(Transform parent, VRMBlendShapeProxy blendShape = null);
 
-        public void MorphReset();
+        string[] GetKeyArray();
 
-        public SkinBindInfo[] GetSkinBindInfo();
+        /// <summary>
+        /// Clip用
+        /// </summary>
+        void Morph();
+
+        /// <summary>
+        /// VMD用
+        /// </summary>
+        void Morph(string key, float weight);
+
+        void MorphReset();
+
+        SkinBindInfo[] GetSkinBindInfo();
     }
 
     [Serializable]

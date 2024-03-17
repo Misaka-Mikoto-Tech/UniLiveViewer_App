@@ -79,7 +79,7 @@ namespace UniLiveViewer
 
                     //PNG保存
                     var binary = texture.EncodeToPNG();
-                    var path = Path.Combine(PathsInfo.GetFullPath_ThumbnailCache() + "/", $"{_vrmNames[i]}.png");
+                    var path = Path.Combine(PathsInfo.GetFullPath_ThumbnailCache() + "/", $"{rawData[i]}.png");
                     File.WriteAllBytes(path, binary);
 #endif
                 }
@@ -148,7 +148,7 @@ namespace UniLiveViewer
         public class VRMNamesData
         {
             /// <summary>
-            /// 現在は最大15件
+            /// 現在は最大20件
             /// </summary>
             public readonly string[] ClampedData;
             public readonly string[] RawData;
@@ -156,7 +156,7 @@ namespace UniLiveViewer
             public VRMNamesData(string[] data)
             {
                 RawData = data;
-                if (MaxSize < data.Length) ClampedData = data.Take(15).ToArray();
+                if (MaxSize < data.Length) ClampedData = data.Take(20).ToArray();
                 else ClampedData = data;
             }
         }

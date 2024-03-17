@@ -122,15 +122,6 @@ namespace UniLiveViewer.Actor
             AttachPointConfigure(builder);
         }
 
-        //void Start()
-        //{
-        //    // 良い解決方法が思いつかない..
-        //    ActorId = Container.Resolve<ActorId>();
-        //    _actorId = ActorId.ID;
-        //    InstanceId = Container.Resolve<InstanceId>();
-        //    _instanceId = InstanceId.Id;
-        //}
-
         void PhysicsConfigure(IContainerBuilder builder)
         {
             builder.RegisterInstance(_rigidbody);

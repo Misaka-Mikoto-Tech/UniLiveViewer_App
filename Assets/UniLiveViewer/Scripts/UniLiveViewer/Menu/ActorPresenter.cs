@@ -96,13 +96,13 @@ namespace UniLiveViewer.Menu
 
             _characterPage.IsReverse
                 .SkipLatestValueOnSubscribe()
-                .Subscribe(ReverseClipAsync).AddTo(_disposables);
+                .Subscribe(ReverseClip).AddTo(_disposables);
             _characterPage.ClipIndex
                 .SkipLatestValueOnSubscribe()
-                .Subscribe(ActiveClipAsync).AddTo(_disposables);
+                .Subscribe(ActiveClip).AddTo(_disposables);
             _characterPage.VMDIndex
                 .SkipLatestValueOnSubscribe()
-                .Subscribe(ActiveVMDAsync).AddTo(_disposables);
+                .Subscribe(ActiveVMD).AddTo(_disposables);
 
             _jumpList.OnSelectAsObservable
                 .Subscribe(_characterPage.OnJumpSelect).AddTo(_disposables);
@@ -182,7 +182,7 @@ namespace UniLiveViewer.Menu
             }
         }
 
-        void ActiveClipAsync(int index)
+        void ActiveClip(int index)
         {
             _animationCurrentMode = CurrentMode.PRESET;
             if (!_actorEntityManager.TryGetCurrentInstaceID(out var instanceId)) return;
@@ -192,7 +192,7 @@ namespace UniLiveViewer.Menu
             _characterPage.OnBindingNewAnimation();
         }
 
-        void ReverseClipAsync(bool isReverse)
+        void ReverseClip(bool isReverse)
         {
             _isReverse = isReverse;
             if (!_actorEntityManager.TryGetCurrentInstaceID(out var instanceId)) return;
@@ -201,7 +201,7 @@ namespace UniLiveViewer.Menu
             _characterPage.OnBindingNewAnimation();
         }
 
-        void ActiveVMDAsync(int index)
+        void ActiveVMD(int index)
         {
             _animationCurrentMode = CurrentMode.CUSTOM;
             _vmdData.UpdateCurrent(index);

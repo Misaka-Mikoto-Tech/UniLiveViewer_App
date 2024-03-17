@@ -1,4 +1,5 @@
 ﻿
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -12,6 +13,17 @@ namespace UniLiveViewer.Actor.Expression
 
         [SerializeField] BindInfo[] _bindInfo;
 
+        string[] ILipSync.GetKeyArray() => _customMap.Keys?.ToArray();
+        Dictionary<string, int> _customMap = new()
+        {
+            { "あ", 0 },
+            { "い", 0 },
+            { "う", 0 },
+            { "え", 0 },
+            { "お", 0 },
+        };
+
+
         void Start()
         {
             //シェイプキー名で紐づけ
@@ -20,30 +32,58 @@ namespace UniLiveViewer.Actor.Expression
                 var name = _skinMesh.sharedMesh.GetBlendShapeName(i);
                 var target = _bindInfo.FirstOrDefault(x => x.keyName == name);
                 if (target == null) continue;
-                target.keyIndex = i;
                 target.skinMesh = _skinMesh;
+                target.keyIndex = i;
+            }
+
+            //TODO: また見直す
+            foreach (var info in _bindInfo) 
+            {
+                switch (info.lipType)
+                {
+                    case LIPTYPE.A:
+                        _customMap["あ"] = info.keyIndex;
+                        break;
+                    case LIPTYPE.I:
+                        _customMap["い"] = info.keyIndex;
+                        break;
+                    case LIPTYPE.U:
+                        _customMap["う"] = info.keyIndex;
+                        break;
+                    case LIPTYPE.E:
+                        _customMap["え"] = info.keyIndex;
+                        break;
+                    case LIPTYPE.O:
+                        _customMap["お"] = info.keyIndex;
+                        break;
+                }
             }
         }
 
-        public void Setup(Transform parent)
+        /// <param name="blendShape">使わない</param>
+        void ILipSync.Setup(Transform parent, VRM.VRMBlendShapeProxy blendShape)
         {
+            if (blendShape != null) return;
             transform.SetParent(parent);
             transform.name = ActorConstants.LipSyncController;
         }
 
-        /// <summary>
-        /// シェイプキーを更新する
-        /// </summary>
-        void ILipSync.MorphUpdate()
+        void ILipSync.Morph()
         {
             var total = 1.0f;
             var w = 0.0f;
-            foreach (var e in _bindInfo)
+            foreach (var info in _bindInfo)
             {
-                w = total * GetWeight(e.node);
-                _skinMesh.SetBlendShapeWeight(e.keyIndex, w * BLENDSHAPE_WEIGHT);
+                w = total * GetWeight(info.node);
+                _skinMesh.SetBlendShapeWeight(info.keyIndex, w * BLENDSHAPE_WEIGHT);
                 total -= w;
             }
+        }
+
+        void ILipSync.Morph(string key, float weight)
+        {
+            var index = _customMap[key];
+            _skinMesh.SetBlendShapeWeight(index, weight * BLENDSHAPE_WEIGHT);
         }
 
         /// <summary>
@@ -51,9 +91,9 @@ namespace UniLiveViewer.Actor.Expression
         /// </summary>
         void ILipSync.MorphReset()
         {
-            foreach (var e in _bindInfo)
+            foreach (var info in _bindInfo)
             {
-                _skinMesh.SetBlendShapeWeight(e.keyIndex, 0);
+                _skinMesh.SetBlendShapeWeight(info.keyIndex, 0);
             }
         }
 

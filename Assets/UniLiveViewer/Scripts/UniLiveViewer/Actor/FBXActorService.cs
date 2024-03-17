@@ -37,8 +37,8 @@ namespace UniLiveViewer.Actor
         readonly LifetimeScope _lifetimeScope;
         readonly CharaInfoData _charaInfoData;
         readonly AttachPointService _attachPointService;
-        readonly LipSync_FBX _lipSync;
-        readonly FacialSync_FBX _faceSync;
+        readonly ILipSync _lipSync;
+        readonly IFacialSync _faceSync;
 
         [Inject]
         public FBXActorService(
@@ -46,8 +46,8 @@ namespace UniLiveViewer.Actor
             LifetimeScope lifetimeScope,
             CharaInfoData charaInfoData,
             AttachPointService attachPointService,
-            LipSync_FBX lipSync,
-            FacialSync_FBX facialSync)
+            ILipSync lipSync,
+            IFacialSync facialSync)
         {
             _animatorCache = animator;
             _lifetimeScope = lifetimeScope;
