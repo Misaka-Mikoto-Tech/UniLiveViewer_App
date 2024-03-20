@@ -20,7 +20,7 @@ namespace UniLiveViewer.Menu
         [SerializeField] private MenuManager menuManager;
 
         [Header("＜シーン別＞")]
-        [SerializeField] Transform[] sceneAnchor;
+        [SerializeField] SceneMenuAnchor[] _sceneAnchor;
         Button_Base[] btnE = new Button_Base[5];
         [SerializeField] Transform[] btnE_ActionParent;
 
@@ -35,7 +35,7 @@ namespace UniLiveViewer.Menu
 
         [Header("＜共用＞")]
         [SerializeField] Button_Base[] btn_General = null;
-        [SerializeField] Button_Switch[] btnE_SecenChange = new Button_Switch[4];
+        [SerializeField] Button_Switch[] _btnSecenChange = new Button_Switch[5];
         [SerializeField] TextMesh[] textMeshs = new TextMesh[5];
         [SerializeField] SliderGrabController slider_OutLine;
         [SerializeField] SliderGrabController slider_InitCharaSize;
@@ -136,15 +136,15 @@ namespace UniLiveViewer.Menu
             _passthroughService = player.Container.Resolve<PassthroughService>();
 
             //シーン応じて有効化を切り替える
-            for (int i = 0; i < sceneAnchor.Length; i++)
+            for (int i = 0; i < _sceneAnchor.Length; i++)
             {
                 if (i == current)
                 {
-                    if (!sceneAnchor[i].gameObject.activeSelf) sceneAnchor[i].gameObject.SetActive(true);
+                    if (!_sceneAnchor[i].gameObject.activeSelf) _sceneAnchor[i].gameObject.SetActive(true);
                 }
-                else if (sceneAnchor[i].gameObject.activeSelf)
+                else if (_sceneAnchor[i].gameObject.activeSelf)
                 {
-                    sceneAnchor[i].gameObject.SetActive(false);
+                    _sceneAnchor[i].gameObject.SetActive(false);
                 }
             }
 
@@ -153,7 +153,7 @@ namespace UniLiveViewer.Menu
                 //シーン別専用ボタンの割り当て
                 for (int i = 0; i < 5; i++)
                 {
-                    btnE[i] = sceneAnchor[current].GetChild(i).GetComponent<Button_Base>();
+                    btnE[i] = _sceneAnchor[current].transform.GetChild(i).GetComponent<Button_Base>();
                 }
 
                 btnE_ActionParent = new Transform[5];
@@ -177,7 +177,7 @@ namespace UniLiveViewer.Menu
                 //シーン別専用ボタンの割り当て
                 for (int i = 0; i < 3; i++)
                 {
-                    btnE[i] = sceneAnchor[current].GetChild(i).GetComponent<Button_Base>();
+                    btnE[i] = _sceneAnchor[current].transform.GetChild(i).GetComponent<Button_Base>();
                 }
 
                 btnE_ActionParent = new Transform[3];
@@ -195,7 +195,7 @@ namespace UniLiveViewer.Menu
                 //シーン別専用ボタンの割り当て
                 for (int i = 0; i < 1; i++)
                 {
-                    btnE[i] = sceneAnchor[current].GetChild(i).GetComponent<Button_Base>();
+                    btnE[i] = _sceneAnchor[current].transform.GetChild(i).GetComponent<Button_Base>();
                 }
 
                 btnE_ActionParent = new Transform[1];
@@ -210,8 +210,12 @@ namespace UniLiveViewer.Menu
                 //シーン別専用ボタンの割り当て
                 for (int i = 0; i < 2; i++)
                 {
-                    btnE[i] = sceneAnchor[current].GetChild(i).GetComponent<Button_Base>();
+                    btnE[i] = _sceneAnchor[current].transform.GetChild(i).GetComponent<Button_Base>();
                 }
+            }
+            else if (SceneChangeService.GetSceneType == SceneType.FANTASY_VILLAGE)
+            {
+                //未実装
             }
 
 
@@ -237,7 +241,7 @@ namespace UniLiveViewer.Menu
             await UniTask.Yield(PlayerLoopTiming.Update, _cancellation);//一応
 
             //sceneボタン初期化
-            foreach (var e in btnE_SecenChange)
+            foreach (var e in _btnSecenChange)
             {
                 e.isEnable = false;
             }
@@ -277,6 +281,10 @@ namespace UniLiveViewer.Menu
                 btnE[1].isEnable = FileReadAndWriteUtility.UserProfile.StepSE;
 
                 Click_Setting_Gym(0);
+            }
+            else if (type == SceneType.FANTASY_VILLAGE)
+            {
+                //未実装
             }
 
             //共用
@@ -569,7 +577,7 @@ namespace UniLiveViewer.Menu
         {
             menuManager.PlayOneShot(SoundType.BTN_CLICK);
 
-            if (!btnE_SecenChange[i]) return;
+            if (!_btnSecenChange[i]) return;
             SceneChangeAsync(SceneChangeService.NameList[i], _cancellation).Forget();
         }
 

@@ -11,7 +11,7 @@ namespace UniLiveViewer.SceneLoader
         KAGURA_LIVE,
         VIEWER,
         GYMNASIUM,
-        TEST,
+        FANTASY_VILLAGE,
     }
 
     public class SceneChangeService

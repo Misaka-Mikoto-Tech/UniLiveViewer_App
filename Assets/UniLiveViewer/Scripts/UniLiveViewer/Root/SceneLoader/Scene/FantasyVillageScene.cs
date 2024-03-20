@@ -28,7 +28,7 @@ namespace UniLiveViewer.SceneLoader
         }
 
 
-        SceneType IScene.GetSceneType() => SceneType.TEST;
+        SceneType IScene.GetSceneType() => SceneType.FANTASY_VILLAGE;
 
         string IScene.GetVisualName() => "★FantasyVillage★";
     }

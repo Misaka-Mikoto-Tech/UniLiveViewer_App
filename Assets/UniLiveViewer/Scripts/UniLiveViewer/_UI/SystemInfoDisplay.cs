@@ -6,25 +6,30 @@ namespace UniLiveViewer
 {
     public class SystemInfoDisplay : MonoBehaviour
     {
-        [SerializeField] TextMesh[] textMeshes_maxChara = new TextMesh[3];
+        [SerializeField] TextMesh[] _textMaxActor = new TextMesh[5];
         [SerializeField] TextMesh[] textMeshe_memory = new TextMesh[3];
 
         void Start()
         {
-            textMeshes_maxChara[0].text = GetMaxChara(SceneType.CANDY_LIVE).ToString();
-            textMeshes_maxChara[1].text = GetMaxChara(SceneType.KAGURA_LIVE).ToString();
-            textMeshes_maxChara[2].text = GetMaxChara(SceneType.VIEWER).ToString();
-            textMeshes_maxChara[3].text = GetMaxChara(SceneType.GYMNASIUM).ToString();
+            _textMaxActor[0].text = GetMaxActor(SceneType.CANDY_LIVE).ToString();
+            _textMaxActor[1].text = GetMaxActor(SceneType.KAGURA_LIVE).ToString();
+            _textMaxActor[2].text = GetMaxActor(SceneType.VIEWER).ToString();
+            _textMaxActor[3].text = GetMaxActor(SceneType.GYMNASIUM).ToString();
+            _textMaxActor[4].text = GetMaxActor(SceneType.FANTASY_VILLAGE).ToString();
         }
 
-        int GetMaxChara(SceneType mode)
+        int GetMaxActor(SceneType mode)
         {
             int result = 0;
 #if UNITY_EDITOR
             result = SystemInfo.MAXCHARA_EDITOR[(int)mode];
 #elif UNITY_ANDROID
-            if (UnityEngine.SystemInfo.deviceName == "Oculus Quest 2") result = SystemInfo.MAXCHARA_QUEST2[(int)mode];
-            else if (UnityEngine.SystemInfo.deviceName == "Oculus Quest") result = SystemInfo.MAXCHARA_QUEST1[(int)mode];
+            if (UnityEngine.SystemInfo.deviceName.Contains("Oculus") || UnityEngine.SystemInfo.deviceName.Contains("Meta"))
+            {
+                if(UnityEngine.SystemInfo.deviceName.Contains("Quest 3")) result = SystemInfo.MAXCHARA_QUEST3[(int)mode];
+                else if (UnityEngine.SystemInfo.deviceName.Contains("Quest 2")) result = SystemInfo.MAXCHARA_QUEST2[(int)mode];
+                else  if (UnityEngine.SystemInfo.deviceName.Contains("Quest")) result = SystemInfo.MAXCHARA_QUEST1[(int)mode];
+            }
 #endif
             return result;
         }
