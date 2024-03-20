@@ -22,10 +22,10 @@ namespace UniLiveViewer.Timeline
         const double _motionClipStartTime = 3;//モーションクリップの開始再生位置(デフォルト)
         const string AssetNameMainAudio = "Main Audio";
         readonly string[] AUDIOTRACK = {
-            "Audio Track 1",
-            "Audio Track 2",
-            "Audio Track 3",
-            "Audio Track 4"
+            "Audio Track1",
+            "Audio Track2",
+            "Audio Track3",
+            "Audio Track4"
         };
 
         double _audioClipStartTime = 0;//セットされたaudioクリップの開始再生位置
