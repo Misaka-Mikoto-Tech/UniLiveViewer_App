@@ -68,7 +68,7 @@ PlayerSettings:
   disableDepthAndStencilBuffers: 0
   androidStartInFullscreen: 1
   androidRenderOutsideSafeArea: 0
-  androidUseSwappy: 1
+  androidUseSwappy: 0
   androidBlitType: 1
   androidResizableWindow: 0
   androidDefaultWindowWidth: 1920
@@ -138,8 +138,6 @@ PlayerSettings:
     Others: 1
   bundleVersion: 0.6.9a
   preloadedAssets:
-  - {fileID: 3400459051955892214, guid: 4b37281877dad80499e039077a686bfe, type: 2}
-  - {fileID: 11400000, guid: 61c208025619b1f4580060058fdb9fd3, type: 2}
   - {fileID: 11400000, guid: 35ecb5a9a00f52d4fad961c2b4aa1a3d, type: 2}
   metroInputSource: 0
   wsaTransparentSwapchain: 0

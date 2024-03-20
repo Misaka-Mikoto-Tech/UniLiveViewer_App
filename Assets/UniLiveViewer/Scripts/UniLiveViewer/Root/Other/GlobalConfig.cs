@@ -13,6 +13,8 @@ namespace UniLiveViewer
 
         void Awake()
         {
+            QualitySettings.vSyncCount = 0;
+
             if (_targetFrameRate > 0) Application.targetFrameRate = _targetFrameRate;
             Shader.globalMaximumLOD = _shaderLOD;
 
