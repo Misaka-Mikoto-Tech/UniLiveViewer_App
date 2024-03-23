@@ -6,47 +6,48 @@ using UniVRM10;
 
 namespace UniLiveViewer.Actor.Expression
 {
-    public class LipSync_VRM : MonoBehaviour, ILipSync
+    public class LipSync_VRM10 : MonoBehaviour, ILipSync
     {
-        public VRMBlendShapeProxy BlendShapeProxy => _blendShapeProxy;
-        [SerializeField] VRMBlendShapeProxy _blendShapeProxy;
+        public Vrm10RuntimeExpression RuntimeExpression => _runtimeExpression;
+        [SerializeField] Vrm10RuntimeExpression _runtimeExpression;
         [SerializeField] AnimationCurve _weightCurve;
 
         [Header("<keyName不要>")]
         [SerializeField] BindInfo[] _bindInfo;
 
-        readonly Dictionary<LIPTYPE, BlendShapePreset> _presetMap = new()
+        readonly Dictionary<LIPTYPE, ExpressionPreset> _presetMap = new()
         {
-            { LIPTYPE.A, BlendShapePreset.A },
-            { LIPTYPE.I, BlendShapePreset.I },
-            { LIPTYPE.U, BlendShapePreset.U },
-            { LIPTYPE.E, BlendShapePreset.E },
-            { LIPTYPE.O, BlendShapePreset.O }
+            { LIPTYPE.A, ExpressionPreset.aa },
+            { LIPTYPE.I, ExpressionPreset.ih },
+            { LIPTYPE.U, ExpressionPreset.ou },
+            { LIPTYPE.E, ExpressionPreset.ee },
+            { LIPTYPE.O, ExpressionPreset.oh }
         };
 
         string[] ILipSync.GetKeyArray() => _customMap.Keys?.ToArray();
-        readonly Dictionary<string, BlendShapePreset> _customMap = new()
+        readonly Dictionary<string, ExpressionPreset> _customMap = new()
         {
-            { "あ", BlendShapePreset.A },
-            { "い", BlendShapePreset.I },
-            { "う", BlendShapePreset.U },
-            { "え", BlendShapePreset.E },
-            { "お", BlendShapePreset.O },
+            { "あ", ExpressionPreset.aa },
+            { "い", ExpressionPreset.ih },
+            { "う", ExpressionPreset.ou },
+            { "え", ExpressionPreset.ee },
+            { "お", ExpressionPreset.oh },
         };
 
+        /// <param name="blendShape">使わない</param>
         void ILipSync.Setup(Transform parent, VRMBlendShapeProxy blendShape, Vrm10RuntimeExpression expression)
         {
-            if (expression != null) return;
-            if (blendShape == null) return;
-
-            _blendShapeProxy = blendShape;
+            if (blendShape != null) return;
+            if (expression == null) return;
+            _runtimeExpression = expression;
             transform.SetParent(parent);
             transform.name = ActorConstants.LipSyncController;
         }
 
+        Dictionary<ExpressionKey, float> _map = new();
         void ILipSync.Morph()
         {
-            if (_blendShapeProxy == null) return;
+            if (_runtimeExpression == null) return;
 
             var total = 1.0f;
             var w = 0.0f;
@@ -54,16 +55,16 @@ namespace UniLiveViewer.Actor.Expression
             {
                 w = total * GetWeight(info.node);
                 var preset = _presetMap[info.lipType];
-                var blendShapeKey = BlendShapeKey.CreateFromPreset(preset);
-                _blendShapeProxy.ImmediatelySetValue(blendShapeKey, w);
+                _map[ExpressionKey.CreateFromPreset(preset)] = w;
                 total -= w;
             }
+            _runtimeExpression.SetWeightsNonAlloc(_map);
         }
 
         void ILipSync.Morph(string key, float weight)
         {
             var preset = _customMap[key];
-            _blendShapeProxy.ImmediatelySetValue(BlendShapeKey.CreateFromPreset(preset), weight);
+            _runtimeExpression.SetWeight(ExpressionKey.CreateFromPreset(preset), weight);
         }
 
         /// <summary>
@@ -71,12 +72,13 @@ namespace UniLiveViewer.Actor.Expression
         /// </summary>
         void ILipSync.MorphReset()
         {
-            if (_blendShapeProxy == null) return;
+            if (_runtimeExpression == null) return;
 
             foreach (var preset in _presetMap.Values)
             {
-                _blendShapeProxy.ImmediatelySetValue(BlendShapeKey.CreateFromPreset(preset), 0);
+                _map[ExpressionKey.CreateFromPreset(preset)] = 0;
             }
+            _runtimeExpression.SetWeightsNonAlloc(_map);
         }
 
         /// <summary>

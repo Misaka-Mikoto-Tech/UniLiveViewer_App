@@ -16,6 +16,10 @@ namespace UniLiveViewer
         /// VRMは空の共通テンプレ
         /// </summary>
         public ActorLifetimeScope VrmActorLifetimeScopePrefab;
+        /// <summary>
+        /// VRMは空の共通テンプレ
+        /// </summary>
+        public ActorLifetimeScope Vrm10ActorLifetimeScopePrefab;
 
         public ActorOptionLifetimeScope OptionLifetimeScope;
     }

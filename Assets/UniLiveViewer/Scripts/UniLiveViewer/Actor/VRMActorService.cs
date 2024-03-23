@@ -6,10 +6,11 @@ using System.Threading;
 using UniGLTF;
 using UniLiveViewer.Actor.AttachPoint;
 using UniLiveViewer.Actor.Expression;
-using UniLiveViewer.Player;
+using UniLiveViewer.Stage;
 using UniLiveViewer.Timeline;
 using UniRx;
 using UnityEngine;
+using UniVRM10;
 using VContainer;
 using VContainer.Unity;
 using VRM;
@@ -46,6 +47,7 @@ namespace UniLiveViewer.Actor
         readonly VRMLoadData _data;
         readonly ILipSync _lipSync;
         readonly IFacialSync _faceSync;
+        readonly PlayerHandVRMCollidersService _playerHandVRMColliders;
 
         //VRMUI非表示専用
         readonly IPublisher<VRMLoadResultData> _publisher;
@@ -57,9 +59,10 @@ namespace UniLiveViewer.Actor
             CharaInfoData charaInfoData,
             VRMLoadData data,
             ILipSync lipSync,
-            FacialSync_VRM facialSync,
+            IFacialSync facialSync,
             AttachPointService attachPointService,
-            IPublisher<VRMLoadResultData> publisher)
+            IPublisher<VRMLoadResultData> publisher,
+            PlayerHandVRMCollidersService playerHandVRMColliders)
         {
             _lifetimeScope = lifetimeScope;
             _vrmService = vrmService;
@@ -70,6 +73,7 @@ namespace UniLiveViewer.Actor
             _data = data;
             _lipSync = lipSync;
             _faceSync = facialSync;
+            _playerHandVRMColliders = playerHandVRMColliders;
         }
 
         /// <summary>
@@ -90,8 +94,16 @@ namespace UniLiveViewer.Actor
         {
             try
             {
-                var instance = await _vrmService.LoadAsync(_data.FullPath, cancellation);
-                await SetupInternalAsync(instance, cancellation);
+                if (FileReadAndWriteUtility.UserProfile.IsVRM10)
+                {
+                    var instance = await _vrmService.Load10Async(_data.FullPath, cancellation);//1.0
+                    await SetupInternalAsync(instance, cancellation);
+                }
+                else
+                {
+                    var instance = await _vrmService.LoadAsync(_data.FullPath, cancellation);
+                    await SetupInternalAsync(instance, cancellation);
+                }
                 SetState(ActorState.MINIATURE, firstParent);
                 _lifetimeScope.transform.localPosition = Vector3.zero;
                 _lifetimeScope.transform.localRotation = Quaternion.identity;
@@ -102,6 +114,37 @@ namespace UniLiveViewer.Actor
             {
                 _publisher.Publish(new VRMLoadResultData(null));
             }
+        }
+
+        async UniTask SetupInternalAsync(Vrm10Instance instance, CancellationToken cancellation)
+        {
+            var go = instance.gameObject;
+            go.transform.SetParent(_lifetimeScope.transform, false);
+            go.name = instance.Vrm.Meta.Name;
+            go.layer = Constants.LayerNoGrabObject;//オートカメラ識別にも利用
+
+            var animator = instance.GetComponent<Animator>();
+            {
+                // 表情系
+                var runtimeExpression = instance.Runtime.Expression;
+                _lipSync.Setup(instance.transform, expression: runtimeExpression);
+                _faceSync.Setup(instance.transform, expression: runtimeExpression);
+            }
+
+            await UniTask.Delay(100);
+
+            _charaInfoData.viewName = go.name;
+            var vmdPlayer = go.AddComponent<VMDPlayer_Custom>();
+            var charaInfoData = GameObject.Instantiate(_charaInfoData);
+            vmdPlayer.Initialize(charaInfoData, _faceSync, _lipSync);
+
+            _actorEntity.Value = new ActorEntity(animator, _charaInfoData, vmdPlayer, _playerHandVRMColliders);
+
+            await _attachPointService.SetupAsync(_actorEntity.Value.BoneMap, cancellation);
+
+            var runtimeGltfInstance = instance.GetComponent<RuntimeGltfInstance>();
+            runtimeGltfInstance.EnableUpdateWhenOffscreen(); // Mesh消え対策
+            runtimeGltfInstance.ShowMeshes();
         }
 
         /// <summary>
@@ -115,13 +158,10 @@ namespace UniLiveViewer.Actor
             go.name = go.GetComponent<VRMMeta>().Meta.Title;
             go.layer = Constants.LayerNoGrabObject;//オートカメラ識別にも利用
 
-            var animator = instance.GetComponent<Animator>();
-            {
-                // 表情系
-                var vrmBlendShape = go.GetComponent<VRMBlendShapeProxy>();
-                _lipSync.Setup(instance.transform, vrmBlendShape);
-                _faceSync.Setup(instance.transform, vrmBlendShape);
-            }
+            // 表情系
+            var vrmBlendShape = go.GetComponent<VRMBlendShapeProxy>();
+            _lipSync.Setup(instance.transform, vrmBlendShape);
+            _faceSync.Setup(instance.transform, vrmBlendShape);
 
             // TODO: 最後に調整、デバッグ用
             await UniTask.Delay(100);
@@ -146,14 +186,12 @@ namespace UniLiveViewer.Actor
             var charaInfoData = GameObject.Instantiate(_charaInfoData);
             vmdPlayer.Initialize(charaInfoData, _faceSync, _lipSync);
 
-            var lifetimeScope = LifetimeScope.FindObjectOfType<PlayerLifetimeScope>();//ﾕﾙｼﾃ
-            var colliders = lifetimeScope.Container.Resolve<VRMTouchColliders>();
-            _actorEntity.Value = new ActorEntity(animator, _charaInfoData, vmdPlayer, colliders);
+            _actorEntity.Value = new ActorEntity(instance.GetComponent<Animator>(), _charaInfoData, vmdPlayer, _playerHandVRMColliders);
 
             await _attachPointService.SetupAsync(_actorEntity.Value.BoneMap, cancellation);
 
-            instance.EnableUpdateWhenOffscreen(); // Mesh消え対策、パフォーマンスとトレードオフ
-            instance.ShowMeshes(); // 使うときに表示する
+            instance.EnableUpdateWhenOffscreen(); // Mesh消え対策
+            instance.ShowMeshes();
         }
 
         void IActorEntity.Activate(bool isActive)
@@ -237,6 +275,12 @@ namespace UniLiveViewer.Actor
             else
             {
                 rootTransform.localScale = globalScale * _rootScalar.Value;
+            }
+
+            //TODO: これもどうにかしたい、小さい場合にまだ変対応しきれていない？
+            if (_actorEntity.Value.GetAnimator.TryGetComponent<Vrm10Instance>(out var instance))
+            {
+                instance.Runtime.ReconstructSpringBone();
             }
         }
 

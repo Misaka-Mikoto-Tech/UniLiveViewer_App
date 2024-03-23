@@ -58,7 +58,8 @@ namespace UniLiveViewer.Menu
 
             using (LifetimeScope.Enqueue(installer))
             {
-                var instance = GameObject.Instantiate(_setting.VrmActorLifetimeScopePrefab, InitPos, Quaternion.identity);
+                var prefab = FileReadAndWriteUtility.UserProfile.IsVRM10 ? _setting.Vrm10ActorLifetimeScopePrefab : _setting.VrmActorLifetimeScopePrefab;
+                var instance = GameObject.Instantiate(prefab, InitPos, Quaternion.identity);
                 await instance.BuildAsync(cancellation);
                 var option = instance.CreateChildFromPrefab(_setting.OptionLifetimeScope);
                 option.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);

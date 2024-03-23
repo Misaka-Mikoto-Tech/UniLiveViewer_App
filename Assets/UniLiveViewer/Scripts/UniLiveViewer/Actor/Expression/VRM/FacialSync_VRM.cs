@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UniVRM10;
 using VRM;
 
 namespace UniLiveViewer.Actor.Expression
@@ -36,8 +37,11 @@ namespace UniLiveViewer.Actor.Expression
             { "にやり" ,BlendShapePreset.Fun },
         };
 
-        void IFacialSync.Setup(Transform parent, VRMBlendShapeProxy blendShape)
+
+        /// <param name="expression">使わない</param>
+        void IFacialSync.Setup(Transform parent, VRMBlendShapeProxy blendShape, Vrm10RuntimeExpression expression)
         {
+            if (expression != null) return;
             if (blendShape == null) return;
             _blendShapeProxy = blendShape;
             transform.SetParent(parent);

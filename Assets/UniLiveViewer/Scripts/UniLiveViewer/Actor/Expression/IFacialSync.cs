@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using UnityEngine;
+using UniVRM10;
 using VRM;
 
 namespace UniLiveViewer.Actor.Expression
@@ -7,7 +8,7 @@ namespace UniLiveViewer.Actor.Expression
     public interface IFacialSync
     {
         //TODO: 抽象化できてない
-        void Setup(Transform parent, VRMBlendShapeProxy blendShape = null);
+        void Setup(Transform parent, VRMBlendShapeProxy blendShape = null, Vrm10RuntimeExpression expression = null);
 
         string[] GetKeyArray();
 

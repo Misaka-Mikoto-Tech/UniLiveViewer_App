@@ -59,6 +59,17 @@ namespace NanaCiel
         {
             return action(self);
         }
+
+        /// <summary>
+        /// TryGetComponentじゃ複数取れないので
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="anchor"></param>
+        /// <returns></returns>
+        public static T[] TryGetComponents<T>(Transform transform) where T : Component
+        {
+            return transform.GetComponents<T>() ?? new T[0];
+        }
     }
 
 }

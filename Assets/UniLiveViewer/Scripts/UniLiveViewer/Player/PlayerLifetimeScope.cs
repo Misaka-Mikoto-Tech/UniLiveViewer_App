@@ -8,7 +8,6 @@ using VContainer.Unity;
 namespace UniLiveViewer.Player
 {
     [RequireComponent(typeof(PlayerStateManager))]
-    [RequireComponent(typeof(VRMTouchColliders))]
     [RequireComponent(typeof(CharacterCameraConstraint_Custom))]
     [RequireComponent(typeof(SimpleCapsuleWithStickMovement))]
     public class PlayerLifetimeScope : LifetimeScope
@@ -38,7 +37,6 @@ namespace UniLiveViewer.Player
             builder.RegisterComponent(_ovrManager);
             builder.RegisterComponent(_passthroughService);
             builder.RegisterComponent(GetComponent<PlayerStateManager>());
-            builder.RegisterComponent(GetComponent<VRMTouchColliders>());
             builder.RegisterComponent(GetComponent<CharacterCameraConstraint_Custom>());
             builder.RegisterComponent(GetComponent<SimpleCapsuleWithStickMovement>());
 

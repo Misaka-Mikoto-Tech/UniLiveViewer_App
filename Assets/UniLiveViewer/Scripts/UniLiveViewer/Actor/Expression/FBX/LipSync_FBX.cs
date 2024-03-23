@@ -61,9 +61,10 @@ namespace UniLiveViewer.Actor.Expression
         }
 
         /// <param name="blendShape">使わない</param>
-        void ILipSync.Setup(Transform parent, VRM.VRMBlendShapeProxy blendShape)
+        /// /// <param name="expression">使わない</param>
+        void ILipSync.Setup(Transform parent, VRM.VRMBlendShapeProxy blendShape, UniVRM10.Vrm10RuntimeExpression expression)
         {
-            if (blendShape != null) return;
+            if (blendShape != null || expression != null) return;
             transform.SetParent(parent);
             transform.name = ActorConstants.LipSyncController;
         }

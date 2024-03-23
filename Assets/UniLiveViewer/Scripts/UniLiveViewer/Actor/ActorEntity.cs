@@ -1,11 +1,13 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using UniLiveViewer.Actor.LookAt;
 using UniLiveViewer.Player;
+using UniLiveViewer.Stage;
 using UnityEngine;
+using UniVRM10;
 using VRM;
 
 namespace UniLiveViewer.Actor
@@ -28,6 +30,9 @@ namespace UniLiveViewer.Actor
         public IEyeLookAt EyeLookAt => _eyeLookAt;
         readonly IEyeLookAt _eyeLookAt;
 
+        /// <summary>
+        /// 振動用に公開、1.0は現状なし
+        /// </summary>
         public IReadOnlyList<VRMSpringBone> SpringBoneList => _springBoneList;
         readonly List<VRMSpringBone> _springBoneList = new();
 
@@ -39,7 +44,7 @@ namespace UniLiveViewer.Actor
         /// </summary>
         float _height;
 
-        public ActorEntity(Animator animator, CharaInfoData charaInfoData, VMDPlayer_Custom vmdPlayer, VRMTouchColliders touchCollider = null)
+        public ActorEntity(Animator animator, CharaInfoData charaInfoData, VMDPlayer_Custom vmdPlayer, PlayerHandVRMCollidersService playerHandVRMColliders = null)
         {
             _animator = animator;
             _charaInfoData = charaInfoData;
@@ -60,35 +65,51 @@ namespace UniLiveViewer.Actor
             else if (charaInfoData.ActorType == ActorType.VRM)
             {
                 var go = animator.gameObject;
-                if (go.TryGetComponent<VRMLookAtBoneApplyer>(out var boneApplyer))
+                if (go.TryGetComponent<Vrm10Instance>(out var vrm10Instance))
                 {
-                    var eyeLookAt = go.AddComponent<LookAt_VRMBone>();
+                    var eyeLookAt = go.AddComponent<LookAt_VRM10>();
                     _lookAtBase = eyeLookAt.GetComponent<LookAtBase>();
                     _headLookAt = go.GetComponent<IHeadLookAt>();
                     _eyeLookAt = go.GetComponent<IEyeLookAt>();
 
-                    charaInfoData.ExpressionType = ExpressionType.VRM_Bone;
-                    eyeLookAt.Setup(boneApplyer);
-                }
-                else if (go.TryGetComponent<VRMLookAtBlendShapeApplyer>(out var blendShapeApplyer))
-                {
-                    var eyeLookAt = go.AddComponent<LookAt_VRMBlendShape>();
-                    _lookAtBase = eyeLookAt.GetComponent<LookAtBase>();
-                    _headLookAt = go.GetComponent<IHeadLookAt>();
-                    _eyeLookAt = go.GetComponent<IEyeLookAt>();
+                    charaInfoData.ExpressionType = ExpressionType.VRM10;
+                    eyeLookAt.Setup(vrm10Instance);
 
-                    charaInfoData.ExpressionType = ExpressionType.VRM_BlendShape;
-                    eyeLookAt.Setup(blendShapeApplyer);
+                    SetupSpringBone(playerHandVRMColliders.UnivrmCollider, vrm10Instance);
                 }
+                //0.x系
                 else
                 {
-                    //UV？知らない子ですね...
+                    if (go.TryGetComponent<VRMLookAtBoneApplyer>(out var boneApplyer))
+                    {
+                        var eyeLookAt = go.AddComponent<LookAt_VRMBone>();
+                        _lookAtBase = eyeLookAt.GetComponent<LookAtBase>();
+                        _headLookAt = go.GetComponent<IHeadLookAt>();
+                        _eyeLookAt = go.GetComponent<IEyeLookAt>();
+
+                        charaInfoData.ExpressionType = ExpressionType.VRM_Bone;
+                        eyeLookAt.Setup(boneApplyer);
+                    }
+                    else if (go.TryGetComponent<VRMLookAtBlendShapeApplyer>(out var blendShapeApplyer))
+                    {
+                        var eyeLookAt = go.AddComponent<LookAt_VRMBlendShape>();
+                        _lookAtBase = eyeLookAt.GetComponent<LookAtBase>();
+                        _headLookAt = go.GetComponent<IHeadLookAt>();
+                        _eyeLookAt = go.GetComponent<IEyeLookAt>();
+
+                        charaInfoData.ExpressionType = ExpressionType.VRM_BlendShape;
+                        eyeLookAt.Setup(blendShapeApplyer);
+                    }
+                    else
+                    {
+                        //UV？
+                    }
+
+                    var dummy = new CancellationToken();
+                    SetupHeadLookAt(go, dummy).Forget();
+                    _springBoneList = go.GetComponentsInChildren<VRMSpringBone>().ToList();
+                    SetupSpringBone(playerHandVRMColliders.UnivrmColliderGroup);
                 }
-                
-                var dummy = new CancellationToken();
-                SetupHeadLookAt(go, dummy).Forget();
-                _springBoneList = go.GetComponentsInChildren<VRMSpringBone>().ToList();
-                SetupSpringBone(touchCollider);
             }
         }
 
@@ -111,25 +132,33 @@ namespace UniLiveViewer.Actor
         /// <summary>
         /// VRM専用
         /// </summary>
-        void SetupSpringBone(VRMTouchColliders touchCollider)
+        void SetupSpringBone(VRMSpringBoneColliderGroup[] fromColliderGroup)
         {
-            var colliderList = new List<VRMSpringBoneColliderGroup>();//統合用
-            for (int i = 0; i < _springBoneList.Count; i++)
+
+            foreach (var dest in _springBoneList)
             {
-                //各配列をリストに統合
-                if (_springBoneList[i].ColliderGroups is VRMSpringBoneColliderGroup[] && _springBoneList[i].ColliderGroups.Length > 0)
+                dest.ColliderGroups = dest.ColliderGroups?.Length > 0
+                    ? dest.ColliderGroups.Concat(fromColliderGroup).ToArray() // 既存ColliderGroupsと新fromColliderGroupを結合
+                    : fromColliderGroup;
+            }
+        }
+
+        void SetupSpringBone(VRM10SpringBoneCollider[] fromColliderGroup, Vrm10Instance vrm10Instance)
+        {
+            var destColliderGroup = vrm10Instance.GetComponentsInChildren<VRM10SpringBoneColliderGroup>().ToArray();
+
+            foreach (var dest in destColliderGroup)
+            {
+                if (dest.Colliders != null && 0 < dest.Colliders.Count)
                 {
-                    colliderList.AddRange(_springBoneList[i].ColliderGroups);//既存コライダー
-                    colliderList.AddRange(touchCollider.colliders);//追加コライダー(PlayerHand)                                                                                                                                                                                                                        
-                    //リストから配列に戻す
-                    _springBoneList[i].ColliderGroups = colliderList.ToArray();
-                    colliderList.Clear();
+                    dest.Colliders.AddRange(fromColliderGroup);
                 }
                 else
                 {
-                    _springBoneList[i].ColliderGroups = touchCollider.colliders;
+                    dest.Colliders = new List<VRM10SpringBoneCollider>(fromColliderGroup);
                 }
             }
+            vrm10Instance.Runtime.ReconstructSpringBone();//MEMO: jobなので変更反映に必須
         }
     }
 }

@@ -46,6 +46,10 @@ namespace UniLiveViewer.Actor
         /// BlendShape方式
         /// </summary>
         VRM_BlendShape,
+        /// <summary>
+        /// VRM1.0版
+        /// </summary>
+        VRM10,
     }
 
     public enum ActorState

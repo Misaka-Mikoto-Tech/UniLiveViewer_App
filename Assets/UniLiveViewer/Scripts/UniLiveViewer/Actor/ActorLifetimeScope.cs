@@ -86,8 +86,10 @@ namespace UniLiveViewer.Actor
 
         [SerializeField] LipSync_FBX _lipSyncFBX;
         [SerializeField] LipSync_VRM _lipSyncVRM;
+        [SerializeField] LipSync_VRM10 _lipSyncVRM10;
         [SerializeField] FacialSync_FBX _faceSyncFBX;
         [SerializeField] FacialSync_VRM _faceSyncVRM;
+        [SerializeField] FacialSync_VRM10 _faceSyncVRM10;
 
         protected override void Configure(IContainerBuilder builder)
         {
@@ -146,8 +148,16 @@ namespace UniLiveViewer.Actor
 
         void VRMFacialExpressionConfigure(IContainerBuilder builder)
         {
-            builder.RegisterInstance(_lipSyncVRM).As<ILipSync>();
-            builder.RegisterInstance(_faceSyncVRM).As<IFacialSync>();
+            if(_lipSyncVRM && _faceSyncVRM)
+            {
+                builder.RegisterInstance(_lipSyncVRM).As<ILipSync>();
+                builder.RegisterInstance(_faceSyncVRM).As<IFacialSync>();
+            }
+            else if (_lipSyncVRM10 && _faceSyncVRM10)
+            {
+                builder.RegisterInstance(_lipSyncVRM10).As<ILipSync>();
+                builder.RegisterInstance(_faceSyncVRM10).As<IFacialSync>();
+            }
             builder.Register<ExpressionService>(Lifetime.Singleton);
             builder.RegisterEntryPoint<ExpressionPresenter>();
         }

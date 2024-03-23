@@ -48,6 +48,7 @@ namespace UniLiveViewer.Menu
         [Header("--- VRM用 ---")]
         [SerializeField] Button_Base _btnVRMSetting;
         [SerializeField] Button_Base _btnVRMDelete;
+        [SerializeField] Button_Base _btnVRM10Mode;//0.xと1.0切り替え
         [SerializeField] Button_Base _btnFaceUpdate;
         [SerializeField] Button_Base _btnMouthUpdate;
 
@@ -176,9 +177,12 @@ namespace UniLiveViewer.Menu
             };
             _btnVRMSetting.onTrigger += VRMSetting;
             _btnVRMDelete.onTrigger += DeleteModel;
+            _btnVRM10Mode.onTrigger += ChangeVRMMode;
             _btnDeleteAll.onTrigger += DeleteAll;
             _btnFaceUpdate.onTrigger += Switch_Mouth;
             _btnMouthUpdate.onTrigger += Switch_Mouth;
+
+            _btnVRM10Mode.isEnable = FileReadAndWriteUtility.UserProfile.IsVRM10;
 
             //_vrmSelectUI.AddPrefabAsObservable
             //    .Subscribe(x =>
@@ -378,6 +382,7 @@ namespace UniLiveViewer.Menu
                 else if (_actorEntityManagerService.NumRegisteredFBX <= pendingIndex) pendingIndex = 0;
 
                 _loadingAnimation.gameObject.SetActive(true);
+                if (_vrmOptionAnchor.gameObject.activeSelf) _vrmOptionAnchor.gameObject.SetActive(false);
 
                 _fbxIndex.SetValueAndForceNotify(pendingIndex);
             }
@@ -390,6 +395,7 @@ namespace UniLiveViewer.Menu
                 // 0はサムネページ
                 if (pendingIndex == 0) _pleasePushText.gameObject.SetActive(true);
                 else _loadingAnimation.gameObject.SetActive(true);
+                if (!_vrmOptionAnchor.gameObject.activeSelf) _vrmOptionAnchor.gameObject.SetActive(true);
 
                 _vrmIndex.SetValueAndForceNotify(pendingIndex);
             }
@@ -404,7 +410,7 @@ namespace UniLiveViewer.Menu
         {
             _loadingAnimation.gameObject.SetActive(false);
             UpdateActorInfo(actorEntity);
-            EvaluateAnimationIndex(0,false);//生成後にAnimation反映
+            EvaluateAnimationIndex(0, false);//生成後にAnimation反映
         }
 
         void UpdateActorInfo(ActorEntity actorEntity)
@@ -436,7 +442,7 @@ namespace UniLiveViewer.Menu
         /// indexが範囲内に収まっているか評価する
         /// 問題なければUIやクリック音に反映
         /// </summary>
-        void EvaluateAnimationIndex(int moveIndex,bool isPlaySE = true)
+        void EvaluateAnimationIndex(int moveIndex, bool isPlaySE = true)
         {
             if (_animationMode == CurrentMode.PRESET)
             {
@@ -452,7 +458,7 @@ namespace UniLiveViewer.Menu
                 else if (_animationAssetManager.VmdList.Count <= pendingIndex) pendingIndex = 0;
                 _vmdIndex.SetValueAndForceNotify(pendingIndex);
             }
-            if(isPlaySE) _menuManager.PlayOneShot(SoundType.BTN_CLICK);
+            if (isPlaySE) _menuManager.PlayOneShot(SoundType.BTN_CLICK);
         }
 
         public void OnBindingNewAnimation()
@@ -556,6 +562,12 @@ namespace UniLiveViewer.Menu
                 await UniTask.Delay(1000);
                 _ = Resources.UnloadUnusedAssets();//明示的に消しておく
             });
+        }
+
+        void ChangeVRMMode(Button_Base btn)
+        {
+            FileReadAndWriteUtility.UserProfile.IsVRM10 = btn.isEnable;
+            FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
         }
 
         /// <summary>
