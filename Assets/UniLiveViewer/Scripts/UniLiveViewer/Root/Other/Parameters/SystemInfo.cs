@@ -12,8 +12,8 @@ namespace UniLiveViewer
 
         //召喚上限(Title/CRS/KAGURA/VIEW/GYM/VILLAGE)
         public static readonly int[] MAXCHARA_QUEST1 = { 0, 2, 2, 4, 2, 2 };
-        public static readonly int[] MAXCHARA_QUEST2 = { 0, 3, 2, 5, 3, 3 };
-        public static readonly int[] MAXCHARA_QUEST3 = { 0, 3, 2, 5, 3, 3 };
+        public static readonly int[] MAXCHARA_QUEST2 = { 0, 3, 3, 5, 3, 3 };
+        public static readonly int[] MAXCHARA_QUEST3 = { 0, 4, 4, 5, 4, 4 };
         public static readonly int[] MAXCHARA_EDITOR = { 0, 5, 5, 5, 5, 5 };
 
         /// <summary>

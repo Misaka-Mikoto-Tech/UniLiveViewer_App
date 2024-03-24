@@ -39,8 +39,12 @@ namespace UniLiveViewer.Actor
 
     public class ActorLifetimeScope : LifetimeScope
     {
+        CharaInfoData _charaInfoDataInstance;
+
         protected override void Awake()
         {
+            _charaInfoDataInstance = Instantiate(_charaInfoData);
+
             autoRun = false;
             base.Awake();
         }
@@ -94,13 +98,13 @@ namespace UniLiveViewer.Actor
         protected override void Configure(IContainerBuilder builder)
         {
             builder.RegisterInstance(_ovrGrabbable);
+            builder.RegisterInstance(_charaInfoDataInstance);
 
             PhysicsConfigure(builder);
-            FootstepConfigure(builder);
+            FootstepConfigure(builder);            
 
             if (_charaInfoData.ActorType == ActorType.FBX)
-            {
-                builder.RegisterInstance(_charaInfoData);
+            {   
                 builder.RegisterInstance(_animator);
 
                 builder.Register<IActorEntity, FBXActorService>(Lifetime.Singleton);
@@ -108,8 +112,6 @@ namespace UniLiveViewer.Actor
             }
             else if (_charaInfoData.ActorType == ActorType.VRM)
             {
-                builder.RegisterInstance(_charaInfoData);
-
                 builder.Register<VRMService>(Lifetime.Singleton);
                 builder.Register<IActorEntity, VRMActorService>(Lifetime.Singleton);
                 VRMFacialExpressionConfigure(builder);
