@@ -243,7 +243,7 @@ namespace UniLiveViewer
             //var indirectLightIntensity = material.GetFloat("_IndirectLightIntensity");
 
             //Emission
-            //var emissionTex = material.GetTexture("_EmissionMap");
+            _emissionTex = material.GetTexture("_EmissionMap");
             _emissionColor = material.GetColor("_EmissionColor");
             //var sphereAdd = material.GetTexture("_SphereAdd");
 
@@ -317,7 +317,7 @@ namespace UniLiveViewer
 
             if (_emissionTex is Texture && _shadeColor != Color.black)
             {
-                //material.SetTexture("_EmissionMap", _emissionTex); 負荷チェック
+                material.SetTexture(URPShaderConstant.EMISSION_TEX, _emissionTex);
                 material.SetColor(URPShaderConstant.EMISSION_COLOR, _emissionColor);
             }
 

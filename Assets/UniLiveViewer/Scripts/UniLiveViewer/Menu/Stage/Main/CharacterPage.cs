@@ -175,7 +175,7 @@ namespace UniLiveViewer.Menu
                 var lookAt = data.ActorEntity.ActorEntity().Value.LookAtBase;
                 lookAt.SetHeadWeight(_sliderHeadLook.Value);
             };
-            _btnVRMSetting.onTrigger += VRMSetting;
+            //_btnVRMSetting.onTrigger += VRMSetting;
             _btnVRMDelete.onTrigger += DeleteModel;
             _btnVRM10Mode.onTrigger += ChangeVRMMode;
             _btnDeleteAll.onTrigger += DeleteAll;

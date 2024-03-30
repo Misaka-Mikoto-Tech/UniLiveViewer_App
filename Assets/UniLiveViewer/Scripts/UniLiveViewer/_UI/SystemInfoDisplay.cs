@@ -1,4 +1,4 @@
-﻿using UniLiveViewer.SceneLoader;
+using UniLiveViewer.SceneLoader;
 using UnityEngine;
 using UnityEngine.Profiling;
 
@@ -11,27 +11,11 @@ namespace UniLiveViewer
 
         void Start()
         {
-            _textMaxActor[0].text = GetMaxActor(SceneType.CANDY_LIVE).ToString();
-            _textMaxActor[1].text = GetMaxActor(SceneType.KAGURA_LIVE).ToString();
-            _textMaxActor[2].text = GetMaxActor(SceneType.VIEWER).ToString();
-            _textMaxActor[3].text = GetMaxActor(SceneType.GYMNASIUM).ToString();
-            _textMaxActor[4].text = GetMaxActor(SceneType.FANTASY_VILLAGE).ToString();
-        }
-
-        int GetMaxActor(SceneType mode)
-        {
-            int result = 0;
-#if UNITY_EDITOR
-            result = SystemInfo.MAXCHARA_EDITOR[(int)mode];
-#elif UNITY_ANDROID
-            if (UnityEngine.SystemInfo.deviceName.Contains("Oculus") || UnityEngine.SystemInfo.deviceName.Contains("Meta"))
-            {
-                if(UnityEngine.SystemInfo.deviceName.Contains("Quest 3")) result = SystemInfo.MAXCHARA_QUEST3[(int)mode];
-                else if (UnityEngine.SystemInfo.deviceName.Contains("Quest 2")) result = SystemInfo.MAXCHARA_QUEST2[(int)mode];
-                else  if (UnityEngine.SystemInfo.deviceName.Contains("Quest")) result = SystemInfo.MAXCHARA_QUEST1[(int)mode];
-            }
-#endif
-            return result;
+            _textMaxActor[0].text = SystemInfo.GetMaxFieldActor(SceneType.CANDY_LIVE).ToString();
+            _textMaxActor[1].text = SystemInfo.GetMaxFieldActor(SceneType.KAGURA_LIVE).ToString();
+            _textMaxActor[2].text = SystemInfo.GetMaxFieldActor(SceneType.VIEWER).ToString();
+            _textMaxActor[3].text = SystemInfo.GetMaxFieldActor(SceneType.GYMNASIUM).ToString();
+            _textMaxActor[4].text = SystemInfo.GetMaxFieldActor(SceneType.FANTASY_VILLAGE).ToString();
         }
 
         void Update()

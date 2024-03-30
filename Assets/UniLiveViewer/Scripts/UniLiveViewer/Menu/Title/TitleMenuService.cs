@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System;
 using System.Threading;
 using UniLiveViewer.SceneLoader;
@@ -41,8 +41,6 @@ namespace UniLiveViewer.Menu
 
         void Start()
         {
-            _sceneChangeService.SetupTitleScene();
-
             for (int i = 0; i < _languageButton.Length; i++)
             {
                 _languageButton[i].onTrigger += (btn) => OnChangeLanguage(btn, _cancellationToken).Forget();
@@ -60,14 +58,13 @@ namespace UniLiveViewer.Menu
             }
         }
 
-        async UniTask LoadScenesAutoAsync(CancellationToken cancellationToken)
+        async UniTask LoadScenesAutoAsync(CancellationToken cancellation)
         {
             _ovrScreenFade.FadeOut();
-            var name = FileReadAndWriteUtility.UserProfile.LastSceneName;
-            await _sceneChangeService.Change(name, cancellationToken);
+            await _sceneChangeService.ChangePreviousScene(cancellation);
         }
 
-        async UniTask OnChangeLanguage(Button_Base btn, CancellationToken cancellationToken)
+        async UniTask OnChangeLanguage(Button_Base btn, CancellationToken cancellation)
         {
             var code = btn.name.Contains("_JP") ? LanguageType.JP : LanguageType.EN;
             FileReadAndWriteUtility.UserProfile.LanguageCode = (int)code;
@@ -77,12 +74,11 @@ namespace UniLiveViewer.Menu
             _audioSource.PlayOneShot(_audioClips[0]);
             _changeSceneStream.OnNext(btn.name);
 
-            await UniTask.Delay(500, cancellationToken: cancellationToken);
+            await UniTask.Delay(500, cancellationToken: cancellation);
             if (_uiRoot.gameObject.activeSelf) _uiRoot.gameObject.SetActive(false);
 
             _ovrScreenFade.FadeOut();
-            var name = FileReadAndWriteUtility.UserProfile.LastSceneName;
-            await _sceneChangeService.Change(name, cancellationToken);
+            await _sceneChangeService.ChangePreviousScene(cancellation);
         }
     }
 }

@@ -22,29 +22,45 @@ namespace UniLiveViewer
         public static int MaxFieldChara => _maxFieldChara;
         static int _maxFieldChara;
 
-        public static void CheckMaxFieldChara(SceneType sceneType)
+        public static int GetMaxFieldActor(SceneType sceneType) => _current[(int)sceneType];
+        static int[] _current;
+
+        public static void Initialize(SceneType sceneType)
         {
-            // SDK前提だがLinqまで識別できる
-            // UnityEngine.SystemInfo.deviceNameもある[Meta Quest/Meta Quest 2]
-            var type = OVRPlugin.GetSystemHeadsetType();
-            switch (type)
+            var myPlatform = UnityEngine.SystemInfo.deviceName;
+            if (myPlatform.Contains("Oculus") || myPlatform.Contains("Meta"))
             {
-                case OVRPlugin.SystemHeadset.Oculus_Quest:
-                    _maxFieldChara = MAXCHARA_QUEST1[(int)sceneType];
-                    break;
-                case OVRPlugin.SystemHeadset.Oculus_Link_Quest:
-                    _maxFieldChara = MAXCHARA_QUEST1[(int)sceneType];
-                    break;
-                case OVRPlugin.SystemHeadset.Oculus_Quest_2:
-                    _maxFieldChara = MAXCHARA_QUEST2[(int)sceneType];
-                    break;
-                case OVRPlugin.SystemHeadset.Oculus_Link_Quest_2:
-                    _maxFieldChara = MAXCHARA_QUEST2[(int)sceneType];
-                    break;
-                default:
-                    _maxFieldChara = MAXCHARA_EDITOR[(int)sceneType];
-                    break;
+                if (myPlatform.Contains("3")) _current = MAXCHARA_QUEST3;
+                else if (myPlatform.Contains("2")) _current = MAXCHARA_QUEST2;
+                else if (myPlatform.Contains("Quest")) _current = MAXCHARA_QUEST1;
             }
-        }
+            else
+            {
+                _current = MAXCHARA_EDITOR;
+            }
+            _maxFieldChara = _current[(int)sceneType];
+
+            // SDK前提だがLinqまで識別できる
+            //var type = OVRPlugin.GetSystemHeadsetType();
+            //switch (type)
+            //{
+            //    case OVRPlugin.SystemHeadset.Oculus_Quest:
+            //        _maxFieldChara = MAXCHARA_QUEST1[(int)sceneType];
+            //        break;
+            //    case OVRPlugin.SystemHeadset.Oculus_Link_Quest:
+            //        _maxFieldChara = MAXCHARA_QUEST1[(int)sceneType];
+            //        break;
+            //    case OVRPlugin.SystemHeadset.Oculus_Quest_2:
+            //        _maxFieldChara = MAXCHARA_QUEST2[(int)sceneType];
+            //        break;
+            //    case OVRPlugin.SystemHeadset.Oculus_Link_Quest_2:
+            //        _maxFieldChara = MAXCHARA_QUEST2[(int)sceneType];
+            //        break;
+            //    //TODO: SDK更新しないと Quest3がない
+            //    default:
+            //        _maxFieldChara = MAXCHARA_EDITOR[(int)sceneType];
+            //        break;
+            //}
+        }        
     }
 }

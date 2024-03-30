@@ -63,9 +63,9 @@ namespace UniLiveViewer
         public static void WriteJson(UserProfile data)
         {
             //Json形式に変換
-            string path = PathsInfo.GetFullPath_JSON();
-            string jsonstr = JsonUtility.ToJson(data, true);
-            using (StreamWriter writer = new StreamWriter(path, false))
+            var path = PathsInfo.GetFullPath_JSON();
+            var jsonstr = JsonUtility.ToJson(data, true);
+            using (var writer = new StreamWriter(path, false))
             {
                 writer.Write(jsonstr);
                 //writer.Flush();
@@ -114,9 +114,9 @@ namespace UniLiveViewer
             //offset情報ファイルがあれば読み込む
             if (!File.Exists(PathOffset)) return false;
 
-            foreach (string line in File.ReadLines(PathOffset))
+            foreach (var line in File.ReadLines(PathOffset))
             {
-                string[] spl = line.Split(',');
+                var spl = line.Split(',');
                 if (spl.Length != 2) return false;
                 if (spl[0] == "" || spl[1] == "") return false;
                 _motionOffsetMap.Add(spl[0], int.Parse(spl[1]));
@@ -133,7 +133,7 @@ namespace UniLiveViewer
             if (!motionfileName.Contains(".vmd")) return;
             map_MotionFacialPair[motionfileName] = faciaFileName;
             //書き込み
-            using (StreamWriter writer = new StreamWriter(PathPair, false, System.Text.Encoding.UTF8))
+            using (var writer = new StreamWriter(PathPair, false, System.Text.Encoding.UTF8))
             {
                 foreach (var e in map_MotionFacialPair)
                 {
@@ -157,9 +157,9 @@ namespace UniLiveViewer
             //offset情報ファイルがあれば読み込む
             if (!File.Exists(PathPair)) return false;
 
-            foreach (string line in File.ReadLines(PathPair))
+            foreach (var line in File.ReadLines(PathPair))
             {
-                string[] spl = line.Split(',');
+                var spl = line.Split(',');
                 if (spl.Length != 2) return false;
                 if (spl[0] == "" || spl[1] == "") return false;
                 map_MotionFacialPair.Add(spl[0], spl[1]);

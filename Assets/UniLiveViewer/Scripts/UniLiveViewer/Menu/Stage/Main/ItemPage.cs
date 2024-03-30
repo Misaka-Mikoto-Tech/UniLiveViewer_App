@@ -18,8 +18,8 @@ namespace UniLiveViewer.Menu
         const int SUBPAGE_ITEMS_COL = 3;
         int SUBPAGE_ITEMS_MAX = SUBPAGE_ITEMS_ROW * SUBPAGE_ITEMS_COL;
         static readonly Vector2[] itemOffsetPos = { 
-            new Vector2(-0.24f, 0.08f), new Vector2(0, 0.08f), new Vector2(0.24f, 0.08f),    
-            new Vector2(-0.24f,-0.10f), new Vector2(0,-0.10f),new Vector2(0.24f,-0.10f),
+            new Vector2(-0.11f, 0.08f), new Vector2(0.09f, 0.08f), new Vector2(0.3f, 0.08f),    
+            new Vector2(-0.11f,-0.10f), new Vector2(0.09f,-0.10f),new Vector2(0.3f,-0.10f),
         };
         static readonly Quaternion reverseQuaternion = Quaternion.Euler(new Vector3(0, 180, 0));
         [SerializeField] private Button_Base[] btn_Item = new Button_Base[2];

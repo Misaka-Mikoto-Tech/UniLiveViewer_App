@@ -8,6 +8,5 @@ namespace UniLiveViewer.SceneLoader
     {
         UniTask BeginAsync(CancellationToken token);
         string GetVisualName();
-        SceneType GetSceneType();
     }
 }

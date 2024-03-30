@@ -25,8 +25,6 @@ namespace UniLiveViewer.Menu
             var options = builder.RegisterMessagePipe();
             builder.RegisterMessageBroker<VRMMenuShowMessage>(options);
 
-            builder.RegisterEntryPoint<GraphicsSettingsMenuPresenter>();
-
             builder.RegisterComponent(_vrmSwitchController);
             builder.RegisterComponent(_audioSourceService);
 

@@ -28,22 +28,26 @@ namespace UniLiveViewer.Player
         {
             _cameraData = _camera.GetComponent<UniversalAdditionalCameraData>();
             _cachePostProcessing = _cameraData.renderPostProcessing;
-            _cameraData.antialiasing = AntialiasingMode.FastApproximateAntialiasing;
+            _cameraData.antialiasing = (AntialiasingMode)FileReadAndWriteUtility.UserProfile.Antialiasing;
 
             if (_volumeProfile.TryGet<Bloom>(out var bloom))
             {
                 _bloom = bloom;
-                _bloom.active = false;
+                _bloom.active = FileReadAndWriteUtility.UserProfile.IsBloom;
+                Debug.LogWarning(FileReadAndWriteUtility.UserProfile.BloomThreshold);
+                Debug.LogWarning(FileReadAndWriteUtility.UserProfile.BloomIntensity);
+                _bloom.threshold.value = FileReadAndWriteUtility.UserProfile.BloomThreshold;
+                _bloom.intensity.value = FileReadAndWriteUtility.UserProfile.BloomIntensity;
             }
             if (_volumeProfile.TryGet<DepthOfField>(out var depthOfField))
             {
                 _depthOfField = depthOfField;
-                _depthOfField.active = false;
+                _depthOfField.active = FileReadAndWriteUtility.UserProfile.IsDepthOfField;
             }
             if (_volumeProfile.TryGet<Tonemapping>(out var tonemapping))
             {
                 _tonemapping = tonemapping;
-                _tonemapping.active = false;
+                _tonemapping.active = FileReadAndWriteUtility.UserProfile.IsTonemapping;
             }
             if (_volumeProfile.TryGet<Vignette>(out var vignette))
             {
@@ -56,6 +60,8 @@ namespace UniLiveViewer.Player
         public void ChangeAntialiasing(AntialiasingMode mode)
         {
             if (mode == AntialiasingMode.SubpixelMorphologicalAntiAliasing) return;
+            FileReadAndWriteUtility.UserProfile.Antialiasing = (int)mode;
+            FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
             _cameraData.antialiasing = mode;
             IfNeededSwitchPostprocessing();
         }
@@ -63,18 +69,24 @@ namespace UniLiveViewer.Player
         public void ChangeBloom(bool isEnable)
         {
             _bloom.active = isEnable;
+            FileReadAndWriteUtility.UserProfile.IsBloom = isEnable;
+            FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
             IfNeededSwitchPostprocessing();
         }
 
         public void ChangeDepthOfField(bool isEnable)
         {
             _depthOfField.active = isEnable;
+            FileReadAndWriteUtility.UserProfile.IsDepthOfField = isEnable;
+            FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
             IfNeededSwitchPostprocessing();
         }
 
         public void ChangeTonemapping(bool isEnable)
         {
             _tonemapping.active = isEnable;
+            FileReadAndWriteUtility.UserProfile.IsTonemapping = isEnable;
+            FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
             IfNeededSwitchPostprocessing();
         }
 
@@ -82,6 +94,20 @@ namespace UniLiveViewer.Player
         {
             _vignette.active = isEnable;
             IfNeededSwitchPostprocessing();
+        }
+
+        public void ChangeBloomThreshold(float v)
+        {
+            _bloom.threshold.value = v;
+            FileReadAndWriteUtility.UserProfile.BloomThreshold = v;
+            FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
+        }
+
+        public void ChangeBloomIntensity(float v)
+        {
+            _bloom.intensity.value = v;
+            FileReadAndWriteUtility.UserProfile.BloomIntensity = v;
+            FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
         }
 
         public void OnChangePassthrough(bool isEnablePassthrough)
@@ -105,7 +131,7 @@ namespace UniLiveViewer.Player
         {
             var isEnable = false;
 
-            if(_cameraData.antialiasing != AntialiasingMode.None) isEnable = true;
+            if (_cameraData.antialiasing != AntialiasingMode.None) isEnable = true;
             if (_bloom.active) isEnable = true;
             if (_depthOfField.active) isEnable = true;
             if (_tonemapping.active) isEnable = true;

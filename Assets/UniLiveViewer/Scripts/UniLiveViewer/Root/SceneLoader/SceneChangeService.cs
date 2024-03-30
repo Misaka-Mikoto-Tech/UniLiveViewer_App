@@ -16,43 +16,44 @@ namespace UniLiveViewer.SceneLoader
 
     public class SceneChangeService
     {
-        //雑
+        //未使用
         public static string[] NameList = new string[]
         { "LiveScene", "KAGURAScene", "ViewerScene", "GymnasiumScene", "FantasyVillage" };
 
-        static IScene _current;
+        public static SceneType GetSceneType => _current;
+        static SceneType _current = SceneType.TITLE;
 
-        readonly Dictionary<string, IScene> _map;
+        public static string GetVisualName => _map[_current].GetVisualName();
+        static Dictionary<SceneType, IScene> _map;
 
         public SceneChangeService()
         {
-            _map = new Dictionary<string, IScene>
+            _map = new Dictionary<SceneType, IScene>
             {
-                { "TitleScene", new TitleScene() },
-                { "LiveScene", new CandyLiveScene() },
-                { "KAGURAScene", new KaguraLiveScene() },
-                { "ViewerScene", new ViewerScene() },
-                { "GymnasiumScene", new GymnasiumScene() },
-                { "FantasyVillage", new FantasyVillageScene() }
+                { SceneType.TITLE, new TitleScene() },
+                { SceneType.CANDY_LIVE, new CandyLiveScene() },
+                { SceneType.KAGURA_LIVE, new KaguraLiveScene() },
+                { SceneType.VIEWER, new ViewerScene() },
+                { SceneType.GYMNASIUM, new GymnasiumScene() },
+                { SceneType.FANTASY_VILLAGE, new FantasyVillageScene() }
             };
         }
 
-        public void SetupTitleScene()
+        public async UniTask ChangePreviousScene(CancellationToken cancellation)
         {
-            _current = _map["TitleScene"];
+            var nextScene = (SceneType)FileReadAndWriteUtility.UserProfile.LastSceneSceneTypeNo;
+            await ChangeAsync(nextScene, cancellation);
         }
 
-        public async UniTask Change(string nextSceneName, CancellationToken token)
+        public async UniTask ChangeAsync(SceneType nextSceneType, CancellationToken cancellation)
         {
-            var scene = _map[nextSceneName];
-            await InternalChange(scene, token);
-        }
+            _current = nextSceneType;
+            var nextScene = _map[nextSceneType];
+            await nextScene.BeginAsync(cancellation);
+            FileReadAndWriteUtility.UserProfile.LastSceneSceneTypeNo = (int)nextSceneType;
+            FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);//完了したら更新
 
-        async UniTask InternalChange(IScene nextScene, CancellationToken token)
-        {
-            await nextScene.BeginAsync(token);
-            _current = nextScene;
-            SystemInfo.CheckMaxFieldChara(_current.GetSceneType());
+            SystemInfo.Initialize(nextSceneType);
         }
 
         /// <summary>
@@ -60,15 +61,11 @@ namespace UniLiveViewer.SceneLoader
         /// </summary>
         public void SetSceneIfNecessary()
         {
-            if (_current != null) return;
-            var name = FileReadAndWriteUtility.UserProfile.LastSceneName;
-            var scene = _map[name];
-            _current = scene;
-            SystemInfo.CheckMaxFieldChara(_current.GetSceneType());
+#if UNITY_EDITOR
+            var nextScene = (SceneType)FileReadAndWriteUtility.UserProfile.LastSceneSceneTypeNo;
+            _current = nextScene;
+            SystemInfo.Initialize(nextScene);
+#endif
         }
-
-        public static string GetVisualName => _current.GetVisualName();
-
-        public static SceneType GetSceneType => _current.GetSceneType();
     }
 }

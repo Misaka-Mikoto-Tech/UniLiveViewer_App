@@ -10,24 +10,16 @@ namespace UniLiveViewer.SceneLoader
         const string SceneName = "KAGURAScene";
         public KaguraLiveScene()
         {
-
         }
         
         async UniTask IScene.BeginAsync(CancellationToken token)
         {
-            FileReadAndWriteUtility.UserProfile.LastSceneName = SceneName;
-            
             //完全非同期は無理
             var async = SceneManager.LoadSceneAsync(SceneName);
             async.allowSceneActivation = false;
             await UniTask.Delay(BufferTime, cancellationToken: token);
             async.allowSceneActivation = true;
-
-            FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);//完了したら更新
         }
-
-
-        SceneType IScene.GetSceneType() => SceneType.KAGURA_LIVE;
 
         string IScene.GetVisualName() => "★KAGURA Live★";
     }

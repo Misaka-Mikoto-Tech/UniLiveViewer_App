@@ -123,22 +123,19 @@ namespace UniLiveViewer.Actor
             go.name = instance.Vrm.Meta.Name;
             go.layer = Constants.LayerNoGrabObject;//オートカメラ識別にも利用
 
-            var animator = instance.GetComponent<Animator>();
-            {
-                // 表情系
-                var runtimeExpression = instance.Runtime.Expression;
-                _lipSync.Setup(instance.transform, expression: runtimeExpression);
-                _faceSync.Setup(instance.transform, expression: runtimeExpression);
-            }
+            // 表情系
+            var runtimeExpression = instance.Runtime.Expression;
+            _lipSync.Setup(instance.transform, expression: runtimeExpression);
+            _faceSync.Setup(instance.transform, expression: runtimeExpression);
 
-            await UniTask.Delay(100);
+            await UniTask.Delay(100);// TODO: 最後に調整
 
             _charaInfoData.viewName = go.name;
             var vmdPlayer = go.AddComponent<VMDPlayer_Custom>();
             var charaInfoData = GameObject.Instantiate(_charaInfoData);
             vmdPlayer.Initialize(charaInfoData, _faceSync, _lipSync);
 
-            _actorEntity.Value = new ActorEntity(animator, _charaInfoData, vmdPlayer, _playerHandVRMColliders);
+            _actorEntity.Value = new ActorEntity(instance.GetComponent<Animator>(), _charaInfoData, vmdPlayer, _playerHandVRMColliders);
 
             await _attachPointService.SetupAsync(_actorEntity.Value.BoneMap, cancellation);
 
@@ -147,10 +144,6 @@ namespace UniLiveViewer.Actor
             runtimeGltfInstance.ShowMeshes();
         }
 
-        /// <summary>
-        /// 各種設定
-        /// </summary>
-        /// <param name="instance"></param>
         async UniTask SetupInternalAsync(RuntimeGltfInstance instance, CancellationToken cancellation)
         {
             var go = instance.gameObject;
@@ -163,8 +156,7 @@ namespace UniLiveViewer.Actor
             _lipSync.Setup(instance.transform, vrmBlendShape);
             _faceSync.Setup(instance.transform, vrmBlendShape);
 
-            // TODO: 最後に調整、デバッグ用
-            await UniTask.Delay(100);
+            await UniTask.Delay(100);// TODO: 最後に調整
 
             // マテリアルURP化
             var materialConverter = (IMaterialConverter)new MaterialConverter(go.layer);

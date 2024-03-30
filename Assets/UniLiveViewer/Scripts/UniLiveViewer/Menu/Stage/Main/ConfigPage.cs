@@ -1,19 +1,15 @@
 ﻿using Cysharp.Threading.Tasks;
 using System;
 using System.Threading;
-using UniLiveViewer.Player;
 using UniLiveViewer.SceneLoader;
 using UniLiveViewer.Stage;
-using UniLiveViewer.Timeline;
 using UniRx;
 using UnityEngine;
-using UnityEngine.Rendering.Universal;
-using VContainer;
 
 namespace UniLiveViewer.Menu
 {
     /// <summary>
-    /// TODO: いつか整理
+    /// TODO: StageMenuLifetimeScopeに整理
     /// </summary>
     public class ConfigPage : MonoBehaviour
     {
@@ -33,30 +29,6 @@ namespace UniLiveViewer.Menu
         [Header("＜Gym専用＞")]
         [SerializeField] TextMesh[] textMeshs_Gym = new TextMesh[1];
 
-        [Header("＜共用＞")]
-        [SerializeField] Button_Base[] btn_General = null;
-        [SerializeField] Button_Switch[] _btnSecenChange = new Button_Switch[5];
-        [SerializeField] TextMesh[] textMeshs = new TextMesh[5];
-        [SerializeField] SliderGrabController slider_OutLine;
-        [SerializeField] SliderGrabController slider_InitCharaSize;
-        [SerializeField] SliderGrabController slider_CharaShadow;
-        [SerializeField] SliderGrabController slider_VMDScale;
-        [SerializeField] SliderGrabController slider_FixedFoveated;
-        [Space(10)]
-        [SerializeField] ScriptableRendererFeature _outlineRender;//TODO: GraphicsSettingsServiceに移す
-        [SerializeField] Material material_OutLine;
-        [SerializeField] UniversalRendererData frd;
-
-        PassthroughService _passthroughService;
-
-        public IReadOnlyReactiveProperty<AntialiasingMode> AntialiasingMode => _antialiasingMode;
-        ReactiveProperty<AntialiasingMode> _antialiasingMode = new (UnityEngine.Rendering.Universal.AntialiasingMode.FastApproximateAntialiasing);
-
-        public IReadOnlyReactiveProperty<bool> Bloom => _bloom;
-        ReactiveProperty<bool> _bloom = new(false);
-
-        public IReadOnlyReactiveProperty<bool> Tonemapping => _tonemapping;
-        ReactiveProperty<bool> _tonemapping = new(false);
 
         public IObservable<int> StageLightIndexAsObservable => _stageLightIndex;
         Subject<int> _stageLightIndex = new Subject<int>();
@@ -67,59 +39,10 @@ namespace UniLiveViewer.Menu
         BackGroundController _backGroundCon;
         CancellationToken _cancellation;
 
-        PlayableMusicService _playableMusicService;
-        QuasiShadowSetting _quasiShadowSetting;
-        SceneChangeService _sceneChangeService;
-
-        [Inject]
-        public void Construct(
-            PlayableMusicService playableMusicService,
-            QuasiShadowSetting quasiShadowSetting,
-            SceneChangeService sceneChangeService)
-        {
-            _playableMusicService = playableMusicService;
-            _quasiShadowSetting = quasiShadowSetting;
-            _sceneChangeService = sceneChangeService;
-        }
-
         public void OnStart()
         {
             _cancellation = this.GetCancellationTokenOnDestroy();
-
-            slider_OutLine.ValueUpdate += () =>
-            {
-                if (slider_OutLine.Value > 0)
-                {
-                    _outlineRender.SetActive(true);//有効化
-                    material_OutLine.SetFloat("_Edge", slider_OutLine.Value);//値の更新
-                }
-                else _outlineRender.SetActive(false);//無効化
-            };
-            slider_InitCharaSize.ValueUpdate += Update_InitCharaSize;
-            slider_InitCharaSize.UnControled += () =>
-            {
-                FileReadAndWriteUtility.UserProfile.InitCharaSize = float.Parse(slider_InitCharaSize.Value.ToString("f2"));
-                FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
-            };
-            slider_CharaShadow.ValueUpdate += Update_CharaShadow;
-            slider_CharaShadow.UnControled += () =>
-            {
-                FileReadAndWriteUtility.UserProfile.CharaShadow = float.Parse(slider_CharaShadow.Value.ToString("f2"));
-                FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
-            };
-            slider_VMDScale.ValueUpdate += Update_VMDScale;
-            slider_VMDScale.UnControled += () =>
-            {
-                FileReadAndWriteUtility.UserProfile.VMDScale = float.Parse(slider_VMDScale.Value.ToString("f3"));
-                FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
-            };
-            slider_FixedFoveated.ValueUpdate += Update_FixedFoveated;
             slider_Fog.ValueUpdate += () => { RenderSettings.fogDensity = slider_Fog.Value; };
-
-            for (int i = 0; i < btn_General.Length; i++)
-            {
-                btn_General[i].onTrigger += OnClickButtonAction;
-            }
         }
         void OnEnable()
         {
@@ -131,9 +54,6 @@ namespace UniLiveViewer.Menu
             // Title分を除外で-1
             var current = (int)SceneChangeService.GetSceneType - 1;
 
-            // TODO: UI作り直す時にまともにする
-            var player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerLifetimeScope>();
-            _passthroughService = player.Container.Resolve<PassthroughService>();
 
             //シーン応じて有効化を切り替える
             for (int i = 0; i < _sceneAnchor.Length; i++)
@@ -218,21 +138,7 @@ namespace UniLiveViewer.Menu
                 //未実装
             }
 
-
-            //レンダーパイプラインからoutlineオブジェクトを取得    
-            foreach (var renderObj in frd.rendererFeatures)
-            {
-                if (renderObj.name == "Outline")
-                {
-                    _outlineRender = renderObj;
-                    break;
-                }
-            }
-            _outlineRender.SetActive(false);//無効化
-
             //値の更新
-            slider_OutLine.Value = 0;
-            material_OutLine.SetFloat("_Edge", slider_OutLine.Value);
             slider_Fog.Value = 0.03f;
         }
 
@@ -240,11 +146,6 @@ namespace UniLiveViewer.Menu
         {
             await UniTask.Yield(PlayerLoopTiming.Update, _cancellation);//一応
 
-            //sceneボタン初期化
-            foreach (var e in _btnSecenChange)
-            {
-                e.isEnable = false;
-            }
             var type = SceneChangeService.GetSceneType;
             if (type == SceneType.CANDY_LIVE)
             {
@@ -286,27 +187,6 @@ namespace UniLiveViewer.Menu
             {
                 //未実装
             }
-
-            //共用
-            btn_General[0].isEnable = FileReadAndWriteUtility.UserProfile.IsSmoothVMD;
-            btn_General[1].isEnable = _passthroughService.IsInsightPassthroughEnabled();
-            btn_General[2].isEnable = FileReadAndWriteUtility.UserProfile.TouchVibration;
-
-            //キャラサイズ
-            slider_InitCharaSize.Value = FileReadAndWriteUtility.UserProfile.InitCharaSize;
-            Update_InitCharaSize();
-
-            //キャラ影
-            slider_CharaShadow.Value = _quasiShadowSetting.ShadowScale;
-            Update_CharaShadow();
-
-            textMeshs[3].text = $"FootShadow:\n{_quasiShadowSetting.ShadowType}";
-
-            //VMD拡縮
-            slider_VMDScale.Value = FileReadAndWriteUtility.UserProfile.VMDScale;
-            Update_VMDScale();
-            //固定中心窩レンダリング初期化
-            Update_FixedFoveated();
         }
 
         void Update()
@@ -315,60 +195,6 @@ namespace UniLiveViewer.Menu
             DebugInput();
 #elif UNITY_ANDROID
 #endif
-        }
-
-        void OnClickButtonAction(Button_Base btn)
-        {
-            //スムース
-            if (btn == btn_General[0])
-            {
-                FileReadAndWriteUtility.UserProfile.IsSmoothVMD = btn.isEnable;
-                FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
-            }
-            //パススルー
-            else if (btn == btn_General[1])
-            {
-                _passthroughService.Switching(btn.isEnable);
-            }
-            //コントローラー振動
-            else if (btn == btn_General[2])
-            {
-                FileReadAndWriteUtility.UserProfile.TouchVibration = btn.isEnable;
-                FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
-            }
-            //キャラ影デクリ
-            else if (btn == btn_General[3])
-            {
-                _quasiShadowSetting.ShadowType -= 1;
-                textMeshs[3].text = $"FootShadow:\n{_quasiShadowSetting.ShadowType}";
-                FileReadAndWriteUtility.UserProfile.CharaShadowType = (int)_quasiShadowSetting.ShadowType;
-                FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
-            }
-            //キャラ影インクリ
-            else if (btn == btn_General[4])
-            {
-                _quasiShadowSetting.ShadowType += 1;
-                textMeshs[3].text = $"FootShadow:\n{_quasiShadowSetting.ShadowType}";
-                FileReadAndWriteUtility.UserProfile.CharaShadowType = (int)_quasiShadowSetting.ShadowType;
-                FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
-            }
-            else if (btn == btn_General[5])
-            {
-                var mode = btn.isEnable ?
-                    UnityEngine.Rendering.Universal.AntialiasingMode.FastApproximateAntialiasing :
-                    UnityEngine.Rendering.Universal.AntialiasingMode.None;
-                _antialiasingMode.Value = mode;
-            }
-            else if (btn == btn_General[6])
-            {
-                _bloom.Value = btn.isEnable;
-            }
-            else if (btn == btn_General[7])
-            {
-                _tonemapping.Value = btn.isEnable;
-            }
-
-            menuManager.PlayOneShot(SoundType.BTN_CLICK);
         }
 
         /// <summary>
@@ -473,7 +299,7 @@ namespace UniLiveViewer.Menu
                     }
                     break;
             }
-            //保存する
+            //まとめて保存する
             FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
         }
 
@@ -573,72 +399,6 @@ namespace UniLiveViewer.Menu
             menuManager.PlayOneShot(SoundType.BTN_CLICK);
         }
 
-        public void Click_SceneChange(int i)
-        {
-            menuManager.PlayOneShot(SoundType.BTN_CLICK);
-
-            if (!_btnSecenChange[i]) return;
-            SceneChangeAsync(SceneChangeService.NameList[i], _cancellation).Forget();
-        }
-
-        /// <summary>
-        /// シーン遷移処理
-        /// </summary>
-        /// <param name="sceneName"></param>
-        /// <returns></returns>
-        async UniTask SceneChangeAsync(string sceneName, CancellationToken cancellation)
-        {
-            // 音が割れるので止める
-            await _playableMusicService.ManualModeAsync(cancellation);
-
-            await UniTask.Delay(100, cancellationToken: cancellation);
-            await BlackoutCurtain.instance.FadeoutAsync(cancellation);
-
-            //UIが透けて見えるので隠す
-            menuManager.gameObject.SetActive(false);
-            await _sceneChangeService.Change(sceneName, cancellation);
-        }
-
-        /// <summary>
-        /// キャラ初期サイズ
-        /// </summary>
-        void Update_InitCharaSize()
-        {
-            textMeshs[0].text = $"{slider_InitCharaSize.Value:0.00}";
-        }
-
-        /// <summary>
-        /// キャラの影サイズ
-        /// </summary>
-        void Update_CharaShadow()
-        {
-            _quasiShadowSetting.SetShadowScale(slider_CharaShadow.Value);
-            textMeshs[4].text = $"{slider_CharaShadow.Value:0.00}";
-        }
-
-        /// <summary>
-        /// VMD範囲
-        /// </summary>
-        void Update_VMDScale()
-        {
-            slider_VMDScale.Value = Mathf.Clamp(slider_VMDScale.Value, 0.3f, 1.0f);
-            textMeshs[1].text = $"{slider_VMDScale.Value:0.000}";
-        }
-
-        /// <summary>
-        /// 固定中心窩レンダリングのスライダー
-        /// </summary>
-        void Update_FixedFoveated()
-        {
-            slider_FixedFoveated.Value = Mathf.Clamp(slider_FixedFoveated.Value, 2, 4);
-#if UNITY_EDITOR
-            textMeshs[2].text = $"noQuest:{slider_FixedFoveated.Value}";
-#elif UNITY_ANDROID
-            //反映し直す
-            OVRManager.fixedFoveatedRenderingLevel = (OVRManager.FixedFoveatedRenderingLevel)slider_FixedFoveated.Value;
-            textMeshs[2].text = Enum.GetName(typeof(OVRManager.FixedFoveatedRenderingLevel),OVRManager.fixedFoveatedRenderingLevel);
-#endif
-        }
         void DebugInput()
         {
             if (Input.GetKeyDown(KeyCode.I)) Click_Setting_Viewer(2);//ワームホール
