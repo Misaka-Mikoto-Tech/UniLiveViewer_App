@@ -30,11 +30,11 @@ namespace UniLiveViewer.Stage
             _fileAccessManager.LoadEndAsObservable
                 .Subscribe(_ => _menuGripperService.Initialize())
                 .AddTo(_disposables);
-            _playerStateManager.MainUISwitchingAsObservable
-                .Subscribe(_menuGripperService.OnSwitchEnable)
+            _playerStateManager.MainMenuSwitchingAsObservable
+                .Subscribe(_menuGripperService.OnMenuSwitching)
                 .AddTo(_disposables);
 
-            _menuGripperService.OnSwitchEnable(false);
+            _menuGripperService.OnMenuSwitching(false);
         }
 
         void ILateTickable.LateTick()

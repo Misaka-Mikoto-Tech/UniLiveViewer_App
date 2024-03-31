@@ -7,6 +7,7 @@ using VContainer.Unity;
 
 namespace UniLiveViewer.Player
 {
+    [RequireComponent(typeof(PlayerRootAnchor))]
     [RequireComponent(typeof(PlayerStateManager))]
     [RequireComponent(typeof(CharacterCameraConstraint_Custom))]
     [RequireComponent(typeof(SimpleCapsuleWithStickMovement))]
@@ -36,6 +37,7 @@ namespace UniLiveViewer.Player
             builder.RegisterComponent(_ovrGrabbers);
             builder.RegisterComponent(_ovrManager);
             builder.RegisterComponent(_passthroughService);
+            builder.RegisterComponent(GetComponent<PlayerRootAnchor>());
             builder.RegisterComponent(GetComponent<PlayerStateManager>());
             builder.RegisterComponent(GetComponent<CharacterCameraConstraint_Custom>());
             builder.RegisterComponent(GetComponent<SimpleCapsuleWithStickMovement>());
@@ -45,6 +47,9 @@ namespace UniLiveViewer.Player
             builder.RegisterInstance(_volumeProfile);
             builder.Register<GraphicsSettingsService>(Lifetime.Singleton);
             builder.RegisterEntryPoint<GraphicsSettingsPresenter>();
+
+            builder.Register<PlayerRootAnchorService>(Lifetime.Singleton);
+            builder.RegisterEntryPoint<PlayerRootAnchorPresenter>();
         }
     }
 }

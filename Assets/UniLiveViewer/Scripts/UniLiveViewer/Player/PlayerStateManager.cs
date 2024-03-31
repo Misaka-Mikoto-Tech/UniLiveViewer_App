@@ -1,4 +1,4 @@
-﻿using MessagePipe;
+using MessagePipe;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +24,7 @@ namespace UniLiveViewer.Player
     {
         const int PIECE_ANGLE = 45;
 
-        public IObservable<bool> MainUISwitchingAsObservable => _mainUISwitchingStream;
+        public IObservable<bool> MainMenuSwitchingAsObservable => _mainUISwitchingStream;
         readonly Subject<bool> _mainUISwitchingStream = new();
 
         public IReadOnlyReactiveProperty<bool> CameraHeightMenuShow => _cameraHeightMenuShow;
@@ -75,7 +75,9 @@ namespace UniLiveViewer.Player
 
         IPublisher<AllActorOptionMessage> _allPublisher;
         IPublisher<ActorResizeMessage> _publisher;
-        PlayerConfigData _playerConfigData;
+        KeyConfig _leftKeyConfig;
+        KeyConfig _rightKeyConfig;
+
         PlayableAnimationClipService _playableAnimationClipService;
         PlayableDirector _playableDirector;
         List<OVRGrabber_UniLiveViewer> _ovrGrabbers;
@@ -93,7 +95,8 @@ namespace UniLiveViewer.Player
         {
             _allPublisher = actorOperationPublisher;
             _publisher = publisher;
-            _playerConfigData = playerConfigData;
+            _leftKeyConfig = playerConfigData.LeftKeyConfig;
+            _rightKeyConfig = playerConfigData.RightKeyConfig;
             _playableAnimationClipService = playableAnimationClipService;
             _playableDirector = playableDirector;
             _ovrGrabbers = ovrGrabbers;
@@ -128,20 +131,13 @@ namespace UniLiveViewer.Player
             }
             _bothHandsCenterAnchor = new GameObject("BothHandsCenter").transform;
 
-            //初期座標
-
-            var map = _playerConfigData.Map.FirstOrDefault(x => x.SceneType == SceneChangeService.GetSceneType);
-            if (map != null)
-            {
-                transform.SetPositionAndRotation(map.InitializePosition, Quaternion.Euler(map.InitializeRotation));
-            }
             this.enabled = false;
         }
 
         void Update()
         {
-            HandStateAction(PlayerEnums.HandType.LHand, _playerConfigData.LeftKeyConfig);
-            HandStateAction(PlayerEnums.HandType.RHand, _playerConfigData.RightKeyConfig);
+            HandStateAction(PlayerEnums.HandType.LHand, _leftKeyConfig);
+            HandStateAction(PlayerEnums.HandType.RHand, _rightKeyConfig);
 
 #if UNITY_EDITOR
             DebugInput();

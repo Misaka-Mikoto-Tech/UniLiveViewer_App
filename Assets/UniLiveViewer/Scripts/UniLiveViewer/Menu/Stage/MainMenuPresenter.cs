@@ -42,7 +42,7 @@ namespace UniLiveViewer.Menu
 
         async UniTask IAsyncStartable.StartAsync(CancellationToken cancellation)
         {
-            _playerStateManager.MainUISwitchingAsObservable
+            _playerStateManager.MainMenuSwitchingAsObservable
                 .Subscribe(SwitchEnable)
                 .AddTo(_disposables);
 
