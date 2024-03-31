@@ -33,8 +33,16 @@ namespace UniLiveViewer.Menu
         [Header("＜各ページに相当＞")]
         [SerializeField] private DecorationItems[] decorationItems;
 
+        AudioSourceService _audioSourceService;
         PassthroughService _passthroughService;
         int _languageCurrent;
+
+        [Inject]
+        public void Construct(
+            AudioSourceService audioSourceService)
+        {
+            _audioSourceService = audioSourceService;
+        }
 
         public void OnStart()
         {
@@ -121,7 +129,7 @@ namespace UniLiveViewer.Menu
                     GenerateItems();
 
                     //クリック音
-                    menuManager.PlayOneShot(SoundType.BTN_CLICK);
+                    _audioSourceService.PlayOneShot(0);
                     break;
                 }
             }

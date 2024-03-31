@@ -18,6 +18,9 @@ namespace UniLiveViewer.Menu
         public int current { get; private set; }
         public Transform GetCurrentPage() { return pageAnchor[current]; } 
 
+        /// <summary>
+        /// TODO: Serviceに代替したい
+        /// </summary>
         [Header("＜Sound＞")]
         [SerializeField] AudioClip[] Sound;//ボタン音
         AudioSource audioSource;

@@ -5,6 +5,7 @@ using UniLiveViewer.SceneLoader;
 using UniLiveViewer.Stage;
 using UniRx;
 using UnityEngine;
+using VContainer;
 
 namespace UniLiveViewer.Menu
 {
@@ -37,7 +38,15 @@ namespace UniLiveViewer.Menu
 
         Material _matMirrore;//LiveScene用
         BackGroundController _backGroundCon;
+        AudioSourceService _audioSourceService;
         CancellationToken _cancellation;
+
+        [Inject]
+        public void Construct(
+            AudioSourceService audioSourceService)
+        {
+            _audioSourceService = audioSourceService;
+        }
 
         public void OnStart()
         {
@@ -203,7 +212,7 @@ namespace UniLiveViewer.Menu
         /// <param name="i"></param>
         public void Click_Setting_Live(int i)
         {
-            menuManager.PlayOneShot(SoundType.BTN_CLICK);
+            _audioSourceService.PlayOneShot(0);
 
             bool result = btnE[i].isEnable;
             switch (i)
@@ -260,7 +269,7 @@ namespace UniLiveViewer.Menu
         /// <param name="i"></param>
         public void Click_Setting_KAGURA(int i)
         {
-            menuManager.PlayOneShot(SoundType.BTN_CLICK);
+            _audioSourceService.PlayOneShot(0);
 
             bool result = btnE[i].isEnable;
             switch (i)
@@ -309,7 +318,7 @@ namespace UniLiveViewer.Menu
         /// <param name="i"></param>
         public void Click_Setting_Viewer(int i)
         {
-            menuManager.PlayOneShot(SoundType.BTN_CLICK);
+            _audioSourceService.PlayOneShot(0);
 
             var result = btnE[i].isEnable;
             switch (i)
@@ -361,7 +370,7 @@ namespace UniLiveViewer.Menu
                     break;
             }
 
-            menuManager.PlayOneShot(SoundType.BTN_CLICK);
+            _audioSourceService.PlayOneShot(0);
         }
 
         // 雑
@@ -376,7 +385,7 @@ namespace UniLiveViewer.Menu
 
             _stageLightIndex.OnNext(_lightIndex);
             textMeshs_Gym[0].text = $"SpotLight_{Enum.GetName(typeof(StageEnums.StageLight), _lightIndex)}";
-            menuManager.PlayOneShot(SoundType.BTN_CLICK_LIGHT);
+            _audioSourceService.PlayOneShot(1);
         }
 
         public void Click_Setting_Gym(int i)
@@ -396,7 +405,7 @@ namespace UniLiveViewer.Menu
             //保存する
             FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
 
-            menuManager.PlayOneShot(SoundType.BTN_CLICK);
+            _audioSourceService.PlayOneShot(0);
         }
 
         void DebugInput()

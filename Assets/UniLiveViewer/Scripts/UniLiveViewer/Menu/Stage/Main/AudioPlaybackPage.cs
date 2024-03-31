@@ -27,6 +27,7 @@ namespace UniLiveViewer.Menu
         PlayableDirector _playableDirector;
         PlayerStateManager _playerStateManager;
         AudioAssetManager _audioAssetManager;
+        AudioSourceService _audioSourceService;
 
         CancellationToken _cancellationToken;
 
@@ -35,12 +36,14 @@ namespace UniLiveViewer.Menu
             AudioAssetManager audioAssetManager,
             PlayableMusicService playableMusicService,
             PlayableDirector playableDirector,
-            PlayerStateManager playerStateManager)
+            PlayerStateManager playerStateManager,
+            AudioSourceService audioSourceService)
         {
             _audioAssetManager = audioAssetManager;
             _playableMusicService = playableMusicService;
             _playableDirector = playableDirector;
             _playerStateManager = playerStateManager;
+            _audioSourceService = audioSourceService;
         }
 
         public void OnJumpSelect((JumpList.TARGET, int) select)
@@ -63,7 +66,7 @@ namespace UniLiveViewer.Menu
                     ChangeAuidoAsync(_isPresetAudio, moveIndex, _cancellationToken).Forget();
                     break;
             }
-            _menuManager.PlayOneShot(SoundType.BTN_CLICK);
+            _audioSourceService.PlayOneShot(0);
         }
 
         public async UniTask StartAsync(CancellationToken cancellation)
@@ -164,7 +167,7 @@ namespace UniLiveViewer.Menu
             {
                 _menuManager.jumpList.SetAudioData(_isPresetAudio);
             }
-            _menuManager.PlayOneShot(SoundType.BTN_CLICK);
+            _audioSourceService.PlayOneShot(0);
         }
 
         /// <summary>
@@ -173,7 +176,7 @@ namespace UniLiveViewer.Menu
         /// <param name="btn"></param>
         void Click_AudioPlayer(Button_Base btn)
         {
-            _menuManager.PlayOneShot(SoundType.BTN_CLICK);
+            _audioSourceService.PlayOneShot(0);
 
             //スライダー操作中は受け付けない
             if (_playerStateManager.IsSliderGrabbing(Constants.TagGrabSliderVolume)) return;
@@ -210,7 +213,7 @@ namespace UniLiveViewer.Menu
                 _switchAudio[1].isEnable = true;
             }
             _menuManager.jumpList.Close();
-            _menuManager.PlayOneShot(SoundType.BTN_CLICK);
+            _audioSourceService.PlayOneShot(0);
             ChangeAuidoAsync(_isPresetAudio, 0, _cancellationToken).Forget();
         }
 
@@ -226,7 +229,7 @@ namespace UniLiveViewer.Menu
 
                 var moveIndex = i == 0 ? -1 : 1;
                 ChangeAuidoAsync(moveIndex, _cancellationToken).Forget();
-                _menuManager.PlayOneShot(SoundType.BTN_CLICK);
+                _audioSourceService.PlayOneShot(0);
                 return;
             }
         }
