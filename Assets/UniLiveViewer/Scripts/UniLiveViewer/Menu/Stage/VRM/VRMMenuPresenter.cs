@@ -5,11 +5,17 @@ using System.Threading;
 using UniRx;
 using VContainer;
 using VContainer.Unity;
+using NanaCiel;
 
 namespace UniLiveViewer.Menu
 {
     public class VRMMenuPresenter : IAsyncStartable, IDisposable
     {
+        /// <summary>
+        /// サムネページ処理停止用
+        /// </summary>
+        CancellationTokenSource _cts;
+
         readonly ISubscriber<VRMMenuShowMessage> _menuShowSubscriber;
         readonly MenuRootService _menuRootService;
         readonly ThumbnailService _thumbnailService;
@@ -32,12 +38,18 @@ namespace UniLiveViewer.Menu
         async UniTask IAsyncStartable.StartAsync(CancellationToken cancellation)
         {
             _menuShowSubscriber
-                .Subscribe(x =>
+                .Subscribe(async x =>
                 {
+                    _cts?.Cancel();//ページ状態更新と見なす
                     var isEnable = x.PageIndex == -1 ? false : true;
+
                     _menuRootService.SetEnableRoot(isEnable);
                     if (!isEnable) return;
-                    if (x.PageIndex == 0) _thumbnailService.BeginAsync(cancellation).Forget();
+                    if (x.PageIndex == 0)
+                    {
+                        _cts = new CancellationTokenSource();
+                        await _thumbnailService.BeginAsync(_cts.Token).IgnoreCancellationException();
+                    }
                 }).AddTo(_disposables);
 
             _thumbnailService.OnClickAsObservable

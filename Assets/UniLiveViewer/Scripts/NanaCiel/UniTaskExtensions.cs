@@ -54,5 +54,20 @@ namespace NanaCiel
             }
             return await task;
         }
+
+        /// <summary>
+        /// OperationCanceledExceptionを意図的に無視用
+        /// </summary>
+        public static async UniTask IgnoreCancellationException(this UniTask task)
+        {
+            try
+            {
+                await task;
+            }
+            catch (OperationCanceledException e)
+            {
+                //想定なので握りつぶす
+            }
+        }
     }
 }
