@@ -28,6 +28,10 @@ namespace UniLiveViewer.SceneLoader
 
         public SceneChangeService()
         {
+        }
+
+        public void Initialize()
+        {
             _map = new Dictionary<SceneType, IScene>
             {
                 { SceneType.TITLE, new TitleScene() },
@@ -37,6 +41,9 @@ namespace UniLiveViewer.SceneLoader
                 { SceneType.GYMNASIUM, new GymnasiumScene() },
                 { SceneType.FANTASY_VILLAGE, new FantasyVillageScene() }
             };
+
+            _current = (SceneType)FileReadAndWriteUtility.UserProfile.LastSceneSceneTypeNo;
+            SystemInfo.Initialize(_current);
         }
 
         public async UniTask ChangePreviousScene(CancellationToken cancellation)
@@ -54,18 +61,6 @@ namespace UniLiveViewer.SceneLoader
             FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);//完了したら更新
 
             SystemInfo.Initialize(nextSceneType);
-        }
-
-        /// <summary>
-        /// 直接Sceneから再生するEditor限定
-        /// </summary>
-        public void SetSceneIfNecessary()
-        {
-#if UNITY_EDITOR
-            var nextScene = (SceneType)FileReadAndWriteUtility.UserProfile.LastSceneSceneTypeNo;
-            _current = nextScene;
-            SystemInfo.Initialize(nextScene);
-#endif
         }
     }
 }

@@ -12,7 +12,7 @@ namespace UniLiveViewer.Stage
     /// <summary>
     /// シーン遷移・ファイル準備のみ
     /// </summary>
-    public class StageScenePresenter : IAsyncStartable
+    public class StageScenePresenter : IInitializable ,IAsyncStartable
     {
         readonly SceneChangeService _sceneChangeService;
         readonly FileAccessManager _fileAccessManager;
@@ -32,10 +32,13 @@ namespace UniLiveViewer.Stage
             _textureAssetManager = textureAssetManager;
         }
 
+        void IInitializable.Initialize()
+        {
+            _sceneChangeService.Initialize();
+        }
+
         async UniTask IAsyncStartable.StartAsync(CancellationToken cancellation)
         {
-            _sceneChangeService.SetSceneIfNecessary();
-
             await _fileAccessManager.PreparationStart(cancellation).OnError(OnFolderError);
             _animationAssetManager.Setup();
             await _textureAssetManager.CacheThumbnails(cancellation).OnError(OnThumbnailsError);

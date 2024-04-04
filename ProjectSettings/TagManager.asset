@@ -23,6 +23,7 @@ TagManager:
   - BackGroundController
   - FxTemporaire
   - Passthrough
+  - MainLight
   layers:
   - Default
   - TransparentFX

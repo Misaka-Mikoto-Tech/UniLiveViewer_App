@@ -144,7 +144,13 @@ namespace UniLiveViewer.Menu
             }
             else if (SceneChangeService.GetSceneType == SceneType.FANTASY_VILLAGE)
             {
-                //未実装
+                //シーン別専用ボタンの割り当て
+                for (int i = 0; i < 1; i++)
+                {
+                    btnE[i] = _sceneAnchor[current].transform.GetChild(i).GetComponent<Button_Base>();
+                }
+                btnE_ActionParent = new Transform[1];
+                btnE_ActionParent[0] = GameObject.FindGameObjectWithTag("MainLight").transform;
             }
 
             //値の更新
@@ -194,7 +200,7 @@ namespace UniLiveViewer.Menu
             }
             else if (type == SceneType.FANTASY_VILLAGE)
             {
-                //未実装
+                btnE[0].isEnable = btnE_ActionParent[0].gameObject.activeSelf;
             }
         }
 
@@ -406,6 +412,27 @@ namespace UniLiveViewer.Menu
             FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
 
             _audioSourceService.PlayOneShot(0);
+        }
+
+        public void Click_Setting_FantasyVillage(int i)
+        {
+            _audioSourceService.PlayOneShot(0);
+
+            bool result = btnE[i].isEnable;
+            switch (i)
+            {
+                //ライト
+                case 0:
+                    if (btnE_ActionParent[0])
+                    {
+                        btnE_ActionParent[0].gameObject.SetActive(result);
+                        FileReadAndWriteUtility.UserProfile.scene_fv_light = result;
+                    }
+                    break;
+            }
+
+            //保存する
+            FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
         }
 
         void DebugInput()

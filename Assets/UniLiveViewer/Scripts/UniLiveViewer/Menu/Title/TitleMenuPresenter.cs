@@ -1,27 +1,34 @@
 ﻿using Cysharp.Threading.Tasks;
 using System;
+using UniLiveViewer.SceneLoader;
 using UniRx;
 using VContainer;
 using VContainer.Unity;
 
 namespace UniLiveViewer.Menu
 {
-    public class TitleMenuPresenter : IStartable, IDisposable
+    public class TitleMenuPresenter : IInitializable, IStartable, IDisposable
     {
+        readonly SceneChangeService _sceneChangeService;
         readonly TitleBackGroundService _backGroundService;
         readonly TitleMenuService _menuService;
 
-        readonly CompositeDisposable _disposable;
+        readonly CompositeDisposable _disposable = new();
 
         [Inject]
         public TitleMenuPresenter(
             TitleBackGroundService titleBackGroundService,
-            TitleMenuService titleMenuService)
+            TitleMenuService titleMenuService,
+            SceneChangeService sceneChangeService)
         {
+            _sceneChangeService = sceneChangeService;
             _backGroundService = titleBackGroundService;
             _menuService = titleMenuService;
+        }
 
-            _disposable = new CompositeDisposable();
+        void IInitializable.Initialize()
+        {
+            _sceneChangeService.Initialize();
         }
 
         void IStartable.Start()

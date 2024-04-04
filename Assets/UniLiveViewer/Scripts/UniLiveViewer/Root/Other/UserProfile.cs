@@ -36,5 +36,7 @@ namespace UniLiveViewer
         public bool scene_view_led = true;
 
         public bool scene_gym_whitelight = true;
+
+        public bool scene_fv_light = true;
     }
 }

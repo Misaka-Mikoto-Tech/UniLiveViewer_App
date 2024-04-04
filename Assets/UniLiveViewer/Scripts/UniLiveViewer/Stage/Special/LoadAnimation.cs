@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace UniLiveViewer.Stage
 {
+    /// <summary>
+    /// シーンロードとアバターロードで使いまわしてるので変更注意
+    /// </summary>
     public class LoadAnimation : MonoBehaviour
     {
         Animator _animator;
