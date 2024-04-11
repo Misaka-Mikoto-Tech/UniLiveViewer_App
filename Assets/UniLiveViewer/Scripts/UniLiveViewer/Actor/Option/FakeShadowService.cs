@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UniLiveViewer.Actor;
 using UnityEngine;
 using VContainer;
@@ -44,7 +44,8 @@ namespace UniLiveViewer.Timeline
 
             GameObject.Destroy(meshRenderer.gameObject);
 
-            UpdateShadowType(FileReadAndWriteUtility.UserProfile.CharaShadowType);
+            //初期化
+            OnUpdateShadowType();
         }
 
         public void OnChangeActorEntity(ActorEntity actorEntity)
@@ -69,9 +70,9 @@ namespace UniLiveViewer.Timeline
             _rootScalar = rootScalar;
         }
 
-        void UpdateShadowType(int shadowType)
+        public void OnUpdateShadowType()
         {
-            _setting.ShadowType = (SHADOWTYPE)shadowType;
+            _setting.ShadowType = (SHADOWTYPE)FileReadAndWriteUtility.UserProfile.CharaShadowType;
             UpdateMeshRenderers();
         }
 

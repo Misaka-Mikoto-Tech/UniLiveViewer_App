@@ -96,7 +96,8 @@ namespace UniLiveViewer.Actor
         LIPSYNC_ENEBLE,
         LIPSYNC_DISABLE,
         TIMELINE_PLAY,
-        TIMELINE_NONPLAY
+        TIMELINE_NONPLAY,
+        UPDATE_SHADOW
     }
 
     public enum ActorOptionCommand

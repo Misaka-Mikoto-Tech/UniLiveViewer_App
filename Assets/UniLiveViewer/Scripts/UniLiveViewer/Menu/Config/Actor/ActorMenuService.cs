@@ -1,20 +1,26 @@
-﻿using UniLiveViewer.Timeline;
+using MessagePipe;
+using UniLiveViewer.Actor;
+using UniLiveViewer.MessagePipe;
+using UniLiveViewer.Timeline;
 using VContainer;
 
 namespace UniLiveViewer.Menu.Config.Actor
 {
     public class ActorMenuService
     {
+        readonly IPublisher<AllActorOperationMessage> _allPublisher;
         readonly ActorMenuSettings _settings;
         readonly QuasiShadowSetting _quasiShadowSetting;
         readonly AudioSourceService _audioSourceService;
 
         [Inject]
         public ActorMenuService(
+            IPublisher<AllActorOperationMessage> allPublisher,
             ActorMenuSettings settings,
             QuasiShadowSetting quasiShadowSetting,
             AudioSourceService audioSourceService)
         {
+            _allPublisher = allPublisher;
             _settings = settings;
             _quasiShadowSetting = quasiShadowSetting;
             _audioSourceService = audioSourceService;
@@ -67,6 +73,10 @@ namespace UniLiveViewer.Menu.Config.Actor
             FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
 
             _audioSourceService.PlayOneShot(0);
+
+            //json保存後に通知
+            var message = new AllActorOperationMessage(ActorState.FIELD, ActorCommand.UPDATE_SHADOW);
+            _allPublisher.Publish(message);
         }
 
         void OnUpdateFallingShadow()
