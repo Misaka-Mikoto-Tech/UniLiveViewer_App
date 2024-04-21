@@ -1,4 +1,4 @@
-using MessagePipe;
+﻿using MessagePipe;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +6,6 @@ using UniLiveViewer.Actor;
 using UniLiveViewer.Actor.AttachPoint;
 using UniLiveViewer.MessagePipe;
 using UniLiveViewer.OVRCustom;
-using UniLiveViewer.SceneLoader;
 using UniLiveViewer.Timeline;
 using UniLiveViewer.ValueObject;
 using UniRx;
@@ -382,8 +381,13 @@ namespace UniLiveViewer.Player
             }
 
             var command = isSummonCircle ? ActorOptionCommand.GUID_ANCHOR_ENEBLE : ActorOptionCommand.GUID_ANCHOR_DISABLE;
-            var message = new AllActorOptionMessage(ActorState.FIELD, command);
-            _allPublisher.Publish(message);
+            var fieldMessage = new AllActorOptionMessage(ActorState.FIELD, command);
+            _allPublisher.Publish(fieldMessage);
+
+            // 掴んでいる対象向け（TODO:本当はinstanceIDでやるべきだがリファクタが先）
+            _allPublisher.Publish(new AllActorOptionMessage(ActorState.ON_CIRCLE, ActorOptionCommand.GUID_ANCHOR_ENEBLE));
+            _allPublisher.Publish(new AllActorOptionMessage(ActorState.HOLD, ActorOptionCommand.GUID_ANCHOR_DISABLE));
+            // MEMO: 掴みながらUIは消せないのでminiatureは不要
         }
 
         /// <summary>

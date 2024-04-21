@@ -42,6 +42,7 @@ namespace UniLiveViewer.Actor.Expression
 
             if (_animationMode == CurrentMode.CUSTOM)
             {
+                if (_actorEntity.ActorEntity().Value == null) return;
                 var vmdPlayer = _actorEntity.ActorEntity().Value.GetVMDPlayer;
                 if (vmdPlayer.MorphPlayerVRM == null) return;
                 vmdPlayer.MorphPlayerVRM.SetFaceUpdate(isEnable);
@@ -55,6 +56,7 @@ namespace UniLiveViewer.Actor.Expression
 
             if (_animationMode == CurrentMode.CUSTOM)
             {
+                if (_actorEntity.ActorEntity().Value == null) return;
                 var vmdPlayer = _actorEntity.ActorEntity().Value.GetVMDPlayer;
                 if (vmdPlayer.MorphPlayerVRM == null) return;
                 vmdPlayer.MorphPlayerVRM.SetLipUpdate(isEnable);
