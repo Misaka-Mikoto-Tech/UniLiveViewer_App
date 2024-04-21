@@ -67,9 +67,9 @@ namespace UniLiveViewer.Stage
                 var data = _playableBinderService.BindingData[i];
                 if (data != null)
                 {
-                    var lookAt = data.ActorEntity.ActorEntity().Value.LookAtBase;
-                    target = lookAt.Test.virtualHead;
-                    baseTransform = lookAt.Test.virtualChest;
+                    var boneGenerator = data.ActorEntity.ActorEntity().Value.NormalizedBoneGenerator;
+                    target = boneGenerator.VirtualHead;
+                    baseTransform = boneGenerator.VirtualChest;
                     break;
                 }
             }

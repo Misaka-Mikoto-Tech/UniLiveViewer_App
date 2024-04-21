@@ -1,9 +1,10 @@
-﻿using UniLiveViewer.Actor;
+using UniLiveViewer.Actor;
 
 namespace UniLiveViewer.MessagePipe
 {
     /// <summary>
     /// ActorIdに依存せずtimeline側とmenu側の全員に通知
+    /// アクターはアクティブ状態に関係なく受信
     /// </summary>
     public class AllActorOperationMessage
     {

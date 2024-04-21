@@ -1,4 +1,4 @@
-using MessagePipe;
+﻿using MessagePipe;
 using System;
 using System.Collections.Generic;
 using UniLiveViewer.OVRCustom;
@@ -106,7 +106,8 @@ namespace UniLiveViewer.Player.HandMenu
             else if (ovrGrabbableCustom.TryGetComponent<Actor.ActorLifetimeScope>(out var actor))
             {
                 var actorEntity = actor.Container.Resolve<Actor.IActorEntity>();
-
+                // TODO: ActorResizeMessageを直で購読してないのは
+                // scale変更が差分だからactor経由必須なのか...課題
                 _serialDisposable.Disposable = actorEntity.RootScalar()
                 .Subscribe(x =>
                 {

@@ -11,6 +11,7 @@ namespace UniLiveViewer.Actor
 
         /// <summary>
         /// gameObject.activeSelfに連動して扱う
+        /// Tick系はactive時のみ更新の方針
         /// </summary>
         /// <returns></returns>
         IReactiveProperty<bool> Active();

@@ -12,8 +12,6 @@ namespace UniLiveViewer.Actor.AttachPoint
 {
     public class AttachPointPresenter : IStartable, ITickable, IDisposable
     {
-        bool _isTick;
-
         readonly ISubscriber<AttachPointMessage> _subscriber;
         readonly IActorEntity _actorEntity;
         readonly AttachPointService _attachPointService;
@@ -42,15 +40,11 @@ namespace UniLiveViewer.Actor.AttachPoint
                     if (_playableDirector.timeUpdateMode != DirectorUpdateMode.Manual) return;
                     _attachPointService.SetActive(x.IsActive);
                 }).AddTo(_disposables);
-
-            _actorEntity.Active()
-                .Subscribe(x => _isTick = x)
-                .AddTo(_disposables);
         }
 
         void ITickable.Tick()
         {
-            if (!_isTick) return;
+            if (!_actorEntity.Active().Value) return;
             _attachPointService.OnTick();
         }
 

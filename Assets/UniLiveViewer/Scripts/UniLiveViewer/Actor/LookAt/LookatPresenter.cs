@@ -1,4 +1,4 @@
-﻿using MessagePipe;
+using MessagePipe;
 using System;
 using UniLiveViewer.MessagePipe;
 using UniLiveViewer.ValueObject;
@@ -11,13 +11,12 @@ namespace UniLiveViewer.Actor.LookAt
 {
     public class LookatPresenter : IStartable, ILateTickable, IDisposable
     {
-        bool _isActive;
+        bool _isActorActive;
 
         readonly InstanceId _instanceId;
         readonly ISubscriber<ActorAnimationMessage> _subscriber;
         readonly IActorEntity _actorEntity;
-        readonly LookatService _lookatService;
-        readonly CharaInfoData _charaInfoData;
+        readonly LookAtService _lookAtService;
 
         readonly CompositeDisposable _disposables = new();
 
@@ -26,49 +25,42 @@ namespace UniLiveViewer.Actor.LookAt
             InstanceId instanceId,
             ISubscriber<ActorAnimationMessage> subscriber,
             IActorEntity actorEntity,
-            LookatService lookatService,
-            CharaInfoData charaInfoData)
+            LookAtService lookAtService)
         {
             _instanceId = instanceId;
             _subscriber = subscriber;
             _actorEntity = actorEntity;
-            _lookatService = lookatService;
-            _charaInfoData = charaInfoData;
+            _lookAtService = lookAtService;
         }
 
         void IStartable.Start()
         {
-            _actorEntity.ActorEntity()
-                .Subscribe(x =>
-                {
-                    x?.LookAtBase.Setup(x.GetAnimator, _charaInfoData, Camera.main.transform);//うーむ
-                    _lookatService.Setup(x?.HeadLookAt, x?.EyeLookAt);
-                }).AddTo(_disposables);
-
             _subscriber
                 .Subscribe(x =>
                 {
                     if (_instanceId != x.InstanceId) return;
-                    if (!_isActive) return;
+                    if (!_isActorActive) return;
                     if (x.Mode == Menu.CurrentMode.PRESET)
                     {
-                        _lookatService.OnChangeHeadLookAt(true);
+                        _lookAtService.SetHeadEnable(true);
                     }
                     else if (x.Mode == Menu.CurrentMode.CUSTOM)
                     {
-                        _lookatService.OnChangeHeadLookAt(false);
+                        _lookAtService.SetHeadEnable(false);
                     }
                 }).AddTo(_disposables);
 
             _actorEntity.Active()
-                .Subscribe(x => _isActive = x)
+                .Subscribe(x => _isActorActive = x)
                 .AddTo(_disposables);
         }
 
         void ILateTickable.LateTick()
         {
-            if (!_isActive) return;
-            _lookatService.OnLateTick();
+            if (!_isActorActive) return;
+            if (Time.timeScale == 0) return;
+
+            _lookAtService.OnLateTick();
         }
 
         void IDisposable.Dispose()

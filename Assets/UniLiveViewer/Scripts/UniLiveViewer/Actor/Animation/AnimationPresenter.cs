@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using MessagePipe;
 using System;
 using System.Threading;
@@ -6,7 +6,6 @@ using UniLiveViewer.Actor.Expression;
 using UniLiveViewer.MessagePipe;
 using UniLiveViewer.ValueObject;
 using UniRx;
-using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
@@ -14,8 +13,6 @@ namespace UniLiveViewer.Actor.Animation
 {
     public class AnimationPresenter : IAsyncStartable, ILateTickable, IDisposable
     {
-        bool _isActive;
-
         readonly InstanceId _instanceId;
         readonly ISubscriber<AllActorOperationMessage> _allSubscriber;
         readonly AnimationService _animationService;
@@ -54,7 +51,6 @@ namespace UniLiveViewer.Actor.Animation
                 .Subscribe(async x =>
                 {
                     if (_instanceId != x.InstanceId) return;
-                    if (!_isActive) return;
                     await _animationService.SetAnimationAsync(x.Mode, x.AnimationIndex, x.IsReverse, cancellation);
                     _expressionService.OnChangeMode(x.Mode);
 
@@ -73,17 +69,12 @@ namespace UniLiveViewer.Actor.Animation
                         _animationService.RemoveRuntimeAnimatorController();
                     }
                 }).AddTo(_disposables);
-
-            _actorEntity.Active()
-                .Subscribe(x => _isActive = x)
-                .AddTo(_disposables);
-
             return UniTask.CompletedTask;
         }
 
         void ILateTickable.LateTick()
         {
-            if (!_isActive) return;
+            if (!_actorEntity.Active().Value) return;
             //掴まれている時以外は常時
             if (_actorEntity.ActorState().Value == ActorState.HOLD) return;
             _animationService.OnLateTick();

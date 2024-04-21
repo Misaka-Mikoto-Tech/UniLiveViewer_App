@@ -70,7 +70,7 @@ namespace UniLiveViewer.Actor
         [SerializeField] int _actorId;
         [SerializeField] int _instanceId;
         [SerializeField] CharaInfoData _charaInfoData;
-        [SerializeField] Animator _animator;//FBXのみ
+        [SerializeField] Animator _animator;// FBXのみ
 
         /// <summary>
         /// JumpList用
@@ -88,9 +88,17 @@ namespace UniLiveViewer.Actor
         [SerializeField] AttachPoint.AttachPoint _attachPoint;
         [SerializeField] RuntimeAnimatorController _runtimeAnimatorController;
 
+        [Header("-----------")]
+        [SerializeField] LookAtSettings _lookAtSettings;// VRMは不要だがアタッチ必須
+        [SerializeField] NormalizedBoneGenerator _test;
+
+
+        [Header("-----------")]
         [SerializeField] LipSync_FBX _lipSyncFBX;
         [SerializeField] LipSync_VRM _lipSyncVRM;
         [SerializeField] LipSync_VRM10 _lipSyncVRM10;
+
+        [Header("-----------")]
         [SerializeField] FacialSync_FBX _faceSyncFBX;
         [SerializeField] FacialSync_VRM _faceSyncVRM;
         [SerializeField] FacialSync_VRM10 _faceSyncVRM10;
@@ -101,10 +109,10 @@ namespace UniLiveViewer.Actor
             builder.RegisterInstance(_charaInfoDataInstance);
 
             PhysicsConfigure(builder);
-            FootstepConfigure(builder);            
+            FootstepConfigure(builder);
 
             if (_charaInfoData.ActorType == ActorType.FBX)
-            {   
+            {
                 builder.RegisterInstance(_animator);
 
                 builder.Register<IActorEntity, FBXActorService>(Lifetime.Singleton);
@@ -120,8 +128,22 @@ namespace UniLiveViewer.Actor
 
             builder.RegisterEntryPoint<ActorEntityPresenter>();
 
-            builder.Register<LookatService>(Lifetime.Singleton);
-            builder.RegisterEntryPoint<LookatPresenter>();
+
+            if (_charaInfoData.ActorType == ActorType.FBX)
+            {
+                builder.RegisterInstance(_lookAtSettings);
+                builder.RegisterInstance(_test);
+                builder.Register<LookAtService>(Lifetime.Singleton);
+                builder.RegisterEntryPoint<LookatPresenter>();
+            }
+            else if (_charaInfoData.ActorType == ActorType.VRM)
+            {
+                builder.RegisterInstance(_lookAtSettings);// Inject都合上必須
+                builder.RegisterInstance(_test);
+                builder.Register<LookAtService>(Lifetime.Singleton);
+                builder.RegisterEntryPoint<LookatPresenter>();
+            }
+
             AnimationConfigure(builder);
             AttachPointConfigure(builder);
         }
@@ -150,7 +172,7 @@ namespace UniLiveViewer.Actor
 
         void VRMFacialExpressionConfigure(IContainerBuilder builder)
         {
-            if(_lipSyncVRM && _faceSyncVRM)
+            if (_lipSyncVRM && _faceSyncVRM)
             {
                 builder.RegisterInstance(_lipSyncVRM).As<ILipSync>();
                 builder.RegisterInstance(_faceSyncVRM).As<IFacialSync>();

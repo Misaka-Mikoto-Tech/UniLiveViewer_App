@@ -1,10 +1,7 @@
-using Cysharp.Threading.Tasks;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using UniLiveViewer.Actor.LookAt;
-using UniLiveViewer.Player;
 using UniLiveViewer.Stage;
 using UnityEngine;
 using UniVRM10;
@@ -23,12 +20,12 @@ namespace UniLiveViewer.Actor
         public CharaInfoData CharaInfoData => _charaInfoData;
         readonly CharaInfoData _charaInfoData;
 
-        public LookAtBase LookAtBase => _lookAtBase;
-        readonly LookAtBase _lookAtBase;
-        public IHeadLookAt HeadLookAt => _headLookAt;
-        readonly IHeadLookAt _headLookAt;
-        public IEyeLookAt EyeLookAt => _eyeLookAt;
-        readonly IEyeLookAt _eyeLookAt;
+        // TODO: 出来れば参照消したい
+        public NormalizedBoneGenerator NormalizedBoneGenerator => _normalizedBoneGenerator;
+        readonly NormalizedBoneGenerator _normalizedBoneGenerator;
+
+        public LookAtService LookAtService => _lookAtService;
+        readonly LookAtService _lookAtService;
 
         /// <summary>
         /// 振動用に公開、1.0は現状なし
@@ -44,11 +41,15 @@ namespace UniLiveViewer.Actor
         /// </summary>
         float _height;
 
-        public ActorEntity(Animator animator, CharaInfoData charaInfoData, VMDPlayer_Custom vmdPlayer, PlayerHandVRMCollidersService playerHandVRMColliders = null)
+        public ActorEntity(Animator animator, CharaInfoData charaInfoData,
+            VMDPlayer_Custom vmdPlayer, LookAtService lookAtAllocator,
+            NormalizedBoneGenerator normalizedBoneGenerator, PlayerHandVRMCollidersService playerHandVRMColliders = null)
         {
             _animator = animator;
             _charaInfoData = charaInfoData;
             _vmdPlayer = vmdPlayer;
+            _normalizedBoneGenerator = normalizedBoneGenerator;
+            _lookAtService = lookAtAllocator;
 
             _boneMap = Enum.GetValues(typeof(HumanBodyBones))
                 .Cast<HumanBodyBones>()
@@ -56,25 +57,19 @@ namespace UniLiveViewer.Actor
                 .ToDictionary(bone => bone, bone => animator.GetBoneTransform(bone));
             _height = _boneMap[HumanBodyBones.Head].position.y - _boneMap[HumanBodyBones.Spine].position.y;
 
+            _normalizedBoneGenerator.Setup(_boneMap);
+
+            var target = Camera.main.transform;
             if (charaInfoData.ActorType == ActorType.FBX)
             {
-                _lookAtBase = animator.GetComponent<LookAtBase>();
-                _headLookAt = animator.GetComponent<IHeadLookAt>();
-                _eyeLookAt = animator.GetComponent<IEyeLookAt>();
+                _lookAtService.FBXSetup(animator, target);
             }
             else if (charaInfoData.ActorType == ActorType.VRM)
             {
                 var go = animator.gameObject;
                 if (go.TryGetComponent<Vrm10Instance>(out var vrm10Instance))
                 {
-                    var eyeLookAt = go.AddComponent<LookAt_VRM10>();
-                    _lookAtBase = eyeLookAt.GetComponent<LookAtBase>();
-                    _headLookAt = go.GetComponent<IHeadLookAt>();
-                    _eyeLookAt = go.GetComponent<IEyeLookAt>();
-
-                    charaInfoData.ExpressionType = ExpressionType.VRM10;
-                    eyeLookAt.Setup(vrm10Instance);
-
+                    _lookAtService.VRM10Setup(animator, target, vrm10Instance);
                     SetupSpringBone(playerHandVRMColliders.UnivrmCollider, vrm10Instance);
                 }
                 //0.x系
@@ -82,31 +77,17 @@ namespace UniLiveViewer.Actor
                 {
                     if (go.TryGetComponent<VRMLookAtBoneApplyer>(out var boneApplyer))
                     {
-                        var eyeLookAt = go.AddComponent<LookAt_VRMBone>();
-                        _lookAtBase = eyeLookAt.GetComponent<LookAtBase>();
-                        _headLookAt = go.GetComponent<IHeadLookAt>();
-                        _eyeLookAt = go.GetComponent<IEyeLookAt>();
-
-                        charaInfoData.ExpressionType = ExpressionType.VRM_Bone;
-                        eyeLookAt.Setup(boneApplyer);
+                        _lookAtService.VRMSetup(animator, target, boneApplyer);
                     }
                     else if (go.TryGetComponent<VRMLookAtBlendShapeApplyer>(out var blendShapeApplyer))
                     {
-                        var eyeLookAt = go.AddComponent<LookAt_VRMBlendShape>();
-                        _lookAtBase = eyeLookAt.GetComponent<LookAtBase>();
-                        _headLookAt = go.GetComponent<IHeadLookAt>();
-                        _eyeLookAt = go.GetComponent<IEyeLookAt>();
-
-                        charaInfoData.ExpressionType = ExpressionType.VRM_BlendShape;
-                        eyeLookAt.Setup(blendShapeApplyer);
+                        _lookAtService.VRMSetup(animator, target, blendShapeApplyer);
                     }
                     else
                     {
                         //UV？
                     }
 
-                    var dummy = new CancellationToken();
-                    SetupHeadLookAt(go, dummy).Forget();
                     _springBoneList = go.GetComponentsInChildren<VRMSpringBone>().ToList();
                     SetupSpringBone(playerHandVRMColliders.UnivrmColliderGroup);
                 }
@@ -116,25 +97,8 @@ namespace UniLiveViewer.Actor
         /// <summary>
         /// VRM専用
         /// </summary>
-        /// <param name="go"></param>
-        /// <param name="cancellation"></param>
-        /// <returns></returns>
-        async UniTask SetupHeadLookAt(GameObject go, CancellationToken cancellation)
-        {
-            //lookAtBaseのメソッドInject待ち
-            await UniTask.Yield(cancellation);
-
-            var headLookAt = go.GetComponent<VRMLookAtHead>();
-            headLookAt.Target = _lookAtBase.LookTarget;
-            headLookAt.UpdateType = UpdateType.LateUpdate;
-        }
-
-        /// <summary>
-        /// VRM専用
-        /// </summary>
         void SetupSpringBone(VRMSpringBoneColliderGroup[] fromColliderGroup)
         {
-
             foreach (var dest in _springBoneList)
             {
                 dest.ColliderGroups = dest.ColliderGroups?.Length > 0
@@ -146,7 +110,6 @@ namespace UniLiveViewer.Actor
         void SetupSpringBone(VRM10SpringBoneCollider[] fromColliderGroup, Vrm10Instance vrm10Instance)
         {
             var destColliderGroup = vrm10Instance.GetComponentsInChildren<VRM10SpringBoneColliderGroup>().ToArray();
-
             foreach (var dest in destColliderGroup)
             {
                 if (dest.Colliders != null && 0 < dest.Colliders.Count)

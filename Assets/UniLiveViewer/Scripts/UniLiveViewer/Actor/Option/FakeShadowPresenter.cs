@@ -10,8 +10,6 @@ namespace UniLiveViewer.Timeline
 {
     public class FakeShadowPresenter : IStartable, ITickable, IDisposable
     {
-        bool _isTick;
-
         readonly IActorEntity _actorEntity;
         readonly FakeShadowService _fakeShadowService;
         readonly ISubscriber<AllActorOperationMessage> _allSubscriber;
@@ -49,16 +47,12 @@ namespace UniLiveViewer.Timeline
                 .Subscribe(_fakeShadowService.OnChangeRootScalar)
                 .AddTo(_disposables);
 
-            _actorEntity.Active()
-                .Subscribe(x => _isTick = x)
-                .AddTo(_disposables);
-
             _fakeShadowService.Setup();
         }
 
         void ITickable.Tick()
         {
-            if (!_isTick) return;
+            if (!_actorEntity.Active().Value) return;
             _fakeShadowService.OnTick();
         }
 

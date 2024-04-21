@@ -2,6 +2,7 @@
 using System.Threading;
 using UniLiveViewer.Actor.AttachPoint;
 using UniLiveViewer.Actor.Expression;
+using UniLiveViewer.Actor.LookAt;
 using UniRx;
 using UnityEngine;
 using VContainer;
@@ -18,8 +19,12 @@ namespace UniLiveViewer.Actor
         readonly ReactiveProperty<ActorEntity> _actorEntity = new();
 
         IReactiveProperty<bool> IActorEntity.Active() => _active;
-        readonly ReactiveProperty<bool> _active = new(true);
+        readonly ReactiveProperty<bool> _active = new(false);
 
+        /// <summary>
+        /// TODO: この通知リレーは止めたい
+        /// </summary>
+        /// <returns></returns>
         IReactiveProperty<float> IActorEntity.RootScalar() => _rootScalar;
         readonly ReactiveProperty<float> _rootScalar = new(FileReadAndWriteUtility.UserProfile.InitCharaSize);
 
@@ -39,6 +44,8 @@ namespace UniLiveViewer.Actor
         readonly AttachPointService _attachPointService;
         readonly ILipSync _lipSync;
         readonly IFacialSync _faceSync;
+        readonly NormalizedBoneGenerator _normalizedBoneGenerator;
+        readonly LookAtService _lookAtService;
 
         [Inject]
         public FBXActorService(
@@ -47,7 +54,9 @@ namespace UniLiveViewer.Actor
             CharaInfoData charaInfoData,
             AttachPointService attachPointService,
             ILipSync lipSync,
-            IFacialSync facialSync)
+            IFacialSync facialSync,
+            NormalizedBoneGenerator normalizedBoneGenerator,
+            LookAtService lookAtService)
         {
             _animatorCache = animator;
             _lifetimeScope = lifetimeScope;
@@ -55,6 +64,8 @@ namespace UniLiveViewer.Actor
             _attachPointService = attachPointService;
             _lipSync = lipSync;
             _faceSync = facialSync;
+            _normalizedBoneGenerator = normalizedBoneGenerator;
+            _lookAtService = lookAtService;
         }
 
         /// <summary>
@@ -65,7 +76,7 @@ namespace UniLiveViewer.Actor
         async UniTask IActorEntity.EditorOnlySetupAsync(Transform firstParent, CancellationToken cancellation)
         {
 #if UNITY_EDITOR
-            //何もしない   
+            //何もしない
 #endif
         }
 
@@ -77,7 +88,6 @@ namespace UniLiveViewer.Actor
         /// <summary>
         /// 各種設定
         /// </summary>
-        /// <param name="instance"></param>
         async UniTask SetupInternalAsync(Transform firstParent, CancellationToken cancellation)
         {
             var go = _animatorCache.gameObject;
@@ -93,13 +103,16 @@ namespace UniLiveViewer.Actor
             var vmdPlayer = go.AddComponent<VMDPlayer_Custom>();
             var charaInfoData = GameObject.Instantiate(_charaInfoData);
             vmdPlayer.Initialize(charaInfoData, _faceSync, _lipSync);
-            _actorEntity.Value = new ActorEntity(_animatorCache, _charaInfoData, vmdPlayer);
+            _actorEntity.Value = new ActorEntity(_animatorCache, _charaInfoData, vmdPlayer, _lookAtService, _normalizedBoneGenerator);
 
             await _attachPointService.SetupAsync(_actorEntity.Value.BoneMap, cancellation);
 
             SetState(ActorState.MINIATURE, firstParent);
             _lifetimeScope.transform.localPosition = Vector3.zero;
             _lifetimeScope.transform.localRotation = Quaternion.identity;
+
+            // 各serviceのUpdate系が始動
+            _active.Value = true;
         }
 
         void IActorEntity.Activate(bool isActive)

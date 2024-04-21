@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using MessagePipe;
 using System;
 using System.Threading;
@@ -11,8 +11,6 @@ namespace UniLiveViewer.Actor
 {
     public class FootstepPresenter : IAsyncStartable, IFixedTickable, IDisposable
     {
-        bool _isTick;
-
         readonly IActorEntity _actorEntity;
         readonly FootstepService _footstepService;
         readonly CompositeDisposable _disposables = new();
@@ -32,16 +30,12 @@ namespace UniLiveViewer.Actor
                 .Subscribe(_footstepService.OnChangeActorEntity)
                 .AddTo(_disposables);
 
-            _actorEntity.Active()
-                .Subscribe(x => _isTick = x)
-                .AddTo(_disposables);
-
             await UniTask.CompletedTask;
         }
 
         void IFixedTickable.FixedTick()
         {
-            if (!_isTick) return;
+            if (!_actorEntity.Active().Value) return;
             _footstepService.OnFixedTick();
         }
 

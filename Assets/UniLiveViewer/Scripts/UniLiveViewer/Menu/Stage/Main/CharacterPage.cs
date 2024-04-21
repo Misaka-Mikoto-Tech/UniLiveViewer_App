@@ -162,21 +162,21 @@ namespace UniLiveViewer.Menu
                 textMeshs[3].text = $"{value:0000}";
             };
             _sliderOffset.UnControled += () => { FileReadAndWriteUtility.SaveMotionOffset(); };
-            _sliderEyeLook.ValueUpdate += () =>
-            {
-                var data = _playableBinderService.BindingData[TimelineConstants.PortalIndex];
-                if (data == null) return;
-                //目の向く量をセット
-                var lookAt = data.ActorEntity.ActorEntity().Value.LookAtBase;
-                lookAt.SetEyeWeight(_sliderEyeLook.Value);
-            };
             _sliderHeadLook.ValueUpdate += () =>
             {
                 var data = _playableBinderService.BindingData[TimelineConstants.PortalIndex];
                 if (data == null) return;
                 //顔の向く量をセット
-                var lookAt = data.ActorEntity.ActorEntity().Value.LookAtBase;
-                lookAt.SetHeadWeight(_sliderHeadLook.Value);
+                var lookAtAllocator = data.ActorEntity.ActorEntity().Value.LookAtService;
+                lookAtAllocator.SetHeadWeight(_sliderHeadLook.Value);
+            };
+            _sliderEyeLook.ValueUpdate += () =>
+            {
+                var data = _playableBinderService.BindingData[TimelineConstants.PortalIndex];
+                if (data == null) return;
+                //目の向く量をセット
+                var lookAtAllocator = data.ActorEntity.ActorEntity().Value.LookAtService;
+                lookAtAllocator.SetEyeWeight(_sliderEyeLook.Value);
             };
             //_btnVRMSetting.onTrigger += VRMSetting;
             _btnVRMDelete.onTrigger += DeleteModel;
@@ -424,9 +424,9 @@ namespace UniLiveViewer.Menu
             textMeshs[2].text = $"{_fieldCharaCount}/{SystemInfo.MaxFieldChara}";
 
             if (actorEntity == null) return;
-            var lookAtBase = actorEntity.LookAtBase;
-            lookAtBase.SetHeadWeight(_sliderHeadLook.Value);
-            lookAtBase.SetEyeWeight(_sliderEyeLook.Value);
+
+            actorEntity.LookAtService.SetHeadWeight(_sliderHeadLook.Value);
+            actorEntity.LookAtService.SetEyeWeight(_sliderEyeLook.Value);
 
             //モーフボタン初期化
             if (actorEntity.CharaInfoData.ActorType == ActorType.FBX)

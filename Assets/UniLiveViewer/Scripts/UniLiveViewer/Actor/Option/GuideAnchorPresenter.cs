@@ -9,8 +9,6 @@ namespace UniLiveViewer.Actor.Option
 {
     public class GuideAnchorPresenter : IStartable, ITickable, IDisposable
     {
-        bool _isTick;
-
         readonly ISubscriber<AllActorOptionMessage> _subscriber;
         readonly IActorEntity _actorEntity;
         readonly GuideAnchorService _guideAnchorService;
@@ -41,16 +39,12 @@ namespace UniLiveViewer.Actor.Option
                     _guideAnchorService.SetEnable(x.ActorCommand == ActorOptionCommand.GUID_ANCHOR_ENEBLE);
                 }).AddTo(_disposables);
 
-            _actorEntity.Active()
-                .Subscribe(x => _isTick = x)
-                .AddTo(_disposables);
-
             _guideAnchorService.Setup();
         }
 
         void ITickable.Tick()
         {
-            if (!_isTick) return;
+            if (!_actorEntity.Active().Value) return;
             _guideAnchorService.OnTick();
         }
 

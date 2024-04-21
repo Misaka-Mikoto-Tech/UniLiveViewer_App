@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using MessagePipe;
 using NanaCiel;
 using System;
@@ -6,6 +6,7 @@ using System.Threading;
 using UniGLTF;
 using UniLiveViewer.Actor.AttachPoint;
 using UniLiveViewer.Actor.Expression;
+using UniLiveViewer.Actor.LookAt;
 using UniLiveViewer.Stage;
 using UniLiveViewer.Timeline;
 using UniRx;
@@ -26,8 +27,12 @@ namespace UniLiveViewer.Actor
         readonly ReactiveProperty<ActorEntity> _actorEntity = new();
 
         IReactiveProperty<bool> IActorEntity.Active() => _active;
-        readonly ReactiveProperty<bool> _active = new(true);
+        readonly ReactiveProperty<bool> _active = new(false);
 
+        /// <summary>
+        /// TODO: この通知リレーは止めたい
+        /// </summary>
+        /// <returns></returns>
         IReactiveProperty<float> IActorEntity.RootScalar() => _rootScalar;
         readonly ReactiveProperty<float> _rootScalar = new(FileReadAndWriteUtility.UserProfile.InitCharaSize);
 
@@ -47,7 +52,9 @@ namespace UniLiveViewer.Actor
         readonly VRMLoadData _data;
         readonly ILipSync _lipSync;
         readonly IFacialSync _faceSync;
+        readonly NormalizedBoneGenerator _normalizedBoneGenerator;
         readonly PlayerHandVRMCollidersService _playerHandVRMColliders;
+        readonly LookAtService _lookAtService;
 
         //VRMUI非表示専用
         readonly IPublisher<VRMLoadResultData> _publisher;
@@ -60,9 +67,11 @@ namespace UniLiveViewer.Actor
             VRMLoadData data,
             ILipSync lipSync,
             IFacialSync facialSync,
+            NormalizedBoneGenerator normalizedBoneGenerator,
             AttachPointService attachPointService,
             IPublisher<VRMLoadResultData> publisher,
-            PlayerHandVRMCollidersService playerHandVRMColliders)
+            PlayerHandVRMCollidersService playerHandVRMColliders,
+            LookAtService lookAtService)
         {
             _lifetimeScope = lifetimeScope;
             _vrmService = vrmService;
@@ -73,7 +82,9 @@ namespace UniLiveViewer.Actor
             _data = data;
             _lipSync = lipSync;
             _faceSync = facialSync;
+            _normalizedBoneGenerator = normalizedBoneGenerator;
             _playerHandVRMColliders = playerHandVRMColliders;
+            _lookAtService = lookAtService;
         }
 
         /// <summary>
@@ -135,13 +146,17 @@ namespace UniLiveViewer.Actor
             var charaInfoData = GameObject.Instantiate(_charaInfoData);
             vmdPlayer.Initialize(charaInfoData, _faceSync, _lipSync);
 
-            _actorEntity.Value = new ActorEntity(instance.GetComponent<Animator>(), _charaInfoData, vmdPlayer, _playerHandVRMColliders);
+            _actorEntity.Value = new ActorEntity(instance.GetComponent<Animator>(),
+                _charaInfoData, vmdPlayer, _lookAtService, _normalizedBoneGenerator, _playerHandVRMColliders);
 
             await _attachPointService.SetupAsync(_actorEntity.Value.BoneMap, cancellation);
 
             var runtimeGltfInstance = instance.GetComponent<RuntimeGltfInstance>();
             runtimeGltfInstance.EnableUpdateWhenOffscreen(); // Mesh消え対策
             runtimeGltfInstance.ShowMeshes();
+
+            // 各serviceのUpdate系が始動
+            _active.Value = true;
         }
 
         async UniTask SetupInternalAsync(RuntimeGltfInstance instance, CancellationToken cancellation)
@@ -178,12 +193,16 @@ namespace UniLiveViewer.Actor
             var charaInfoData = GameObject.Instantiate(_charaInfoData);
             vmdPlayer.Initialize(charaInfoData, _faceSync, _lipSync);
 
-            _actorEntity.Value = new ActorEntity(instance.GetComponent<Animator>(), _charaInfoData, vmdPlayer, _playerHandVRMColliders);
+            _actorEntity.Value = new ActorEntity(instance.GetComponent<Animator>(),
+                _charaInfoData, vmdPlayer, _lookAtService, _normalizedBoneGenerator, _playerHandVRMColliders);
 
             await _attachPointService.SetupAsync(_actorEntity.Value.BoneMap, cancellation);
 
             instance.EnableUpdateWhenOffscreen(); // Mesh消え対策
             instance.ShowMeshes();
+
+            // 各serviceのUpdate系が始動
+            _active.Value = true;
         }
 
         void IActorEntity.Activate(bool isActive)

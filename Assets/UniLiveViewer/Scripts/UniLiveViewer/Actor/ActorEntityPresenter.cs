@@ -13,8 +13,6 @@ namespace UniLiveViewer.Actor
 {
     public class ActorEntityPresenter : IAsyncStartable, ITickable, IDisposable
     {
-        bool _isTick;
-
         readonly ISubscriber<AllActorOperationMessage> _allSubscriber;
         readonly ISubscriber<ActorOperationMessage> _subscriber;
         readonly ISubscriber<ActorResizeMessage> _resizeSubscriber;
@@ -63,10 +61,6 @@ namespace UniLiveViewer.Actor
                     OnCommand(x.ActorCommand);
                 }).AddTo(_disposables);
 
-            _actorEntity.Active()
-                .Subscribe(x => _isTick = x)
-                .AddTo(_disposables);
-
             await _actorEntity.SetupAsync(_firstParent.transform, cancellation);
         }
 
@@ -88,7 +82,7 @@ namespace UniLiveViewer.Actor
 
         void ITickable.Tick()
         {
-            if (!_isTick) return;
+            if (!_actorEntity.Active().Value) return;
             _actorEntity.OnTick();
         }
 
