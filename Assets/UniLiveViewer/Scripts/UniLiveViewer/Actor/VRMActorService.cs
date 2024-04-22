@@ -1,13 +1,13 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using MessagePipe;
 using NanaCiel;
 using System;
+using System.Linq;
 using System.Threading;
 using UniGLTF;
 using UniLiveViewer.Actor.AttachPoint;
 using UniLiveViewer.Actor.Expression;
 using UniLiveViewer.Actor.LookAt;
-using UniLiveViewer.Stage;
 using UniLiveViewer.Timeline;
 using UniRx;
 using UnityEngine;
@@ -36,6 +36,9 @@ namespace UniLiveViewer.Actor
         IReactiveProperty<float> IActorEntity.RootScalar() => _rootScalar;
         readonly ReactiveProperty<float> _rootScalar = new(FileReadAndWriteUtility.UserProfile.InitCharaSize);
 
+        IReactiveProperty<float> IActorEntity.RawRootScalar() => _rawRootScalar;
+        readonly ReactiveProperty<float> _rawRootScalar = new();
+
         IReactiveProperty<ActorState> IActorEntity.ActorState() => _actorState;
         readonly ReactiveProperty<ActorState> _actorState = new(ActorState.NULL);
 
@@ -53,7 +56,6 @@ namespace UniLiveViewer.Actor
         readonly ILipSync _lipSync;
         readonly IFacialSync _faceSync;
         readonly NormalizedBoneGenerator _normalizedBoneGenerator;
-        readonly PlayerHandVRMCollidersService _playerHandVRMColliders;
         readonly LookAtService _lookAtService;
 
         //VRMUI非表示専用
@@ -70,7 +72,6 @@ namespace UniLiveViewer.Actor
             NormalizedBoneGenerator normalizedBoneGenerator,
             AttachPointService attachPointService,
             IPublisher<VRMLoadResultData> publisher,
-            PlayerHandVRMCollidersService playerHandVRMColliders,
             LookAtService lookAtService)
         {
             _lifetimeScope = lifetimeScope;
@@ -83,7 +84,6 @@ namespace UniLiveViewer.Actor
             _lipSync = lipSync;
             _faceSync = facialSync;
             _normalizedBoneGenerator = normalizedBoneGenerator;
-            _playerHandVRMColliders = playerHandVRMColliders;
             _lookAtService = lookAtService;
         }
 
@@ -147,7 +147,7 @@ namespace UniLiveViewer.Actor
             vmdPlayer.Initialize(charaInfoData, _faceSync, _lipSync);
 
             _actorEntity.Value = new ActorEntity(instance.GetComponent<Animator>(),
-                _charaInfoData, vmdPlayer, _lookAtService, _normalizedBoneGenerator, _playerHandVRMColliders);
+                _charaInfoData, vmdPlayer, _lookAtService, _normalizedBoneGenerator);
 
             await _attachPointService.SetupAsync(_actorEntity.Value.BoneMap, cancellation);
 
@@ -194,7 +194,7 @@ namespace UniLiveViewer.Actor
             vmdPlayer.Initialize(charaInfoData, _faceSync, _lipSync);
 
             _actorEntity.Value = new ActorEntity(instance.GetComponent<Animator>(),
-                _charaInfoData, vmdPlayer, _lookAtService, _normalizedBoneGenerator, _playerHandVRMColliders);
+                _charaInfoData, vmdPlayer, _lookAtService, _normalizedBoneGenerator);
 
             await _attachPointService.SetupAsync(_actorEntity.Value.BoneMap, cancellation);
 
@@ -288,11 +288,7 @@ namespace UniLiveViewer.Actor
                 rootTransform.localScale = globalScale * _rootScalar.Value;
             }
 
-            //TODO: これもどうにかしたい、小さい場合にまだ変対応しきれていない？
-            if (_actorEntity.Value.GetAnimator.TryGetComponent<Vrm10Instance>(out var instance))
-            {
-                instance.Runtime.ReconstructSpringBone();
-            }
+            _rawRootScalar.Value = rootTransform.localScale.x;
         }
 
         void IActorEntity.OnTick()

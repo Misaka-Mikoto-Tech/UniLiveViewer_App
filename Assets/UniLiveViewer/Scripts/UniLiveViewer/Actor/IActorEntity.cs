@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using System.Threading;
 using UniRx;
 using UnityEngine;
@@ -17,6 +17,8 @@ namespace UniLiveViewer.Actor
         IReactiveProperty<bool> Active();
 
         IReactiveProperty<float> RootScalar();
+
+        IReactiveProperty<float> RawRootScalar();
 
         IReactiveProperty<ActorState> ActorState();
 

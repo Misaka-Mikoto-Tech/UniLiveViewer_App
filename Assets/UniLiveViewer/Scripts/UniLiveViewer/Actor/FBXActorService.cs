@@ -28,6 +28,9 @@ namespace UniLiveViewer.Actor
         IReactiveProperty<float> IActorEntity.RootScalar() => _rootScalar;
         readonly ReactiveProperty<float> _rootScalar = new(FileReadAndWriteUtility.UserProfile.InitCharaSize);
 
+        IReactiveProperty<float> IActorEntity.RawRootScalar() => _rawRootScalar;
+        readonly ReactiveProperty<float> _rawRootScalar = new();
+
         IReactiveProperty<ActorState> IActorEntity.ActorState() => _actorState;
         readonly ReactiveProperty<ActorState> _actorState = new(ActorState.NULL);
 
@@ -197,6 +200,8 @@ namespace UniLiveViewer.Actor
             {
                 rootTransform.localScale = globalScale * _rootScalar.Value;
             }
+
+            _rawRootScalar.Value = rootTransform.localScale.x;
         }
 
         void IActorEntity.OnTick()

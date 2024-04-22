@@ -1,9 +1,10 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using System.Threading;
 using UniLiveViewer.Actor.Animation;
 using UniLiveViewer.Actor.AttachPoint;
 using UniLiveViewer.Actor.Expression;
 using UniLiveViewer.Actor.LookAt;
+using UniLiveViewer.Actor.SpringBone;
 using UniLiveViewer.OVRCustom;
 using UniLiveViewer.Timeline;
 using UniLiveViewer.ValueObject;
@@ -123,6 +124,7 @@ namespace UniLiveViewer.Actor
                 builder.Register<VRMService>(Lifetime.Singleton);
                 builder.Register<IActorEntity, VRMActorService>(Lifetime.Singleton);
                 VRMFacialExpressionConfigure(builder);
+                builder.Register<SpringBoneService>(Lifetime.Singleton);
                 builder.RegisterEntryPoint<SpringBonePresenter>();
             }
 

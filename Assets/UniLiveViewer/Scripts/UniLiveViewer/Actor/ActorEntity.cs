@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using UniLiveViewer.Actor.LookAt;
-using UniLiveViewer.Stage;
 using UnityEngine;
 using UniVRM10;
 using VRM;
@@ -27,12 +26,6 @@ namespace UniLiveViewer.Actor
         public LookAtService LookAtService => _lookAtService;
         readonly LookAtService _lookAtService;
 
-        /// <summary>
-        /// 振動用に公開、1.0は現状なし
-        /// </summary>
-        public IReadOnlyList<VRMSpringBone> SpringBoneList => _springBoneList;
-        readonly List<VRMSpringBone> _springBoneList = new();
-
         public IReadOnlyDictionary<HumanBodyBones, Transform> BoneMap => _boneMap;
         readonly Dictionary<HumanBodyBones, Transform> _boneMap;
 
@@ -43,7 +36,7 @@ namespace UniLiveViewer.Actor
 
         public ActorEntity(Animator animator, CharaInfoData charaInfoData,
             VMDPlayer_Custom vmdPlayer, LookAtService lookAtAllocator,
-            NormalizedBoneGenerator normalizedBoneGenerator, PlayerHandVRMCollidersService playerHandVRMColliders = null)
+            NormalizedBoneGenerator normalizedBoneGenerator)
         {
             _animator = animator;
             _charaInfoData = charaInfoData;
@@ -70,7 +63,6 @@ namespace UniLiveViewer.Actor
                 if (go.TryGetComponent<Vrm10Instance>(out var vrm10Instance))
                 {
                     _lookAtService.VRM10Setup(animator, target, vrm10Instance);
-                    SetupSpringBone(playerHandVRMColliders.UnivrmCollider, vrm10Instance);
                 }
                 //0.x系
                 else
@@ -87,41 +79,8 @@ namespace UniLiveViewer.Actor
                     {
                         //UV？
                     }
-
-                    _springBoneList = go.GetComponentsInChildren<VRMSpringBone>().ToList();
-                    SetupSpringBone(playerHandVRMColliders.UnivrmColliderGroup);
                 }
             }
-        }
-
-        /// <summary>
-        /// VRM専用
-        /// </summary>
-        void SetupSpringBone(VRMSpringBoneColliderGroup[] fromColliderGroup)
-        {
-            foreach (var dest in _springBoneList)
-            {
-                dest.ColliderGroups = dest.ColliderGroups?.Length > 0
-                    ? dest.ColliderGroups.Concat(fromColliderGroup).ToArray() // 既存ColliderGroupsと新fromColliderGroupを結合
-                    : fromColliderGroup;
-            }
-        }
-
-        void SetupSpringBone(VRM10SpringBoneCollider[] fromColliderGroup, Vrm10Instance vrm10Instance)
-        {
-            var destColliderGroup = vrm10Instance.GetComponentsInChildren<VRM10SpringBoneColliderGroup>().ToArray();
-            foreach (var dest in destColliderGroup)
-            {
-                if (dest.Colliders != null && 0 < dest.Colliders.Count)
-                {
-                    dest.Colliders.AddRange(fromColliderGroup);
-                }
-                else
-                {
-                    dest.Colliders = new List<VRM10SpringBoneCollider>(fromColliderGroup);
-                }
-            }
-            vrm10Instance.Runtime.ReconstructSpringBone();//MEMO: jobなので変更反映に必須
         }
     }
 }
