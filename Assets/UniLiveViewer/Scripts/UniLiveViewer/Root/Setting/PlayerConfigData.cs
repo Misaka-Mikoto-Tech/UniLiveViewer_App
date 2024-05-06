@@ -15,6 +15,11 @@ namespace UniLiveViewer
         public KeyConfig RightKeyConfig => _rightKeyConfig;
         [SerializeField] KeyConfig _rightKeyConfig;
 
+        public DebugKeyConfig DebugKey => _debugKeyConfig;
+        [SerializeField] DebugKeyConfig _debugKeyConfig;
+
+        public AnimationCurve ActorScalingCurve => _actorScalingCurve;
+        [SerializeField] AnimationCurve _actorScalingCurve;
 
         [System.Serializable]
         public class LocationMap
@@ -42,6 +47,13 @@ namespace UniLiveViewer
             public OVRInput.RawButton menuUI;
             [Header("アタッチなど")]
             public OVRInput.RawButton trigger;
+        }
+
+        [System.Serializable]
+        public class DebugKeyConfig
+        {
+            [Header("メイン")]
+            public KeyCode MainMenu = KeyCode.M;
         }
     }
 }

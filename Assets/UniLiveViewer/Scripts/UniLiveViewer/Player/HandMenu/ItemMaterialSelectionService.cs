@@ -50,17 +50,28 @@ namespace UniLiveViewer.Player.HandMenu
             _isSetupComplete = true;
         }
 
+        public void ForceCloseMenu(int index)
+        {
+            if (_handMenu.Length <= index) return;
+            _handMenu[index].SetShow(false);
+        }
+
         public void ChangeShow(int index, bool isShow, DecorationItemInfo decorationItemInfo)
         {
             if (_handMenu.Length <= index) return;
+            if(_handMenu[index].IsShow == isShow) return;
+
             _handMenu[index].SetShow(isShow);
             if (isShow)
             {
-                _audioSourceService.PlayOneShot(0);
+                _audioSourceService.PlayOneShot(3);
                 if (decorationItemInfo == null) return;
                 InitItemMaterialSelector(index, decorationItemInfo);
             }
-            else _audioSourceService.PlayOneShot(1);
+            else
+            {
+                _audioSourceService.PlayOneShot(4);
+            }
         }
 
         void InitItemMaterialSelector(int index, DecorationItemInfo decorationItemInfo)
@@ -82,7 +93,7 @@ namespace UniLiveViewer.Player.HandMenu
         {
             if (_itemMaterialSelector.Length <= index) return;
             var result = _itemMaterialSelector[index].TrySetTexture(current);
-            if (result) _audioSourceService.PlayOneShot(2);
+            if (result) _audioSourceService.PlayOneShot(5);
         }
 
         public void OnLateTick()

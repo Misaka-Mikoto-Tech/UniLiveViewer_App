@@ -47,7 +47,7 @@ namespace UniLiveViewer.Timeline
             builder.Register<PlayableMusicService>(Lifetime.Singleton);
             builder.Register<PlayableBinderService>(Lifetime.Singleton);
             builder.Register<PlayableAnimationClipService>(Lifetime.Singleton);
-            builder.RegisterEntryPoint<TimelinePresenter>();
+            builder.RegisterEntryPoint<PlayableMusicPresenter>();
             builder.RegisterEntryPoint<PlayableBinderPresenter>();
         }
     }

@@ -44,7 +44,8 @@ namespace UniLiveViewer.Timeline
         float _timelineSpeed;
         double _playbackTime = 0.0f;
 
-        IPublisher<AllActorOperationMessage> _allPublisher;
+        readonly IPublisher<AllActorOperationMessage> _allPublisher;
+        readonly IPublisher<AttachPointMessage> _attachPointPublisher;
         readonly AudioAssetManager _audioAssetManager;
         readonly PlayableDirector _playableDirector;
         readonly TimelineAsset _timelineAsset;
@@ -52,10 +53,12 @@ namespace UniLiveViewer.Timeline
         [Inject]
         public PlayableMusicService(
             IPublisher<AllActorOperationMessage> allPublisher,
+            IPublisher<AttachPointMessage> attachPointPublisher,
             AudioAssetManager audioAssetManager,
             PlayableDirector playableDirector)
         {
             _allPublisher = allPublisher;
+            _attachPointPublisher = attachPointPublisher;
             _audioAssetManager = audioAssetManager;
             _playableDirector = playableDirector;
 
@@ -118,8 +121,10 @@ namespace UniLiveViewer.Timeline
 
             //後にmessage
             await UniTask.Yield(cancellation);
-            var message = new AllActorOperationMessage(ActorState.NULL, ActorCommand.TIMELINE_PLAY);
-            _allPublisher.Publish(message);
+            var allActorOperationMessage = new AllActorOperationMessage(ActorState.NULL, ActorCommand.TIMELINE_PLAY);
+            _allPublisher.Publish(allActorOperationMessage);
+            var attachPointMessage = new AttachPointMessage(false);
+            _attachPointPublisher.Publish(attachPointMessage);
         }
 
         /// <summary>

@@ -1,7 +1,6 @@
 ﻿using UniLiveViewer.OVRCustom;
 using UnityEngine;
 using VContainer;
-using static UniLiveViewer.PlayerConfigData;
 
 namespace UniLiveViewer.Player.HandMenu
 {
@@ -13,24 +12,24 @@ namespace UniLiveViewer.Player.HandMenu
         bool _isSetupComplete;
 
         readonly CharacterCameraConstraint_Custom _characterCameraConstraintCustom;
-        readonly KeyConfig _keyConfig;
         readonly PlayerHandMenuAnchorL _playerHandMenuAnchorL;
         readonly PlayerHandMenuSettings _playerHandMenuSettings;
         readonly Transform _lookTarget;
+        readonly AudioSourceService _audioSourceService;
 
         [Inject]
         public CameraHeightService(
             CharacterCameraConstraint_Custom characterCameraConstraintCustom,
-            PlayerConfigData playerConfigData,
             PlayerHandMenuAnchorL playerHandMenuAnchorL,
             PlayerHandMenuSettings playerHandMenuSettings,
-            Camera camera)
+            Camera camera,
+            AudioSourceService audioSourceService)
         {
             _characterCameraConstraintCustom = characterCameraConstraintCustom;
-            _keyConfig = playerConfigData.LeftKeyConfig;
             _playerHandMenuAnchorL = playerHandMenuAnchorL;
             _playerHandMenuSettings = playerHandMenuSettings;
             _lookTarget = camera.transform;
+            _audioSourceService = audioSourceService;
         }
 
         public void Setup()
@@ -55,24 +54,41 @@ namespace UniLiveViewer.Player.HandMenu
         public void ChangeShow()
         {
             _handMenu.SetShow(!_handMenu.IsShow);
+
+            if (_handMenu.IsShow)
+            {
+                _audioSourceService.PlayOneShot(3);//Open
+            }
+            else
+            {
+                _audioSourceService.PlayOneShot(4);//Close
+            }
+        }
+
+        public void OnClickStickUp()
+        {
+            if (!_isSetupComplete) return;
+            if (!_handMenu.IsShow) return;
+
+            //Playerカメラの高さ調整
+            _height += 0.05f;
+            SetCameraHeight(_height);
+        }
+
+        public void OnClickStickDown()
+        {
+            if (!_isSetupComplete) return;
+            if (!_handMenu.IsShow) return;
+
+            //Playerカメラの高さ調整
+            _height -= 0.05f;
+            SetCameraHeight(_height);
         }
 
         public void OnLateTick()
         {
             if (!_isSetupComplete) return;
             if (!_handMenu.IsShow) return;
-
-            //Playerカメラの高さ調整
-            if (OVRInput.GetDown(_keyConfig.resize_U))
-            {
-                _height += 0.05f;
-                SetCameraHeight(_height);
-            }
-            else if (OVRInput.GetDown(_keyConfig.resize_D))
-            {
-                _height -= 0.05f;
-                SetCameraHeight(_height);
-            }
 
             _handMenu.UpdateLookat(_lookTarget);
         }

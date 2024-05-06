@@ -25,7 +25,7 @@ namespace UniLiveViewer.Menu
         [SerializeField] SliderGrabController slider_Speed = null;
         PlayableMusicService _playableMusicService;
         PlayableDirector _playableDirector;
-        PlayerStateManager _playerStateManager;
+        PlayerHandsService _playerHandsService;
         AudioAssetManager _audioAssetManager;
         AudioSourceService _audioSourceService;
 
@@ -36,13 +36,13 @@ namespace UniLiveViewer.Menu
             AudioAssetManager audioAssetManager,
             PlayableMusicService playableMusicService,
             PlayableDirector playableDirector,
-            PlayerStateManager playerStateManager,
+            PlayerHandsService playerHandsService,
             AudioSourceService audioSourceService)
         {
             _audioAssetManager = audioAssetManager;
             _playableMusicService = playableMusicService;
             _playableDirector = playableDirector;
-            _playerStateManager = playerStateManager;
+            _playerHandsService = playerHandsService;
             _audioSourceService = audioSourceService;
         }
 
@@ -179,7 +179,7 @@ namespace UniLiveViewer.Menu
             _audioSourceService.PlayOneShot(0);
 
             //スライダー操作中は受け付けない
-            if (_playerStateManager.IsSliderGrabbing(Constants.TagGrabSliderVolume)) return;
+            if (_playerHandsService.IsGrabbingSliderWithHands()) return;
 
             if (btn == btnS_Stop)
             {

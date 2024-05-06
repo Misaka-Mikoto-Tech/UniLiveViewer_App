@@ -1,4 +1,4 @@
-﻿using MessagePipe;
+using MessagePipe;
 using System;
 using UniLiveViewer.MessagePipe;
 using UniRx;
@@ -36,7 +36,7 @@ namespace UniLiveViewer.Actor.Option
                 {
                     if (x.ActorState == ActorState.NULL) return;
                     if (x.ActorState != _actorEntity.ActorState().Value) return;
-                    _guideAnchorService.SetEnable(x.ActorCommand == ActorOptionCommand.GUID_ANCHOR_ENEBLE);
+                    _guideAnchorService.SetEnable(x.ActorCommand == ActorOptionCommand.GUIDE_ANCHOR_ENEBLE);
                 }).AddTo(_disposables);
 
             _guideAnchorService.Setup();

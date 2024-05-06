@@ -1,5 +1,3 @@
-﻿using static UniLiveViewer.Player.PlayerEnums;
-
 namespace UniLiveViewer.Player
 {
     /// <summary>
@@ -17,14 +15,14 @@ namespace UniLiveViewer.Player
         Release
     }
 
-    
+
     public class PlayerHandActionState
     {
-        public HandType HandType { get; }
+        public PlayerHandType HandType { get; }
         public HandTargetType Target { get; }
         public HandActionState Action { get; }
 
-        public PlayerHandActionState(HandType hand, HandTargetType target, HandActionState action)
+        public PlayerHandActionState(PlayerHandType hand, HandTargetType target, HandActionState action)
         {
             HandType = hand;
             Target = target;

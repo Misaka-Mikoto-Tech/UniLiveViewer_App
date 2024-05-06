@@ -3,7 +3,7 @@ using VContainer.Unity;
 
 namespace UniLiveViewer.Player.State
 {
-    public class PlayerStatePresenter : IStartable, ITickable
+    public class PlayerStatePresenter : ITickable
     {
         readonly PlayerStateMachineService _playerStateMachineService;
 
@@ -11,11 +11,6 @@ namespace UniLiveViewer.Player.State
         public PlayerStatePresenter(PlayerStateMachineService playerStateMachineService)
         {
             _playerStateMachineService = playerStateMachineService;
-        }
-
-        void IStartable.Start()
-        {
-
         }
 
         void ITickable.Tick()

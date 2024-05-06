@@ -41,7 +41,7 @@ namespace UniLiveViewer.Player
         Color _baseColor;
         [SerializeField] Color hitColor = new Color(255.0f, 0.0f, 0.0f);
 
-        PlayerEnums.HandState _handState = PlayerEnums.HandState.DEFAULT;
+        PlayerHandState _handState = PlayerHandState.DEFAULT;
 
         void Awake()
         {
@@ -67,7 +67,7 @@ namespace UniLiveViewer.Player
             ChecFloorCollision();
             CheckActorCollision();
 
-            var isForceReset = _handState != PlayerEnums.HandState.SUMMONCIRCLE;
+            var isForceReset = _handState != PlayerHandState.SUMMONCIRCLE;
             SetMaterial(isForceReset);
         }
 
@@ -111,7 +111,7 @@ namespace UniLiveViewer.Player
             Debug.DrawRay(LineEndAnchor.position, Vector3.up, Color.red);
         }
 
-        public void OnChangeHandState(PlayerEnums.HandState handState)
+        public void OnChangeHandState(PlayerHandState handState)
         {
             _handState = handState;
         }

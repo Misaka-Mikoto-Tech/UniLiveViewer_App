@@ -1,8 +1,9 @@
 ﻿using MessagePipe;
 using System;
-using System.Collections.Generic;
+using UniLiveViewer.MessagePipe;
 using UniLiveViewer.OVRCustom;
 using UniRx;
+using UnityEngine.Playables;
 using VContainer;
 using VContainer.Unity;
 
@@ -10,11 +11,14 @@ namespace UniLiveViewer.Player.HandMenu
 {
     public class PlayerHandMenuPresenter : IStartable, ILateTickable, IDisposable
     {
+        readonly PlayableDirector _playableDirector;
+        readonly IPublisher<AttachPointMessage> _publisher;
+        readonly PlayerInputService _playerInputService;
         readonly CameraHeightService _cameraHeightService;
         readonly ActorManipulateService _actorManipulateService;
         readonly ItemMaterialSelectionService _itemMaterialSelection;
-        readonly PlayerStateManager _playerStateManager;
-        readonly List<OVRGrabber_UniLiveViewer> _ovrGrabbers;
+        readonly BothHandsHoldService _bothHandsHoldService;
+        readonly PlayerHandsService _playerHandsService;
 
         readonly CompositeDisposable _disposables = new();
         /// <summary>
@@ -22,76 +26,118 @@ namespace UniLiveViewer.Player.HandMenu
         /// </summary>
         readonly SerialDisposable _serialDisposable = new();
 
-
         [Inject]
         public PlayerHandMenuPresenter(
+            PlayableDirector playableDirector,
+            IPublisher<AttachPointMessage> publisher,
+            PlayerInputService playerInputService,
             CameraHeightService cameraHeightService,
             ActorManipulateService actorManipulateService,
             ItemMaterialSelectionService itemMaterialSelection,
-            PlayerStateManager playerStateManager,
-            List<OVRGrabber_UniLiveViewer> ovrGrabbers)
+            BothHandsHoldService bothHandsHoldService,
+            PlayerHandsService playerHandsService)
         {
+            _playableDirector = playableDirector;
+            _publisher = publisher;
+            _playerInputService = playerInputService;
             _cameraHeightService = cameraHeightService;
             _actorManipulateService = actorManipulateService;
             _itemMaterialSelection = itemMaterialSelection;
-            _playerStateManager = playerStateManager;
-            _ovrGrabbers = ovrGrabbers;
+            _bothHandsHoldService = bothHandsHoldService;
+            _playerHandsService = playerHandsService;
         }
 
         void IStartable.Start()
         {
-            foreach (var ovrGrabber in _ovrGrabbers)
-            {
-                ovrGrabber.GrabbedObj
-                    .Subscribe(OnChangeGrabbedObj).AddTo(_disposables);
+            _playerInputService.ClickStickUpAsObservable()
+                .Where(x => x == PlayerHandType.LHand)
+                .Subscribe(_ => _cameraHeightService.OnClickStickUp())
+                .AddTo(_disposables);
+            _playerInputService.ClickStickDownAsObservable()
+                .Where(x => x == PlayerHandType.LHand)
+                .Subscribe(_ => _cameraHeightService.OnClickStickDown())
+                .AddTo(_disposables);
 
-                ovrGrabber.HandActionStateAsObservable
-                    .Where(x => x.Target == HandTargetType.Actor)
-                    .Subscribe(x =>
-                    {
-                        if (x.Action == HandActionState.Grab) _actorManipulateService.ChangeShow(ovrGrabber.HandType, true);
-                        if (x.Action == HandActionState.Release) _actorManipulateService.ChangeShow(ovrGrabber.HandType, false);
-                    }).AddTo(_disposables);
-            }
+            _playerInputService.ClickMenuAsObservable()
+                .Where(x => x == PlayerHandType.LHand)
+                .Where(_ => _playerHandsService.IsHandsFree())//両手checkは過剰かも
+                .Subscribe(_ => _cameraHeightService.ChangeShow())
+                .AddTo(_disposables);
+            _playerInputService.ClickActionAsObservable()
+                .Subscribe(_playerHandsService.OnClickActionButton)
+                .AddTo(_disposables);
+            _playerInputService.ClickTriggerAsObservable()
+                .Subscribe(_playerHandsService.OnClickTriggerButton)
+                .AddTo(_disposables);
+            _playerInputService.ClickStickLeftAsObservable()
+                .Subscribe(_playerHandsService.OnClickStickLeft)
+                .AddTo(_disposables);
+            _playerInputService.ClickStickRightAsObservable()
+                .Subscribe(_playerHandsService.OnClickStickRight)
+                .AddTo(_disposables);
 
-            _playerStateManager.CameraHeightMenuShow
+            _playerInputService.LeftStickInput()
                 .SkipLatestValueOnSubscribe()
-                .Subscribe(_ => _cameraHeightService.ChangeShow()).AddTo(_disposables);
+                .Subscribe(x => _playerHandsService.OnChangeStickInput(PlayerHandType.LHand, x))
+                .AddTo(_disposables);
+            _playerInputService.RightStickInput()
+                .SkipLatestValueOnSubscribe()
+                .Subscribe(x => _playerHandsService.OnChangeStickInput(PlayerHandType.RHand, x))
+                .AddTo(_disposables);
 
-            for (int i = 0; i < _playerStateManager.IsItemMaterialSelection.Length; i++)
-            {
-                int localI = i; // ループの各反復ごとにiの値を新しいローカル変数にコピー,これしないと右手の場合2~3
-                _playerStateManager.IsItemMaterialSelection[i]
-                    .SkipLatestValueOnSubscribe()
-                    .Subscribe(isShow =>
-                    {
-                        if (isShow)
-                        {
-                            if (!_ovrGrabbers[localI].GrabbedObj.Value) return;
-
-                            //TODO: 見直す
-                            if (!_ovrGrabbers[localI].GrabbedObj.Value.TryGetComponent<DecorationItemInfo>(out var itemInfo)) return;
-                            _itemMaterialSelection.ChangeShow(localI, isShow, itemInfo);
-                        }
-                        else
-                        {
-                            _itemMaterialSelection.ChangeShow(localI, isShow, null);
-                        }
-                    }).AddTo(_disposables);
-
-                _playerStateManager.ItemMaterialSelection[localI]
-                    .SkipLatestValueOnSubscribe()
-                    .Subscribe(current =>
-                    {
-                        _itemMaterialSelection.SetItemTexture(localI, current);
-                    }).AddTo(_disposables);
-            }
+            PlayerHandSubscribe(PlayerHandType.LHand);
+            PlayerHandSubscribe(PlayerHandType.RHand);
 
             _cameraHeightService.Setup();
             _actorManipulateService.Setup();
             _itemMaterialSelection.Setup();
+            _bothHandsHoldService.Setup();
         }
 
+        // NOTE: 循環してるけど目をつぶる（両手をLS化しないとキツイ
+        void PlayerHandSubscribe(PlayerHandType targetHandType)
+        {
+            _playerHandsService.GrabbedObj(targetHandType)
+                    .Subscribe(OnChangeGrabbedObj).AddTo(_disposables);
+
+            _playerHandsService.HandActionStateAsObservable(targetHandType)
+                .Where(x => x.Target == HandTargetType.Actor)
+                .Subscribe(x =>
+                {
+                    if (x.Action == HandActionState.Grab)
+                    {
+                        _actorManipulateService.ChangeShow(targetHandType, true);
+                    }
+                    else if (x.Action == HandActionState.Release)
+                    {
+                        _actorManipulateService.ChangeShow(targetHandType, false);
+                        _playerHandsService.IfNeededDeleteGuide();
+                    }
+                }).AddTo(_disposables);
+
+            _playerHandsService.HandActionStateAsObservable(targetHandType)
+                .Where(x => x.Target == HandTargetType.Item)
+                .Subscribe(x =>
+                {
+                    var ovrGrabber = _playerHandsService.GetOVRGrabber(targetHandType);
+                    if (x.Action == HandActionState.Grab)
+                    {
+                        _bothHandsHoldService.BothHandsCandidate(ovrGrabber);
+                        if (_playableDirector.timeUpdateMode == DirectorUpdateMode.Manual)
+                        {
+                            _publisher.Publish(new AttachPointMessage(true));
+                        }
+                    }
+                    else if (x.Action == HandActionState.Release)
+                    {
+                        _bothHandsHoldService.BothHandsGrabEnd(ovrGrabber);
+                        if (_playerHandsService.IsHandsFree())
+                        {
+                            _publisher.Publish(new AttachPointMessage(false));
+                        }
+                    }
+                }).AddTo(_disposables);
+        }
 
         /// <summary>
         /// 握っている間のみ購読
@@ -125,7 +171,7 @@ namespace UniLiveViewer.Player.HandMenu
             _cameraHeightService.OnLateTick();
             _actorManipulateService.OnLateTick();
             _itemMaterialSelection.OnLateTick();
-            _playerStateManager.OnLateTick();
+            _bothHandsHoldService.OnLateTick();
         }
 
         void IDisposable.Dispose()

@@ -10,6 +10,9 @@ namespace UniLiveViewer.Player.State
         NonMovable
     }
 
+    /// <summary>
+    /// 両手の状態に応じて移動可能かの可否が決まる
+    /// </summary>
     public class PlayerStateMachineService
     {
         PlayerState _current;

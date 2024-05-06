@@ -11,30 +11,31 @@ namespace UniLiveViewer.Stage
     {
         readonly FileAccessManager _fileAccessManager;
         readonly MenuGripperService _menuGripperService;
-        readonly PlayerStateManager _playerStateManager;
+        readonly PlayerInputService _playerInputService;
         readonly CompositeDisposable _disposables = new();
 
         [Inject]
         public MenuGripperPresenter(
             FileAccessManager fileAccessManager,
             MenuGripperService menuGripperService,
-            PlayerStateManager playerStateManager)
+            PlayerInputService playerInputService)
         {
             _fileAccessManager = fileAccessManager;
             _menuGripperService = menuGripperService;
-            _playerStateManager = playerStateManager;
+            _playerInputService = playerInputService;
         }
 
         void IStartable.Start()
         {
             _fileAccessManager.LoadEndAsObservable
-                .Subscribe(_ => _menuGripperService.Initialize())
+                .Subscribe(_ => _menuGripperService.OnLoadEnd())
                 .AddTo(_disposables);
-            _playerStateManager.MainMenuSwitchingAsObservable
-                .Subscribe(_menuGripperService.OnMenuSwitching)
+            _playerInputService.ClickMenuAsObservable()
+                .Where(x => x == PlayerHandType.RHand)
+                .Subscribe(_ => _menuGripperService.OnMenuSwitching())
                 .AddTo(_disposables);
 
-            _menuGripperService.OnMenuSwitching(false);
+            _menuGripperService.Initialize();
         }
 
         void ILateTickable.LateTick()

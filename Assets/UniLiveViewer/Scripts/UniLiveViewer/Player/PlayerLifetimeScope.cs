@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UniLiveViewer.OVRCustom;
+using UniLiveViewer.Player.HandMenu;
 using UnityEngine;
 using UnityEngine.Rendering;
 using VContainer;
@@ -8,19 +9,21 @@ using VContainer.Unity;
 namespace UniLiveViewer.Player
 {
     [RequireComponent(typeof(PlayerRootAnchor))]
-    [RequireComponent(typeof(PlayerStateManager))]
+    [RequireComponent(typeof(PlayerRootAnchor))]
     [RequireComponent(typeof(CharacterCameraConstraint_Custom))]
     [RequireComponent(typeof(SimpleCapsuleWithStickMovement))]
     public class PlayerLifetimeScope : LifetimeScope
     {
         [SerializeField] VolumeProfile _volumeProfile;
+        [SerializeField] PlayerConfigData _playerConfigData;
+        [SerializeField] AudioSourceService _audioSourceService;
 
+        [Header("XR設定")]
         [SerializeField] PlayerHandMenuAnchorL _playerHandMenuAnchorL;
         [SerializeField] PlayerHandMenuAnchorR _playerHandMenuAnchorR;
-
-        [SerializeField] PlayerConfigData _playerConfigData;
         [SerializeField] OVRManager _ovrManager;
         [SerializeField] PassthroughService _passthroughService;
+        [SerializeField] PlayerHandMenuSettings _playerHandMenuSettings;
         /// <summary>
         /// inspector上のInject設定も必要(他手段もある)
         /// </summary>
@@ -28,28 +31,55 @@ namespace UniLiveViewer.Player
 
         protected override void Configure(IContainerBuilder builder)
         {
+            builder.RegisterInstance(_playerConfigData);
+            builder.RegisterComponent(_audioSourceService);
             builder.RegisterComponent<Camera>(Camera.main);
 
-            builder.RegisterInstance(_playerConfigData);
+            builder.RegisterComponent(GetComponent<PlayerRootAnchor>());
+            builder.Register<PlayerRootAnchorService>(Lifetime.Singleton);
+            builder.RegisterEntryPoint<PlayerRootAnchorPresenter>();
 
+            builder.Register<PlayerInputService>(Lifetime.Singleton);
+            builder.RegisterEntryPoint<PlayerInputPresenter>();
+
+            MetaConfigure(builder);
+            GraphicsConfigure(builder);
+            HandConfigure(builder);
+            HandMenuConfigure(builder);
+        }
+
+        void MetaConfigure(IContainerBuilder builder)
+        {
+            builder.RegisterComponent(_ovrManager);
+            builder.RegisterComponent(GetComponent<CharacterCameraConstraint_Custom>());
+            builder.RegisterComponent(GetComponent<SimpleCapsuleWithStickMovement>());
+        }
+
+        void GraphicsConfigure(IContainerBuilder builder)
+        {
+            builder.RegisterInstance(_volumeProfile);
+            builder.RegisterComponent(_passthroughService);
+            builder.Register<GraphicsSettingsService>(Lifetime.Singleton);
+            builder.RegisterEntryPoint<GraphicsSettingsPresenter>();
+        }
+
+        void HandConfigure(IContainerBuilder builder)
+        {
             builder.RegisterComponent(_playerHandMenuAnchorL);
             builder.RegisterComponent(_playerHandMenuAnchorR);
             builder.RegisterComponent(_ovrGrabbers);
-            builder.RegisterComponent(_ovrManager);
-            builder.RegisterComponent(_passthroughService);
-            builder.RegisterComponent(GetComponent<PlayerRootAnchor>());
-            builder.RegisterComponent(GetComponent<PlayerStateManager>());
-            builder.RegisterComponent(GetComponent<CharacterCameraConstraint_Custom>());
-            builder.RegisterComponent(GetComponent<SimpleCapsuleWithStickMovement>());
+            builder.Register<PlayerHandsService>(Lifetime.Singleton);
+            builder.Register<BothHandsHoldService>(Lifetime.Singleton);
+        }
 
-            builder.RegisterEntryPoint<OculusSamplePresenter>();
+        void HandMenuConfigure(IContainerBuilder builder)
+        {
+            builder.RegisterComponent(_playerHandMenuSettings);
 
-            builder.RegisterInstance(_volumeProfile);
-            builder.Register<GraphicsSettingsService>(Lifetime.Singleton);
-            builder.RegisterEntryPoint<GraphicsSettingsPresenter>();
-
-            builder.Register<PlayerRootAnchorService>(Lifetime.Singleton);
-            builder.RegisterEntryPoint<PlayerRootAnchorPresenter>();
+            builder.Register<CameraHeightService>(Lifetime.Singleton);
+            builder.Register<ActorManipulateService>(Lifetime.Singleton);
+            builder.Register<ItemMaterialSelectionService>(Lifetime.Singleton);
+            builder.RegisterEntryPoint<PlayerHandMenuPresenter>();
         }
     }
 }

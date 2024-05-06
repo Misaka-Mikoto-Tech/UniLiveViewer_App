@@ -3,8 +3,6 @@ using MessagePipe;
 using System;
 using UniLiveViewer.MessagePipe;
 using UniRx;
-using UnityEngine;
-using UnityEngine.Playables;
 using VContainer;
 using VContainer.Unity;
 
@@ -15,7 +13,6 @@ namespace UniLiveViewer.Actor.AttachPoint
         readonly ISubscriber<AttachPointMessage> _subscriber;
         readonly IActorEntity _actorEntity;
         readonly AttachPointService _attachPointService;
-        readonly PlayableDirector _playableDirector;
 
         readonly CompositeDisposable _disposables = new();
 
@@ -23,23 +20,16 @@ namespace UniLiveViewer.Actor.AttachPoint
         public AttachPointPresenter(
             ISubscriber<AttachPointMessage> subscriber,
             IActorEntity actorEntity,
-            AttachPointService attachPointService,
-            PlayableDirector playableDirector)
+            AttachPointService attachPointService)
         {
             _subscriber = subscriber;
             _actorEntity = actorEntity;
             _attachPointService = attachPointService;
-            _playableDirector = playableDirector;
         }
 
         void IStartable.Start()
         {
-            _subscriber
-                .Subscribe(x =>
-                {
-                    if (_playableDirector.timeUpdateMode != DirectorUpdateMode.Manual) return;
-                    _attachPointService.SetActive(x.IsActive);
-                }).AddTo(_disposables);
+            _subscriber.Subscribe(x => _attachPointService.SetActive(x.IsActive)).AddTo(_disposables);
         }
 
         void ITickable.Tick()

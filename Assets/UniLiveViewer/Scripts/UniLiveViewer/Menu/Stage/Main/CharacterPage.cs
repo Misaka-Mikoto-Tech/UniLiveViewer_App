@@ -580,6 +580,8 @@ namespace UniLiveViewer.Menu
         {
             var message = new AllActorOperationMessage(ActorState.FIELD, ActorCommand.DELETE);
             _allPublisher.Publish(message);
+
+            _audioSourceService.PlayOneShot(4);
         }
 
         /// <summary>

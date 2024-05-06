@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using VContainer;
 
 namespace UniLiveViewer.Player.HandMenu
@@ -46,9 +46,9 @@ namespace UniLiveViewer.Player.HandMenu
             _isSetupComplete = true;
         }
 
-        public void ChangeShow(PlayerEnums.HandType handType, bool isShow)
+        public void ChangeShow(PlayerHandType handType, bool isShow)
         {
-            var index = handType == PlayerEnums.HandType.LHand ? 0 : 1;
+            var index = handType == PlayerHandType.LHand ? 0 : 1;
             if (_handMenu.Length <= index) return;
             _handMenu[index].SetShow(isShow);
         }

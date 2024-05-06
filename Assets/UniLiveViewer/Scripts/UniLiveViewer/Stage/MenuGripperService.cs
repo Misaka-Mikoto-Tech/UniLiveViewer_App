@@ -9,6 +9,8 @@ namespace UniLiveViewer.Stage
     {
         const float LerpSpeed = 25.0f;
 
+        bool _isEnable;
+
         readonly Renderer _renderer;
         readonly Transform _transform;
         readonly Transform _anchor;
@@ -32,11 +34,22 @@ namespace UniLiveViewer.Stage
 
         public void Initialize()
         {
+            OnMenuSwitching(false);
+        }
+
+        public void OnLoadEnd()
+        {
             OnMenuSwitching(true);
         }
 
-        public void OnMenuSwitching(bool isEnable)
+        public void OnMenuSwitching()
         {
+            OnMenuSwitching(!_isEnable);
+        }
+
+        void OnMenuSwitching(bool isEnable)
+        {
+            _isEnable = isEnable;
             _renderer.enabled = isEnable;
 
             // anchorに見直す

@@ -8,17 +8,13 @@ using VContainer.Unity;
 
 namespace UniLiveViewer.Timeline
 {
-    /// <summary>
-    /// TODO: もやはTimelineではない
-    /// </summary>
-    public class TimelinePresenter : IAsyncStartable, IDisposable
+    public class PlayableMusicPresenter : IAsyncStartable, IDisposable
     {
         readonly PlayableMusicService _playableMusicService;
         readonly CompositeDisposable _disposable = new();
 
         [Inject]
-        public TimelinePresenter(
-            PlayableMusicService playableMusicService)
+        public PlayableMusicPresenter(PlayableMusicService playableMusicService)
         {
             _playableMusicService = playableMusicService;
         }

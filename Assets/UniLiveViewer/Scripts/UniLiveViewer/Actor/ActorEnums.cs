@@ -102,8 +102,8 @@ namespace UniLiveViewer.Actor
 
     public enum ActorOptionCommand
     {
-        GUID_ANCHOR_ENEBLE,
-        GUID_ANCHOR_DISABLE,
+        GUIDE_ANCHOR_ENEBLE,
+        GUIDE_ANCHOR_DISABLE,
     }
 
     public enum LIPTYPE

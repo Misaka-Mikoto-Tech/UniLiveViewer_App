@@ -3,7 +3,6 @@ using VContainer;
 
 namespace UniLiveViewer.Player.State
 {
-
     public class MovableState : IState
     {
         PlayerStateMachineService _stateMachineService;
