@@ -5,6 +5,7 @@ using NanaCiel;
 using System;
 using System.Linq;
 using UnityEngine.Rendering;
+using UniRx;
 
 namespace UniLiveViewer 
 {
@@ -50,16 +51,11 @@ namespace UniLiveViewer
                 e.onTrigger += MaterialSetting_Change;
             }
 
-            slider_Transparent.ValueUpdate += () =>
-            {
-                //透明を更新
-                matManager.SetColor_Transparent(currentMatName, slider_Transparent.Value);
-            };
-            slider_Cutoff.ValueUpdate += () =>
-            {
-                //透明を更新
-                matManager.SetCutoffVal(currentMatName, slider_Cutoff.Value);
-            };
+            slider_Transparent.ValueAsObservable
+                .Subscribe(value => matManager.SetColor_Transparent(currentMatName, value)).AddTo(this);
+            slider_Cutoff.ValueAsObservable
+                .Subscribe(value => matManager.SetCutoffVal(currentMatName, value)).AddTo(this);
+
             rollSelector.onTouch += MaterialInfoUpdate;
             btn_AllReset.onTrigger += MaterialSetting_AllReset;
 

@@ -25,7 +25,7 @@ namespace UniLiveViewer.Player
             _ovrGrabbers = ovrGrabbers;
         }
 
-        public IReadOnlyReactiveProperty<OVRGrabbable_Custom> GrabbedObj(PlayerHandType targetHandType)
+        public IReadOnlyReactiveProperty<OVRGrabbableCustom> GrabbedObj(PlayerHandType targetHandType)
         {
             return _ovrGrabbers.FirstOrDefault(x => x.HandType == targetHandType).GrabbedObj;
         }

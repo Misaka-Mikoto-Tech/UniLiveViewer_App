@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace UniLiveViewer
 {
-    [RequireComponent(typeof(OVRGrabbable_Custom))]
+    
     public class DecorationItemInfo : MonoBehaviour
     {
         public string[] ItemName => itemName;
@@ -13,7 +13,7 @@ namespace UniLiveViewer
         [SerializeField] RenderInfo[] renderInfo = new RenderInfo[0];
 
         [SerializeField] string[] flavorText = new string[2] { "何の変哲もないアイテム", "Unremarkable item" };//未使用
-        OVRGrabbable_Custom _ovrGrabbableCustom;
+        OVRGrabbableCustom _ovrGrabbableCustom;
 
         MeshRenderer _meshRenderer;
         bool _isAttached;
@@ -21,7 +21,7 @@ namespace UniLiveViewer
 
         void Awake()
         {
-            _ovrGrabbableCustom = GetComponent<OVRGrabbable_Custom>();
+            _ovrGrabbableCustom = GetComponent<OVRGrabbableCustom>();
             _meshRenderer = transform.GetComponent<MeshRenderer>();
         }
 

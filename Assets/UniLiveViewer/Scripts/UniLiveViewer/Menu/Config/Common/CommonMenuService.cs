@@ -1,10 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
-using System;
-using System.Threading;
-using UniLiveViewer.Player;
-using UniLiveViewer.SceneLoader;
-using UniLiveViewer.Stage;
-using UniLiveViewer.Timeline;
+﻿using UniLiveViewer.Player;
 using UnityEngine;
 using VContainer;
 
@@ -34,10 +28,6 @@ namespace UniLiveViewer.Menu.Config.Common
 
             _settings.PassthroughButton.onTrigger += OnChangePassthrough;
             _settings.VibrationButton.onTrigger += OnChangeControllerVibration;
-            _settings.FixedFoveatedSlider.ValueUpdate += () =>  OnUpdateFixedFoveated();
-
-            //初期化で一度だけ実行しておく
-            OnUpdateFixedFoveated();
         }
 
         void OnChangePassthrough(Button_Base button_Base)
@@ -56,13 +46,12 @@ namespace UniLiveViewer.Menu.Config.Common
         /// <summary>
         /// 固定中心窩レンダリングのスライダー
         /// </summary>
-        void OnUpdateFixedFoveated()
+        public void OnUpdateFixedFoveated(float value)
         {
-            _settings.FixedFoveatedSlider.Value = Mathf.Clamp(_settings.FixedFoveatedSlider.Value, 2, 4);
 #if UNITY_EDITOR
-            _settings.FixedFoveatedText.text = $"noQuest:{_settings.FixedFoveatedSlider.Value}";
+            _settings.FixedFoveatedText.text = $"noQuest:{value}";
 #elif UNITY_ANDROID
-            OVRManager.fixedFoveatedRenderingLevel = (OVRManager.FixedFoveatedRenderingLevel)_settings.FixedFoveatedSlider.Value;
+            OVRManager.fixedFoveatedRenderingLevel = (OVRManager.FixedFoveatedRenderingLevel)value;
             _settings.FixedFoveatedText.text = Enum.GetName(typeof(OVRManager.FixedFoveatedRenderingLevel),OVRManager.fixedFoveatedRenderingLevel);
 #endif
         }

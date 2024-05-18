@@ -52,10 +52,7 @@ namespace UniLiveViewer.Menu
         [SerializeField] Button_Base _btnFaceUpdate;
         [SerializeField] Button_Base _btnMouthUpdate;
 
-        [Header("--- マニュアル用 ---")]
-        [SerializeField] GameObject[] _bookPrefab;
-        [SerializeField] GameObject _bookGrabAnchor;
-
+        
         public IReadOnlyReactiveProperty<int> FBXIndex => _fbxIndex;
         readonly ReactiveProperty<int> _fbxIndex = new();
         public IReadOnlyReactiveProperty<int> VRMIndex => _vrmIndex;
@@ -78,6 +75,7 @@ namespace UniLiveViewer.Menu
         IPublisher<AllActorOperationMessage> _allPublisher;
         IPublisher<ActorOperationMessage> _publisher;
         AudioSourceService _audioSourceService;
+        BookService _bookService;
 
         [Inject]
         public void Construct(
@@ -88,7 +86,8 @@ namespace UniLiveViewer.Menu
             AnimationAssetManager animationAssetManager,
             IPublisher<AllActorOperationMessage> actorOperationPublisher,
             IPublisher<ActorOperationMessage> publisher,
-            AudioSourceService audioSourceService)
+            AudioSourceService audioSourceService,
+            BookService bookService)
         {
             _playableBinderService = playableBinderService;
             _menuManager = menuManager;
@@ -98,6 +97,7 @@ namespace UniLiveViewer.Menu
             _allPublisher = actorOperationPublisher;
             _publisher = publisher;
             _audioSourceService = audioSourceService;
+            _bookService = bookService;
         }
 
         async void OnEnable()
@@ -150,34 +150,35 @@ namespace UniLiveViewer.Menu
                     textMeshs[2].text = $"{_fieldCharaCount}/{SystemInfo.MaxFieldChara}";
                 }).AddTo(this);
 
-            _sliderOffset.ValueUpdate += () =>
-            {
-                //var data = _playableBinderService.BindingData[TimelineConstants.PortalIndex];
-                //if (data == null) return;
+            _sliderOffset.ValueAsObservable
+                .Subscribe(value =>
+                {
+                    var baseMotion = textMeshs[1].text;
+                    FileReadAndWriteUtility.SetMotionOffset(baseMotion, (int)value);
+                    textMeshs[3].text = $"{value:0000}";
+                }).AddTo(this);
 
-                var baseMotion = textMeshs[1].text;
-                var value = _sliderOffset.Value;
-                //オフセットを設定
-                FileReadAndWriteUtility.SetMotionOffset(baseMotion, (int)value);
-                textMeshs[3].text = $"{value:0000}";
-            };
-            _sliderOffset.UnControled += () => { FileReadAndWriteUtility.SaveMotionOffset(); };
-            _sliderHeadLook.ValueUpdate += () =>
-            {
-                var data = _playableBinderService.BindingData[TimelineConstants.PortalIndex];
-                if (data == null) return;
-                //顔の向く量をセット
-                var lookAtAllocator = data.ActorEntity.ActorEntity().Value.LookAtService;
-                lookAtAllocator.SetHeadWeight(_sliderHeadLook.Value);
-            };
-            _sliderEyeLook.ValueUpdate += () =>
-            {
-                var data = _playableBinderService.BindingData[TimelineConstants.PortalIndex];
-                if (data == null) return;
-                //目の向く量をセット
-                var lookAtAllocator = data.ActorEntity.ActorEntity().Value.LookAtService;
-                lookAtAllocator.SetEyeWeight(_sliderEyeLook.Value);
-            };
+            _sliderOffset.EndDriveAsObservable
+                .Subscribe(_ => FileReadAndWriteUtility.SaveMotionOffset()).AddTo(this);
+
+            _sliderHeadLook.ValueAsObservable
+                .Subscribe(value =>
+                {
+                    var data = _playableBinderService.BindingData[TimelineConstants.PortalIndex];
+                    if (data == null) return;
+                    //顔の向く量をセット
+                    var lookAtAllocator = data.ActorEntity.ActorEntity().Value.LookAtService;
+                    lookAtAllocator.SetHeadWeight(value);
+                }).AddTo(this);
+            _sliderEyeLook.ValueAsObservable
+                .Subscribe(value =>
+                {
+                    var data = _playableBinderService.BindingData[TimelineConstants.PortalIndex];
+                    if (data == null) return;
+                    //目の向く量をセット
+                    var lookAtAllocator = data.ActorEntity.ActorEntity().Value.LookAtService;
+                    lookAtAllocator.SetEyeWeight(value);
+                }).AddTo(this);
             //_btnVRMSetting.onTrigger += VRMSetting;
             _btnVRMDelete.onTrigger += DeleteModel;
             _btnVRM10Mode.onTrigger += ChangeVRMMode;
@@ -204,9 +205,6 @@ namespace UniLiveViewer.Menu
 
             if (_vmdAnchor.gameObject.activeSelf) _vmdAnchor.gameObject.SetActive(false);
             if (_vrmOptionAnchor.gameObject.activeSelf) _vrmOptionAnchor.gameObject.SetActive(false);
-
-            //マニュアル生成
-            Instantiate(_bookPrefab[FileReadAndWriteUtility.UserProfile.LanguageCode - 1], _bookGrabAnchor.transform);
         }
 
         public void OnJumpSelect((JumpList.TARGET, int) select)
@@ -257,8 +255,8 @@ namespace UniLiveViewer.Menu
 
         public void OnClickManualBook()
         {
+            _bookService.ChangeOpenClose();
             _audioSourceService.PlayOneShot(0);
-            _bookGrabAnchor.SetActive(!_bookGrabAnchor.activeSelf);
         }
 
         void Update()

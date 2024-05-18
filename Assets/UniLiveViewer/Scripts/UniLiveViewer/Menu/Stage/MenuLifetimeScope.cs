@@ -1,4 +1,4 @@
-﻿using MessagePipe;
+using MessagePipe;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
@@ -8,6 +8,9 @@ namespace UniLiveViewer.Menu
     [RequireComponent(typeof(MenuManager))]
     public class MenuLifetimeScope : LifetimeScope
     {
+        [SerializeField] BookSetting _bookSetting;
+        [SerializeField] BookAnchor _bookAnchor;
+
         [Header("各ページ")]
         [SerializeField] CharacterPage _characterPage;
         [SerializeField] AudioPlaybackPage _audioPlaybackPage;
@@ -37,6 +40,11 @@ namespace UniLiveViewer.Menu
             builder.RegisterComponent(_itemPage);
             builder.RegisterComponent(_configPage);
             builder.RegisterEntryPoint<MainMenuPresenter>();
+
+            builder.RegisterComponent(_bookSetting);
+            builder.RegisterComponent(_bookAnchor);
+            builder.Register<BookService>(Lifetime.Singleton);
+            builder.RegisterEntryPoint<BookPresenter>();
         }
 
         /// <summary>

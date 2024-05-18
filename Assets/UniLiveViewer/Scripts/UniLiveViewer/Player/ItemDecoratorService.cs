@@ -106,7 +106,7 @@ namespace UniLiveViewer.Player
         bool TryAttachmentItem(OVRGrabber_UniLiveViewer hand)
         {
             var grabObj = hand.GrabbedObj.Value;
-            if (grabObj == null || !grabObj.isBothHandsGrab)
+            if (grabObj == null || !grabObj.IsBothHandsGrab)
             {
                 return false;
             }

@@ -143,7 +143,7 @@ namespace UniLiveViewer.Player.HandMenu
         /// 握っている間のみ購読
         /// </summary>
         /// <param name="ovrGrabbableCustom"></param>
-        void OnChangeGrabbedObj(OVRGrabbable_Custom ovrGrabbableCustom)
+        void OnChangeGrabbedObj(OVRGrabbableCustom ovrGrabbableCustom)
         {
             if (ovrGrabbableCustom == null)
             {

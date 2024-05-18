@@ -1,6 +1,7 @@
 ﻿using System;
 using UniLiveViewer.OVRCustom;
 using UnityEngine;
+using UniRx;
 
 namespace UniLiveViewer
 {
@@ -10,19 +11,22 @@ namespace UniLiveViewer
     public class SliderGrabController : MonoBehaviour
     {
         readonly Quaternion _handAdjustment = Quaternion.Euler(new Vector3(0, 0, 180));
-
+        
         /// <summary>
         /// 操作開始
         /// </summary>
-        public event Action Controled;
+        public IObservable<Unit> BeginDriveAsObservable => _beginDriveStream;
+        readonly Subject<Unit> _beginDriveStream = new();
         /// <summary>
         /// 操作終了
         /// </summary>
-        public event Action UnControled;
+        public IObservable<Unit> EndDriveAsObservable => _endDriveStream;
+        readonly Subject<Unit> _endDriveStream = new();
         /// <summary>
         /// スライダー更新
         /// </summary>
-        public event Action ValueUpdate;
+        public IObservable<float> ValueAsObservable => _valueStream;
+        readonly Subject<float> _valueStream = new();
 
         [Header("--- 設定 ---")]
         public Transform visibleHandler;
@@ -30,9 +34,10 @@ namespace UniLiveViewer
         [SerializeField] private Transform endAnchor;
         [SerializeField] private Transform[] handMesh = new Transform[2];
         [Tooltip("VisibleHandleの子オブジェクトを指定")]
-        [SerializeField] private OVRGrabbable_Custom unVisibleHandler = null;
+        [SerializeField] private OVRGrabbableCustom unVisibleHandler = null;
         
-        public float maxValuel = 1.0f;//スライダーの最大値
+        public float maxValuel = 1.0f;
+        public float minValuel = 0.0f;
         public float minStepValuel = 0.1f;//スライダーを動かす間隔
         [SerializeField] private bool SkipMoveMode = false;
 
@@ -59,19 +64,25 @@ namespace UniLiveViewer
             get { return _value; }
             set
             {
-                _value = Mathf.Clamp(value, 0, maxValuel);
+                _value = Mathf.Clamp(value, minValuel, maxValuel);
                 _nextHandllocalPos.x = _handleMaxRangeX * _value / maxValuel;
                 visibleHandler.localPosition = startAnchor.localPosition + _nextHandllocalPos;
+
+                _valueStream.OnNext(_value);
             }
         }
 
         void Awake()
         {
             _handleMaxRangeX = endAnchor.localPosition.x - startAnchor.localPosition.x;
-            Value = 0;//0でスライダーの位置を初期化する
 
-            unVisibleHandler.OnGrab += OnGrab;
-            unVisibleHandler.OnRelease += OnRelease;
+            _nextHandllocalPos.x = 0;
+            visibleHandler.localPosition = startAnchor.localPosition + _nextHandllocalPos;
+
+            unVisibleHandler.GrabBeginAsObservable
+                .Subscribe(OnGrab).AddTo(this);
+            unVisibleHandler.GrabEndAsObservable
+                .Subscribe(OnRelease).AddTo(this);
         }
 
         void OnEnable()
@@ -92,18 +103,18 @@ namespace UniLiveViewer
             _coefficient = maxValuel / minStepValuel / 2;
         }
 
-        void OnGrab(OVRGrabbable_Custom grabbable_Custom)
+        void OnGrab(OVRGrabbable grabbable)
         {
             if (_isGrabbed) return;
             InitializationOnGrab();
-            Controled?.Invoke();
+            _beginDriveStream.OnNext(Unit.Default);
         }
 
-        void OnRelease(OVRGrabbable_Custom grabbable_Custom)
+        void OnRelease(OVRGrabbable grabbable)
         {
             if (!_isGrabbed) return;
             InitializationOnRelease();
-            UnControled?.Invoke();
+            _endDriveStream.OnNext(Unit.Default);
         }
 
         /// <summary>
@@ -129,7 +140,7 @@ namespace UniLiveViewer
         void InitializationOnGrab()
         {
             //捕まれていなかったら異常
-            if (!unVisibleHandler.IsGrabbed)
+            if (!unVisibleHandler.isGrabbed)
             {
                 Debug.LogError("スライダーは掴まれていない");
                 return;
@@ -180,7 +191,6 @@ namespace UniLiveViewer
             if (SkipMoveMode && abs >= 0.08f)
             {
                 Value = _value + (_coefficient * _axis.y * Time.deltaTime);
-                ValueUpdate?.Invoke();
 
                 var touch = _isGrabbedByLeftHand ? OVRInput.Controller.LTouch : OVRInput.Controller.RTouch;
                 ControllerVibration.Execute(touch, 1, 0.2f, 0.05f);
@@ -189,7 +199,6 @@ namespace UniLiveViewer
             else if (abs >= 0.02f)
             {
                 Value = _value + (Mathf.Sign(_axis.y) * minStepValuel);
-                ValueUpdate?.Invoke();
 
                 var touch = _isGrabbedByLeftHand ? OVRInput.Controller.LTouch : OVRInput.Controller.RTouch;
                 ControllerVibration.Execute(touch, 1, 0.4f, 0.05f);

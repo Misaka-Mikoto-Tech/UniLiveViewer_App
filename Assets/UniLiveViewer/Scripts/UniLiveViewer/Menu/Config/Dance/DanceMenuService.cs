@@ -1,10 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
-using System.Threading;
-using UniLiveViewer.Player;
-using UniLiveViewer.SceneLoader;
-using UniLiveViewer.Stage;
-using UniLiveViewer.Timeline;
-using UnityEngine;
+﻿using UnityEngine;
 using VContainer;
 
 namespace UniLiveViewer.Menu.Config.Dance
@@ -29,11 +23,6 @@ namespace UniLiveViewer.Menu.Config.Dance
             _settings.VMDSmoothButton.onTrigger += OnChangeVMDSmooth;
 
             _settings.VMDScaleSlider.Value = FileReadAndWriteUtility.UserProfile.VMDScale;
-            _settings.VMDScaleSlider.ValueUpdate += () => OnUpdateVMDScale();
-            _settings.VMDScaleSlider.UnControled += () => OnUnControledVMDScale();
-
-            //初期化で一度だけ実行しておく
-            OnUpdateVMDScale();
         }
 
         void OnChangeVMDSmooth(Button_Base button_Base)
@@ -43,13 +32,12 @@ namespace UniLiveViewer.Menu.Config.Dance
             _audioSourceService.PlayOneShot(0);
         }
 
-        void OnUpdateVMDScale()
+        public void OnUpdateVMDScale(float value)
         {
-            _settings.VMDScaleSlider.Value = Mathf.Clamp(_settings.VMDScaleSlider.Value, 0.3f, 1.0f);
-            _settings.VMDScaleText.text = $"{_settings.VMDScaleSlider.Value:0.000}";
+            _settings.VMDScaleText.text = $"{value:0.000}";
         }
 
-        void OnUnControledVMDScale()
+        public void OnUnControledVMDScale()
         {
             FileReadAndWriteUtility.UserProfile.VMDScale = float.Parse(_settings.VMDScaleSlider.Value.ToString("f3"));
             FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);

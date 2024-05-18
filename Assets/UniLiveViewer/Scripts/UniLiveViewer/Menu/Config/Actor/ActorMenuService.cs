@@ -1,8 +1,9 @@
-using MessagePipe;
+﻿using MessagePipe;
 using UniLiveViewer.Actor;
 using UniLiveViewer.MessagePipe;
 using UniLiveViewer.Timeline;
 using VContainer;
+using UniRx;
 
 namespace UniLiveViewer.Menu.Config.Actor
 {
@@ -29,27 +30,19 @@ namespace UniLiveViewer.Menu.Config.Actor
         public void Initialize()
         {
             _settings.InitialActorSizeSlider.Value = FileReadAndWriteUtility.UserProfile.InitCharaSize;
-            _settings.InitialActorSizeSlider.ValueUpdate += () => OnUpdateActorSize();
-            _settings.InitialActorSizeSlider.UnControled += () => OnUnControledActorSize();
 
             _settings.FallingShadowText.text = $"FootShadow:\n{_quasiShadowSetting.ShadowType}";
             _settings.FallingShadowLButton.onTrigger += OnChangeFallingShadowL;
             _settings.FallingShadowRButton.onTrigger += OnChangeFallingShadowR;
             _settings.FallingShadowSlider.Value = _quasiShadowSetting.ShadowScale;
-            _settings.FallingShadowSlider.ValueUpdate += () => OnUpdateFallingShadow();
-            _settings.FallingShadowSlider.UnControled += () => OnUnControledFallingShadow();
-
-            //初期化で一度だけ実行しておく
-            OnUpdateActorSize();
-            OnUpdateFallingShadow();
         }
 
-        void OnUpdateActorSize()
+        public void OnUpdateActorSize(float value)
         {
-            _settings.InitialActorSizeText.text = $"{_settings.InitialActorSizeSlider.Value:0.00}";
+            _settings.InitialActorSizeText.text = $"{value:0.00}";
         }
 
-        void OnUnControledActorSize()
+        public void OnUnControledActorSize()
         {
             FileReadAndWriteUtility.UserProfile.CharaShadow = float.Parse(_settings.InitialActorSizeSlider.Value.ToString("f2"));
             FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
@@ -79,14 +72,13 @@ namespace UniLiveViewer.Menu.Config.Actor
             _allPublisher.Publish(message);
         }
 
-        void OnUpdateFallingShadow()
+        public void OnUpdateFallingShadow(float value)
         {
-            var value = _settings.FallingShadowSlider.Value;
             _quasiShadowSetting.SetShadowScale(value);
             _settings.FallingShadowText.text = $"{value:0.00}";
         }
 
-        void OnUnControledFallingShadow()
+        public void OnUnControledFallingShadow()
         {
             FileReadAndWriteUtility.UserProfile.CharaShadow = float.Parse(_settings.FallingShadowSlider.Value.ToString("f2"));
             FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);

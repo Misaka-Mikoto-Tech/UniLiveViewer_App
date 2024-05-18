@@ -6,6 +6,7 @@ using UniLiveViewer.Timeline;
 using UnityEngine;
 using UnityEngine.Playables;
 using VContainer;
+using UniRx;
 
 namespace UniLiveViewer.Menu
 {
@@ -63,7 +64,7 @@ namespace UniLiveViewer.Menu
                     {
                         moveIndex = index - _audioAssetManager.CurrentCustom;
                     }
-                    ChangeAuidoAsync(_isPresetAudio, moveIndex, _cancellationToken).Forget();
+                    ChangeAudioAsync(moveIndex, _cancellationToken).Forget();
                     break;
             }
             _audioSourceService.PlayOneShot(0);
@@ -72,7 +73,7 @@ namespace UniLiveViewer.Menu
         public async UniTask StartAsync(CancellationToken cancellation)
         {
             _isPresetAudio = true;
-            _cancellationToken = this.GetCancellationTokenOnDestroy();
+            _cancellationToken = cancellation;
 
             //再生スライダーに最大値を設定
             slider_Playback.maxValuel = (float)_playableDirector.duration;
@@ -83,46 +84,110 @@ namespace UniLiveViewer.Menu
                 e.onTrigger += OpenJumplist;
             }
 
-            _playableDirector.played += Director_Played;
-            _playableDirector.stopped += Director_Stoped;
+            _playableDirector.played += OnPlayedDirector;
+            _playableDirector.stopped += OnStopedDirector;
             for (int i = 0; i < btn_Audio.Length; i++)
             {
-                btn_Audio[i].onTrigger += MoveIndex_Auido;
+                btn_Audio[i].onTrigger += OnClickMoveIndex;
             }
-            slider_Playback.Controled += OnUpdatePlaybackSlider;
-            slider_Playback.ValueUpdate += () =>
-            {
-                var sec = slider_Playback.Value;
-                _playableMusicService.AudioClipPlaybackTime = sec;//timelineに時間を反映
-                textMeshs[1].text = $"{((int)sec / 60):00}:{((int)sec % 60):00}";//テキストに反映
-            };
-            slider_Speed.ValueUpdate += () =>
-            {
-                _playableMusicService.TimelineSpeed = slider_Speed.Value;//スライダーの値を反映
-                textMeshs[3].text = $"{slider_Speed.Value:0.00}";//テキストに反映
-            };
-            btnS_Play.onTrigger += Click_AudioPlayer;
-            btnS_Stop.onTrigger += Click_AudioPlayer;
-            btnS_BaseReturn.onTrigger += Click_AudioPlayer;
+
+            slider_Playback.BeginDriveAsObservable
+                .Subscribe(_ => OnUpdatePlaybackSlider()).AddTo(this);
+            slider_Playback.ValueAsObservable
+                .DistinctUntilChanged()
+                .Subscribe(value => 
+                {
+                    textMeshs[1].text = $"{((int)value / 60):00}:{((int)value % 60):00}";
+                }).AddTo(this);
+
+            slider_Speed.ValueAsObservable
+                .Subscribe(value =>
+                {
+                    _playableMusicService.TimelineSpeed = value;
+                    textMeshs[3].text = $"{value:0.00}";
+                }).AddTo(this);
+            slider_Speed.Value = 1.0f;
+
+            btnS_Play.onTrigger += OnClickPlay;
+            btnS_Stop.onTrigger += OnClickStop;
+            btnS_BaseReturn.onTrigger += OnClickBaseReturn;
             for (int i = 0; i < _switchAudio.Length; i++)
             {
                 _switchAudio[i].isEnable = (i == 0);
-                _switchAudio[i].onTrigger += OnClickSwitchAudio;
+                _switchAudio[i].onTrigger += OnClickCategory;
             }
 
-            Init();
+            Initialize();
 
             //最初のアクターが生成されるのを待つ
             await UniTask.Delay(2000, cancellationToken: cancellation);
             BaseReturnAsync(cancellation).Forget();
+
+
+            void OnClickPlay(Button_Base btn)
+            {
+                _audioSourceService.PlayOneShot(0);
+                if (_playerHandsService.IsGrabbingSliderWithHands()) return;
+
+                PlayAsync(_cancellationToken).Forget();
+            }
+
+            void OnClickStop(Button_Base btn)
+            {
+                _audioSourceService.PlayOneShot(0);
+                if (_playerHandsService.IsGrabbingSliderWithHands()) return;
+
+                StopAsync(_cancellationToken).Forget();
+            }
+
+            void OnClickBaseReturn(Button_Base btn)
+            {
+                _audioSourceService.PlayOneShot(0);
+                if (_playerHandsService.IsGrabbingSliderWithHands()) return;
+
+                BaseReturnAsync(_cancellationToken).Forget();
+            }
+
+            void OnClickCategory(Button_Base btn)
+            {
+                var isPresetAudio = false;
+                if (_switchAudio[0] == btn)
+                {
+                    isPresetAudio = true;
+                    _switchAudio[0].isEnable = true;
+                    _switchAudio[1].isEnable = false;
+                }
+                else
+                {
+                    isPresetAudio = false;
+                    _switchAudio[0].isEnable = false;
+                    _switchAudio[1].isEnable = true;
+                }
+                _menuManager.jumpList.Close();
+                _audioSourceService.PlayOneShot(0);
+                ChangeCategoryAsync(isPresetAudio, 0, _cancellationToken).Forget();
+            }
+
+            void OnClickMoveIndex(Button_Base btn)
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    if (btn_Audio[i] != btn) continue;
+
+                    var moveIndex = i == 0 ? -1 : 1;
+                    ChangeAudioAsync(moveIndex, _cancellationToken).Forget();
+                    _audioSourceService.PlayOneShot(0);
+                    return;
+                }
+            }
         }
 
         void OnEnable()
         {
-            Init();
+            Initialize();
         }
 
-        async void Init()
+        async void Initialize()
         {
             if (_playableDirector.timeUpdateMode == DirectorUpdateMode.Manual)
             {
@@ -137,12 +202,8 @@ namespace UniLiveViewer.Menu
             //オーディオの長さ
             var sec = await _playableMusicService.CurrentAudioLengthAsync(true, _cancellationToken);
             textMeshs[2].text = $"{((int)sec / 60):00}:{((int)sec % 60):00}";
-            //タイムラインの速度を表示
-            slider_Speed.Value = _playableMusicService.TimelineSpeed;
-            textMeshs[3].text = $"{slider_Speed.Value:0.00}";
         }
 
-        // Update is called once per frame
         void Update()
         {
             //再生スライダー非制御中なら
@@ -150,6 +211,7 @@ namespace UniLiveViewer.Menu
             {
                 //TimeLine再生時間をスライダーにセット
                 var sec = (float)_playableMusicService.AudioClipPlaybackTime;
+                textMeshs[1].text = $"sec:{sec}";
                 slider_Playback.Value = sec;
                 textMeshs[1].text = $"{((int)sec / 60):00}:{((int)sec % 60):00}";
             }
@@ -171,74 +233,9 @@ namespace UniLiveViewer.Menu
         }
 
         /// <summary>
-        /// オーディオプレイヤーのクリック処理
-        /// </summary>
-        /// <param name="btn"></param>
-        void Click_AudioPlayer(Button_Base btn)
-        {
-            _audioSourceService.PlayOneShot(0);
-
-            //スライダー操作中は受け付けない
-            if (_playerHandsService.IsGrabbingSliderWithHands()) return;
-
-            if (btn == btnS_Stop)
-            {
-                var dummy = new CancellationToken();
-                StopAsync(dummy).Forget();
-            }
-            else if (btn == btnS_Play)
-            {
-                var dummy = new CancellationToken();
-                PlayAsync(dummy).Forget();
-            }
-            else if (btn == btnS_BaseReturn)
-            {
-                var dummy = new CancellationToken();
-                BaseReturnAsync(dummy).Forget();
-            }
-        }
-
-        void OnClickSwitchAudio(Button_Base btn)
-        {
-            if (_switchAudio[0] == btn)
-            {
-                _isPresetAudio = true;
-                _switchAudio[0].isEnable = true;
-                _switchAudio[1].isEnable = false;
-            }
-            else
-            {
-                _isPresetAudio = false;
-                _switchAudio[0].isEnable = false;
-                _switchAudio[1].isEnable = true;
-            }
-            _menuManager.jumpList.Close();
-            _audioSourceService.PlayOneShot(0);
-            ChangeAuidoAsync(_isPresetAudio, 0, _cancellationToken).Forget();
-        }
-
-        /// <summary>
-        /// 次オーディオに切り替える
-        /// </summary>
-        /// <param name="btn"></param>
-        void MoveIndex_Auido(Button_Base btn)
-        {
-            for (int i = 0; i < 2; i++)
-            {
-                if (btn_Audio[i] != btn) continue;
-
-                var moveIndex = i == 0 ? -1 : 1;
-                ChangeAuidoAsync(moveIndex, _cancellationToken).Forget();
-                _audioSourceService.PlayOneShot(0);
-                return;
-            }
-        }
-
-        /// <summary>
         /// オーディオを変更する
         /// </summary>
-        /// <param name="moveIndex"></param>
-        async UniTask ChangeAuidoAsync(int moveIndex, CancellationToken cancellation)
+        async UniTask ChangeAudioAsync(int moveIndex, CancellationToken cancellation)
         {
             var clipName = await _playableMusicService.NextAudioClip(_isPresetAudio, moveIndex, cancellation);
             await ChangeAuidoInternalAsync(clipName, cancellation);
@@ -247,9 +244,9 @@ namespace UniLiveViewer.Menu
         /// <summary>
         /// オーディオを変更する
         /// </summary>
-        /// <param name="moveIndex"></param>
-        async UniTask ChangeAuidoAsync(bool isPreset, int moveIndex, CancellationToken cancellation)
+        async UniTask ChangeCategoryAsync(bool isPreset, int moveIndex, CancellationToken cancellation)
         {
+            _isPresetAudio = isPreset;
             var clipName = await _playableMusicService.NextAudioClip(isPreset, moveIndex, cancellation);
             await ChangeAuidoInternalAsync(clipName, cancellation);
         }
@@ -270,13 +267,13 @@ namespace UniLiveViewer.Menu
             textMeshs[2].text = $"{((int)sec / 60):00}:{((int)sec % 60):00}";
         }
 
-        void Director_Played(PlayableDirector obj)
+        void OnPlayedDirector(PlayableDirector obj)
         {
             //停止表示
             //btnS_Stop.gameObject.SetActive(true);
             //btnS_Play.gameObject.SetActive(false);
         }
-        void Director_Stoped(PlayableDirector obj)
+        void OnStopedDirector(PlayableDirector obj)
         {
             //再生途中の一時停止は無視する
             if (_playableMusicService.AudioClipPlaybackTime > 0) return;
@@ -295,22 +292,6 @@ namespace UniLiveViewer.Menu
 
             var dummy = new CancellationToken();
             _playableMusicService.ManualModeAsync(dummy).Forget();
-        }
-
-        void DebugInput()
-        {
-            if (Input.GetKeyDown(KeyCode.U))
-            {
-                var dummy = new CancellationToken();
-                PlayAsync(dummy).Forget();
-            }
-            if (Input.GetKeyDown(KeyCode.I))
-            {
-                var dummy = new CancellationToken();
-                BaseReturnAsync(dummy).Forget();
-            }
-            if (Input.GetKeyDown(KeyCode.K)) ChangeAuidoAsync(1, _cancellationToken).Forget();
-            if (Input.GetKeyDown(KeyCode.J)) ChangeAuidoAsync(-1, _cancellationToken).Forget();
         }
 
         async UniTask PlayAsync(CancellationToken cancellation)
@@ -335,6 +316,21 @@ namespace UniLiveViewer.Menu
         {
             await _playableMusicService.BaseReturnAsync(cancellation);
         }
-    }
 
+        void DebugInput()
+        {
+            if (Input.GetKeyDown(KeyCode.U))
+            {
+                var dummy = new CancellationToken();
+                PlayAsync(dummy).Forget();
+            }
+            if (Input.GetKeyDown(KeyCode.I))
+            {
+                var dummy = new CancellationToken();
+                BaseReturnAsync(dummy).Forget();
+            }
+            if (Input.GetKeyDown(KeyCode.K)) ChangeAudioAsync(1, _cancellationToken).Forget();
+            if (Input.GetKeyDown(KeyCode.J)) ChangeAudioAsync(-1, _cancellationToken).Forget();
+        }
+    }
 }

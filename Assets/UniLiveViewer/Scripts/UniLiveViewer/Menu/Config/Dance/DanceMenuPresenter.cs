@@ -1,22 +1,37 @@
-﻿using VContainer;
+﻿using System;
+using UniRx;
+using VContainer;
 using VContainer.Unity;
 
 namespace UniLiveViewer.Menu.Config.Dance
 {
-    public class DanceMenuPresenter : IStartable
+    public class DanceMenuPresenter : IStartable, IDisposable
     {
-        readonly DanceMenuService _sceneSelectMenuService;
+        readonly DanceMenuSettings _settings;
+        readonly DanceMenuService _danceMenuService;
+        readonly CompositeDisposable _disposables = new();
 
         [Inject]
         public DanceMenuPresenter(
-            DanceMenuService sceneSelectMenuService)
+            DanceMenuSettings danceMenuSettings,
+            DanceMenuService danceMenuService)
         {
-            _sceneSelectMenuService = sceneSelectMenuService;
+            _settings = danceMenuSettings;
+            _danceMenuService = danceMenuService;
         }
 
         void IStartable.Start()
         {
-            _sceneSelectMenuService.Initialize();
+            _settings.VMDScaleSlider.EndDriveAsObservable
+                .Subscribe(_ => _danceMenuService.OnUnControledVMDScale()).AddTo(_disposables);
+            _settings.VMDScaleSlider.ValueAsObservable
+                .Subscribe(_danceMenuService.OnUpdateVMDScale).AddTo(_disposables);
+            _danceMenuService.Initialize();
+        }
+
+        void IDisposable.Dispose()
+        {
+            _disposables.Dispose();
         }
     }
 }

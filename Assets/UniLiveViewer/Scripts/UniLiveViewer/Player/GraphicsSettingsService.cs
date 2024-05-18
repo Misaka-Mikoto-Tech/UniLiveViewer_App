@@ -34,8 +34,6 @@ namespace UniLiveViewer.Player
             {
                 _bloom = bloom;
                 _bloom.active = FileReadAndWriteUtility.UserProfile.IsBloom;
-                Debug.LogWarning(FileReadAndWriteUtility.UserProfile.BloomThreshold);
-                Debug.LogWarning(FileReadAndWriteUtility.UserProfile.BloomIntensity);
                 _bloom.threshold.value = FileReadAndWriteUtility.UserProfile.BloomThreshold;
                 _bloom.intensity.value = FileReadAndWriteUtility.UserProfile.BloomIntensity;
             }

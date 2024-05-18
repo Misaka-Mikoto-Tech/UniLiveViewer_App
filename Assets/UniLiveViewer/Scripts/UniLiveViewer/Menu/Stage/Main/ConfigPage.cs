@@ -51,7 +51,8 @@ namespace UniLiveViewer.Menu
         public void OnStart()
         {
             _cancellation = this.GetCancellationTokenOnDestroy();
-            slider_Fog.ValueUpdate += () => { RenderSettings.fogDensity = slider_Fog.Value; };
+            slider_Fog.ValueAsObservable
+                .Subscribe(x => RenderSettings.fogDensity = x).AddTo(this);
         }
         void OnEnable()
         {

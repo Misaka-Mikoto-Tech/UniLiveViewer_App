@@ -1,10 +1,11 @@
-﻿using UniRx;
+﻿using System;
+using UniRx;
 using UnityEngine.Rendering.Universal;
 using VContainer;
 
 namespace UniLiveViewer.Menu.Config.Graphics
 {
-    public class GraphicsMenuService
+    public class GraphicsMenuService: IDisposable
     {
         const string Edge = "_Edge";
 
@@ -28,6 +29,7 @@ namespace UniLiveViewer.Menu.Config.Graphics
 
         readonly AudioSourceService _audioSourceService;
         readonly GraphicsMenuSettings _settings;
+        readonly CompositeDisposable _disposables = new();
 
         [Inject]
         public GraphicsMenuService(
@@ -49,13 +51,16 @@ namespace UniLiveViewer.Menu.Config.Graphics
                 button.onTrigger += OnClick;
             }
 
+            _settings.GraphicSlider[0].ValueAsObservable
+                .Subscribe(x => _bloomThreshold.Value = x).AddTo(_disposables);
+            _settings.GraphicSlider[1].ValueAsObservable
+                .Subscribe(x => _bloomIntensity.Value = x).AddTo(_disposables);
             _settings.GraphicSlider[0].Value = _bloomThreshold.Value;
             _settings.GraphicSlider[1].Value = _bloomIntensity.Value;
-            _settings.GraphicSlider[0].ValueUpdate += () => _bloomThreshold.Value = _settings.GraphicSlider[0].Value;
-            _settings.GraphicSlider[1].ValueUpdate += () => _bloomIntensity.Value = _settings.GraphicSlider[1].Value;
 
+            _settings.OutlineSlider.ValueAsObservable
+                .Subscribe(OnChangeOutline).AddTo(_disposables);
             _settings.OutlineSlider.Value = 0;
-            _settings.OutlineSlider.ValueUpdate += () => OnChangeOutline();
 
             _settings.OutlineMat.SetFloat(Edge, _settings.OutlineSlider.Value);
         }
@@ -84,14 +89,19 @@ namespace UniLiveViewer.Menu.Config.Graphics
             _audioSourceService.PlayOneShot(0);
         }
 
-        void OnChangeOutline()
+        void OnChangeOutline(float value)
         {
-            if (0 < _settings.OutlineSlider.Value)
+            if (0 < value)
             {
                 _settings.OutlineRender.SetActive(true);
-                _settings.OutlineMat.SetFloat(Edge, _settings.OutlineSlider.Value);
+                _settings.OutlineMat.SetFloat(Edge, value);
             }
             else _settings.OutlineRender.SetActive(false);
+        }
+
+        void IDisposable.Dispose()
+        {
+            _disposables.Dispose();
         }
     }
 }

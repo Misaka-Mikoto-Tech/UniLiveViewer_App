@@ -28,7 +28,6 @@ namespace UniLiveViewer.Timeline
             "Audio Track4"
         };
 
-        double _audioClipStartTime = 0;//セットされたaudioクリップの開始再生位置
         /// <summary>
         /// Timelineの再生速度
         /// </summary>
@@ -42,6 +41,24 @@ namespace UniLiveViewer.Timeline
             }
         }
         float _timelineSpeed;
+
+        //AudioClip基準の再生時間を算出
+        public double AudioClipPlaybackTime
+        {
+            get
+            {
+                _playbackTime = _playableDirector.time - _audioClipStartTime;//参考用
+                return _playbackTime;
+            }
+            // MEMO: Timeは外部Setすると事故る
+            private set
+            {
+                _playbackTime = value;
+                if (_playbackTime > _playableDirector.duration) _playbackTime = _playableDirector.duration;
+                _playableDirector.time = _audioClipStartTime + _playbackTime;//タイムラインに反映
+            }
+        }
+        double _audioClipStartTime = 0;//セットされたaudioクリップの開始再生位置
         double _playbackTime = 0.0f;
 
         readonly IPublisher<AllActorOperationMessage> _allPublisher;
@@ -89,22 +106,6 @@ namespace UniLiveViewer.Timeline
                 Debug.Log("メインオーディオが見つかりません");
             }
             await NextAudioClip(true, 0, cancellation);
-        }
-
-        //AudioClip基準の再生時間を算出
-        public double AudioClipPlaybackTime
-        {
-            get
-            {
-                _playbackTime = _playableDirector.time - _audioClipStartTime;//参考用
-                return _playbackTime;
-            }
-            set
-            {
-                _playbackTime = value;
-                if (_playbackTime > _playableDirector.duration) _playbackTime = _playableDirector.duration;
-                _playableDirector.time = _audioClipStartTime + _playbackTime;//タイムラインに反映
-            }
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System.Threading;
 using UniLiveViewer.Actor.Animation;
 using UniLiveViewer.Actor.AttachPoint;
@@ -16,7 +16,7 @@ namespace UniLiveViewer.Actor
 {
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(CapsuleCollider))]
-    [RequireComponent(typeof(OVRGrabbable_Custom))]
+    [RequireComponent(typeof(OVRGrabbableCustom))]
 
     public class ActorInstaller : IInstaller
     {
@@ -82,7 +82,7 @@ namespace UniLiveViewer.Actor
 
         [SerializeField] Rigidbody _rigidbody;
         [SerializeField] CapsuleCollider _collider;
-        [SerializeField] OVRGrabbable_Custom _ovrGrabbable;
+        [SerializeField] OVRGrabbableCustom _ovrGrabbable;
         [SerializeField] AudioSourceService _audioSourceService;
 
         [Header("-----------")]

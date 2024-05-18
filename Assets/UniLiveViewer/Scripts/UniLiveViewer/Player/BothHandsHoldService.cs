@@ -15,9 +15,9 @@ namespace UniLiveViewer.Player
         /// <summary>
         /// inspectorで両手確認用
         /// </summary>
-        OVRGrabbable_Custom[] _bothHandsCandidate = new OVRGrabbable_Custom[2];
+        OVRGrabbableCustom[] _bothHandsCandidate = new OVRGrabbableCustom[2];
         //両手で掴む
-        OVRGrabbable_Custom _bothHandsGrabObj;
+        OVRGrabbableCustom _bothHandsGrabObj;
         Vector3 _initBothHandsDistance;
         Transform _bothHandsCenterAnchor;
 
