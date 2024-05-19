@@ -8,34 +8,38 @@ using VContainer.Unity;
 
 namespace UniLiveViewer.Actor.AttachPoint
 {
-    public class AttachPointPresenter : IStartable, ITickable, IDisposable
+    public class AttachPointPresenter : IStartable, IDisposable
     {
+        readonly ISubscriber<AllActorOperationMessage> _operationMessageSubscriber;
         readonly ISubscriber<AttachPointMessage> _subscriber;
-        readonly IActorEntity _actorEntity;
+
         readonly AttachPointService _attachPointService;
 
         readonly CompositeDisposable _disposables = new();
 
         [Inject]
         public AttachPointPresenter(
+            ISubscriber<AllActorOperationMessage> operationMessageSubscriber,
             ISubscriber<AttachPointMessage> subscriber,
-            IActorEntity actorEntity,
             AttachPointService attachPointService)
         {
+            _operationMessageSubscriber = operationMessageSubscriber;
             _subscriber = subscriber;
-            _actorEntity = actorEntity;
             _attachPointService = attachPointService;
         }
 
         void IStartable.Start()
         {
             _subscriber.Subscribe(x => _attachPointService.SetActive(x.IsActive)).AddTo(_disposables);
-        }
 
-        void ITickable.Tick()
-        {
-            if (!_actorEntity.Active().Value) return;
-            _attachPointService.OnTick();
+            _operationMessageSubscriber
+                .Subscribe(x => 
+                {
+                    if(x.ActorCommand == ActorCommand.TIMELINE_PLAY)
+                    {
+                        _attachPointService.OnPlayTimeline();
+                    }
+                }).AddTo(_disposables);
         }
 
         void IDisposable.Dispose()

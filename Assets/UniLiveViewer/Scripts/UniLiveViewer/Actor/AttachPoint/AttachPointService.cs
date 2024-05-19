@@ -196,9 +196,10 @@ namespace UniLiveViewer.Actor.AttachPoint
         }
 
         /// <summary>
-        /// TODO:これ常時リセット走っちゃうだめだ、握り数どこかで保持しておかないと
+        /// TODO: 本当は奪い取ったタイミングで手を開きたいが現状厳しいので
+        /// timeline再生タイミングで全員開閉チェックしている（どうせ多分インタラクション変える
         /// </summary>
-        public void OnTick()
+        public void OnPlayTimeline()
         {
             foreach (var ap in _attachPoints)
             {
@@ -207,7 +208,7 @@ namespace UniLiveViewer.Actor.AttachPoint
                 {
                     // LS化しないと解除判定ムズイので強引に常時0チェック
                     if (ap.transform.childCount != 0) continue;
-                    //_playableAnimationClipService.SetHandAnimation(ap.InstanceId, ap.HumanBodyBones, false);
+                    _playableAnimationClipService.SetHandAnimation(ap.InstanceId, ap.HumanBodyBones, false);
                 }
             }
         }
