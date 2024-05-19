@@ -21,5 +21,8 @@ namespace UniLiveViewer.Menu.Config.Actor
 
         public TextMesh FallingShadowText => _fallingShadowText;
         [SerializeField] TextMesh _fallingShadowText;
+
+        public TextMesh FallingShadowValueText => _fallingShadowValueText;
+        [SerializeField] TextMesh _fallingShadowValueText;
     }
 }

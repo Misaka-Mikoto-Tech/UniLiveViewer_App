@@ -75,7 +75,7 @@ namespace UniLiveViewer.Menu.Config.Actor
         public void OnUpdateFallingShadow(float value)
         {
             _quasiShadowSetting.SetShadowScale(value);
-            _settings.FallingShadowText.text = $"{value:0.00}";
+            _settings.FallingShadowValueText.text = $"{value:0.00}";
         }
 
         public void OnUnControledFallingShadow()

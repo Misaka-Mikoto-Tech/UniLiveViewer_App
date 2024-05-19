@@ -50,7 +50,10 @@ namespace UniLiveViewer
         public bool IsGrabbed => _isGrabbed;
         bool _isGrabbed = false;
 
-        Vector3 _nextHandllocalPos;
+        /// <summary>
+        /// Awake前にValue変更されることがある
+        /// </summary>
+        Vector3 _nextHandllocalPos = Vector3.zero;
         Vector3 _axis = Vector3.zero;
         float _handleMaxRangeX = 0;
         float _coefficient;
@@ -65,24 +68,41 @@ namespace UniLiveViewer
             set
             {
                 _value = Mathf.Clamp(value, minValuel, maxValuel);
-                _nextHandllocalPos.x = _handleMaxRangeX * _value / maxValuel;
-                visibleHandler.localPosition = startAnchor.localPosition + _nextHandllocalPos;
-
                 _valueStream.OnNext(_value);
             }
+        }
+
+        /// <summary>
+        /// 掴み操作以外で動かす必要があるケースで利用
+        /// NOTE: 通知すると無限ループに陥る
+        /// </summary>
+        public void NotNotifyChangeValue(float value)
+        {
+            _value = Mathf.Clamp(value, minValuel, maxValuel);
         }
 
         void Awake()
         {
             _handleMaxRangeX = endAnchor.localPosition.x - startAnchor.localPosition.x;
 
-            _nextHandllocalPos.x = 0;
-            visibleHandler.localPosition = startAnchor.localPosition + _nextHandllocalPos;
-
             unVisibleHandler.GrabBeginAsObservable
                 .Subscribe(OnGrab).AddTo(this);
             unVisibleHandler.GrabEndAsObservable
                 .Subscribe(OnRelease).AddTo(this);
+
+            void OnGrab(OVRGrabbable grabbable)
+            {
+                if (_isGrabbed) return;
+                InitializationOnGrab();
+                _beginDriveStream.OnNext(Unit.Default);
+            }
+
+            void OnRelease(OVRGrabbable grabbable)
+            {
+                if (!_isGrabbed) return;
+                InitializationOnRelease();
+                _endDriveStream.OnNext(Unit.Default);
+            }
         }
 
         void OnEnable()
@@ -101,20 +121,6 @@ namespace UniLiveViewer
             InitializationOnRelease();
             //係数決定
             _coefficient = maxValuel / minStepValuel / 2;
-        }
-
-        void OnGrab(OVRGrabbable grabbable)
-        {
-            if (_isGrabbed) return;
-            InitializationOnGrab();
-            _beginDriveStream.OnNext(Unit.Default);
-        }
-
-        void OnRelease(OVRGrabbable grabbable)
-        {
-            if (!_isGrabbed) return;
-            InitializationOnRelease();
-            _endDriveStream.OnNext(Unit.Default);
         }
 
         /// <summary>
@@ -142,7 +148,7 @@ namespace UniLiveViewer
             //捕まれていなかったら異常
             if (!unVisibleHandler.isGrabbed)
             {
-                Debug.LogError("スライダーは掴まれていない");
+                Debug.LogError("slider not grabbed.");
                 return;
             }
 
@@ -177,6 +183,7 @@ namespace UniLiveViewer
         void Update()
         {
             if (_isGrabbed) UpdateByPlayerGrab();
+            UpdateSliderPosition();
         }
 
         /// <summary>
@@ -203,6 +210,12 @@ namespace UniLiveViewer
                 var touch = _isGrabbedByLeftHand ? OVRInput.Controller.LTouch : OVRInput.Controller.RTouch;
                 ControllerVibration.Execute(touch, 1, 0.4f, 0.05f);
             }
+        }
+
+        void UpdateSliderPosition()
+        {
+            _nextHandllocalPos.x = _handleMaxRangeX * _value / maxValuel;
+            visibleHandler.localPosition = startAnchor.localPosition + _nextHandllocalPos;
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UniLiveViewer.OVRCustom;
 using UnityEngine;
 using VContainer;
@@ -15,9 +15,9 @@ namespace UniLiveViewer.Player
         /// <summary>
         /// inspectorで両手確認用
         /// </summary>
-        OVRGrabbableCustom[] _bothHandsCandidate = new OVRGrabbableCustom[2];
+        OVRGrabbable[] _bothHandsCandidate = new OVRGrabbable[2];
         //両手で掴む
-        OVRGrabbableCustom _bothHandsGrabObj;
+        OVRGrabbable _bothHandsGrabObj;
         Vector3 _initBothHandsDistance;
         Transform _bothHandsCenterAnchor;
 

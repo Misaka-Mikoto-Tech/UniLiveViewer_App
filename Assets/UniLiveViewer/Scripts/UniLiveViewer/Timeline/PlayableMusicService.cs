@@ -50,9 +50,10 @@ namespace UniLiveViewer.Timeline
                 _playbackTime = _playableDirector.time - _audioClipStartTime;//参考用
                 return _playbackTime;
             }
-            // MEMO: Timeは外部Setすると事故る
-            private set
+            //変更時はマニュアルモードにすること
+            set
             {
+                if (_playableDirector.timeUpdateMode != DirectorUpdateMode.Manual) return;
                 _playbackTime = value;
                 if (_playbackTime > _playableDirector.duration) _playbackTime = _playableDirector.duration;
                 _playableDirector.time = _audioClipStartTime + _playbackTime;//タイムラインに反映
@@ -129,6 +130,17 @@ namespace UniLiveViewer.Timeline
         }
 
         /// <summary>
+        /// 再生位置を初期化する
+        /// </summary>
+        public async UniTask BaseReturnAsync(CancellationToken cancellation)
+        {
+            _playableDirector.StopTimeline();
+
+            await ManualModeAsync(cancellation);
+            AudioClipPlaybackTime = 0;
+        }
+
+        /// <summary>
         /// マニュアル状態にする
         /// </summary>
         public async UniTask ManualModeAsync(CancellationToken cancellation)
@@ -148,23 +160,14 @@ namespace UniLiveViewer.Timeline
         }
 
         /// <summary>
-        /// 再生位置を初期化する
-        /// </summary>
-        public async UniTask BaseReturnAsync(CancellationToken cancellation)
-        {
-            _playableDirector.StopTimeline();
-            AudioClipPlaybackTime = 0;
-
-            await ManualModeAsync(cancellation);
-        }
-
-        /// <summary>
         /// 一定間隔でマニュアルモードで更新を行う
         /// </summary>
         /// <returns></returns>
         async UniTask ManualUpdateAsync(CancellationToken cancellation)
         {
             var keepVal = AudioClipPlaybackTime;
+
+            _playableDirector.Evaluate();//一度反映しておく
 
             while (_playableDirector.timeUpdateMode == DirectorUpdateMode.Manual)
             {

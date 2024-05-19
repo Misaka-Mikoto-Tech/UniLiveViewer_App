@@ -1,7 +1,6 @@
 ﻿using MessagePipe;
 using System;
 using UniLiveViewer.MessagePipe;
-using UniLiveViewer.OVRCustom;
 using UniRx;
 using UnityEngine.Playables;
 using VContainer;
@@ -142,14 +141,13 @@ namespace UniLiveViewer.Player.HandMenu
         /// <summary>
         /// 握っている間のみ購読
         /// </summary>
-        /// <param name="ovrGrabbableCustom"></param>
-        void OnChangeGrabbedObj(OVRGrabbableCustom ovrGrabbableCustom)
+        void OnChangeGrabbedObj(OVRGrabbable ovrGrabbable)
         {
-            if (ovrGrabbableCustom == null)
+            if (ovrGrabbable == null)
             {
                 _serialDisposable.Disposable = null;
             }
-            else if (ovrGrabbableCustom.TryGetComponent<Actor.ActorLifetimeScope>(out var actor))
+            else if (ovrGrabbable.TryGetComponent<Actor.ActorLifetimeScope>(out var actor))
             {
                 var actorEntity = actor.Container.Resolve<Actor.IActorEntity>();
                 // TODO: ActorResizeMessageを直で購読してないのは

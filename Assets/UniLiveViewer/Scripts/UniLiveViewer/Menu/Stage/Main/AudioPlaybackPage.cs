@@ -97,7 +97,9 @@ namespace UniLiveViewer.Menu
                 .DistinctUntilChanged()
                 .Subscribe(value => 
                 {
-                    textMeshs[1].text = $"{((int)value / 60):00}:{((int)value % 60):00}";
+                    _playableMusicService.AudioClipPlaybackTime = value;
+                    var sec = _playableMusicService.AudioClipPlaybackTime;
+                    textMeshs[1].text = $"{((int)sec / 60):00}:{((int)sec % 60):00}";
                 }).AddTo(this);
 
             slider_Speed.ValueAsObservable
@@ -211,8 +213,7 @@ namespace UniLiveViewer.Menu
             {
                 //TimeLine再生時間をスライダーにセット
                 var sec = (float)_playableMusicService.AudioClipPlaybackTime;
-                textMeshs[1].text = $"sec:{sec}";
-                slider_Playback.Value = sec;
+                slider_Playback.NotNotifyChangeValue(sec);
                 textMeshs[1].text = $"{((int)sec / 60):00}:{((int)sec % 60):00}";
             }
 #if UNITY_EDITOR
