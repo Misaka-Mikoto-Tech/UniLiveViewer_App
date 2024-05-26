@@ -8,12 +8,4 @@ namespace UniLiveViewer
         BGM,
         SETTING
     }
-
-    public enum LanguageType
-    {
-        NULL,
-        JP,
-        EN,
-        KO//未使用
-    }
 }

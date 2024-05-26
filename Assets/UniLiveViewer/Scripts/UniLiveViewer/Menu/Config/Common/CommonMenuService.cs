@@ -6,16 +6,19 @@ namespace UniLiveViewer.Menu.Config.Common
 {
     public class CommonMenuService
     {
+        readonly SystemSettingsService _systemSettingsService;
         readonly CommonMenuSettings _settings;
         readonly PassthroughService _passthroughService;
         readonly AudioSourceService _audioSourceService;
 
         [Inject]
         public CommonMenuService(
+            SystemSettingsService systemSettingsService,
             CommonMenuSettings settings,
             PassthroughService passthroughService,
             AudioSourceService audioSourceService)
         {
+            _systemSettingsService = systemSettingsService;
             _settings = settings;
             _passthroughService = passthroughService;
             _audioSourceService = audioSourceService;
@@ -28,6 +31,17 @@ namespace UniLiveViewer.Menu.Config.Common
 
             _settings.PassthroughButton.onTrigger += OnChangePassthrough;
             _settings.VibrationButton.onTrigger += OnChangeControllerVibration;
+
+            _settings.EnglishButton.onTrigger += (btn) => 
+            {
+                _systemSettingsService.Change(SystemLanguage.English);
+                _audioSourceService.PlayOneShot(0);
+            };
+            _settings.JapaneseButton.onTrigger += (btn) =>
+            {
+                _systemSettingsService.Change(SystemLanguage.Japanese);
+                _audioSourceService.PlayOneShot(0);
+            };
         }
 
         void OnChangePassthrough(Button_Base button_Base)

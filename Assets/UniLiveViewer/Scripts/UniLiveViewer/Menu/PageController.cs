@@ -1,61 +1,54 @@
 ﻿using Cysharp.Threading.Tasks;
 using System;
 using System.Threading;
+using UniRx;
 using UnityEngine;
 
 namespace UniLiveViewer.Menu
 {
     public class PageController : MonoBehaviour
     {
-        public event Action onSwitchPage;
-        [Header("＜ページ・タブボタン＞")]
-        [SerializeField] Button_Switch[] btnTab;
-        [SerializeField] Transform[] pageAnchor;
-        public Button_Switch[] BtnTab => btnTab;
-        public Transform[] GetPageAnchor => pageAnchor;
+        public Button_Switch[] BtnTab => _btnTab;
+        [SerializeField] Button_Switch[] _btnTab;
+        public Transform[] GetPageAnchor => _pageAnchor;
+        [SerializeField] Transform[] _pageAnchor;
 
-        CancellationToken cancellation_token;
-        public int current { get; private set; }
-        public Transform GetCurrentPage() { return pageAnchor[current]; } 
+        [SerializeField] AudioSourceService _audioSourceService;
 
-        /// <summary>
-        /// TODO: Serviceに代替したい
-        /// </summary>
-        [Header("＜Sound＞")]
-        [SerializeField] AudioClip[] Sound;//ボタン音
-        AudioSource audioSource;
+        public IObservable<Unit> ChangePageAsObservable => _changePageStream;
+        readonly Subject<Unit> _changePageStream = new();
+        
+        public int Current { get; private set; }
+        public Transform GetCurrentPageAnchor() { return _pageAnchor[Current]; } 
 
+        CancellationToken _cancellationToken;
 
         void Awake()
         {
-            audioSource = GetComponent<AudioSource>();
-            audioSource.volume = SystemInfo.soundVolume_SE;
-            audioSource.enabled = false;
-
+            _audioSourceService.enabled = false;
             DelayAudioSource().Forget();
         }
 
         async UniTask DelayAudioSource()
         {
             await UniTask.Delay(1000);
-            audioSource.enabled = true;
+            _audioSourceService.enabled = true;
         }
 
-        // Start is called before the first frame update
         void Start()
         {
-            if (btnTab.Length != pageAnchor.Length)
+            if (_btnTab.Length != _pageAnchor.Length)
             {
-                Debug.LogError("ページとボタン数が一致しません");
+                Debug.LogError("Page and number of buttons do not match.");
                 return;
             }
 
-            for (int i = 0; i < btnTab.Length; i++)
+            for (int i = 0; i < _btnTab.Length; i++)
             {
-                btnTab[i].onTrigger += SwitchCurrent;
+                _btnTab[i].onTrigger += SwitchCurrent;
             }
 
-            cancellation_token = this.GetCancellationTokenOnDestroy();
+            _cancellationToken = this.GetCancellationTokenOnDestroy();
 
             SwitchPages();
         }
@@ -67,14 +60,14 @@ namespace UniLiveViewer.Menu
         void SwitchCurrent(Button_Base btn)
         {
             //タブのボタン状態を更新する
-            for (int i = 0; i < btnTab.Length; i++)
+            for (int i = 0; i < _btnTab.Length; i++)
             {
-                if (btnTab[i] != btn) continue;
-                current = i;
+                if (_btnTab[i] != btn) continue;
+                Current = i;
                 break;
             }
             //クリック音
-            audioSource.PlayOneShot(Sound[0]);
+            _audioSourceService.PlayOneShot(0);
 
             SwitchPages();
         }
@@ -85,34 +78,34 @@ namespace UniLiveViewer.Menu
         void SwitchPages()
         {
             //カレントページのタブボタンが非表示の場合別ページへ
-            if (!btnTab[current].gameObject.activeSelf)
+            if (!_btnTab[Current].gameObject.activeSelf)
             {
-                for (int i = 0; i < btnTab.Length; i++)
+                for (int i = 0; i < _btnTab.Length; i++)
                 {
-                    if (!btnTab[i]) continue;
-                    if (!btnTab[i].gameObject.activeSelf) continue;
-                    current = i;
+                    if (!_btnTab[i]) continue;
+                    if (!_btnTab[i].gameObject.activeSelf) continue;
+                    Current = i;
                     break;
                 }
             }
 
             //ページ切り替え
-            bool b = false;
-            for (int i = 0; i < btnTab.Length; i++)
+            var isEnable = false;
+            for (int i = 0; i < _btnTab.Length; i++)
             {
-                if (!btnTab[i]) continue;
-                b = current == i;
-                btnTab[i].isEnable = b;
-                if (pageAnchor[i].gameObject.activeSelf != b) pageAnchor[i].gameObject.SetActive(b);
+                if (!_btnTab[i]) continue;
+                isEnable = Current == i;
+                _btnTab[i].isEnable = isEnable;
+                if (_pageAnchor[i].gameObject.activeSelf != isEnable) _pageAnchor[i].gameObject.SetActive(isEnable);
             }
 
-            onSwitchPage?.Invoke();
+            _changePageStream.OnNext(Unit.Default);
 
             UniTask.Void(async () =>
             {
-                await UniTask.Delay(400, cancellationToken: cancellation_token);
+                await UniTask.Delay(400, cancellationToken: _cancellationToken);
                 //ボタンの揺れ音
-                audioSource.PlayOneShot(Sound[1]);
+                _audioSourceService.PlayOneShot(1);
             });
         }
 
@@ -133,9 +126,9 @@ namespace UniLiveViewer.Menu
         {
             if (Input.GetKeyDown(KeyCode.T))
             {
-                current++;
-                if (current >= pageAnchor.Length) current = 0;
-                audioSource.PlayOneShot(Sound[0]);
+                Current++;
+                if (Current >= _pageAnchor.Length) Current = 0;
+                _audioSourceService.PlayOneShot(0);
                 SwitchPages();
             }
         }

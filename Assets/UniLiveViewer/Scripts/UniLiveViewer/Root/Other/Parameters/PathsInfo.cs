@@ -1,4 +1,5 @@
 using System.IO;
+using UnityEngine;
 
 namespace UniLiveViewer
 {
@@ -53,12 +54,17 @@ namespace UniLiveViewer
             return DownloadFolderPath;
         }
 
-        public static string GetFullPath_README(LanguageType language)
+        public static string GetFullPath_README(SystemLanguage systemLanguage)
         {
-            if (language == LanguageType.EN) return Path.Combine(AppFolderPath + "/", readme_en);
-            else if (language == LanguageType.JP) return Path.Combine(AppFolderPath + "/", readme_ja);
-            else return "";
+            var languageIndex = systemLanguage.ToResourceIndex();
+            return languageIndex switch
+            {
+                0 => Path.Combine(AppFolderPath + "/", readme_en),
+                1 => Path.Combine(AppFolderPath + "/", readme_ja),
+                _ => "",
+            };
         }
+
         public static string GetFullPath_DEFECT()
         {
             return Path.Combine(AppFolderPath + "/", defect);

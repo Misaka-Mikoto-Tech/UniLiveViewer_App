@@ -11,7 +11,8 @@ namespace UniLiveViewer
             builder.Register<SceneChangeService>(Lifetime.Singleton);
             builder.Register<FileAccessManager>(Lifetime.Singleton);
 
-            builder.RegisterEntryPoint<SystemSettingPresenter>();
+            builder.Register<SystemSettingsService>(Lifetime.Singleton);
+            builder.RegisterEntryPoint<SystemSettingsPresenter>();
         }
     }
 }

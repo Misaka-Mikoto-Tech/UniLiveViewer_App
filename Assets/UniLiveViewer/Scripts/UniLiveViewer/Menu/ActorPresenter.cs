@@ -169,7 +169,6 @@ namespace UniLiveViewer.Menu
                 var actor = await _actorEntityManager.ActiveVRMAsync(index, cancellation);
                 if (actor == null) return;
 
-
                 // AddToは挙動異なるのでNG
                 _serialDisposable.Disposable = actor.ActorEntity()
                     .Where(x => x != null)

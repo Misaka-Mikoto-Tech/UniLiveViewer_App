@@ -14,27 +14,24 @@ namespace UniLiveViewer.Menu
     /// </summary>
     public class ConfigPage : MonoBehaviour
     {
-        [SerializeField] private MenuManager menuManager;
-
         [Header("＜シーン別＞")]
         [SerializeField] SceneMenuAnchor[] _sceneAnchor;
-        Button_Base[] btnE = new Button_Base[5];
-        [SerializeField] Transform[] btnE_ActionParent;
+        Button_Base[] _stageEventButton = new Button_Base[5];
+        [SerializeField] Transform[] _actionParentButton;
 
         [Header("＜KAGURALive専用＞")]
-        [SerializeField] SliderGrabController slider_Fog = null;
+        [SerializeField] SliderGrabController _fogSlider;
 
         [Header("＜ViewerScene専用＞")]
-        [SerializeField] TextMesh[] textMeshs_Viewer = new TextMesh[4];
+        [SerializeField] TextMesh[] _viewerTextMeshs = new TextMesh[4];
 
         [Header("＜Gym専用＞")]
-        [SerializeField] TextMesh[] textMeshs_Gym = new TextMesh[1];
-
+        [SerializeField] TextMesh[] _gymTextMeshs = new TextMesh[1];
 
         public IObservable<int> StageLightIndexAsObservable => _stageLightIndex;
-        Subject<int> _stageLightIndex = new Subject<int>();
+        readonly Subject<int> _stageLightIndex = new();
         public IObservable<bool> StageLightIsWhiteAsObservable => _stageLightIsWhite;
-        Subject<bool> _stageLightIsWhite = new Subject<bool>();
+        readonly Subject<bool> _stageLightIsWhite = new();
 
         Material _matMirrore;//LiveScene用
         BackGroundController _backGroundCon;
@@ -51,7 +48,7 @@ namespace UniLiveViewer.Menu
         public void OnStart()
         {
             _cancellation = this.GetCancellationTokenOnDestroy();
-            slider_Fog.ValueAsObservable
+            _fogSlider.ValueAsObservable
                 .Subscribe(x => RenderSettings.fogDensity = x).AddTo(this);
         }
         void OnEnable()
@@ -63,7 +60,6 @@ namespace UniLiveViewer.Menu
         {
             // Title分を除外で-1
             var current = (int)SceneChangeService.GetSceneType - 1;
-
 
             //シーン応じて有効化を切り替える
             for (int i = 0; i < _sceneAnchor.Length; i++)
@@ -83,64 +79,64 @@ namespace UniLiveViewer.Menu
                 //シーン別専用ボタンの割り当て
                 for (int i = 0; i < 5; i++)
                 {
-                    btnE[i] = _sceneAnchor[current].transform.GetChild(i).GetComponent<Button_Base>();
+                    _stageEventButton[i] = _sceneAnchor[current].transform.GetChild(i).GetComponent<Button_Base>();
                 }
 
-                btnE_ActionParent = new Transform[5];
+                _actionParentButton = new Transform[5];
 
-                btnE_ActionParent[0] = GameObject.FindGameObjectWithTag("Particle").transform;
-                btnE_ActionParent[1] = GameObject.FindGameObjectWithTag("LaserGun").transform;
-                btnE_ActionParent[2] = GameObject.FindGameObjectWithTag("FloorMirror").transform;
-                btnE_ActionParent[3] = GameObject.FindGameObjectWithTag("SonicBoom").transform;
-                btnE_ActionParent[4] = GameObject.FindGameObjectWithTag("ManualUI").transform;
+                _actionParentButton[0] = GameObject.FindGameObjectWithTag("Particle").transform;
+                _actionParentButton[1] = GameObject.FindGameObjectWithTag("LaserGun").transform;
+                _actionParentButton[2] = GameObject.FindGameObjectWithTag("FloorMirror").transform;
+                _actionParentButton[3] = GameObject.FindGameObjectWithTag("SonicBoom").transform;
+                _actionParentButton[4] = GameObject.FindGameObjectWithTag("ManualUI").transform;
 
-                _matMirrore = btnE_ActionParent[2].GetComponent<MeshRenderer>().material;
+                _matMirrore = _actionParentButton[2].GetComponent<MeshRenderer>().material;
 
-                btnE_ActionParent[0].gameObject.SetActive(FileReadAndWriteUtility.UserProfile.scene_crs_particle);
-                btnE_ActionParent[1].gameObject.SetActive(FileReadAndWriteUtility.UserProfile.scene_crs_laser);
+                _actionParentButton[0].gameObject.SetActive(FileReadAndWriteUtility.UserProfile.scene_crs_particle);
+                _actionParentButton[1].gameObject.SetActive(FileReadAndWriteUtility.UserProfile.scene_crs_laser);
                 _matMirrore.SetFloat("_Smoothness", FileReadAndWriteUtility.UserProfile.scene_crs_reflection ? 1 : 0);
-                btnE_ActionParent[3].gameObject.SetActive(FileReadAndWriteUtility.UserProfile.scene_crs_sonic);
-                btnE_ActionParent[4].gameObject.SetActive(FileReadAndWriteUtility.UserProfile.scene_crs_manual);
+                _actionParentButton[3].gameObject.SetActive(FileReadAndWriteUtility.UserProfile.scene_crs_sonic);
+                _actionParentButton[4].gameObject.SetActive(FileReadAndWriteUtility.UserProfile.scene_crs_manual);
             }
             else if (SceneChangeService.GetSceneType == SceneType.KAGURA_LIVE)
             {
                 //シーン別専用ボタンの割り当て
                 for (int i = 0; i < 3; i++)
                 {
-                    btnE[i] = _sceneAnchor[current].transform.GetChild(i).GetComponent<Button_Base>();
+                    _stageEventButton[i] = _sceneAnchor[current].transform.GetChild(i).GetComponent<Button_Base>();
                 }
 
-                btnE_ActionParent = new Transform[3];
+                _actionParentButton = new Transform[3];
 
-                btnE_ActionParent[0] = GameObject.FindGameObjectWithTag("Particle").transform;
-                btnE_ActionParent[1] = GameObject.FindGameObjectWithTag("ReflectionProbe").transform;
-                btnE_ActionParent[2] = GameObject.FindGameObjectWithTag("WaterAnchor").transform;
+                _actionParentButton[0] = GameObject.FindGameObjectWithTag("Particle").transform;
+                _actionParentButton[1] = GameObject.FindGameObjectWithTag("ReflectionProbe").transform;
+                _actionParentButton[2] = GameObject.FindGameObjectWithTag("WaterAnchor").transform;
 
-                btnE_ActionParent[0].gameObject.SetActive(FileReadAndWriteUtility.UserProfile.scene_kagura_particle);
-                btnE_ActionParent[1].gameObject.SetActive(FileReadAndWriteUtility.UserProfile.scene_kagura_sea);
-                btnE_ActionParent[2].transform.GetChild(0).gameObject.SetActive(FileReadAndWriteUtility.UserProfile.scene_kagura_reflection);
+                _actionParentButton[0].gameObject.SetActive(FileReadAndWriteUtility.UserProfile.scene_kagura_particle);
+                _actionParentButton[1].gameObject.SetActive(FileReadAndWriteUtility.UserProfile.scene_kagura_sea);
+                _actionParentButton[2].transform.GetChild(0).gameObject.SetActive(FileReadAndWriteUtility.UserProfile.scene_kagura_reflection);
             }
             else if (SceneChangeService.GetSceneType == SceneType.VIEWER)
             {
                 //シーン別専用ボタンの割り当て
                 for (int i = 0; i < 1; i++)
                 {
-                    btnE[i] = _sceneAnchor[current].transform.GetChild(i).GetComponent<Button_Base>();
+                    _stageEventButton[i] = _sceneAnchor[current].transform.GetChild(i).GetComponent<Button_Base>();
                 }
 
-                btnE_ActionParent = new Transform[1];
+                _actionParentButton = new Transform[1];
 
-                btnE_ActionParent[0] = GameObject.FindGameObjectWithTag("FloorLED").transform;
+                _actionParentButton[0] = GameObject.FindGameObjectWithTag("FloorLED").transform;
                 _backGroundCon = GameObject.FindGameObjectWithTag("BackGroundController").GetComponent<BackGroundController>();
 
-                btnE_ActionParent[0].gameObject.SetActive(FileReadAndWriteUtility.UserProfile.scene_view_led);
+                _actionParentButton[0].gameObject.SetActive(FileReadAndWriteUtility.UserProfile.scene_view_led);
             }
             else if (SceneChangeService.GetSceneType == SceneType.GYMNASIUM)
             {
                 //シーン別専用ボタンの割り当て
                 for (int i = 0; i < 2; i++)
                 {
-                    btnE[i] = _sceneAnchor[current].transform.GetChild(i).GetComponent<Button_Base>();
+                    _stageEventButton[i] = _sceneAnchor[current].transform.GetChild(i).GetComponent<Button_Base>();
                 }
             }
             else if (SceneChangeService.GetSceneType == SceneType.FANTASY_VILLAGE)
@@ -148,14 +144,14 @@ namespace UniLiveViewer.Menu
                 //シーン別専用ボタンの割り当て
                 for (int i = 0; i < 1; i++)
                 {
-                    btnE[i] = _sceneAnchor[current].transform.GetChild(i).GetComponent<Button_Base>();
+                    _stageEventButton[i] = _sceneAnchor[current].transform.GetChild(i).GetComponent<Button_Base>();
                 }
-                btnE_ActionParent = new Transform[1];
-                btnE_ActionParent[0] = GameObject.FindGameObjectWithTag("MainLight").transform;
+                _actionParentButton = new Transform[1];
+                _actionParentButton[0] = GameObject.FindGameObjectWithTag("MainLight").transform;
             }
 
             //値の更新
-            slider_Fog.Value = 0.03f;
+            _fogSlider.Value = 0.03f;
         }
 
         async UniTaskVoid Init()
@@ -166,42 +162,42 @@ namespace UniLiveViewer.Menu
             if (type == SceneType.CANDY_LIVE)
             {
                 //各種有効化状態にボタンを合わせる
-                btnE[0].isEnable = btnE_ActionParent[0].gameObject.activeSelf;
-                btnE[1].isEnable = btnE_ActionParent[1].gameObject.activeSelf;
-                btnE[3].isEnable = btnE_ActionParent[3].gameObject.activeSelf;
-                btnE[4].isEnable = btnE_ActionParent[4].gameObject.activeSelf;
+                _stageEventButton[0].isEnable = _actionParentButton[0].gameObject.activeSelf;
+                _stageEventButton[1].isEnable = _actionParentButton[1].gameObject.activeSelf;
+                _stageEventButton[3].isEnable = _actionParentButton[3].gameObject.activeSelf;
+                _stageEventButton[4].isEnable = _actionParentButton[4].gameObject.activeSelf;
 
                 //反射状態に合わせる
-                btnE[2].isEnable = (_matMirrore.GetFloat("_Smoothness") == 1.0f ? true : false);
+                _stageEventButton[2].isEnable = (_matMirrore.GetFloat("_Smoothness") == 1.0f ? true : false);
             }
             else if (type == SceneType.KAGURA_LIVE)
             {
                 //各種有効化状態にボタンを合わせる
-                btnE[0].isEnable = btnE_ActionParent[0].gameObject.activeSelf;
-                btnE[1].isEnable = btnE_ActionParent[1].gameObject.activeSelf;
-                btnE[2].isEnable = btnE_ActionParent[2].transform.GetChild(0).gameObject.activeSelf;
+                _stageEventButton[0].isEnable = _actionParentButton[0].gameObject.activeSelf;
+                _stageEventButton[1].isEnable = _actionParentButton[1].gameObject.activeSelf;
+                _stageEventButton[2].isEnable = _actionParentButton[2].transform.GetChild(0).gameObject.activeSelf;
             }
             else if (type == SceneType.VIEWER)
             {
                 //各種有効化状態にボタンを合わせる
-                btnE[0].isEnable = btnE_ActionParent[0].gameObject.activeSelf;
+                _stageEventButton[0].isEnable = _actionParentButton[0].gameObject.activeSelf;
             }
             else if (type == SceneType.VIEWER)
             {
                 //各種有効化状態にボタンを合わせる
-                btnE[0].isEnable = btnE_ActionParent[0].gameObject.activeSelf;
+                _stageEventButton[0].isEnable = _actionParentButton[0].gameObject.activeSelf;
             }
             else if (type == SceneType.GYMNASIUM)
             {
                 //各種有効化状態にボタンを合わせる
-                btnE[0].isEnable = FileReadAndWriteUtility.UserProfile.scene_gym_whitelight;
-                btnE[1].isEnable = FileReadAndWriteUtility.UserProfile.StepSE;
+                _stageEventButton[0].isEnable = FileReadAndWriteUtility.UserProfile.scene_gym_whitelight;
+                _stageEventButton[1].isEnable = FileReadAndWriteUtility.UserProfile.StepSE;
 
                 Click_Setting_Gym(0);
             }
             else if (type == SceneType.FANTASY_VILLAGE)
             {
-                btnE[0].isEnable = btnE_ActionParent[0].gameObject.activeSelf;
+                _stageEventButton[0].isEnable = _actionParentButton[0].gameObject.activeSelf;
             }
         }
 
@@ -221,22 +217,22 @@ namespace UniLiveViewer.Menu
         {
             _audioSourceService.PlayOneShot(0);
 
-            bool result = btnE[i].isEnable;
+            bool result = _stageEventButton[i].isEnable;
             switch (i)
             {
                 //パーティクル
                 case 0:
-                    if (btnE_ActionParent[0])
+                    if (_actionParentButton[0])
                     {
-                        btnE_ActionParent[0].gameObject.SetActive(result);
+                        _actionParentButton[0].gameObject.SetActive(result);
                         FileReadAndWriteUtility.UserProfile.scene_crs_particle = result;
                     }
                     break;
                 //レーザーガン
                 case 1:
-                    if (btnE_ActionParent[1])
+                    if (_actionParentButton[1])
                     {
-                        btnE_ActionParent[1].gameObject.SetActive(result);
+                        _actionParentButton[1].gameObject.SetActive(result);
                         FileReadAndWriteUtility.UserProfile.scene_crs_laser = result;
                     }
                     break;
@@ -250,18 +246,18 @@ namespace UniLiveViewer.Menu
                     break;
                 //ソニックブーム
                 case 3:
-                    if (btnE_ActionParent[3])
+                    if (_actionParentButton[3])
                     {
-                        btnE_ActionParent[3].gameObject.SetActive(result);
+                        _actionParentButton[3].gameObject.SetActive(result);
                         FileReadAndWriteUtility.UserProfile.scene_crs_sonic = result;
                     }
                     break;
                 //マニュアル
                 case 4:
-                    if (btnE_ActionParent[4])
+                    if (_actionParentButton[4])
                     {
-                        btnE_ActionParent[4].gameObject.SetActive(result);
-                        btnE_ActionParent[4].GetComponent<ManualSwitch>().SetEnable(result);
+                        _actionParentButton[4].gameObject.SetActive(result);
+                        _actionParentButton[4].GetComponent<ManualSwitch>().SetEnable(result);
                     }
                     break;
             }
@@ -278,38 +274,38 @@ namespace UniLiveViewer.Menu
         {
             _audioSourceService.PlayOneShot(0);
 
-            bool result = btnE[i].isEnable;
+            bool result = _stageEventButton[i].isEnable;
             switch (i)
             {
                 //パーティクル
                 case 0:
-                    if (btnE_ActionParent[0])
+                    if (_actionParentButton[0])
                     {
-                        btnE_ActionParent[0].gameObject.SetActive(result);
+                        _actionParentButton[0].gameObject.SetActive(result);
                         FileReadAndWriteUtility.UserProfile.scene_kagura_particle = result;
                     }
                     break;
                 //リフレクション
                 case 1:
-                    if (btnE_ActionParent[1])
+                    if (_actionParentButton[1])
                     {
-                        btnE_ActionParent[1].gameObject.SetActive(result);
+                        _actionParentButton[1].gameObject.SetActive(result);
                         FileReadAndWriteUtility.UserProfile.scene_kagura_reflection = result;
                     }
                     break;
                 //海切り替えテスト
                 case 2:
-                    if (btnE_ActionParent[2])
+                    if (_actionParentButton[2])
                     {
-                        if (btnE_ActionParent[2].GetChild(0).gameObject.activeSelf)
+                        if (_actionParentButton[2].GetChild(0).gameObject.activeSelf)
                         {
-                            btnE_ActionParent[2].GetChild(0).gameObject.SetActive(false);
-                            btnE_ActionParent[2].GetChild(1).gameObject.SetActive(true);
+                            _actionParentButton[2].GetChild(0).gameObject.SetActive(false);
+                            _actionParentButton[2].GetChild(1).gameObject.SetActive(true);
                         }
-                        else if (btnE_ActionParent[2].GetChild(1).gameObject.activeSelf)
+                        else if (_actionParentButton[2].GetChild(1).gameObject.activeSelf)
                         {
-                            btnE_ActionParent[2].GetChild(1).gameObject.SetActive(false);
-                            btnE_ActionParent[2].GetChild(0).gameObject.SetActive(true);
+                            _actionParentButton[2].GetChild(1).gameObject.SetActive(false);
+                            _actionParentButton[2].GetChild(0).gameObject.SetActive(true);
                         }
                         FileReadAndWriteUtility.UserProfile.scene_kagura_sea = result;
                     }
@@ -327,14 +323,14 @@ namespace UniLiveViewer.Menu
         {
             _audioSourceService.PlayOneShot(0);
 
-            var result = btnE[i].isEnable;
+            var result = _stageEventButton[i].isEnable;
             switch (i)
             {
                 //LED
                 case 0:
-                    if (btnE_ActionParent[0])
+                    if (_actionParentButton[0])
                     {
-                        btnE_ActionParent[0].gameObject.SetActive(result);
+                        _actionParentButton[0].gameObject.SetActive(result);
                         FileReadAndWriteUtility.UserProfile.scene_view_led = result;
 
                         //保存する
@@ -353,27 +349,27 @@ namespace UniLiveViewer.Menu
             {
                 case 0:
                     _backGroundCon.SetCubemap(-1, out str);
-                    textMeshs_Viewer[0].text = "SkyBox_" + str;
+                    _viewerTextMeshs[0].text = "SkyBox_" + str;
                     break;
                 case 1:
                     _backGroundCon.SetCubemap(1, out str);
-                    textMeshs_Viewer[0].text = "SkyBox_" + str;
+                    _viewerTextMeshs[0].text = "SkyBox_" + str;
                     break;
                 case 2:
                     _backGroundCon.SetWormHole(-1, out str);
-                    textMeshs_Viewer[1].text = "WormHole_" + str;
+                    _viewerTextMeshs[1].text = "WormHole_" + str;
                     break;
                 case 3:
                     _backGroundCon.SetWormHole(1, out str);
-                    textMeshs_Viewer[1].text = "WormHole_" + str;
+                    _viewerTextMeshs[1].text = "WormHole_" + str;
                     break;
                 case 4:
                     _backGroundCon.SetParticle(-1, out str);
-                    textMeshs_Viewer[2].text = "Particle_" + str;
+                    _viewerTextMeshs[2].text = "Particle_" + str;
                     break;
                 case 5:
                     _backGroundCon.SetParticle(1, out str);
-                    textMeshs_Viewer[2].text = "Particle_" + str;
+                    _viewerTextMeshs[2].text = "Particle_" + str;
                     break;
             }
 
@@ -391,7 +387,7 @@ namespace UniLiveViewer.Menu
             else if (_lightIndex < 0) _lightIndex = max - 1;
 
             _stageLightIndex.OnNext(_lightIndex);
-            textMeshs_Gym[0].text = $"SpotLight_{Enum.GetName(typeof(StageEnums.StageLight), _lightIndex)}";
+            _gymTextMeshs[0].text = $"SpotLight_{Enum.GetName(typeof(StageEnums.StageLight), _lightIndex)}";
             _audioSourceService.PlayOneShot(1);
         }
 
@@ -400,12 +396,12 @@ namespace UniLiveViewer.Menu
             switch (i)
             {
                 case 0:
-                    _stageLightIsWhite.OnNext(btnE[0].isEnable);
-                    FileReadAndWriteUtility.UserProfile.scene_gym_whitelight = btnE[0].isEnable;
+                    _stageLightIsWhite.OnNext(_stageEventButton[0].isEnable);
+                    FileReadAndWriteUtility.UserProfile.scene_gym_whitelight = _stageEventButton[0].isEnable;
                     break;
                 case 1:
-                    FootstepAudio.SetEnable(btnE[1].isEnable);
-                    FileReadAndWriteUtility.UserProfile.StepSE = btnE[1].isEnable;
+                    FootstepAudio.SetEnable(_stageEventButton[1].isEnable);
+                    FileReadAndWriteUtility.UserProfile.StepSE = _stageEventButton[1].isEnable;
                     break;
             }
 
@@ -419,14 +415,14 @@ namespace UniLiveViewer.Menu
         {
             _audioSourceService.PlayOneShot(0);
 
-            bool result = btnE[i].isEnable;
+            bool result = _stageEventButton[i].isEnable;
             switch (i)
             {
                 //ライト
                 case 0:
-                    if (btnE_ActionParent[0])
+                    if (_actionParentButton[0])
                     {
-                        btnE_ActionParent[0].gameObject.SetActive(result);
+                        _actionParentButton[0].gameObject.SetActive(result);
                         FileReadAndWriteUtility.UserProfile.scene_fv_light = result;
                     }
                     break;

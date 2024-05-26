@@ -14,16 +14,18 @@ namespace UniLiveViewer.Menu
     {
         [SerializeField] MenuManager _menuManager;
         [SerializeField] Button_Base[] btn_jumpList;
+        [SerializeField] Button_Base[] _jumpListButtons;
         [SerializeField] Button_Switch[] _switchAudio = new Button_Switch[2];
         bool _isPresetAudio;
 
-        [SerializeField] Button_Base[] btn_Audio = new Button_Base[2];
-        [SerializeField] Button_Base btnS_Play = null;
-        [SerializeField] Button_Base btnS_Stop = null;
-        [SerializeField] Button_Base btnS_BaseReturn = null;
-        [SerializeField] TextMesh[] textMeshs = new TextMesh[4];
-        [SerializeField] SliderGrabController slider_Playback = null;
-        [SerializeField] SliderGrabController slider_Speed = null;
+        [SerializeField] Button_Base[] _audioButton = new Button_Base[2];
+        [SerializeField] Button_Base _playButton = null;
+        [SerializeField] Button_Base _stopButton = null;
+        [SerializeField] Button_Base _baseReturnButton = null;
+        [SerializeField] TextMesh[] _textMeshs = new TextMesh[4];
+        [SerializeField] SliderGrabController _playbackSlider = null;
+        [SerializeField] SliderGrabController _playbackSpeedSlider = null;
+
         PlayableMusicService _playableMusicService;
         PlayableDirector _playableDirector;
         PlayerHandsService _playerHandsService;
@@ -76,7 +78,7 @@ namespace UniLiveViewer.Menu
             _cancellationToken = cancellation;
 
             //再生スライダーに最大値を設定
-            slider_Playback.maxValuel = (float)_playableDirector.duration;
+            _playbackSlider.maxValuel = (float)_playableDirector.duration;
 
             //ジャンプリスト
             foreach (var e in btn_jumpList)
@@ -86,33 +88,33 @@ namespace UniLiveViewer.Menu
 
             _playableDirector.played += OnPlayedDirector;
             _playableDirector.stopped += OnStopedDirector;
-            for (int i = 0; i < btn_Audio.Length; i++)
+            for (int i = 0; i < _audioButton.Length; i++)
             {
-                btn_Audio[i].onTrigger += OnClickMoveIndex;
+                _audioButton[i].onTrigger += OnClickMoveIndex;
             }
 
-            slider_Playback.BeginDriveAsObservable
+            _playbackSlider.BeginDriveAsObservable
                 .Subscribe(_ => OnUpdatePlaybackSlider()).AddTo(this);
-            slider_Playback.ValueAsObservable
+            _playbackSlider.ValueAsObservable
                 .DistinctUntilChanged()
                 .Subscribe(value => 
                 {
                     _playableMusicService.AudioClipPlaybackTime = value;
                     var sec = _playableMusicService.AudioClipPlaybackTime;
-                    textMeshs[1].text = $"{((int)sec / 60):00}:{((int)sec % 60):00}";
+                    _textMeshs[1].text = $"{((int)sec / 60):00}:{((int)sec % 60):00}";
                 }).AddTo(this);
 
-            slider_Speed.ValueAsObservable
+            _playbackSpeedSlider.ValueAsObservable
                 .Subscribe(value =>
                 {
                     _playableMusicService.TimelineSpeed = value;
-                    textMeshs[3].text = $"{value:0.00}";
+                    _textMeshs[3].text = $"{value:0.00}";
                 }).AddTo(this);
-            slider_Speed.Value = 1.0f;
+            _playbackSpeedSlider.Value = 1.0f;
 
-            btnS_Play.onTrigger += OnClickPlay;
-            btnS_Stop.onTrigger += OnClickStop;
-            btnS_BaseReturn.onTrigger += OnClickBaseReturn;
+            _playButton.onTrigger += OnClickPlay;
+            _stopButton.onTrigger += OnClickStop;
+            _baseReturnButton.onTrigger += OnClickBaseReturn;
             for (int i = 0; i < _switchAudio.Length; i++)
             {
                 _switchAudio[i].isEnable = (i == 0);
@@ -174,7 +176,7 @@ namespace UniLiveViewer.Menu
             {
                 for (int i = 0; i < 2; i++)
                 {
-                    if (btn_Audio[i] != btn) continue;
+                    if (_audioButton[i] != btn) continue;
 
                     var moveIndex = i == 0 ? -1 : 1;
                     ChangeAudioAsync(moveIndex, _cancellationToken).Forget();
@@ -193,28 +195,28 @@ namespace UniLiveViewer.Menu
         {
             if (_playableDirector.timeUpdateMode == DirectorUpdateMode.Manual)
             {
-                btnS_Stop.gameObject.SetActive(false);
-                btnS_Play.gameObject.SetActive(true);
+                _stopButton.gameObject.SetActive(false);
+                _playButton.gameObject.SetActive(true);
             }
             else
             {
-                btnS_Stop.gameObject.SetActive(true);
-                btnS_Play.gameObject.SetActive(false);
+                _stopButton.gameObject.SetActive(true);
+                _playButton.gameObject.SetActive(false);
             }
             //オーディオの長さ
             var sec = await _playableMusicService.CurrentAudioLengthAsync(true, _cancellationToken);
-            textMeshs[2].text = $"{((int)sec / 60):00}:{((int)sec % 60):00}";
+            _textMeshs[2].text = $"{((int)sec / 60):00}:{((int)sec % 60):00}";
         }
 
         void Update()
         {
             //再生スライダー非制御中なら
-            if (!slider_Playback.IsGrabbed)
+            if (!_playbackSlider.IsGrabbed)
             {
                 //TimeLine再生時間をスライダーにセット
                 var sec = (float)_playableMusicService.AudioClipPlaybackTime;
-                slider_Playback.NotNotifyChangeValue(sec);
-                textMeshs[1].text = $"{((int)sec / 60):00}:{((int)sec % 60):00}";
+                _playbackSlider.NotNotifyChangeValue(sec);
+                _textMeshs[1].text = $"{((int)sec / 60):00}:{((int)sec % 60):00}";
             }
 #if UNITY_EDITOR
             DebugInput();
@@ -254,8 +256,8 @@ namespace UniLiveViewer.Menu
 
         async UniTask ChangeAuidoInternalAsync(string clipName, CancellationToken cancellation)
         {
-            textMeshs[0].text = clipName;
-            textMeshs[0].fontSize = clipName.FontSizeMatch(600, 30, 50);
+            _textMeshs[0].text = clipName;
+            _textMeshs[0].fontSize = clipName.FontSizeMatch(600, 30, 50);
 
             if (clipName == string.Empty)
             {
@@ -264,8 +266,8 @@ namespace UniLiveViewer.Menu
             }
 
             var sec = await _playableMusicService.CurrentAudioLengthAsync(_isPresetAudio, cancellation);
-            slider_Playback.maxValuel = sec;
-            textMeshs[2].text = $"{((int)sec / 60):00}:{((int)sec % 60):00}";
+            _playbackSlider.maxValuel = sec;
+            _textMeshs[2].text = $"{((int)sec / 60):00}:{((int)sec % 60):00}";
         }
 
         void OnPlayedDirector(PlayableDirector obj)
@@ -280,16 +282,16 @@ namespace UniLiveViewer.Menu
             if (_playableMusicService.AudioClipPlaybackTime > 0) return;
 
             //再生表示
-            if (btnS_Stop) btnS_Stop.gameObject.SetActive(false);
-            if (btnS_Play) btnS_Play.gameObject.SetActive(true);
+            if (_stopButton) _stopButton.gameObject.SetActive(false);
+            if (_playButton) _playButton.gameObject.SetActive(true);
         }
 
         void OnUpdatePlaybackSlider()
         {
             if (_playableDirector.timeUpdateMode == DirectorUpdateMode.Manual) return;
 
-            btnS_Stop.gameObject.SetActive(false);
-            btnS_Play.gameObject.SetActive(true);
+            _stopButton.gameObject.SetActive(false);
+            _playButton.gameObject.SetActive(true);
 
             var dummy = new CancellationToken();
             _playableMusicService.ManualModeAsync(dummy).Forget();
@@ -297,8 +299,8 @@ namespace UniLiveViewer.Menu
 
         async UniTask PlayAsync(CancellationToken cancellation)
         {
-            btnS_Stop.gameObject.SetActive(true);
-            btnS_Play.gameObject.SetActive(false);
+            _stopButton.gameObject.SetActive(true);
+            _playButton.gameObject.SetActive(false);
 
             await _playableMusicService.PlayAsync(cancellation);
         }
@@ -307,8 +309,8 @@ namespace UniLiveViewer.Menu
         {
             if (_playableDirector.timeUpdateMode == DirectorUpdateMode.Manual) return;
 
-            btnS_Stop.gameObject.SetActive(false);
-            btnS_Play.gameObject.SetActive(true);
+            _stopButton.gameObject.SetActive(false);
+            _playButton.gameObject.SetActive(true);
 
             await _playableMusicService.ManualModeAsync(cancellation);
         }

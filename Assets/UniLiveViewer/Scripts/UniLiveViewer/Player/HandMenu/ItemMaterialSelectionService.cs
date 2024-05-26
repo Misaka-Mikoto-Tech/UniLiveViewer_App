@@ -17,6 +17,7 @@ namespace UniLiveViewer.Player.HandMenu
         readonly PlayerHandMenuSettings _playerHandMenuSettings;
         readonly Transform _lookTarget;
         readonly AudioSourceService _audioSourceService;
+        readonly SystemSettingsService _systemSettingsService;
 
         [Inject]
         public ItemMaterialSelectionService(
@@ -24,13 +25,15 @@ namespace UniLiveViewer.Player.HandMenu
             PlayerHandMenuAnchorR playerHandMenuAnchorR,
             PlayerHandMenuSettings playerHandMenuSettings,
             Camera camera,
-            AudioSourceService audioSourceService)
+            AudioSourceService audioSourceService,
+            SystemSettingsService systemSettingsService)
         {
             _playerHandMenuAnchorL = playerHandMenuAnchorL;
             _playerHandMenuAnchorR = playerHandMenuAnchorR;
             _playerHandMenuSettings = playerHandMenuSettings;
             _lookTarget = camera.transform;
             _audioSourceService = audioSourceService;
+            _systemSettingsService = systemSettingsService;
         }
 
         public void Setup()
@@ -80,15 +83,12 @@ namespace UniLiveViewer.Player.HandMenu
             _handMenu[index].SetShow(true);
             var itemMaterialSelector = _handMenu[index].Instance.GetComponent<ItemMaterialSelector>();
             _itemMaterialSelector[index] = itemMaterialSelector;
-            _itemMaterialSelector[index].Init(decorationItemInfo);
+            _itemMaterialSelector[index].Initialize(decorationItemInfo, _systemSettingsService.LanguageIndex.Value);
         }
 
         /// <summary>
         /// 指定Currentからテクスチャを取得
         /// </summary>
-        /// <param name="handType"></param>
-        /// <param name="current"></param>
-        /// <returns></returns>
         public void SetItemTexture(int index, int current)
         {
             if (_itemMaterialSelector.Length <= index) return;

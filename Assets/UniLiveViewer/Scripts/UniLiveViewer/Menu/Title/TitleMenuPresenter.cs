@@ -2,6 +2,7 @@
 using System;
 using UniLiveViewer.SceneLoader;
 using UniRx;
+using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
@@ -10,20 +11,20 @@ namespace UniLiveViewer.Menu
     public class TitleMenuPresenter : IInitializable, IStartable, IDisposable
     {
         readonly SceneChangeService _sceneChangeService;
-        readonly TitleBackGroundService _backGroundService;
         readonly TitleMenuService _menuService;
+        readonly TextMesh _textAppVersion;
 
         readonly CompositeDisposable _disposable = new();
 
         [Inject]
         public TitleMenuPresenter(
-            TitleBackGroundService titleBackGroundService,
             TitleMenuService titleMenuService,
-            SceneChangeService sceneChangeService)
+            SceneChangeService sceneChangeService,
+            TextMesh textAppVersion)
         {
             _sceneChangeService = sceneChangeService;
-            _backGroundService = titleBackGroundService;
             _menuService = titleMenuService;
+            _textAppVersion = textAppVersion;
         }
 
         void IInitializable.Initialize()
@@ -33,15 +34,12 @@ namespace UniLiveViewer.Menu
 
         void IStartable.Start()
         {
-            _menuService.ChangeSceneAsObservable
-                .Subscribe(_backGroundService.OnChangeLanguage)
-                .AddTo(_disposable);
+            _textAppVersion.text = "ver." + Application.version;
         }
 
         public void Dispose()
         {
             _disposable.Dispose();
         }
-
     }
 }

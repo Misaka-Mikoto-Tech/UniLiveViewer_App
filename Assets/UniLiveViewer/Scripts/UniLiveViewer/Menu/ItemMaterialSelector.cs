@@ -15,21 +15,14 @@ namespace UniLiveViewer.Menu
         int _limitTex;
 
         DecorationItemInfo _itemInfo;
-        int _languageCode;
-
-        void Awake()
-        {
-            _languageCode = FileReadAndWriteUtility.UserProfile.LanguageCode - 1;
-        }
 
         /// <summary>
         /// アイテム名、候補テクスチャをセット
         /// </summary>
-        /// <param name="info"></param>
-        public void Init(DecorationItemInfo info)
+        public void Initialize(DecorationItemInfo info , int languageCode)
         {
             _itemInfo = info;
-            _textMesh.text = _itemInfo.ItemName[_languageCode];
+            _textMesh.text = _itemInfo.ItemName[languageCode];
 
             if (info.RenderInfo.Length == 0)
             {

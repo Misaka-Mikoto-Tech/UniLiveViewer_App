@@ -1,6 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
-using System.Threading;
 using UniLiveViewer.Player;
+using UniRx;
 using UnityEngine;
 using VContainer;
 
@@ -8,79 +8,74 @@ namespace UniLiveViewer.Menu
 {
     public class ItemPage : MonoBehaviour
     {
+        const int SUBPAGE_ITEMS_ROW = 2;
+        const int SUBPAGE_ITEMS_COL = 3;
+        int SUBPAGE_ITEMS_MAX = SUBPAGE_ITEMS_ROW * SUBPAGE_ITEMS_COL;
+        static readonly Vector2[] itemOffsetPos = {
+            new Vector2(-0.11f, 0.08f), new Vector2(0.09f, 0.08f), new Vector2(0.3f, 0.08f),
+            new Vector2(-0.11f,-0.10f), new Vector2(0.09f,-0.10f),new Vector2(0.3f,-0.10f),
+        };
+        static readonly Quaternion reverseQuaternion = Quaternion.Euler(new Vector3(0, 180, 0));
+
         [System.Serializable]
         public class DecorationItems
         {
             public DecorationItemInfo[] ItemPrefab;
         }
-        [SerializeField] private MenuManager menuManager;
-        const int SUBPAGE_ITEMS_ROW = 2;
-        const int SUBPAGE_ITEMS_COL = 3;
-        int SUBPAGE_ITEMS_MAX = SUBPAGE_ITEMS_ROW * SUBPAGE_ITEMS_COL;
-        static readonly Vector2[] itemOffsetPos = { 
-            new Vector2(-0.11f, 0.08f), new Vector2(0.09f, 0.08f), new Vector2(0.3f, 0.08f),    
-            new Vector2(-0.11f,-0.10f), new Vector2(0.09f,-0.10f),new Vector2(0.3f,-0.10f),
-        };
-        static readonly Quaternion reverseQuaternion = Quaternion.Euler(new Vector3(0, 180, 0));
-        [SerializeField] private Button_Base[] btn_Item = new Button_Base[2];
-        [SerializeField] private TextMesh textMesh;
 
-        [SerializeField] private PageController pageController;
-        [SerializeField] private Transform itemMaterialAnchor;
-        [SerializeField] private GameObject itemMaterialPrefab;
-        [SerializeField] private int[] currentSubPage;
+        [SerializeField] MenuManager _menuManager;
 
-        [Header("＜各ページに相当＞")]
-        [SerializeField] private DecorationItems[] decorationItems;
+        [SerializeField] Button_Base[] _itemButton = new Button_Base[2];
+        [SerializeField] TextMesh _textMesh;
+
+        [SerializeField] PageController _pageController;
+        [SerializeField] Transform _itemMaterialAnchor;
+        [SerializeField] GameObject _itemMaterialPrefab;
+        [Header("確認用")]
+        [SerializeField] int[] _currentSubPage;
+
+        [SerializeField] DecorationItemSettings _decorationItemSettings;
 
         AudioSourceService _audioSourceService;
         PassthroughService _passthroughService;
-        int _languageCurrent;
 
         [Inject]
         public void Construct(
-            AudioSourceService audioSourceService)
+            AudioSourceService audioSourceService,
+            PassthroughService passthroughService)
         {
             _audioSourceService = audioSourceService;
+            _passthroughService = passthroughService;
         }
 
         public void OnStart()
         {
-            //その他
-            for (int i = 0; i < btn_Item.Length; i++)
+            _currentSubPage = new int[_decorationItemSettings.ItemPrefab.Length];
+
+            for (int i = 0; i < _itemButton.Length; i++)
             {
-                btn_Item[i].onTrigger += MoveIndex_Item;
+                _itemButton[i].onTrigger += OnClickItemIndex;
             }
-
-            _languageCurrent = (int)FileReadAndWriteUtility.UserProfile.LanguageCode - 1;
-            currentSubPage = new int[decorationItems.Length];
-
-            // TODO: UI作り直す時にまともにする
-            var player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerLifetimeScope>();
-            _passthroughService = player.Container.Resolve<PassthroughService>();
-
-            EnablePassthrough(_passthroughService.IsInsightPassthroughEnabled());
-
-            pageController.onSwitchPage += Init;
+            _pageController.ChangePageAsObservable
+                .Subscribe(_ => Initialize()).AddTo(this);
         }
 
-        void Init()
+        void Initialize()
         {
             EnablePassthrough(_passthroughService.IsInsightPassthroughEnabled());
 
-            //アイテム数に応じてサブページ送りボタンの表示切替
-            int itemLength = decorationItems[pageController.current].ItemPrefab.Length;
-            bool isOver = itemLength > SUBPAGE_ITEMS_MAX;
-            for (int i = 0; i < btn_Item.Length; i++)
+            //アイテム数に応じてページ送りボタンの表示切替
+            var itemLength = _decorationItemSettings.ItemPrefab[_pageController.Current].ItemPrefab.Length;
+            var isOver = itemLength > SUBPAGE_ITEMS_MAX;
+            for (int i = 0; i < _itemButton.Length; i++)
             {
-                if(btn_Item[i].gameObject.activeSelf != isOver) btn_Item[i].gameObject.SetActive(isOver);
+                if (_itemButton[i].gameObject.activeSelf != isOver) _itemButton[i].gameObject.SetActive(isOver);
             }
 
             //アクティブページのアイテムを生成
-            GenerateItems();
+            IfNeededGenerateItems();
         }
 
-        // Update is called once per frame
         void Update()
         {
 #if UNITY_EDITOR
@@ -88,97 +83,99 @@ namespace UniLiveViewer.Menu
 #elif UNITY_ANDROID
 #endif
         }
+
         void EnablePassthrough(bool isEnable)
         {
-            if (pageController.BtnTab[5].gameObject.activeSelf != isEnable)
-            {
-                pageController.BtnTab[5].gameObject.SetActive(isEnable);
-                pageController.BtnTab[5].isEnable = false;
-            }
+            if (_pageController.BtnTab[5].gameObject.activeSelf == isEnable) return;
+
+            _pageController.BtnTab[5].gameObject.SetActive(isEnable);
+            _pageController.BtnTab[5].isEnable = false;
         }
 
         /// <summary>
         /// アイテム変更ボタン
         /// </summary>
-        /// <param name="btn"></param>
-        void MoveIndex_Item(Button_Base btn)
+        void OnClickItemIndex(Button_Base btn)
         {
-            int nowSubPage = currentSubPage[pageController.current];
-            int itemLength = decorationItems[pageController.current].ItemPrefab.Length;
-            int maxSubPage = itemLength / SUBPAGE_ITEMS_MAX + (itemLength % SUBPAGE_ITEMS_MAX == 0 ? 0:1) - 1;
-
             for (int i = 0; i < 2; i++)
             {
-                //押されたボタンの判別
-                if (btn_Item[i] == btn)
+                if (_itemButton[i] != btn) continue;
+
+                if (i == 0)
                 {
-                    int moveIndex = 0;
-                    if (i == 0) moveIndex = -1;
-                    else if (i == 1) moveIndex = 1;
-
-                    //元サブページのアイテムを削除
-                    DeleteItems();
-
-                    //サブページ移動
-                    nowSubPage += moveIndex;
-                    if (nowSubPage > maxSubPage) nowSubPage = 0;
-                    else if (nowSubPage < 0) nowSubPage = maxSubPage;
-                    currentSubPage[pageController.current] = nowSubPage;
-
-                    //アクティブページのアイテムを生成
-                    GenerateItems();
-
-                    //クリック音
-                    _audioSourceService.PlayOneShot(0);
-                    break;
+                    EvaluateItemIndex(-1);
+                    return;
+                }
+                else if (i == 1)
+                {
+                    EvaluateItemIndex(1);
+                    return;
                 }
             }
         }
 
-        /// <summary>
-        /// 現在のページとサブページを基準にアイテムを全削除
-        /// </summary>
-        void DeleteItems()
+        void EvaluateItemIndex(int moveIndex)
         {
-            Transform targetPage = pageController.GetCurrentPage();
-            int max = targetPage.childCount;
+            var nowSubPage = _currentSubPage[_pageController.Current];
+            var itemLength = _decorationItemSettings.ItemPrefab[_pageController.Current].ItemPrefab.Length;
+            var maxSubPage = itemLength / SUBPAGE_ITEMS_MAX + (itemLength % SUBPAGE_ITEMS_MAX == 0 ? 0 : 1) - 1;
 
-            for (int i = 0; i< max; i++)
+            //元ページのアイテムを削除
+            DeleteAllItemsCurrentPage();
+
+            //サブページ移動
+            nowSubPage += moveIndex;
+            if (nowSubPage > maxSubPage) nowSubPage = 0;
+            else if (nowSubPage < 0) nowSubPage = maxSubPage;
+            _currentSubPage[_pageController.Current] = nowSubPage;
+
+            //アクティブページのアイテムを生成
+            IfNeededGenerateItems();
+
+            //クリック音
+            _audioSourceService.PlayOneShot(0);
+        }
+
+        /// <summary>
+        /// 現在ページのアイテムを全削除
+        /// </summary>
+        void DeleteAllItemsCurrentPage()
+        {
+            var targetPageAnchor = _pageController.GetCurrentPageAnchor();
+            var maxCount = targetPageAnchor.childCount;
+
+            for (int i = 0; i < maxCount; i++)
             {
-                Destroy(targetPage.GetChild(max - i - 1).gameObject);//常に末尾を削除
+                Destroy(targetPageAnchor.GetChild(maxCount - i - 1).gameObject);//常に末尾を削除
             }
         }
 
         /// <summary>
-        /// 現在のページとサブページを基準にアイテムが無ければ生成
+        /// 現在の選択カテゴリとサブページを基準にアイテムが無ければ生成
         /// </summary>
-        void GenerateItems()
+        void IfNeededGenerateItems()
         {
-            int nowSubPage = currentSubPage[pageController.current];
-            int itemLength = decorationItems[pageController.current].ItemPrefab.Length;
-            int maxSubPage = itemLength / SUBPAGE_ITEMS_MAX + (itemLength % SUBPAGE_ITEMS_MAX == 0 ? 0 : 1) - 1;
-            int min = nowSubPage * SUBPAGE_ITEMS_MAX;
+            var nowPageIndex = _currentSubPage[_pageController.Current];
+            var itemPrefabLength = _decorationItemSettings.ItemPrefab[_pageController.Current].ItemPrefab.Length;
+            var maxPageLength = itemPrefabLength / SUBPAGE_ITEMS_MAX + (itemPrefabLength % SUBPAGE_ITEMS_MAX == 0 ? 0 : 1) - 1;
+            var nowPageMinItemIndex = nowPageIndex * SUBPAGE_ITEMS_MAX;
 
-            textMesh.text = $"{nowSubPage + 1} / {maxSubPage + 1}";
+            _textMesh.text = $"{nowPageIndex + 1} / {maxPageLength + 1}";
 
-            var currentItems = decorationItems[pageController.current];
+            var currentItemPrefabs = _decorationItemSettings.ItemPrefab[_pageController.Current];
 
-            int index = 0;
-            string currentName;
-
-            for (int i = 0;i < SUBPAGE_ITEMS_MAX; i++)
+            for (int i = 0; i < SUBPAGE_ITEMS_MAX; i++)
             {
-                index = min + i;
-                if (index >= currentItems.ItemPrefab.Length) return;
+                var itemIndex = nowPageMinItemIndex + i;
+                if (itemIndex >= currentItemPrefabs.ItemPrefab.Length) return;
 
-                //重複生成しない
-                currentName = currentItems.ItemPrefab[index].ItemName[_languageCurrent];
-                if (CheckGenerated(currentName)) continue;
+                //重複生成させないために固有名をつける
+                var itemName = $"{nowPageIndex}-{itemIndex}";
+                if (CheckGenerated(itemName)) continue;
 
-                var instance = Instantiate(currentItems.ItemPrefab[index]).transform;
-
-                instance.name = currentName;//重複チェックの為
-                instance.parent = pageController.GetCurrentPage();
+                var instance = Instantiate(currentItemPrefabs.ItemPrefab[itemIndex]).transform;
+                instance.name = itemName;
+                instance.parent = _pageController.GetCurrentPageAnchor();
                 instance.localPosition = new Vector3(itemOffsetPos[i].x, itemOffsetPos[i].y, 0);
                 instance.localRotation = Quaternion.identity * reverseQuaternion;
                 instance.localScale *= 0.5f;
@@ -192,7 +189,7 @@ namespace UniLiveViewer.Menu
         /// <returns></returns>
         bool CheckGenerated(string targetName)
         {
-            foreach (Transform instance in pageController.GetCurrentPage())
+            foreach (Transform instance in _pageController.GetCurrentPageAnchor())
             {
                 if (instance.name == targetName) return true;
             }
@@ -201,8 +198,8 @@ namespace UniLiveViewer.Menu
 
         void DebugInput()
         {
-            //if (Input.GetKeyDown(KeyCode.I)) ChangeItem(1);
-            //if (Input.GetKeyDown(KeyCode.K)) ChangeItem(-1);
+            if (Input.GetKeyDown(KeyCode.I)) EvaluateItemIndex(1);
+            if (Input.GetKeyDown(KeyCode.K)) EvaluateItemIndex(-1);
         }
     }
 }

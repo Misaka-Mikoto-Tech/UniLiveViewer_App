@@ -3,8 +3,13 @@ using VContainer;
 
 namespace UniLiveViewer.Menu
 {
+    /// <summary>
+    /// EndlessBookが癖あるのでUnityLocalization使わず手動で切り替える
+    /// </summary>
     public class BookService
     {
+        GameObject _boolObj;
+
         readonly BookSetting _bookSetting;
         readonly BookAnchor _bookAnchor;
 
@@ -15,17 +20,21 @@ namespace UniLiveViewer.Menu
             _bookAnchor = bookAnchor;
         }
 
-        public void Initialize()
+        public void Initialize(int languageIndex)
         {
-            var index = FileReadAndWriteUtility.UserProfile.LanguageCode - 1;
-            if (index == 0)
+            if (_boolObj != null)
             {
-                GameObject.Instantiate(_bookSetting.PrefabJP, _bookAnchor.transform);
+                GameObject.Destroy(_boolObj);
+                _boolObj = null;
             }
-            else
+
+            var prefab = languageIndex switch
             {
-                GameObject.Instantiate(_bookSetting.PrefabEN, _bookAnchor.transform);
-            }
+                0 => _bookSetting.PrefabEN,
+                1 => _bookSetting.PrefabJP,
+                _ => null,
+            };
+            _boolObj = GameObject.Instantiate(prefab, _bookAnchor.transform);
         }
 
         public void ChangeOpenClose()

@@ -15,5 +15,11 @@ namespace UniLiveViewer.Menu.Config.Common
 
         public TextMesh FixedFoveatedText => _fixedFoveatedText;
         [SerializeField] TextMesh _fixedFoveatedText;
+
+        public Button_Base EnglishButton => _englishButton;
+        [SerializeField] Button_Base _englishButton;
+
+        public Button_Base JapaneseButton => _japaneseButton;
+        [SerializeField] Button_Base _japaneseButton;
     }
 }

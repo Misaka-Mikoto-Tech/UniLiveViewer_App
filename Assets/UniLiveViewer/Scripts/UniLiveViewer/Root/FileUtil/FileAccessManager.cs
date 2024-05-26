@@ -101,8 +101,8 @@ namespace UniLiveViewer
         {
             try
             {
-                await ResourcesLoadText("readme_ja", PathsInfo.GetFullPath_README(LanguageType.JP), cancellation);
-                await ResourcesLoadText("readme_en", PathsInfo.GetFullPath_README(LanguageType.EN), cancellation);
+                await ResourcesLoadText("readme_ja", PathsInfo.GetFullPath_README(SystemLanguage.English), cancellation);
+                await ResourcesLoadText("readme_en", PathsInfo.GetFullPath_README(SystemLanguage.Japanese), cancellation);
                 DeleteFile(PathsInfo.GetFullPath_DEFECT());
             }
             catch

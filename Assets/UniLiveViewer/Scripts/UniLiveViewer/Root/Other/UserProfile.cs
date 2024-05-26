@@ -5,7 +5,7 @@ namespace UniLiveViewer
 {
     public class UserProfile
     {
-        public int LanguageCode = 0;
+        public int LanguageCode = -1;//未設定-1,EN0,JP1
         public int LastSceneSceneTypeNo = 1;//SceneType.CANDY_LIVE
         public float InitCharaSize = 1.15f;
         public float CharaShadow = 1.25f;

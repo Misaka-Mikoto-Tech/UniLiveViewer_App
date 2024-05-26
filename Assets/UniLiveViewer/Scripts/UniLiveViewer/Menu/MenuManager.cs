@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+using UnityEngine;
+using UniRx;
 
 namespace UniLiveViewer.Menu
 {
@@ -14,10 +15,9 @@ namespace UniLiveViewer.Menu
 
         void Start()
         {
-            pageController.onSwitchPage += () =>
-            {
-                if (jumpList.gameObject.activeSelf) jumpList.gameObject.SetActive(false);
-            };
+            pageController.ChangePageAsObservable
+                .Where(_ => jumpList.gameObject.activeSelf)
+                .Subscribe(_ => jumpList.gameObject.SetActive(false));
         }
     }
 }
