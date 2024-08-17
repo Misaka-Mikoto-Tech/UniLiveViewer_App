@@ -22,7 +22,7 @@ namespace UniLiveViewer.Menu.Config.Graphics
         public ScriptableRendererFeature OutlineRender => _outlineRender;
         [SerializeField] ScriptableRendererFeature _outlineRender;
 
-        void Start()
+        void Awake()
         {
             //レンダーパイプラインからoutlineオブジェクトを取得    
             foreach (var renderObj in _frd.rendererFeatures)
