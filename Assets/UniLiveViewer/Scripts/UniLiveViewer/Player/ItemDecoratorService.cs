@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UniLiveViewer.Actor.AttachPoint;
 using UniLiveViewer.OVRCustom;
 using UniLiveViewer.Player.HandMenu;
@@ -18,6 +18,7 @@ namespace UniLiveViewer.Player
 
         Vector2 _input;
         bool _ismaterialSelection;
+        int _currentIndex = 0;
 
         readonly OVRGrabber_UniLiveViewer _hand;
         readonly AudioSourceService _audioSourceService;
@@ -93,9 +94,13 @@ namespace UniLiveViewer.Player
             var rad = Mathf.Atan2(_input.x, _input.y);
             var degree = rad * Mathf.Rad2Deg;
             if (degree < 0 - (PIECE_ANGLE / 2)) degree += 360;
-            var current = (int)Math.Round(degree / PIECE_ANGLE);//Mathfは四捨五入ではない→.NET使用
+            var currentIndex = (int)Math.Round(degree / PIECE_ANGLE);//Mathfは四捨五入ではない→.NET使用
 
-            _itemMaterialSelection.SetItemTexture((int)_hand.HandType, current);
+            if (_currentIndex != currentIndex)
+            {
+                _currentIndex = currentIndex;
+                _itemMaterialSelection.SetItemTexture((int)_hand.HandType, currentIndex);
+            }
         }
 
         /// <summary>

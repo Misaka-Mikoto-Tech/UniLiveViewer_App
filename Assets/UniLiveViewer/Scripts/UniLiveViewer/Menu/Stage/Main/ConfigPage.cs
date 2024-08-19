@@ -182,11 +182,6 @@ namespace UniLiveViewer.Menu
                 //各種有効化状態にボタンを合わせる
                 _stageEventButton[0].isEnable = _actionParentButton[0].gameObject.activeSelf;
             }
-            else if (type == SceneType.VIEWER)
-            {
-                //各種有効化状態にボタンを合わせる
-                _stageEventButton[0].isEnable = _actionParentButton[0].gameObject.activeSelf;
-            }
             else if (type == SceneType.GYMNASIUM)
             {
                 //各種有効化状態にボタンを合わせる

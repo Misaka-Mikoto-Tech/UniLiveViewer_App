@@ -1,9 +1,12 @@
 ﻿using UniLiveViewer.OVRCustom;
+using UniRx;
 using UnityEngine;
 
 namespace UniLiveViewer
 {
-    
+    /// <summary>
+    /// TOOD: 完全に作り直す
+    /// </summary>
     public class DecorationItemInfo : MonoBehaviour
     {
         public string[] ItemName => itemName;
@@ -23,39 +26,71 @@ namespace UniLiveViewer
         {
             _ovrGrabbableCustom = GetComponent<OVRGrabbableCustom>();
             _meshRenderer = transform.GetComponent<MeshRenderer>();
+
+            _ovrGrabbableCustom.GrabBeginAsObservable
+                .Subscribe(x => OnGrabbed(x.transform)).AddTo(this);
+            void OnGrabbed(Transform parent)
+            {
+                transform.parent = parent;
+                _meshRenderer.enabled = true;
+                _isAttached = false;
+            }
         }
 
         /// <summary>
         /// 指定テクスチャに変更
         /// </summary>
-        public void SetTexture(int renderInfoIndex, int textureCurrent)
+        public void SetTexture(int userSelectIndex)
         {
-            int i = renderInfoIndex;
+            int i = 0;//現状は0しかないので固定
             int matIndex = renderInfo[i].data.materialIndex;
-            renderInfo[i].data.textureCurrent = textureCurrent;
+            renderInfo[i].data.textureCurrent = userSelectIndex;
 
-            foreach (var renderer in renderInfo[i]._renderers)
+            if (!renderInfo[i].data.convertToColor)
             {
-                foreach (var shaderName in renderInfo[i].data.targetShaderName)
+                foreach (var renderer in renderInfo[i]._renderers)
                 {
-                    renderer.materials[matIndex].SetTexture(
-                        shaderName,
-                        renderInfo[i].data.chooseableTexture[renderInfo[i].data.textureCurrent]);
+                    foreach (var shaderName in renderInfo[i].data.targetShaderName)
+                    {
+                        renderer.materials[matIndex].SetTexture(
+                            shaderName,
+                            renderInfo[i].data.chooseableTexture[renderInfo[i].data.textureCurrent]);
+                    }
                 }
             }
-        }
+            else
+            {
+                var spectrumVisualizer = transform.GetChild(0).GetComponent<Timeline.SpectrumVisualizer>();
+                if (spectrumVisualizer == null) return;
 
-        public void OnGrabbed(Transform parent)
-        {
-            transform.parent = parent;
-            _meshRenderer.enabled = true;
-            _isAttached = false;
+                // ex: tex_sk
+                var textureName = renderInfo[i].data.chooseableTexture[renderInfo[i].data.textureCurrent].name;
+                var parts = textureName.Split('_');
+                var result = parts.Length > 1 ? parts[1] : string.Empty;
+                var color = result switch
+                {
+                    "b" => Color.blue,
+                    "pu" => new Color(0.5f, 0.0f, 1.0f),
+                    "g" => Color.green,
+                    "y" => Color.yellow,
+                    "o" => new Color(1.0f, 0.5f, 0.0f),
+                    "pk" => new Color(1.0f, 0.0f, 0.8f),
+                    "r" => Color.red,
+                    "sk" => Color.cyan,
+                    "w" => Color.white,
+                    _ => Color.white,
+                };
+
+                foreach (var shaderName in renderInfo[i].data.targetShaderName)
+                {
+                    spectrumVisualizer.SetColor(shaderName, color);
+                }
+            }
         }
 
         /// <summary>
         /// TODO: これをここでやってるのもそもそも変だがLS化しないと厳しい
         /// </summary>
-        /// <returns></returns>
         public bool TryAttachment()
         {
             var collider = _ovrGrabbableCustom.HitCollider;

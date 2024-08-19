@@ -66,6 +66,7 @@ namespace UniLiveViewer.Timeline
         readonly IPublisher<AttachPointMessage> _attachPointPublisher;
         readonly AudioAssetManager _audioAssetManager;
         readonly PlayableDirector _playableDirector;
+        readonly SpectrumConverter _spectrumConverter;
         readonly TimelineAsset _timelineAsset;
 
         [Inject]
@@ -73,11 +74,13 @@ namespace UniLiveViewer.Timeline
             IPublisher<AllActorOperationMessage> allPublisher,
             IPublisher<AttachPointMessage> attachPointPublisher,
             AudioAssetManager audioAssetManager,
+            SpectrumConverter spectrumConverter,
             PlayableDirector playableDirector)
         {
             _allPublisher = allPublisher;
             _attachPointPublisher = attachPointPublisher;
             _audioAssetManager = audioAssetManager;
+            _spectrumConverter = spectrumConverter;
             _playableDirector = playableDirector;
 
             _timelineAsset = _playableDirector.playableAsset as TimelineAsset;
@@ -106,6 +109,15 @@ namespace UniLiveViewer.Timeline
             {
                 Debug.Log("メインオーディオが見つかりません");
             }
+
+            var audioTracks = _timelineAsset.GetOutputTracks().OfType<AudioTrack>();
+            var audioTrack = audioTracks.FirstOrDefault(x => x.name == AssetNameMainAudio);
+            if (audioTrack)
+            {
+                var audioSource = _playableDirector.GetGenericBinding(audioTrack) as AudioSource;
+                _spectrumConverter.Initialize(audioSource);
+            }
+
             await NextAudioClip(true, 0, cancellation);
         }
 
@@ -120,6 +132,7 @@ namespace UniLiveViewer.Timeline
                 _playableDirector.timeUpdateMode = DirectorUpdateMode.GameTime;
             }
             _playableDirector.ResumeTimeline();
+            _spectrumConverter.Setup(NowAudioClip());
 
             //後にmessage
             await UniTask.Yield(cancellation);
@@ -162,7 +175,6 @@ namespace UniLiveViewer.Timeline
         /// <summary>
         /// 一定間隔でマニュアルモードで更新を行う
         /// </summary>
-        /// <returns></returns>
         async UniTask ManualUpdateAsync(CancellationToken cancellation)
         {
             var keepVal = AudioClipPlaybackTime;
@@ -187,9 +199,6 @@ namespace UniLiveViewer.Timeline
         /// <summary>
         /// 現在曲の長さ
         /// </summary>
-        /// <param name="token"></param>
-        /// <param name="isPreset"></param>
-        /// <returns></returns>
         public async UniTask<float> CurrentAudioLengthAsync(bool isPreset, CancellationToken cancellation)
         {
             var AudioClip = await _audioAssetManager.TryGetCurrentAudioClipAsycn(isPreset, cancellation);
@@ -199,31 +208,27 @@ namespace UniLiveViewer.Timeline
         /// <summary>
         /// 指定CurrentのBGMをセットする
         /// </summary>
-        /// <param name="isPreset"></param>
-        /// <param name="moveCurrent"></param>
-        /// <param name="cancellation"></param>
-        /// <returns></returns>
         public async UniTask<string> NextAudioClip(bool isPreset, int moveCurrent, CancellationToken cancellation)
         {
-            var newAudioClip = await _audioAssetManager.TryGetAudioClipAsync(cancellation, isPreset, moveCurrent);
-            if (newAudioClip == null) return "";
+            var nextAudioClip = await _audioAssetManager.TryGetAudioClipAsync(cancellation, isPreset, moveCurrent);
+            if (nextAudioClip == null) return "";
 
-            var AudioTracks = _timelineAsset.GetOutputTracks().OfType<AudioTrack>();
-            var AudioTrack = AudioTracks.FirstOrDefault(x => x.name == AssetNameMainAudio);
-            if (!AudioTrack) return "";
+            var audioTracks = _timelineAsset.GetOutputTracks().OfType<AudioTrack>();
+            var audioTrack = audioTracks.FirstOrDefault(x => x.name == AssetNameMainAudio);
+            if (!audioTrack) return "";
 
             //トラック内のクリップを全取得
-            var timelineClips = AudioTrack.GetClips();
+            var timelineClips = audioTrack.GetClips();
             var oldAudioClip = timelineClips.FirstOrDefault(x => x.displayName != "");
-            oldAudioClip.duration = _audioClipStartTime + newAudioClip.length;//秒
+            oldAudioClip.duration = _audioClipStartTime + nextAudioClip.length;//秒
 
             //登録する
-            (oldAudioClip.asset as AudioPlayableAsset).clip = newAudioClip;
+            (oldAudioClip.asset as AudioPlayableAsset).clip = nextAudioClip;
 
             //スペクトル用
             if (SceneChangeService.GetSceneType == SceneType.CANDY_LIVE)
             {
-                if (newAudioClip.name.Contains(".mp3") || newAudioClip.name.Contains(".wav"))
+                if (nextAudioClip.name.Contains(".mp3") || nextAudioClip.name.Contains(".wav"))
                 {
                     // NOTE: ランタイム上手くいかなかった
                 }
@@ -231,16 +236,31 @@ namespace UniLiveViewer.Timeline
                 {
                     for (int i = 0; i < 4; i++)
                     {
-                        AudioTrack = AudioTracks.FirstOrDefault(x => x.name == AUDIOTRACK[i]);
-                        timelineClips = AudioTrack.GetClips();
+                        audioTrack = audioTracks.FirstOrDefault(x => x.name == AUDIOTRACK[i]);
+                        timelineClips = audioTrack.GetClips();
                         oldAudioClip = timelineClips.FirstOrDefault(x => x.displayName != "");
-                        oldAudioClip.duration = _audioClipStartTime + newAudioClip.length;//秒
-                        (oldAudioClip.asset as AudioPlayableAsset).clip = newAudioClip;
+                        oldAudioClip.duration = _audioClipStartTime + nextAudioClip.length;//秒
+                        (oldAudioClip.asset as AudioPlayableAsset).clip = nextAudioClip;
                     }
                 }
             }
+
             _playableDirector.ResumeTimeline();
-            return newAudioClip.name;
+            _spectrumConverter.Setup(nextAudioClip);
+
+            return nextAudioClip.name;
+        }
+
+        AudioClip NowAudioClip()
+        {
+            var audioTracks = _timelineAsset.GetOutputTracks().OfType<AudioTrack>();
+            var audioTrack = audioTracks.FirstOrDefault(x => x.name == AssetNameMainAudio);
+            if (!audioTrack) return null;
+
+            //トラック内のクリップを全取得
+            var timelineClips = audioTrack.GetClips();
+            var audioClip = timelineClips.FirstOrDefault(x => x.displayName != "");
+            return (audioClip.asset as AudioPlayableAsset).clip;
         }
     }
 }

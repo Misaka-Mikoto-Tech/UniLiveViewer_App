@@ -59,7 +59,7 @@ namespace UniLiveViewer.Menu
             if (nextCurrent < _limitTex && _current != nextCurrent)
             {
                 _current = nextCurrent;
-                _itemInfo.SetTexture(0, _current);//現状は0しかないので固定
+                _itemInfo.SetTexture(_current);
 
                 //カーソル移動
                 UpdateCursor();

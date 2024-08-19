@@ -86,10 +86,11 @@ namespace UniLiveViewer.Menu
 
         void EnablePassthrough(bool isEnable)
         {
-            if (_pageController.BtnTab[5].gameObject.activeSelf == isEnable) return;
+            var lastIndex = _pageController.BtnTab.Length - 1;
+            if (_pageController.BtnTab[lastIndex].gameObject.activeSelf == isEnable) return;
 
-            _pageController.BtnTab[5].gameObject.SetActive(isEnable);
-            _pageController.BtnTab[5].isEnable = false;
+            _pageController.BtnTab[lastIndex].gameObject.SetActive(isEnable);
+            _pageController.BtnTab[lastIndex].isEnable = false;
         }
 
         /// <summary>
@@ -186,7 +187,6 @@ namespace UniLiveViewer.Menu
         /// アイテムが既出か確認
         /// </summary>
         /// <param name="targetName"></param>
-        /// <returns></returns>
         bool CheckGenerated(string targetName)
         {
             foreach (Transform instance in _pageController.GetCurrentPageAnchor())

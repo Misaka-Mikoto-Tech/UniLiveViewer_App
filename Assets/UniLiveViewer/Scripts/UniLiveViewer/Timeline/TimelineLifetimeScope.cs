@@ -12,6 +12,7 @@ namespace UniLiveViewer.Timeline
     [RequireComponent(typeof(QuasiShadowSetting))]
     public class TimelineLifetimeScope : LifetimeScope
     {
+        [SerializeField] SpectrumConverter _spectrumConverter;
         [SerializeField] PresetResourceData _presetResourceData;
         [SerializeField] QuasiShadowSetting _quasiShadowSetting;
         [SerializeField] ActorLifetimeScopeSetting _actorLifetimeScopeSetting;
@@ -39,6 +40,7 @@ namespace UniLiveViewer.Timeline
             builder.RegisterInstance(_quasiShadowSetting);
 
             builder.RegisterComponent(_anchor);
+            builder.RegisterComponent(_spectrumConverter);
             builder.RegisterComponent(_actorLifetimeScopeSetting);
             builder.RegisterComponent(_actorOptionSetting);
             
