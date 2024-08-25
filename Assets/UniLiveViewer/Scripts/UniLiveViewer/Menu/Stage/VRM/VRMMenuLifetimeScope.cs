@@ -8,12 +8,9 @@ namespace UniLiveViewer.Menu
     {
         [SerializeField] MenuRootAnchor _rootAnchor;
         [SerializeField] ThumbnailAnchor _thumbnailAnchor;
-        [SerializeField] AudioSourceService _audioSourceService;
 
         protected override void Configure(IContainerBuilder builder)
         {
-            builder.RegisterComponent(_audioSourceService);
-
             builder.RegisterComponent(_rootAnchor);
             builder.RegisterComponent(_thumbnailAnchor);
             builder.Register<MenuRootService>(Lifetime.Singleton);

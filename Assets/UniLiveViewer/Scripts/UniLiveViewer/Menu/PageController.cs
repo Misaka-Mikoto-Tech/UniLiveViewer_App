@@ -1,8 +1,11 @@
 ﻿using Cysharp.Threading.Tasks;
 using System;
 using System.Threading;
+using UniLiveViewer.Stage;
 using UniRx;
 using UnityEngine;
+using VContainer;
+using VContainer.Unity;
 
 namespace UniLiveViewer.Menu
 {
@@ -13,27 +16,14 @@ namespace UniLiveViewer.Menu
         public Transform[] GetPageAnchor => _pageAnchor;
         [SerializeField] Transform[] _pageAnchor;
 
-        [SerializeField] AudioSourceService _audioSourceService;
-
         public IObservable<Unit> ChangePageAsObservable => _changePageStream;
         readonly Subject<Unit> _changePageStream = new();
         
         public int Current { get; private set; }
-        public Transform GetCurrentPageAnchor() { return _pageAnchor[Current]; } 
+        public Transform GetCurrentPageAnchor() { return _pageAnchor[Current]; }
 
+        RootAudioSourceService _rootAudioSourceService;
         CancellationToken _cancellationToken;
-
-        void Awake()
-        {
-            _audioSourceService.enabled = false;
-            DelayAudioSource().Forget();
-        }
-
-        async UniTask DelayAudioSource()
-        {
-            await UniTask.Delay(1000);
-            _audioSourceService.enabled = true;
-        }
 
         void Start()
         {
@@ -42,6 +32,10 @@ namespace UniLiveViewer.Menu
                 Debug.LogError("Page and number of buttons do not match.");
                 return;
             }
+
+            // 一旦
+            var lifetimeScope = LifetimeScope.Find<StageSceneLifetimeScope>();
+            _rootAudioSourceService = lifetimeScope.Container.Resolve<RootAudioSourceService>();
 
             for (int i = 0; i < _btnTab.Length; i++)
             {
@@ -66,9 +60,7 @@ namespace UniLiveViewer.Menu
                 Current = i;
                 break;
             }
-            //クリック音
-            _audioSourceService.PlayOneShot(0);
-
+            _rootAudioSourceService.PlayOneShot(AudioSE.TabClick);
             SwitchPages();
         }
 
@@ -104,8 +96,7 @@ namespace UniLiveViewer.Menu
             UniTask.Void(async () =>
             {
                 await UniTask.Delay(400, cancellationToken: _cancellationToken);
-                //ボタンの揺れ音
-                _audioSourceService.PlayOneShot(1);
+                _rootAudioSourceService.PlayOneShot(AudioSE.SpringMenuItem);
             });
         }
 
@@ -128,7 +119,7 @@ namespace UniLiveViewer.Menu
             {
                 Current++;
                 if (Current >= _pageAnchor.Length) Current = 0;
-                _audioSourceService.PlayOneShot(0);
+                _rootAudioSourceService.PlayOneShot(AudioSE.TabClick);
                 SwitchPages();
             }
         }

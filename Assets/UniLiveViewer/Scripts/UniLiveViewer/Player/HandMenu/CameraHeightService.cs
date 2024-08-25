@@ -15,7 +15,7 @@ namespace UniLiveViewer.Player.HandMenu
         readonly PlayerHandMenuAnchorL _playerHandMenuAnchorL;
         readonly PlayerHandMenuSettings _playerHandMenuSettings;
         readonly Transform _lookTarget;
-        readonly AudioSourceService _audioSourceService;
+        readonly RootAudioSourceService _audioSourceService;
 
         [Inject]
         public CameraHeightService(
@@ -23,7 +23,7 @@ namespace UniLiveViewer.Player.HandMenu
             PlayerHandMenuAnchorL playerHandMenuAnchorL,
             PlayerHandMenuSettings playerHandMenuSettings,
             Camera camera,
-            AudioSourceService audioSourceService)
+            RootAudioSourceService audioSourceService)
         {
             _characterCameraConstraintCustom = characterCameraConstraintCustom;
             _playerHandMenuAnchorL = playerHandMenuAnchorL;
@@ -57,11 +57,11 @@ namespace UniLiveViewer.Player.HandMenu
 
             if (_handMenu.IsShow)
             {
-                _audioSourceService.PlayOneShot(3);//Open
+                _audioSourceService.PlayOneShot(AudioSE.MenuOpen);
             }
             else
             {
-                _audioSourceService.PlayOneShot(4);//Close
+                _audioSourceService.PlayOneShot(AudioSE.MenuClose);
             }
         }
 

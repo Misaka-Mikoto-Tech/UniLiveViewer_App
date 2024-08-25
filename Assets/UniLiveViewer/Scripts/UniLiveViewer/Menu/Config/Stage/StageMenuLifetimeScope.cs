@@ -9,12 +9,10 @@ namespace UniLiveViewer.Menu.Config.Stage
     /// </summary>
     public class StageMenuLifetimeScope : LifetimeScope
     {
-        [SerializeField] AudioSourceService _audioSourceService;
         [SerializeField] StageMenuSettings _settings;
 
         protected override void Configure(IContainerBuilder builder)
         {
-            builder.RegisterInstance(_audioSourceService);
             builder.RegisterInstance(_settings);
 
             builder.Register<StageMenuService>(Lifetime.Singleton);

@@ -31,18 +31,21 @@ namespace UniLiveViewer.Menu
         AnimationAssetManager _animationAssetManager;
         AudioAssetManager _audioAssetManager;
         List<Button_Base> _btnList = new();
+        AudioClipSettings _audioClipSettings;
 
         [Inject]
         public void Construct(
             PresetResourceData presetResourceData,
             ActorEntityManagerService actorEntityManagerService,
             AnimationAssetManager animationAssetManager,
-            AudioAssetManager audioAssetManager)
+            AudioAssetManager audioAssetManager,
+            AudioClipSettings audioClipSettings)
         {
             _presetResourceData = presetResourceData;
             _actorEntityManagerService = actorEntityManagerService;
             _animationAssetManager = animationAssetManager;
             _audioAssetManager = audioAssetManager;
+            _audioClipSettings = audioClipSettings;
             Close();
         }
 
@@ -168,18 +171,17 @@ namespace UniLiveViewer.Menu
         /// </summary>
         public void SetAudioData(bool isPresetAudio)
         {
-
             if (isPresetAudio)
             {
                 //必要ならボタンを生成
-                var count = _audioAssetManager.PresetAudioClips.Count;
+                var count = _audioClipSettings.AudioBGM.Count;
                 BtnInstanceCheck(count);
 
                 for (int i = 0; i < _btnList.Count; i++)
                 {
                     if (i < count)
                     {
-                        var name = Path.GetFileName(_audioAssetManager.PresetAudioClips[i].name);
+                        var name = Path.GetFileName(_audioClipSettings.AudioBGM[i].name);
                         _btnList[i].SetTextMesh(name);
                         if (!_btnList[i].gameObject.activeSelf) _btnList[i].gameObject.SetActive(true);
                     }

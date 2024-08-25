@@ -10,30 +10,30 @@ namespace UniLiveViewer.Menu.Config.Graphics
         const string Edge = "_Edge";
 
         public IReadOnlyReactiveProperty<AntialiasingMode> AntialiasingMode => _antialiasingMode;
-        ReactiveProperty<AntialiasingMode> _antialiasingMode = new((AntialiasingMode)FileReadAndWriteUtility.UserProfile.Antialiasing);
+        readonly ReactiveProperty<AntialiasingMode> _antialiasingMode = new((AntialiasingMode)FileReadAndWriteUtility.UserProfile.Antialiasing);
 
         public IReadOnlyReactiveProperty<bool> Bloom => _bloom;
-        ReactiveProperty<bool> _bloom = new(FileReadAndWriteUtility.UserProfile.IsBloom);
+        readonly ReactiveProperty<bool> _bloom = new(FileReadAndWriteUtility.UserProfile.IsBloom);
 
         public IReadOnlyReactiveProperty<bool> DepthOfField => _depthOfField;
-        ReactiveProperty<bool> _depthOfField = new(FileReadAndWriteUtility.UserProfile.IsDepthOfField);
+        readonly ReactiveProperty<bool> _depthOfField = new(FileReadAndWriteUtility.UserProfile.IsDepthOfField);
 
         public IReadOnlyReactiveProperty<bool> Tonemapping => _tonemapping;
-        ReactiveProperty<bool> _tonemapping = new(FileReadAndWriteUtility.UserProfile.IsTonemapping);
+        readonly ReactiveProperty<bool> _tonemapping = new(FileReadAndWriteUtility.UserProfile.IsTonemapping);
 
         public IReadOnlyReactiveProperty<float> BloomThreshold => _bloomThreshold;
-        ReactiveProperty<float> _bloomThreshold = new(FileReadAndWriteUtility.UserProfile.BloomThreshold);
+        readonly ReactiveProperty<float> _bloomThreshold = new(FileReadAndWriteUtility.UserProfile.BloomThreshold);
 
         public IReadOnlyReactiveProperty<float> BloomIntensity => _bloomIntensity;
-        ReactiveProperty<float> _bloomIntensity = new(FileReadAndWriteUtility.UserProfile.BloomIntensity);
+        readonly ReactiveProperty<float> _bloomIntensity = new(FileReadAndWriteUtility.UserProfile.BloomIntensity);
 
-        readonly AudioSourceService _audioSourceService;
+        readonly RootAudioSourceService _audioSourceService;
         readonly GraphicsMenuSettings _settings;
         readonly CompositeDisposable _disposables = new();
 
         [Inject]
         public GraphicsMenuService(
-            AudioSourceService audioSourceService,
+            RootAudioSourceService audioSourceService,
             GraphicsMenuSettings settings)
         {
             _audioSourceService = audioSourceService;
@@ -86,7 +86,7 @@ namespace UniLiveViewer.Menu.Config.Graphics
             {
                 _tonemapping.Value = btn.isEnable;
             }
-            _audioSourceService.PlayOneShot(0);
+            _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
         }
 
         void OnChangeOutline(float value)

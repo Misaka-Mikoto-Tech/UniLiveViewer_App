@@ -16,7 +16,7 @@ namespace UniLiveViewer.Menu.Config.Stage
 
         void IStartable.Start()
         {
-            _sceneSelectMenuService.Initialize();
+
         }
     }
 }

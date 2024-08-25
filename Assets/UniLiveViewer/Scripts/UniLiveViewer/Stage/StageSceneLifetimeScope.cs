@@ -1,4 +1,5 @@
-﻿using VContainer;
+﻿using UnityEngine;
+using VContainer;
 using VContainer.Unity;
 
 namespace UniLiveViewer.Stage
@@ -8,8 +9,14 @@ namespace UniLiveViewer.Stage
     /// </summary>
     public class StageSceneLifetimeScope : LifetimeScope
     {
+        [SerializeField] AudioClipSettings _audioClipSettings;
+        [SerializeField] RootAudioSourceService _rootAudioSourceService;
+
         protected override void Configure(IContainerBuilder builder)
         {
+            builder.RegisterInstance(_audioClipSettings);
+            builder.RegisterComponent(_rootAudioSourceService);
+
             builder.Register<AnimationAssetManager>(Lifetime.Singleton);
             builder.Register<TextureAssetManager>(Lifetime.Singleton);
 

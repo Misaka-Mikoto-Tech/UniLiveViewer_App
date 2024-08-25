@@ -22,7 +22,7 @@ namespace UniLiveViewer.Menu
         readonly ItemPage _itemPage;
         readonly ConfigPage _configPage;
         readonly JumpList _jumpList;
-        readonly AudioSourceService _audioSourceService;
+        readonly RootAudioSourceService _audioSourceService;
         readonly CompositeDisposable _disposables = new();
 
         [Inject]
@@ -33,7 +33,7 @@ namespace UniLiveViewer.Menu
             ItemPage itemPage,
             ConfigPage configPage,
             JumpList jumpList,
-            AudioSourceService audioSourceService)
+            RootAudioSourceService audioSourceService)
         {
             _playerInputService = playerInputService;
             _meneRoot = meneRoot;
@@ -65,8 +65,8 @@ namespace UniLiveViewer.Menu
             _isRootActive = !_isRootActive;
             _meneRoot.gameObject.SetActive(_isRootActive);
 
-            if (_isRootActive) _audioSourceService.PlayOneShot(2);//表示音
-            else _audioSourceService.PlayOneShot(3);//非表示音
+            if (_isRootActive) _audioSourceService.PlayOneShot(AudioSE.MenuOpen);
+            else _audioSourceService.PlayOneShot(AudioSE.MenuClose);
         }
 
         void IDisposable.Dispose()

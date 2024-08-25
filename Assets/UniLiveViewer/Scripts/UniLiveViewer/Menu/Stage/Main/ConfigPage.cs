@@ -35,12 +35,12 @@ namespace UniLiveViewer.Menu
 
         Material _matMirrore;//LiveScene用
         BackGroundController _backGroundCon;
-        AudioSourceService _audioSourceService;
+        RootAudioSourceService _audioSourceService;
         CancellationToken _cancellation;
 
         [Inject]
         public void Construct(
-            AudioSourceService audioSourceService)
+            RootAudioSourceService audioSourceService)
         {
             _audioSourceService = audioSourceService;
         }
@@ -186,7 +186,6 @@ namespace UniLiveViewer.Menu
             {
                 //各種有効化状態にボタンを合わせる
                 _stageEventButton[0].isEnable = FileReadAndWriteUtility.UserProfile.scene_gym_whitelight;
-                _stageEventButton[1].isEnable = FileReadAndWriteUtility.UserProfile.StepSE;
 
                 Click_Setting_Gym(0);
             }
@@ -210,7 +209,7 @@ namespace UniLiveViewer.Menu
         /// <param name="i"></param>
         public void Click_Setting_Live(int i)
         {
-            _audioSourceService.PlayOneShot(0);
+            _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
 
             bool result = _stageEventButton[i].isEnable;
             switch (i)
@@ -267,7 +266,7 @@ namespace UniLiveViewer.Menu
         /// <param name="i"></param>
         public void Click_Setting_KAGURA(int i)
         {
-            _audioSourceService.PlayOneShot(0);
+            _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
 
             bool result = _stageEventButton[i].isEnable;
             switch (i)
@@ -316,7 +315,7 @@ namespace UniLiveViewer.Menu
         /// <param name="i"></param>
         public void Click_Setting_Viewer(int i)
         {
-            _audioSourceService.PlayOneShot(0);
+            _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
 
             var result = _stageEventButton[i].isEnable;
             switch (i)
@@ -368,7 +367,7 @@ namespace UniLiveViewer.Menu
                     break;
             }
 
-            _audioSourceService.PlayOneShot(0);
+            _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
         }
 
         // 雑
@@ -383,7 +382,7 @@ namespace UniLiveViewer.Menu
 
             _stageLightIndex.OnNext(_lightIndex);
             _gymTextMeshs[0].text = $"SpotLight_{Enum.GetName(typeof(StageEnums.StageLight), _lightIndex)}";
-            _audioSourceService.PlayOneShot(1);
+            _audioSourceService.PlayOneShot(AudioSE.SpotlightSwitch);
         }
 
         public void Click_Setting_Gym(int i)
@@ -394,21 +393,17 @@ namespace UniLiveViewer.Menu
                     _stageLightIsWhite.OnNext(_stageEventButton[0].isEnable);
                     FileReadAndWriteUtility.UserProfile.scene_gym_whitelight = _stageEventButton[0].isEnable;
                     break;
-                case 1:
-                    FootstepAudio.SetEnable(_stageEventButton[1].isEnable);
-                    FileReadAndWriteUtility.UserProfile.StepSE = _stageEventButton[1].isEnable;
-                    break;
             }
 
             //保存する
             FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
 
-            _audioSourceService.PlayOneShot(0);
+            _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
         }
 
         public void Click_Setting_FantasyVillage(int i)
         {
-            _audioSourceService.PlayOneShot(0);
+            _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
 
             bool result = _stageEventButton[i].isEnable;
             switch (i)

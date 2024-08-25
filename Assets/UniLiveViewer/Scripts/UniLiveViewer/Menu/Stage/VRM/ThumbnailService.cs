@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using NanaCiel;
 using System;
 using System.Collections.Generic;
@@ -24,14 +24,14 @@ namespace UniLiveViewer.Menu
 
         int[] _randomBox;
 
-        readonly AudioSourceService _audioSourceService;
+        readonly RootAudioSourceService _audioSourceService;
         readonly ThumbnailAnchor _thumbnailAnchor;
         readonly TextureAssetManager _textureAssetManager;
         readonly ActorEntityManagerService _actorEntityManager;
 
         [Inject]
         public ThumbnailService(
-            AudioSourceService audioSourceService,
+            RootAudioSourceService audioSourceService,
             ThumbnailAnchor thumbnailAnchor,
             TextureAssetManager textureAssetManager,
             ActorEntityManagerService actorEntityManager)
@@ -76,7 +76,7 @@ namespace UniLiveViewer.Menu
                     {
                         //重複クリックできないようにボタンを無効化
                         SetEnableRoot(false);
-                        _audioSourceService.PlayOneShot(0);
+                        _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
                         _actorEntityManager.RegisterVRM(new VRMLoadData(b.name));
                         _clickStream.OnNext(b);
                     };
@@ -123,7 +123,7 @@ namespace UniLiveViewer.Menu
                     if (i % GENERATE_COUNT[random] == 0)
                     {
                         UniTask.Delay(500, cancellationToken: cancellation)
-                            .ContinueWith(() => _audioSourceService.PlayOneShot(1)).Forget();
+                            .ContinueWith(() => _audioSourceService.PlayOneShot(AudioSE.SpringMenuItem)).Forget();
                     }
                     if (i % GENERATE_COUNT[random] == GENERATE_COUNT[random] - 1) await UniTask.Delay(GENERATE_INTERVAL[random], cancellationToken: cancellation);
                 }

@@ -33,11 +33,11 @@ namespace UniLiveViewer.Menu
         //ファイルアクセスとサムネの管理
         FileAccessManager _fileManager;
 
-        AudioSourceService _audioSourceService;
+        RootAudioSourceService _audioSourceService;
 
         public async UniTask InitializeAsync(
             FileAccessManager fileAccessManager,
-            AudioSourceService audioSourceService,
+            RootAudioSourceService audioSourceService,
             CancellationToken cancellation)
         {
             _fileManager = fileAccessManager;
@@ -49,7 +49,7 @@ namespace UniLiveViewer.Menu
 
             //コールバック登録・・・2ページ目
             _btnApply.onTrigger += (btn) => PrefabApply(btn, cancellation).Forget();
-            _prefabEditor.onCurrentUpdate += () => { _audioSourceService.PlayOneShot(0); };//クリック音
+            _prefabEditor.onCurrentUpdate += () => { _audioSourceService.PlayOneShot(AudioSE.ButtonClick); };
 
             await UniTask.CompletedTask;
         }
@@ -127,7 +127,7 @@ namespace UniLiveViewer.Menu
             //cancellation.ThrowIfCancellationRequested();
 
             ////クリック音
-            //_audioSourceService.PlayOneShot(0);
+            //_audioSourceService.PlayOneShot(AudioSE.ButtonClick);
 
             //var vrm = _prefabEditor.EditTarget;
 

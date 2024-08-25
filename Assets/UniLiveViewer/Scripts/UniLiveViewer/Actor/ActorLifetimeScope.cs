@@ -160,7 +160,7 @@ namespace UniLiveViewer.Actor
         void FootstepConfigure(IContainerBuilder builder)
         {
             builder.RegisterInstance(_audioSourceService);
-            builder.Register<FootstepService>(Lifetime.Singleton);
+            builder.Register<FootStepService>(Lifetime.Singleton);
             builder.RegisterEntryPoint<FootstepPresenter>(Lifetime.Singleton);
         }
 

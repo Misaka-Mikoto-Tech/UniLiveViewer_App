@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System.Threading;
 using UnityEngine;
 using VContainer;
@@ -26,7 +26,7 @@ namespace UniLiveViewer
 #elif UNITY_ANDROID
         Debug.Log("Questとして認識しています");
 #endif
-            FileReadAndWriteUtility.ReadJson();
+            FileReadAndWriteUtility.Initialize();
         }
 
         async UniTask IAsyncStartable.StartAsync(CancellationToken cancellation)

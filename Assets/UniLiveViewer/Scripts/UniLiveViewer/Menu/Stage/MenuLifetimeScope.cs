@@ -1,4 +1,4 @@
-using MessagePipe;
+﻿using MessagePipe;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
@@ -21,7 +21,6 @@ namespace UniLiveViewer.Menu
         [SerializeField] MeneRoot _menuRoot;
         [SerializeField] JumpList _jumpList;
         [SerializeField] VRMSwitchController _vrmSwitchController;
-        [SerializeField] AudioSourceService _audioSourceService;
 
         protected override void Configure(IContainerBuilder builder)
         {
@@ -29,7 +28,6 @@ namespace UniLiveViewer.Menu
             builder.RegisterMessageBroker<VRMMenuShowMessage>(options);
 
             builder.RegisterComponent(_vrmSwitchController);
-            builder.RegisterComponent(_audioSourceService);
 
             ActorPageConfigure(builder);
 

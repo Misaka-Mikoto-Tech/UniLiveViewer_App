@@ -60,7 +60,7 @@ namespace UniLiveViewer
             }
             else
             {
-                var spectrumVisualizer = transform.GetChild(0).GetComponent<Timeline.SpectrumVisualizer>();
+                var spectrumVisualizer = transform.GetChild(0).GetComponent<Timeline.SpectrumVisualizerBase>();
                 if (spectrumVisualizer == null) return;
 
                 // ex: tex_sk

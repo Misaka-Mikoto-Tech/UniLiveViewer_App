@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
 namespace UniLiveViewer
 {
+    // TODO: いつか作り直す
     public static class FileReadAndWriteUtility
     {
         static string PathOffset = PathsInfo.GetFullPath(FolderType.SETTING) + "/" + "MotionOffset.txt";
@@ -19,57 +21,58 @@ namespace UniLiveViewer
         /// 基準モーションに同期するファイル名を取得、ペアが無い場合はnull
         /// </summary>
         /// <param name="baseMotion"></param>
-        /// <returns></returns>
         public static string TryGetSyncFileName(string baseMotion)
             => map_MotionFacialPair.ContainsKey(baseMotion) ? map_MotionFacialPair[baseMotion] : null;
         static Dictionary<string, string> map_MotionFacialPair = new();
 
         public static UserProfile UserProfile { get; private set; }
 
+        public static void Initialize()
+        {
+            UserProfile = LoadOrCreateJson();
+        }
+
         /// <summary>
         /// Jsonファイルを読み込んでクラスに変換
         /// </summary>
-        /// <returns></returns>
-        public static UserProfile ReadJson()
+        static UserProfile LoadOrCreateJson()
         {
-            UserProfile result;
-
             var path = PathsInfo.GetFullPath_JSON();
-            var datastr = "";
-            StreamReader reader = null;
             if (File.Exists(path))
             {
-                using (reader = new StreamReader(path))
+                try
                 {
-                    datastr = reader.ReadToEnd();
-                    //reader.Close();
+                    var datastr = File.ReadAllText(path);
+                    return JsonUtility.FromJson<UserProfile>(datastr);
                 }
-                result = JsonUtility.FromJson<UserProfile>(datastr);
+                catch (Exception ex)
+                {
+                    Debug.LogWarning($"Json read failure: {ex}");
+                }
             }
-            else
-            {
-                //新規作成して読み込み直す
-                result = new UserProfile();
-                WriteJson(result);
-            }
-            UserProfile = result;
+
+            //新規作成して読み込み直す
+            var result = new UserProfile();
+            WriteJson(result);
             return result;
         }
 
         /// <summary>
         /// Jsonファイルに書き込む
         /// </summary>
-        /// <param name="lang"></param>
         public static void WriteJson(UserProfile data)
         {
             //Json形式に変換
             var path = PathsInfo.GetFullPath_JSON();
-            var jsonstr = JsonUtility.ToJson(data, true);
-            using (var writer = new StreamWriter(path, false))
+            try
             {
-                writer.Write(jsonstr);
-                //writer.Flush();
-                //writer.Close();
+                var jsonstr = JsonUtility.ToJson(data, true);
+                Directory.CreateDirectory(Path.GetDirectoryName(path)); // ディレクトリの作成を確認
+                File.WriteAllText(path, jsonstr);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"Json write failure: {ex}");
             }
         }
 

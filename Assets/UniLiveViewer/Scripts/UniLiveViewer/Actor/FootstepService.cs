@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using UniLiveViewer.SceneLoader;
 using UnityEngine;
 using VContainer;
 
@@ -8,83 +7,88 @@ namespace UniLiveViewer.Actor
     /// <summary>
     /// 足音service
     /// </summary>
-    public class FootstepService
+    public class FootStepService
     {
         /// <summary>
         /// 要調整
         /// </summary>
         const float FootRay = 0.2f;
 
-        List<FoodMap> _foodMap = new();
+        List<FootMap> _footMap = new();
         ActorEntity _actorEntity;
 
         readonly AudioSourceService _audioSourceService;
-        readonly ActorOptionSetting _setting;
+        readonly AudioClipSettings _setting;
 
         [Inject]
-        public FootstepService(
+        public FootStepService(
             AudioSourceService audioSourceService,
-            ActorOptionSetting setting)
+            AudioClipSettings setting)
         {
             _audioSourceService = audioSourceService;
             _setting = setting;
+        }
+
+        public void SetVolume(float volume)
+        {
+            _audioSourceService.SetVolume(volume);
         }
 
         public void OnChangeActorEntity(ActorEntity actorEntity)
         {
             _actorEntity = actorEntity;
             if (actorEntity == null) return;
-            _foodMap.Add(new FoodMap(actorEntity.BoneMap[HumanBodyBones.LeftFoot]));
-            _foodMap.Add(new FoodMap(actorEntity.BoneMap[HumanBodyBones.RightFoot]));
+            _footMap.Add(new FootMap(actorEntity.BoneMap[HumanBodyBones.LeftFoot]));
+            _footMap.Add(new FootMap(actorEntity.BoneMap[HumanBodyBones.RightFoot]));
         }
 
         public void OnFixedTick()
         {
             if (_actorEntity == null) return;
 
-            if (!FootstepAudio.IsFootstepAudio) return;
-            if (SceneChangeService.GetSceneType != SceneType.GYMNASIUM) return;
+            //TODO: ステージ別で音
+            //if (SceneChangeService.GetSceneType != SceneType.GYMNASIUM) return;
 
-            for (int i = 0; i < _foodMap.Count; i++)
+            for (int i = 0; i < _footMap.Count; i++)
             {
-                CheckFootContact(_foodMap[i]);
+                CheckFootContact(_footMap[i]);
             }
         }
 
         /// <summary>
         /// 足と床の衝突判定
         /// </summary>
-        void CheckFootContact(FoodMap foodMap)
+        void CheckFootContact(FootMap footMap)
         {
-            if (Physics.Raycast(foodMap.FootBone.position, Vector3.down, out var hitCollider, FootRay, Constants.LayerMaskStageFloor))
+            if (Physics.Raycast(footMap.FootBone.position, Vector3.down, out var hitCollider, FootRay, Constants.LayerMaskStageFloor))
             {
                 var isHit = hitCollider.collider != null;
-                if (isHit == foodMap.IsHitCache) return;
-                foodMap.SetHit(isHit);
+                if (isHit == footMap.IsHitCache) return;
+                footMap.SetHit(isHit);
 
                 if (!isHit) return;
                 PlaySound(hitCollider.point);
             }
             else
             {
-                if (!foodMap.IsHitCache) return;
-                foodMap.SetHit(false);
+                if (!footMap.IsHitCache) return;
+                footMap.SetHit(false);
             }
         }
 
         void PlaySound(Vector3 hitPoint)
         {
             _audioSourceService.transform.position = hitPoint;
-            var index = UnityEngine.Random.Range(0, _setting.FootstepAudioClips.Count);
-            _audioSourceService.PlayOneShot(_setting.FootstepAudioClips[index]);
+            var index = UnityEngine.Random.Range(0, _setting.AudioFootDataSet.AudioClip.Count);
+            _audioSourceService.PlayOneShot(_setting.AudioFootDataSet.AudioClip[index]);
         }
 
-        public class FoodMap
+        public class FootMap
         {
             public Transform FootBone { get; private set; }
             public bool IsHitCache { get; private set; }
 
-            public FoodMap(Transform footBone)
+            public FootMap(Transform footBone)
             {
                 FootBone = footBone;
                 IsHitCache = false;

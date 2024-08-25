@@ -74,7 +74,7 @@ namespace UniLiveViewer.Menu
         AnimationAssetManager _animationAssetManager;
         IPublisher<AllActorOperationMessage> _allPublisher;
         IPublisher<ActorOperationMessage> _publisher;
-        AudioSourceService _audioSourceService;
+        RootAudioSourceService _audioSourceService;
         BookService _bookService;
 
         [Inject]
@@ -86,7 +86,7 @@ namespace UniLiveViewer.Menu
             AnimationAssetManager animationAssetManager,
             IPublisher<AllActorOperationMessage> actorOperationPublisher,
             IPublisher<ActorOperationMessage> publisher,
-            AudioSourceService audioSourceService,
+            RootAudioSourceService audioSourceService,
             BookService bookService)
         {
             _playableBinderService = playableBinderService;
@@ -250,13 +250,13 @@ namespace UniLiveViewer.Menu
                     }
                     break;
             }
-            _audioSourceService.PlayOneShot(0);
+            _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
         }
 
         public void OnClickManualBook()
         {
             _bookService.ChangeOpenClose();
-            _audioSourceService.PlayOneShot(0);
+            _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
         }
 
         void Update()
@@ -292,7 +292,7 @@ namespace UniLiveViewer.Menu
             {
                 _menuManager.jumpList.SetLipSyncNames();
             }
-            _audioSourceService.PlayOneShot(0);
+            _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
         }
 
         void OnClickSwitchChara(Button_Base btn)
@@ -400,7 +400,7 @@ namespace UniLiveViewer.Menu
 
                 _vrmIndex.SetValueAndForceNotify(pendingIndex);
             }
-            _audioSourceService.PlayOneShot(0);
+            _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
         }
 
         /// <summary>
@@ -459,7 +459,7 @@ namespace UniLiveViewer.Menu
                 else if (_animationAssetManager.VmdList.Count <= pendingIndex) pendingIndex = 0;
                 _vmdIndex.SetValueAndForceNotify(pendingIndex);
             }
-            if (isPlaySE) _audioSourceService.PlayOneShot(0);
+            if (isPlaySE) _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
         }
 
         public void OnBindingNewAnimation()
@@ -516,7 +516,7 @@ namespace UniLiveViewer.Menu
                     var baseMotion = textMeshs[1].name;
                     FileReadAndWriteUtility.SetMotionOffset(baseMotion, (int)_sliderOffset.Value);
                     textMeshs[3].text = $"{_sliderOffset.Value:0000}";
-                    _audioSourceService.PlayOneShot(0);
+                    _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
                     break;
                 }
             }
@@ -579,7 +579,7 @@ namespace UniLiveViewer.Menu
             var message = new AllActorOperationMessage(ActorState.FIELD, ActorCommand.DELETE);
             _allPublisher.Publish(message);
 
-            _audioSourceService.PlayOneShot(4);
+            _audioSourceService.PlayOneShot(AudioSE.ObjectDelete);
         }
 
         /// <summary>
@@ -602,7 +602,7 @@ namespace UniLiveViewer.Menu
                 var message = new ActorOperationMessage(instanceId, command);
                 _publisher.Publish(message);
             }
-            _audioSourceService.PlayOneShot(0);
+            _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
         }
 
         void DebugInput()

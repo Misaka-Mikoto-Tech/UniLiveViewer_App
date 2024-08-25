@@ -16,7 +16,7 @@ namespace UniLiveViewer.Player.HandMenu
         readonly PlayerHandMenuAnchorR _playerHandMenuAnchorR;
         readonly PlayerHandMenuSettings _playerHandMenuSettings;
         readonly Transform _lookTarget;
-        readonly AudioSourceService _audioSourceService;
+        readonly RootAudioSourceService _audioSourceService;
         readonly SystemSettingsService _systemSettingsService;
 
         [Inject]
@@ -25,7 +25,7 @@ namespace UniLiveViewer.Player.HandMenu
             PlayerHandMenuAnchorR playerHandMenuAnchorR,
             PlayerHandMenuSettings playerHandMenuSettings,
             Camera camera,
-            AudioSourceService audioSourceService,
+            RootAudioSourceService audioSourceService,
             SystemSettingsService systemSettingsService)
         {
             _playerHandMenuAnchorL = playerHandMenuAnchorL;
@@ -67,13 +67,13 @@ namespace UniLiveViewer.Player.HandMenu
             _handMenu[index].SetShow(isShow);
             if (isShow)
             {
-                _audioSourceService.PlayOneShot(3);
+                _audioSourceService.PlayOneShot(AudioSE.MenuOpen);
                 if (decorationItemInfo == null) return;
                 InitItemMaterialSelector(index, decorationItemInfo);
             }
             else
             {
-                _audioSourceService.PlayOneShot(4);
+                _audioSourceService.PlayOneShot(AudioSE.MenuClose);
             }
         }
 
@@ -93,7 +93,7 @@ namespace UniLiveViewer.Player.HandMenu
         {
             if (_itemMaterialSelector.Length <= index) return;
             var result = _itemMaterialSelector[index].TrySetTexture(current);
-            if (result) _audioSourceService.PlayOneShot(5);
+            if (result) _audioSourceService.PlayOneShot(AudioSE.ChangeItemColor);
         }
 
         public void OnLateTick()

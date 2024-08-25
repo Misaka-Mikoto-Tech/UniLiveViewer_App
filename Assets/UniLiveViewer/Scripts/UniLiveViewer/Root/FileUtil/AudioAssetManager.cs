@@ -6,6 +6,7 @@ using System.Threading;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
+using VContainer;
 
 namespace UniLiveViewer
 {
@@ -18,8 +19,6 @@ namespace UniLiveViewer
         const string EXTENSION_WAV = ".wav";
         const int MAX_STACK = 5;
 
-        [SerializeField] List<AudioClip> _presetAudioClips;
-        public IReadOnlyList<AudioClip> PresetAudioClips => _presetAudioClips;
         public int CurrentPreset => _currentPreset;
         int _currentPreset;
 
@@ -30,6 +29,15 @@ namespace UniLiveViewer
         public int CurrentCustom => _currentCustom;
         int _currentCustom;
         string _basePath;
+
+        AudioClipSettings _audioClipSettings;
+
+        [Inject]
+        public void Construct(AudioClipSettings audioClipSettings)
+        {
+            _audioClipSettings = audioClipSettings;
+        }
+
         void Awake()
         {
             _currentPreset = 0;
@@ -63,8 +71,8 @@ namespace UniLiveViewer
         {
             if (isPreset)
             {
-                if (_presetAudioClips.Count == 0) return null;
-                return _presetAudioClips[_currentPreset];
+                if (_audioClipSettings.AudioBGM.Count == 0) return null;
+                return _audioClipSettings.AudioBGM[_currentPreset];
             }
             else
             {
@@ -85,9 +93,9 @@ namespace UniLiveViewer
 
             if (isPreset)
             {
-                if (_presetAudioClips.Count == 0) return null;
-                _currentPreset = IndexNormalization(_currentPreset + addCurrent, _presetAudioClips.Count);
-                return _presetAudioClips[_currentPreset];
+                if (_audioClipSettings.AudioBGM.Count == 0) return null;
+                _currentPreset = IndexNormalization(_currentPreset + addCurrent, _audioClipSettings.AudioBGM.Count);
+                return _audioClipSettings.AudioBGM[_currentPreset];
             }
             else
             {

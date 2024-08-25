@@ -117,7 +117,6 @@ namespace UniLiveViewer.Menu.Config.Stage
             else if (SceneChangeService.GetSceneType == SceneType.GYMNASIUM)
             {
                 btnE[0].isEnable = FileReadAndWriteUtility.UserProfile.scene_gym_whitelight;
-                btnE[1].isEnable = FileReadAndWriteUtility.UserProfile.StepSE;
             }
             else if (SceneChangeService.GetSceneType == SceneType.FANTASY_VILLAGE)
             {

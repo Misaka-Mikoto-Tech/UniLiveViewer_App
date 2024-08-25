@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UniLiveViewer.Actor.AttachPoint;
 using UniLiveViewer.OVRCustom;
 using UniLiveViewer.Player.HandMenu;
@@ -21,14 +21,14 @@ namespace UniLiveViewer.Player
         int _currentIndex = 0;
 
         readonly OVRGrabber_UniLiveViewer _hand;
-        readonly AudioSourceService _audioSourceService;
+        readonly RootAudioSourceService _audioSourceService;
         readonly ItemMaterialSelectionService _itemMaterialSelection;
         readonly PlayableAnimationClipService _playableAnimationClipService;
         readonly PlayableDirector _playableDirector;
 
         public ItemDecoratorService(
             OVRGrabber_UniLiveViewer hand,
-            AudioSourceService audioSourceService,
+            RootAudioSourceService audioSourceService,
             ItemMaterialSelectionService itemMaterialSelection,
             PlayableAnimationClipService playableAnimationClipService,
             PlayableDirector playableDirector)
@@ -48,6 +48,7 @@ namespace UniLiveViewer.Player
             if (_ismaterialSelection)
             {
                 //TODO: 見直す
+                if (_hand.GrabbedObj.Value == null) return;
                 if (!_hand.GrabbedObj.Value.TryGetComponent<DecorationItemInfo>(out var itemInfo)) return;
                 _itemMaterialSelection.ChangeShow((int)_hand.HandType, _ismaterialSelection, itemInfo);
             }
@@ -73,11 +74,11 @@ namespace UniLiveViewer.Player
 
             if (TryAttachmentItem(_hand))
             {
-                _audioSourceService.PlayOneShot(1);
+                _audioSourceService.PlayOneShot(AudioSE.AttachSuccess);
             }
             else
             {
-                _audioSourceService.PlayOneShot(2);//失敗で削除音
+                _audioSourceService.PlayOneShot(AudioSE.ObjectDelete);
             }
         }
 

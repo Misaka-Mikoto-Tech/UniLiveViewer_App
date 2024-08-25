@@ -12,14 +12,14 @@ namespace UniLiveViewer.Menu.Config.Actor
         readonly IPublisher<AllActorOperationMessage> _allPublisher;
         readonly ActorMenuSettings _settings;
         readonly QuasiShadowSetting _quasiShadowSetting;
-        readonly AudioSourceService _audioSourceService;
+        readonly RootAudioSourceService _audioSourceService;
 
         [Inject]
         public ActorMenuService(
             IPublisher<AllActorOperationMessage> allPublisher,
             ActorMenuSettings settings,
             QuasiShadowSetting quasiShadowSetting,
-            AudioSourceService audioSourceService)
+            RootAudioSourceService audioSourceService)
         {
             _allPublisher = allPublisher;
             _settings = settings;
@@ -65,7 +65,7 @@ namespace UniLiveViewer.Menu.Config.Actor
             FileReadAndWriteUtility.UserProfile.CharaShadowType = (int)_quasiShadowSetting.ShadowType;
             FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
 
-            _audioSourceService.PlayOneShot(0);
+            _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
 
             //json保存後に通知
             var message = new AllActorOperationMessage(ActorState.FIELD, ActorCommand.UPDATE_SHADOW);

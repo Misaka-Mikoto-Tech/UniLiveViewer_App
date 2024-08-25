@@ -23,7 +23,7 @@ namespace UniLiveViewer.Player.HandMenu
 
         readonly OVRGrabber_UniLiveViewer _hand;
         readonly IPublisher<ActorResizeMessage> _publisher;
-        readonly AudioSourceService _audioSourceService;
+
         /// <summary>
         /// NonLinearなActor拡縮用
         /// </summary>
@@ -33,13 +33,11 @@ namespace UniLiveViewer.Player.HandMenu
         public ActorScalingService(
             OVRGrabber_UniLiveViewer hand,
             IPublisher<ActorResizeMessage> publisher,
-            AudioSourceService audioSourceService,
             PlayerInputService playerInputService,
             AnimationCurve animationCurve)
         {
             _hand = hand;
             _publisher = publisher;
-            _audioSourceService = audioSourceService;
             _animationCurve = animationCurve;
 
             hand.HandActionStateAsObservable

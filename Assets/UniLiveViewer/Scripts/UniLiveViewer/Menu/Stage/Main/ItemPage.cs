@@ -36,12 +36,12 @@ namespace UniLiveViewer.Menu
 
         [SerializeField] DecorationItemSettings _decorationItemSettings;
 
-        AudioSourceService _audioSourceService;
+        RootAudioSourceService _audioSourceService;
         PassthroughService _passthroughService;
 
         [Inject]
         public void Construct(
-            AudioSourceService audioSourceService,
+            RootAudioSourceService audioSourceService,
             PassthroughService passthroughService)
         {
             _audioSourceService = audioSourceService;
@@ -133,8 +133,7 @@ namespace UniLiveViewer.Menu
             //アクティブページのアイテムを生成
             IfNeededGenerateItems();
 
-            //クリック音
-            _audioSourceService.PlayOneShot(0);
+            _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
         }
 
         /// <summary>

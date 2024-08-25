@@ -30,7 +30,7 @@ namespace UniLiveViewer.Menu
         PlayableDirector _playableDirector;
         PlayerHandsService _playerHandsService;
         AudioAssetManager _audioAssetManager;
-        AudioSourceService _audioSourceService;
+        RootAudioSourceService _audioSourceService;
 
         CancellationToken _cancellationToken;
 
@@ -40,7 +40,7 @@ namespace UniLiveViewer.Menu
             PlayableMusicService playableMusicService,
             PlayableDirector playableDirector,
             PlayerHandsService playerHandsService,
-            AudioSourceService audioSourceService)
+            RootAudioSourceService audioSourceService)
         {
             _audioAssetManager = audioAssetManager;
             _playableMusicService = playableMusicService;
@@ -69,7 +69,7 @@ namespace UniLiveViewer.Menu
                     ChangeAudioAsync(moveIndex, _cancellationToken).Forget();
                     break;
             }
-            _audioSourceService.PlayOneShot(0);
+            _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
         }
 
         public async UniTask StartAsync(CancellationToken cancellation)
@@ -130,7 +130,7 @@ namespace UniLiveViewer.Menu
 
             void OnClickPlay(Button_Base btn)
             {
-                _audioSourceService.PlayOneShot(0);
+                _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
                 if (_playerHandsService.IsGrabbingSliderWithHands()) return;
 
                 PlayAsync(_cancellationToken).Forget();
@@ -138,7 +138,7 @@ namespace UniLiveViewer.Menu
 
             void OnClickStop(Button_Base btn)
             {
-                _audioSourceService.PlayOneShot(0);
+                _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
                 if (_playerHandsService.IsGrabbingSliderWithHands()) return;
 
                 StopAsync(_cancellationToken).Forget();
@@ -146,7 +146,7 @@ namespace UniLiveViewer.Menu
 
             void OnClickBaseReturn(Button_Base btn)
             {
-                _audioSourceService.PlayOneShot(0);
+                _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
                 if (_playerHandsService.IsGrabbingSliderWithHands()) return;
 
                 BaseReturnAsync(_cancellationToken).Forget();
@@ -168,7 +168,7 @@ namespace UniLiveViewer.Menu
                     _switchAudio[1].isEnable = true;
                 }
                 _menuManager.jumpList.Close();
-                _audioSourceService.PlayOneShot(0);
+                _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
                 ChangeCategoryAsync(isPresetAudio, 0, _cancellationToken).Forget();
             }
 
@@ -180,7 +180,7 @@ namespace UniLiveViewer.Menu
 
                     var moveIndex = i == 0 ? -1 : 1;
                     ChangeAudioAsync(moveIndex, _cancellationToken).Forget();
-                    _audioSourceService.PlayOneShot(0);
+                    _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
                     return;
                 }
             }
@@ -232,7 +232,7 @@ namespace UniLiveViewer.Menu
             {
                 _menuManager.jumpList.SetAudioData(_isPresetAudio);
             }
-            _audioSourceService.PlayOneShot(0);
+            _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
         }
 
         /// <summary>

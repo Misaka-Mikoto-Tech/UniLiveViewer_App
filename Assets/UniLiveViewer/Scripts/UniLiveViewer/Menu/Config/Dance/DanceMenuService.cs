@@ -6,12 +6,12 @@ namespace UniLiveViewer.Menu.Config.Dance
     public class DanceMenuService
     {
         readonly DanceMenuSettings _settings;
-        readonly AudioSourceService _audioSourceService;
+        readonly RootAudioSourceService _audioSourceService;
 
         [Inject]
         public DanceMenuService(
             DanceMenuSettings settings,
-            AudioSourceService audioSourceService)
+            RootAudioSourceService audioSourceService)
         {
             _settings = settings;
             _audioSourceService = audioSourceService;
@@ -29,7 +29,7 @@ namespace UniLiveViewer.Menu.Config.Dance
         {
             FileReadAndWriteUtility.UserProfile.IsSmoothVMD = _settings.VMDSmoothButton.isEnable;
             FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
-            _audioSourceService.PlayOneShot(0);
+            _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
         }
 
         public void OnUpdateVMDScale(float value)

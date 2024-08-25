@@ -16,7 +16,6 @@ namespace UniLiveViewer.Player
     {
         [SerializeField] VolumeProfile _volumeProfile;
         [SerializeField] PlayerConfigData _playerConfigData;
-        [SerializeField] AudioSourceService _audioSourceService;
 
         [Header("XR設定")]
         [SerializeField] PlayerHandMenuAnchorL _playerHandMenuAnchorL;
@@ -32,7 +31,6 @@ namespace UniLiveViewer.Player
         protected override void Configure(IContainerBuilder builder)
         {
             builder.RegisterInstance(_playerConfigData);
-            builder.RegisterComponent(_audioSourceService);
             builder.RegisterComponent<Camera>(Camera.main);
 
             builder.RegisterComponent(GetComponent<PlayerRootAnchor>());

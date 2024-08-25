@@ -16,7 +16,6 @@ namespace UniLiveViewer.Timeline
         [SerializeField] PresetResourceData _presetResourceData;
         [SerializeField] QuasiShadowSetting _quasiShadowSetting;
         [SerializeField] ActorLifetimeScopeSetting _actorLifetimeScopeSetting;
-        [SerializeField] ActorOptionSetting _actorOptionSetting;
         /// <summary>
         /// Actorが使うのでここになちゃってる
         /// </summary>
@@ -42,7 +41,6 @@ namespace UniLiveViewer.Timeline
             builder.RegisterComponent(_anchor);
             builder.RegisterComponent(_spectrumConverter);
             builder.RegisterComponent(_actorLifetimeScopeSetting);
-            builder.RegisterComponent(_actorOptionSetting);
             
             builder.RegisterComponent(GetComponent<AudioAssetManager>());
             builder.RegisterComponent(GetComponent<PlayableDirector>());

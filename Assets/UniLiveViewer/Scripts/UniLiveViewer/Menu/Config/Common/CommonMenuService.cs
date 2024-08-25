@@ -1,4 +1,4 @@
-﻿using UniLiveViewer.Player;
+using UniLiveViewer.Player;
 using UnityEngine;
 using VContainer;
 
@@ -9,14 +9,14 @@ namespace UniLiveViewer.Menu.Config.Common
         readonly SystemSettingsService _systemSettingsService;
         readonly CommonMenuSettings _settings;
         readonly PassthroughService _passthroughService;
-        readonly AudioSourceService _audioSourceService;
+        readonly RootAudioSourceService _audioSourceService;
 
         [Inject]
         public CommonMenuService(
             SystemSettingsService systemSettingsService,
             CommonMenuSettings settings,
             PassthroughService passthroughService,
-            AudioSourceService audioSourceService)
+            RootAudioSourceService audioSourceService)
         {
             _systemSettingsService = systemSettingsService;
             _settings = settings;
@@ -35,26 +35,26 @@ namespace UniLiveViewer.Menu.Config.Common
             _settings.EnglishButton.onTrigger += (btn) => 
             {
                 _systemSettingsService.Change(SystemLanguage.English);
-                _audioSourceService.PlayOneShot(0);
+                _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
             };
             _settings.JapaneseButton.onTrigger += (btn) =>
             {
                 _systemSettingsService.Change(SystemLanguage.Japanese);
-                _audioSourceService.PlayOneShot(0);
+                _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
             };
         }
 
         void OnChangePassthrough(Button_Base button_Base)
         {
             _passthroughService.Switching(_settings.PassthroughButton.isEnable);
-            _audioSourceService.PlayOneShot(0);
+            _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
         }
 
         void OnChangeControllerVibration(Button_Base button_Base)
         {
             FileReadAndWriteUtility.UserProfile.TouchVibration = _settings.VibrationButton.isEnable;
             FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
-            _audioSourceService.PlayOneShot(0);
+            _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
         }
 
         /// <summary>

@@ -2,11 +2,14 @@
 
 namespace UniLiveViewer
 {
+    /// <summary>
+    /// NOTE: 現状タイトルのみ、消す予定
+    /// </summary>
     [RequireComponent(typeof(AudioSource))]
     public class AudioSourceService : MonoBehaviour
     {
         AudioSource _audioSource;
-        [SerializeField] AudioClip[] _sound;//ボタン音,読み込み音,クリック音
+        [SerializeField] AudioClip[] _sound;
 
         void Awake()
         {
@@ -18,11 +21,6 @@ namespace UniLiveViewer
         {
             if (_sound.Length <= index) return;
             _audioSource.PlayOneShot(_sound[index]);
-        }
-
-        public void PlayOneShot(AudioClip audioClip)
-        {
-            _audioSource.PlayOneShot(audioClip);
         }
     }
 }
