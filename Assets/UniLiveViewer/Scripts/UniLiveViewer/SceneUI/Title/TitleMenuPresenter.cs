@@ -1,30 +1,29 @@
 ﻿using Cysharp.Threading.Tasks;
 using System;
+using System.Threading;
 using UniLiveViewer.SceneLoader;
 using UniRx;
-using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
-namespace UniLiveViewer.Menu
+namespace UniLiveViewer.SceneUI.Title
 {
-    public class TitleMenuPresenter : IInitializable, IStartable, IDisposable
+    public class TitleMenuPresenter : IInitializable, IAsyncStartable, IDisposable
     {
+        readonly TitleMenuService _titleMenuService;
         readonly SceneChangeService _sceneChangeService;
-        readonly TitleMenuService _menuService;
-        readonly TextMesh _textAppVersion;
-
+        readonly TitleMenuSettings _titleMenuSettings;
         readonly CompositeDisposable _disposable = new();
 
         [Inject]
         public TitleMenuPresenter(
             TitleMenuService titleMenuService,
-            SceneChangeService sceneChangeService,
-            TextMesh textAppVersion)
+            TitleMenuSettings titleMenuSettings,
+            SceneChangeService sceneChangeService)
         {
+            _titleMenuService = titleMenuService;
+            _titleMenuSettings = titleMenuSettings;
             _sceneChangeService = sceneChangeService;
-            _menuService = titleMenuService;
-            _textAppVersion = textAppVersion;
         }
 
         void IInitializable.Initialize()
@@ -32,9 +31,24 @@ namespace UniLiveViewer.Menu
             _sceneChangeService.Initialize();
         }
 
-        void IStartable.Start()
+        async UniTask IAsyncStartable.StartAsync(CancellationToken cancellation)
         {
-            _textAppVersion.text = "ver." + Application.version;
+            _titleMenuSettings.MainMenuButton[0].onClick.AsObservable()
+                .Subscribe(async _ => await _titleMenuService.LoadScenesAutoAsync(cancellation))
+                .AddTo(_disposable);
+            _titleMenuSettings.MainMenuButton[1].onClick.AsObservable()
+                .Subscribe(_ => _titleMenuService.OpenLicense(true))
+                .AddTo(_disposable);
+            _titleMenuSettings.MainMenuButton[2].onClick.AsObservable()
+                .Subscribe(async _ => await _titleMenuService.QuitAppAsync(cancellation))
+                .AddTo(_disposable);
+            _titleMenuSettings.MainMenuButton[3].onClick.AsObservable()
+                .Subscribe(_ => _titleMenuService.OpenLicense(false))
+                .AddTo(_disposable);
+
+            _titleMenuService.Start();
+
+            await UniTask.CompletedTask;
         }
 
         public void Dispose()
