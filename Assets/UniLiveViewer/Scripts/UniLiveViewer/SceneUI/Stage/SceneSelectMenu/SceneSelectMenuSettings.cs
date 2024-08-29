@@ -14,17 +14,18 @@ namespace UniLiveViewer.Menu.SceneSelect
 
         void Start()
         {
-            foreach (var e in _sceneButton)
+            foreach (var button in _sceneButton)
             {
-                e.isEnable = false;
+                button.isEnable = false;
             }
 
             // Button_Base改修するまでの繋ぎ
-            _sceneButton[0].onTrigger += (btn) => _stream.OnNext(SceneType.CANDY_LIVE);
-            _sceneButton[1].onTrigger += (btn) => _stream.OnNext(SceneType.KAGURA_LIVE);
-            _sceneButton[2].onTrigger += (btn) => _stream.OnNext(SceneType.VIEWER);
-            _sceneButton[3].onTrigger += (btn) => _stream.OnNext(SceneType.GYMNASIUM);
-            _sceneButton[4].onTrigger += (btn) => _stream.OnNext(SceneType.FANTASY_VILLAGE);
+            _sceneButton[0].onTrigger += (btn) => _stream.OnNext(SceneType.TITLE);
+            _sceneButton[1].onTrigger += (btn) => _stream.OnNext(SceneType.CANDY_LIVE);
+            _sceneButton[2].onTrigger += (btn) => _stream.OnNext(SceneType.KAGURA_LIVE);
+            _sceneButton[3].onTrigger += (btn) => _stream.OnNext(SceneType.VIEWER);
+            _sceneButton[4].onTrigger += (btn) => _stream.OnNext(SceneType.GYMNASIUM);
+            _sceneButton[5].onTrigger += (btn) => _stream.OnNext(SceneType.FANTASY_VILLAGE);
         }
     }
 }

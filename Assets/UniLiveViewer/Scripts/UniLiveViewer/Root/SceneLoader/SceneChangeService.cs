@@ -57,10 +57,14 @@ namespace UniLiveViewer.SceneLoader
             _current = nextSceneType;
             var nextScene = _map[nextSceneType];
             await nextScene.BeginAsync(cancellation);
-            FileReadAndWriteUtility.UserProfile.LastSceneSceneTypeNo = (int)nextSceneType;
-            FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);//完了したら更新
 
-            SystemInfo.Initialize(nextSceneType);
+            if(nextSceneType != SceneType.TITLE)
+            {
+                FileReadAndWriteUtility.UserProfile.LastSceneSceneTypeNo = (int)nextSceneType;
+                FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);//完了したら更新
+
+                SystemInfo.Initialize(nextSceneType);
+            }
         }
     }
 }
