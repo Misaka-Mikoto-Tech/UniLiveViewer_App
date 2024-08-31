@@ -251,7 +251,6 @@ namespace UniLiveViewer.Menu
                     if (_actionParentButton[4])
                     {
                         _actionParentButton[4].gameObject.SetActive(result);
-                        _actionParentButton[4].GetComponent<ManualSwitch>().SetEnable(result);
                     }
                     break;
             }
