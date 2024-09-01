@@ -1,13 +1,10 @@
 ﻿using System.Collections.Generic;
+using UniLiveViewer.SceneLoader;
 using UnityEngine;
+using System.Linq;
 
 namespace UniLiveViewer
 {
-    public enum AudioBGM
-    {
-        // いらないかも
-    }
-
     public enum AudioSE
     {
         ButtonClick,
@@ -30,34 +27,18 @@ namespace UniLiveViewer
         BookPageTurn,
     }
 
-    public enum AudioAmbientMusic
-    {
-        // TODO
-    }
-
     [CreateAssetMenu(menuName = "MyGame/Audio/AudioClipSettings", fileName = "AudioClipSettings")]
     public class AudioClipSettings : ScriptableObject
     {
         public List<AudioClip> AudioBGM => _presetBGM;
         [SerializeField] List<AudioClip> _presetBGM;
 
-        public List<AudioBGMDataSet> AudioBGMDataSet => _audioBGMDataSet;
-        [SerializeField] List<AudioBGMDataSet> _audioBGMDataSet;
-
         public List<AudioSEDataSet> AudioSEDataSet => _audioSEDataSet;
         [SerializeField] List<AudioSEDataSet> _audioSEDataSet;
 
-        public AudioFootStepsDataSet AudioFootDataSet => _audioFootDataSet;
-        [SerializeField] AudioFootStepsDataSet _audioFootDataSet;
-    }
-
-    [System.Serializable]
-    public class AudioBGMDataSet
-    {
-        public AudioClip AudioClip => _audioClip;
-        [SerializeField] AudioClip _audioClip;
-        public AudioBGM AudioType => _audioType;
-        [SerializeField] AudioBGM _audioType;
+        public SceneAudioDataSet GetSceneAudioDataSet(SceneType sceneType)
+            => _sceneAudioDataSet?.FirstOrDefault(x => x.SceneType == sceneType);
+        [SerializeField] SceneAudioDataSet[] _sceneAudioDataSet;
     }
 
     [System.Serializable]
@@ -67,6 +48,19 @@ namespace UniLiveViewer
         [SerializeField] AudioClip _audioClip;
         public AudioSE AudioType => _audioType;
         [SerializeField] AudioSE _audioType;
+    }
+
+    [System.Serializable]
+    public class SceneAudioDataSet
+    {
+        public SceneType SceneType => _sceneType;
+        [SerializeField] SceneType _sceneType;
+
+        public AudioClip AmbientSoundAudioClip => _ambientSoundAudioClip;
+        [SerializeField] AudioClip _ambientSoundAudioClip;
+
+        public AudioFootStepsDataSet AudioFootStepsDataSet => _audioFootStepsDataSet;
+        [SerializeField] AudioFootStepsDataSet _audioFootStepsDataSet;
     }
 
     [System.Serializable]

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UniLiveViewer.SceneLoader;
 using UnityEngine;
 using VContainer;
 
@@ -18,7 +19,7 @@ namespace UniLiveViewer.Actor
         ActorEntity _actorEntity;
 
         readonly AudioSourceService _audioSourceService;
-        readonly AudioClipSettings _setting;
+        readonly AudioFootStepsDataSet _audioFootStepsDataSet;
 
         [Inject]
         public FootStepService(
@@ -26,7 +27,7 @@ namespace UniLiveViewer.Actor
             AudioClipSettings setting)
         {
             _audioSourceService = audioSourceService;
-            _setting = setting;
+            _audioFootStepsDataSet = setting.GetSceneAudioDataSet(SceneChangeService.GetSceneType).AudioFootStepsDataSet;
         }
 
         public void SetVolume(float volume)
@@ -79,8 +80,8 @@ namespace UniLiveViewer.Actor
         void PlaySound(Vector3 hitPoint)
         {
             _audioSourceService.transform.position = hitPoint;
-            var index = UnityEngine.Random.Range(0, _setting.AudioFootDataSet.AudioClip.Count);
-            _audioSourceService.PlayOneShot(_setting.AudioFootDataSet.AudioClip[index]);
+            var index = UnityEngine.Random.Range(0, _audioFootStepsDataSet.AudioClip.Count);
+            _audioSourceService.PlayOneShot(_audioFootStepsDataSet.AudioClip[index]);
         }
 
         public class FootMap

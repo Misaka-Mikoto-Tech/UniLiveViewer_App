@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using UniLiveViewer.SceneLoader;
 using UniRx;
 using UnityEngine;
 using VContainer;
@@ -52,6 +53,11 @@ namespace UniLiveViewer
                 audioSource.volume = SEVolumeRate * MasterVolumeRate;
             }
             _ambientAudioSources.volume = AmbientVolumeRate * MasterVolumeRate;
+        }
+
+        public void Start()
+        {
+            PlayOneShotAmbientAudio();
         }
 
         /// <param name="volume">0~100</param>
@@ -120,9 +126,12 @@ namespace UniLiveViewer
         }
 
         // TODO: ambient
-        public void PlayOneShot(AudioAmbientMusic audioAmbientMusic)
+        public void PlayOneShotAmbientAudio()
         {
-            _ambientAudioSources.PlayOneShot(null);
+            var clip = _audioClipSettings.GetSceneAudioDataSet(SceneChangeService.GetSceneType).AmbientSoundAudioClip;
+            _ambientAudioSources.clip = clip;
+            _ambientAudioSources.loop = true;
+            _ambientAudioSources.Play();
         }
 
         AudioSource GetCurrentAudioSource()
