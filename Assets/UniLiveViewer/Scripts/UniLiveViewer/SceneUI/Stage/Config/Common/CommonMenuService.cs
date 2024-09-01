@@ -1,4 +1,4 @@
-using UniLiveViewer.Player;
+﻿using UniLiveViewer.Player;
 using UnityEngine;
 using VContainer;
 
@@ -32,7 +32,7 @@ namespace UniLiveViewer.Menu.Config.Common
             _settings.PassthroughButton.onTrigger += OnChangePassthrough;
             _settings.VibrationButton.onTrigger += OnChangeControllerVibration;
 
-            _settings.EnglishButton.onTrigger += (btn) => 
+            _settings.EnglishButton.onTrigger += (btn) =>
             {
                 _systemSettingsService.Change(SystemLanguage.English);
                 _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
@@ -66,7 +66,7 @@ namespace UniLiveViewer.Menu.Config.Common
             _settings.FixedFoveatedText.text = $"noQuest:{value}";
 #elif UNITY_ANDROID
             OVRManager.fixedFoveatedRenderingLevel = (OVRManager.FixedFoveatedRenderingLevel)value;
-            _settings.FixedFoveatedText.text = Enum.GetName(typeof(OVRManager.FixedFoveatedRenderingLevel),OVRManager.fixedFoveatedRenderingLevel);
+            _settings.FixedFoveatedText.text = System.Enum.GetName(typeof(OVRManager.FixedFoveatedRenderingLevel),OVRManager.fixedFoveatedRenderingLevel);
 #endif
         }
     }
