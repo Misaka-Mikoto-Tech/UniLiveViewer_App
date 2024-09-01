@@ -24,6 +24,7 @@ namespace UniLiveViewer.Actor.Option
             if (_anchor != null) return;
             _anchor = GameObject.Instantiate(Resources.Load<GameObject>(Path));
             _anchor.transform.parent = _parent.transform;
+            _anchor.transform.localPosition = Vector3.zero;
             SetEnable(false);
         }
 
@@ -42,8 +43,6 @@ namespace UniLiveViewer.Actor.Option
         {
             if (_anchor == null || _anchor.activeSelf == false) return;
             if (_actorEntity == null) return;
-
-            _anchor.transform.position = _actorEntity.GetAnimator.transform.position;
             var direction = _actorEntity.BoneMap[HumanBodyBones.Head].position - _anchor.transform.position;
             _anchor.transform.forward = direction;
         }
