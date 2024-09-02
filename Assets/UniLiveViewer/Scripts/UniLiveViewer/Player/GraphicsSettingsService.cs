@@ -36,6 +36,8 @@ namespace UniLiveViewer.Player
                 _bloom.active = FileReadAndWriteUtility.UserProfile.IsBloom;
                 _bloom.threshold.value = FileReadAndWriteUtility.UserProfile.BloomThreshold;
                 _bloom.intensity.value = FileReadAndWriteUtility.UserProfile.BloomIntensity;
+                _bloom.tint.overrideState = true;
+                _bloom.tint.value = Color.HSVToRGB(0.65f, 0.55f, 1);//水色
             }
             if (_volumeProfile.TryGet<DepthOfField>(out var depthOfField))
             {
@@ -106,6 +108,14 @@ namespace UniLiveViewer.Player
             _bloom.intensity.value = v;
             FileReadAndWriteUtility.UserProfile.BloomIntensity = v;
             FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
+        }
+
+        public void ChangeBloomColor(float v)
+        {
+            //_bloom.tint = new ColorParameter(Color.HSVToRGB(v, 0.5f, 1), overrideState: true);何故か機能しない
+            _bloom.tint.overrideState = true;
+            _bloom.tint.value = Color.HSVToRGB(v, 0.55f, 1);
+            // NOTE: 専用ピッカー作ったら保存するようにする
         }
 
         public void OnChangePassthrough(bool isEnablePassthrough)

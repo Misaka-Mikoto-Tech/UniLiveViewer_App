@@ -51,6 +51,9 @@ namespace UniLiveViewer.Menu.Config.Graphics
             _graphicsMenuService.BloomIntensity
                 .Subscribe(_graphicsSettingsService.ChangeBloomIntensity)
                 .AddTo(_disposables);
+            _graphicsMenuService.BloomColor
+                .Subscribe(_graphicsSettingsService.ChangeBloomColor)
+                .AddTo(_disposables);
         }
 
         void IDisposable.Dispose()

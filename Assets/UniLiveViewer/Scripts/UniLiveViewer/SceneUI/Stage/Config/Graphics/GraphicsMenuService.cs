@@ -26,6 +26,8 @@ namespace UniLiveViewer.Menu.Config.Graphics
 
         public IReadOnlyReactiveProperty<float> BloomIntensity => _bloomIntensity;
         readonly ReactiveProperty<float> _bloomIntensity = new(FileReadAndWriteUtility.UserProfile.BloomIntensity);
+        public IReadOnlyReactiveProperty<float> BloomColor => _bloomColor;
+        readonly ReactiveProperty<float> _bloomColor = new(0.65f);//水色
 
         readonly RootAudioSourceService _audioSourceService;
         readonly GraphicsMenuSettings _settings;
@@ -55,13 +57,15 @@ namespace UniLiveViewer.Menu.Config.Graphics
                 .Subscribe(x => _bloomThreshold.Value = x).AddTo(_disposables);
             _settings.GraphicSlider[1].ValueAsObservable
                 .Subscribe(x => _bloomIntensity.Value = x).AddTo(_disposables);
-            _settings.GraphicSlider[0].Value = _bloomThreshold.Value;
-            _settings.GraphicSlider[1].Value = _bloomIntensity.Value;
-
+            _settings.GraphicSlider[2].ValueAsObservable
+                .Subscribe(x => _bloomColor.Value = x).AddTo(_disposables);
             _settings.OutlineSlider.ValueAsObservable
                 .Subscribe(OnChangeOutline).AddTo(_disposables);
-            _settings.OutlineSlider.Value = 0;
 
+            _settings.GraphicSlider[0].Value = _bloomThreshold.Value;
+            _settings.GraphicSlider[1].Value = _bloomIntensity.Value;
+            _settings.GraphicSlider[2].Value = _bloomColor.Value;
+            _settings.OutlineSlider.Value = 0;
             _settings.OutlineMat.SetFloat(Edge, _settings.OutlineSlider.Value);
         }
 
