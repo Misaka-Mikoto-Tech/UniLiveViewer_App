@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using MessagePipe;
 using System;
 using System.Threading;
@@ -52,8 +52,8 @@ namespace UniLiveViewer.Actor.Animation
                 {
                     if (_instanceId != x.InstanceId) return;
                     await _animationService.SetAnimationAsync(x.Mode, x.AnimationIndex, x.IsReverse, cancellation);
+                    _expressionService.MorphReset();
                     _expressionService.OnChangeMode(x.Mode);
-
                 }).AddTo(_disposables);
 
             _allSubscriber
