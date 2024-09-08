@@ -62,7 +62,7 @@ namespace UniLiveViewer.Actor.LookAt.FBX
             {
                 case ExpressionType.VketChan:
                     var result = _settings.eyeAmplitude.x * _eyeLeap;
-                    _settings.Face.SetBlendShapeWeight(14, result);
+                    _settings.Face.SetBlendShapeWeight(_settings.LookAtBlendShapeIndex, result);
                     break;
             }
         }
