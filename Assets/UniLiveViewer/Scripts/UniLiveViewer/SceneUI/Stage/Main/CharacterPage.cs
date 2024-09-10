@@ -126,7 +126,7 @@ namespace UniLiveViewer.Menu
 
             for (int i = 0; i < _btnOffset.Length; i++)
             {
-                _btnOffset[i].onTrigger += ChangeOffset_Anime;
+                _btnOffset[i].onTrigger += OnClickVMDOffset;
             }
 
             for (int i = 0; i < _switchChara.Length; i++)
@@ -499,18 +499,14 @@ namespace UniLiveViewer.Menu
             }
         }
 
-        /// <summary>
-        /// オフセット値の微調整
-        /// </summary>
-        /// <param name="btn"></param>
-        void ChangeOffset_Anime(Button_Base btn)
+        void OnClickVMDOffset(Button_Base btn)
         {
             for (int i = 0; i < 2; i++)
             {
                 //押されたボタンの判別
                 if (_btnOffset[i] == btn)
                 {
-                    var moveIndex = i == 0 ? -1 : 1;
+                    var moveIndex = i == 0 ? 1 : -1;
                     //オフセットを設定
                     _sliderOffset.Value += moveIndex;
                     var baseMotion = textMeshs[1].name;
