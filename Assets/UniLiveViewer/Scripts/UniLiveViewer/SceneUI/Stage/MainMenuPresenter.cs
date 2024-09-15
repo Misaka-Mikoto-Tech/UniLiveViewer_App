@@ -17,7 +17,6 @@ namespace UniLiveViewer.Menu
         bool _isRootActive = true;
 
         readonly PlayerInputService _playerInputService;
-        readonly MeneRoot _meneRoot;
         readonly AudioPlaybackPage _audioPlaybackPage;
         readonly ItemPage _itemPage;
         readonly ConfigPage _configPage;
@@ -28,7 +27,6 @@ namespace UniLiveViewer.Menu
         [Inject]
         public MainMenuPresenter(
             PlayerInputService playerInputService,
-            MeneRoot meneRoot,
             AudioPlaybackPage audioPlaybackPage,
             ItemPage itemPage,
             ConfigPage configPage,
@@ -36,7 +34,6 @@ namespace UniLiveViewer.Menu
             RootAudioSourceService audioSourceService)
         {
             _playerInputService = playerInputService;
-            _meneRoot = meneRoot;
             _audioPlaybackPage = audioPlaybackPage;
             _itemPage = itemPage;
             _configPage = configPage;
@@ -63,7 +60,6 @@ namespace UniLiveViewer.Menu
         void SwitchEnable()
         {
             _isRootActive = !_isRootActive;
-            _meneRoot.gameObject.SetActive(_isRootActive);
 
             if (_isRootActive) _audioSourceService.PlayOneShot(AudioSE.MenuOpen);
             else _audioSourceService.PlayOneShot(AudioSE.MenuClose);

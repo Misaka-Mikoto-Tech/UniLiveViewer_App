@@ -20,8 +20,7 @@ namespace UniLiveViewer.Menu
 
         void IPostStartable.PostStart()
         {
-            _systemSettingsService.LanguageIndex
-                .SkipLatestValueOnSubscribe()
+            _systemSettingsService.LanguageIndexAsObservable
                 .Subscribe(_bookService.Initialize)
                 .AddTo(_disposable);
         }

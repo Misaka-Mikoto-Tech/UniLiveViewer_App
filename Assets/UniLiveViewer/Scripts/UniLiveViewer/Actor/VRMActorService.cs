@@ -248,17 +248,17 @@ namespace UniLiveViewer.Actor
 
                     break;
                 case ActorState.MINIATURE:
-                    globalScale = new Vector3(0.2f, 0.2f, 0.2f);
+                    globalScale = Vector3.one * 0.18f;
                     rootGameObject.layer = Constants.LayerNoGrabObject;
                     break;
                 case ActorState.HOLD:
-                    globalScale = new Vector3(0.2f, 0.2f, 0.2f);
+                    globalScale = Vector3.one * 0.18f;
                     break;
                 case ActorState.ON_CIRCLE:
-                    globalScale = new Vector3(1.0f, 1.0f, 1.0f);
+                    globalScale = Vector3.one;
                     break;
                 case ActorState.FIELD:
-                    globalScale = new Vector3(1.0f, 1.0f, 1.0f);
+                    globalScale = Vector3.one;
                     rootGameObject.layer = Constants.LayerNoFieldObject;
                     break;
             }

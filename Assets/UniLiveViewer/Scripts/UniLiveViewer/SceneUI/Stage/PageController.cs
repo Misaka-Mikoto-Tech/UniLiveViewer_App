@@ -18,12 +18,20 @@ namespace UniLiveViewer.Menu
 
         public IObservable<Unit> ChangePageAsObservable => _changePageStream;
         readonly Subject<Unit> _changePageStream = new();
-        
+
         public int Current { get; private set; }
         public Transform GetCurrentPageAnchor() { return _pageAnchor[Current]; }
 
         RootAudioSourceService _rootAudioSourceService;
         CancellationToken _cancellationToken;
+
+
+        void Awake()
+        {
+            // 一旦
+            var lifetimeScope = LifetimeScope.Find<StageSceneLifetimeScope>();
+            _rootAudioSourceService = lifetimeScope.Container.Resolve<RootAudioSourceService>();
+        }
 
         void Start()
         {
@@ -32,11 +40,7 @@ namespace UniLiveViewer.Menu
                 Debug.LogError("Page and number of buttons do not match.");
                 return;
             }
-
-            // 一旦
-            var lifetimeScope = LifetimeScope.Find<StageSceneLifetimeScope>();
-            _rootAudioSourceService = lifetimeScope.Container.Resolve<RootAudioSourceService>();
-
+            
             for (int i = 0; i < _btnTab.Length; i++)
             {
                 _btnTab[i].onTrigger += SwitchCurrent;

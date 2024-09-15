@@ -18,7 +18,6 @@ namespace UniLiveViewer.Menu
         [SerializeField] ConfigPage _configPage;
 
         [Header("その他")]
-        [SerializeField] MeneRoot _menuRoot;
         [SerializeField] JumpList _jumpList;
         [SerializeField] VRMSwitchController _vrmSwitchController;
 
@@ -33,7 +32,6 @@ namespace UniLiveViewer.Menu
 
             builder.RegisterComponent(GetComponent<MenuManager>());
 
-            builder.RegisterComponent<MeneRoot>(_menuRoot);
             builder.RegisterComponent(_audioPlaybackPage);
             builder.RegisterComponent(_itemPage);
             builder.RegisterComponent(_configPage);

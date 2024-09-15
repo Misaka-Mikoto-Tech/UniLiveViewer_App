@@ -7,17 +7,17 @@ using VContainer.Unity;
 
 namespace UniLiveViewer.Stage
 {
-    public class MenuGripperPresenter : IStartable, ILateTickable, IDisposable
+    public class MenuRootPresenter : IStartable, IDisposable
     {
         readonly FileAccessManager _fileAccessManager;
-        readonly MenuGripperService _menuGripperService;
+        readonly MenuRootService _menuGripperService;
         readonly PlayerInputService _playerInputService;
         readonly CompositeDisposable _disposables = new();
 
         [Inject]
-        public MenuGripperPresenter(
+        public MenuRootPresenter(
             FileAccessManager fileAccessManager,
-            MenuGripperService menuGripperService,
+            MenuRootService menuGripperService,
             PlayerInputService playerInputService)
         {
             _fileAccessManager = fileAccessManager;
@@ -36,11 +36,6 @@ namespace UniLiveViewer.Stage
                 .AddTo(_disposables);
 
             _menuGripperService.Initialize();
-        }
-
-        void ILateTickable.LateTick()
-        {
-            _menuGripperService.OnLateTick();
         }
 
         void IDisposable.Dispose()

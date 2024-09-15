@@ -10,6 +10,7 @@ namespace UniLiveViewer
     /// </summary>
     public class DecorationItemInfo : MonoBehaviour
     {
+        // TODO: ローカライズUnity標準にする
         public string[] ItemName => itemName;
         [SerializeField] string[] itemName = new string[2] { "アイテム名", "ItemName" };
 

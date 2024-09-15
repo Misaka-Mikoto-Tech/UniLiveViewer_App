@@ -1,6 +1,7 @@
 ﻿using UniLiveViewer.Menu;
 using UnityEngine;
 using VContainer;
+using UniRx;
 
 namespace UniLiveViewer.Player.HandMenu
 {
@@ -18,6 +19,9 @@ namespace UniLiveViewer.Player.HandMenu
         readonly Transform _lookTarget;
         readonly RootAudioSourceService _audioSourceService;
         readonly SystemSettingsService _systemSettingsService;
+
+        // TODO: Unity標準にする
+        int _languageIndex;
 
         [Inject]
         public ItemMaterialSelectionService(
@@ -38,6 +42,9 @@ namespace UniLiveViewer.Player.HandMenu
 
         public void Setup()
         {
+            _systemSettingsService.LanguageIndexAsObservable
+                .Subscribe(x => _languageIndex = x);
+
             _handMenu[0] = new UniLiveViewer.HandMenu(
                 GameObject.Instantiate(_playerHandMenuSettings.ItemMaterialSelection),
                 _playerHandMenuAnchorL.transform);
@@ -83,7 +90,7 @@ namespace UniLiveViewer.Player.HandMenu
             _handMenu[index].SetShow(true);
             var itemMaterialSelector = _handMenu[index].Instance.GetComponent<ItemMaterialSelector>();
             _itemMaterialSelector[index] = itemMaterialSelector;
-            _itemMaterialSelector[index].Initialize(decorationItemInfo, _systemSettingsService.LanguageIndex.Value);
+            _itemMaterialSelector[index].Initialize(decorationItemInfo, _languageIndex);
         }
 
         /// <summary>

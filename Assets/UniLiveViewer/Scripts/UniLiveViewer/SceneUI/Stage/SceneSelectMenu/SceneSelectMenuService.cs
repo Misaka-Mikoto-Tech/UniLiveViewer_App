@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using System.Threading;
 using UniLiveViewer.SceneLoader;
 using UniLiveViewer.Stage;
@@ -12,19 +12,16 @@ namespace UniLiveViewer.Menu.SceneSelect
         readonly SceneChangeService _sceneChangeService;
         readonly PlayableMusicService _playableMusicService;
         readonly RootAudioSourceService _rootAudioSourceService;
-        readonly MeneRoot _meneRoot;
 
         [Inject]
         public SceneSelectMenuService(
             SceneChangeService sceneChangeService,
             PlayableMusicService playableMusicService,
-            RootAudioSourceService rootAudioSourceService,
-            MeneRoot meneRoot)
+            RootAudioSourceService rootAudioSourceService)
         {
             _sceneChangeService = sceneChangeService;
             _playableMusicService = playableMusicService;
             _rootAudioSourceService = rootAudioSourceService;
-            _meneRoot = meneRoot;
         }
 
         public async UniTask OnChangeSceneAsync(SceneType sceneType)
@@ -36,8 +33,6 @@ namespace UniLiveViewer.Menu.SceneSelect
             await UniTask.Delay(100, cancellationToken: dummy);
             _rootAudioSourceService.PlayOneShot(AudioSE.SceneTransition);
             await BlackoutCurtain.instance.FadeoutAsync(dummy);
-
-            _meneRoot.gameObject.SetActive(false);//UIが透けて見えるので隠す
 
             await _sceneChangeService.ChangeAsync(sceneType, dummy);
         }

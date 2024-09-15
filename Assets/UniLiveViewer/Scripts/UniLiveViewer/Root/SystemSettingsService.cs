@@ -1,4 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
+using System;
 using System.Threading;
 using UniRx;
 using UnityEngine;
@@ -8,8 +9,8 @@ namespace UniLiveViewer
 {
     public class SystemSettingsService
     {
-        public IReadOnlyReactiveProperty<int> LanguageIndex => _languageIndex;
-        readonly ReactiveProperty<int> _languageIndex = new();
+        public IObservable<int> LanguageIndexAsObservable => _languageIndexStream;
+        readonly Subject<int> _languageIndexStream = new();
 
         public SystemSettingsService()
         {
@@ -29,7 +30,7 @@ namespace UniLiveViewer
             }
             else
             {
-                _languageIndex.Value = GetLanguageIndex();
+                _languageIndexStream.OnNext(GetLanguageIndex());
             }
         }
 
@@ -42,13 +43,13 @@ namespace UniLiveViewer
             FileReadAndWriteUtility.UserProfile.LanguageCode = (int)systemLanguage;
             FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
 
-            _languageIndex.Value = GetLanguageIndex();
+            _languageIndexStream.OnNext(GetLanguageIndex());
         }
 
         int GetLanguageIndex()
         {
-            var SystemLanguage = (SystemLanguage)FileReadAndWriteUtility.UserProfile.LanguageCode;
-            return SystemLanguage.ToResourceIndex();
+            var systemLanguage = (SystemLanguage)FileReadAndWriteUtility.UserProfile.LanguageCode;
+            return systemLanguage.ToResourceIndex();
         }
     }
 }
