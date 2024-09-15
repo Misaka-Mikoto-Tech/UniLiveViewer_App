@@ -50,7 +50,7 @@ namespace UniLiveViewer
                 try
                 {
                     //VRMファイルからサムネイルを抽出する
-                    texture = await VRMExpansions.GetThumbnailAsync(charaFolderPath + rawData[i], cancellation);
+                    texture = await VRMExtension.GetThumbnailAsync(charaFolderPath + rawData[i], cancellation);
 
                     if (texture)
                     {

@@ -10,45 +10,25 @@ namespace UniLiveViewer.Actor
     public enum ExpressionType
     {
         NULL = 0,
-        /// <summary>
-        /// UV方式
-        /// </summary>
+        /// <summary> UV方式 </summary>
         UnityChan,
-        /// <summary>
-        /// UV方式
-        /// </summary>
+        /// <summary> UV方式 </summary>
         CandyChan,
-        /// <summary>
-        /// Bone方式
-        /// </summary>
+        /// <summary> Bone方式 </summary>
         UnityChanSSU,
-        /// <summary>
-        /// Bone方式
-        /// </summary>
+        /// <summary> Bone方式 </summary>
         UnityChanSD,
-        /// <summary>
-        /// BlendShape方式
-        /// </summary>
+        /// <summary> BlendShape方式 </summary>
         VketChan,
-        /// <summary>
-        /// Bone方式
-        /// </summary>
+        /// <summary> Bone方式 </summary>
         UnityChanKAGURA,
-        /// <summary>
-        /// UV方式、ほとんどいない
-        /// </summary>
+        /// <summary> UV方式、ほとんどいない </summary>
         VRM_UV,
-        /// <summary>
-        /// Bone方式
-        /// </summary>
+        /// <summary> Bone方式 </summary>
         VRM_Bone,
-        /// <summary>
-        /// BlendShape方式
-        /// </summary>
+        /// <summary> BlendShape方式 </summary>
         VRM_BlendShape,
-        /// <summary>
-        /// VRM1.0版
-        /// </summary>
+        /// <summary> VRM1.0版 </summary>
         VRM10,
     }
 

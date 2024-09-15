@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using UniGLTF;
@@ -8,7 +8,7 @@ using VRMShaders;
 
 namespace NanaCiel
 {
-    public static class VRMExpansions
+    public static class VRMExtension
     {
         /// <summary>
         /// サムネイルのみ取得する

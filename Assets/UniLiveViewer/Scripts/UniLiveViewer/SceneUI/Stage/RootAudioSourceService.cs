@@ -19,15 +19,23 @@ namespace UniLiveViewer
         /// <summary> 0~1.0f </summary>
         public float MasterVolumeRate { get; private set; }
         /// <summary> 0~1.0f </summary>
-        public float BGMVolumeRate { get; private set; }
+        public IReadOnlyReactiveProperty<float> BGMVolumeRate => _bgmVolumeRate;
+        readonly ReactiveProperty<float> _bgmVolumeRate = new();
+        float _preBGMVolumeRate;
+
         /// <summary> 0~1.0f </summary>
-        public float SEVolumeRate { get; private set; }
+        public IReadOnlyReactiveProperty<float> SEVolumeRate => _seVolumeRate;
+        readonly ReactiveProperty<float> _seVolumeRate = new();
+        float _preSEVolumeRate;
+
         /// <summary> 0~1.0f </summary>
-        public float AmbientVolumeRate { get; private set; }
+        public IReadOnlyReactiveProperty<float> AmbientVolumeRate => _ambientVolumeRate;
+        readonly ReactiveProperty<float> _ambientVolumeRate = new();
+        float _preAmbientVolumeRate;
         /// <summary> 0~1.0f </summary>
         public IReadOnlyReactiveProperty<float> FootStepsVolumeRate => _footStepsVolumeRate;
         readonly ReactiveProperty<float> _footStepsVolumeRate = new();
-        public float _preFootStepsVolumeRate;
+        float _preFootStepsVolumeRate;
 
         int _currentSE = 0;
         AudioClipSettings _audioClipSettings;
@@ -41,18 +49,25 @@ namespace UniLiveViewer
         void Awake()
         {
             MasterVolumeRate = FileReadAndWriteUtility.UserProfile.SoundMaster * 0.01f;
-            BGMVolumeRate = FileReadAndWriteUtility.UserProfile.SoundBGM * 0.01f;
-            SEVolumeRate = FileReadAndWriteUtility.UserProfile.SoundSE * 0.01f;
-            AmbientVolumeRate = FileReadAndWriteUtility.UserProfile.SoundAmbient * 0.01f;
+            _preBGMVolumeRate = FileReadAndWriteUtility.UserProfile.SoundBGM * 0.01f;
+            _preSEVolumeRate = FileReadAndWriteUtility.UserProfile.SoundSE * 0.01f;
+            _preAmbientVolumeRate = FileReadAndWriteUtility.UserProfile.SoundAmbient * 0.01f;
             _preFootStepsVolumeRate = FileReadAndWriteUtility.UserProfile.SoundFootSteps * 0.01f;
-            _footStepsVolumeRate.Value = _preFootStepsVolumeRate;
 
-            _bgmAudioSource.volume = BGMVolumeRate * MasterVolumeRate;
-            foreach (var audioSource in _seAudioSources)
-            {
-                audioSource.volume = SEVolumeRate * MasterVolumeRate;
-            }
-            _ambientAudioSources.volume = AmbientVolumeRate * MasterVolumeRate;
+            _bgmVolumeRate.Subscribe(x => _bgmAudioSource.volume = x).AddTo(this);
+            _seVolumeRate.Subscribe(x =>
+                {
+                    foreach (var audioSource in _seAudioSources)
+                    {
+                        audioSource.volume = x;
+                    }
+                }).AddTo(this);
+            _ambientVolumeRate.Subscribe(x => _bgmAudioSource.volume = x).AddTo(this);
+
+            _bgmVolumeRate.Value = _preBGMVolumeRate * MasterVolumeRate;
+            _seVolumeRate.Value = _preSEVolumeRate * MasterVolumeRate;
+            _ambientVolumeRate.Value = _preAmbientVolumeRate * MasterVolumeRate;
+            _footStepsVolumeRate.Value = _preFootStepsVolumeRate;
         }
 
         public void Start()
@@ -67,20 +82,17 @@ namespace UniLiveViewer
             FileReadAndWriteUtility.UserProfile.SoundMaster = volume;
             FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
 
-            _bgmAudioSource.volume = BGMVolumeRate * MasterVolumeRate;
-            foreach (var audioSource in _seAudioSources)
-            {
-                audioSource.volume = SEVolumeRate * MasterVolumeRate;
-            }
-            _ambientAudioSources.volume = AmbientVolumeRate * MasterVolumeRate;
+            _bgmVolumeRate.Value = _preBGMVolumeRate * MasterVolumeRate;
+            _seVolumeRate.Value = _preSEVolumeRate * MasterVolumeRate;
+            _ambientVolumeRate.Value = _preAmbientVolumeRate * MasterVolumeRate;
             _footStepsVolumeRate.Value = _preFootStepsVolumeRate * MasterVolumeRate;
         }
 
         /// <param name="volume">0~100</param>
         public void SetBGMVolume(float volume)
         {
-            BGMVolumeRate = volume * 0.01f;
-            _bgmAudioSource.volume = BGMVolumeRate * MasterVolumeRate;
+            _preBGMVolumeRate = volume * 0.01f;
+            _bgmVolumeRate.Value = _preBGMVolumeRate * MasterVolumeRate;
 
             FileReadAndWriteUtility.UserProfile.SoundBGM = volume;
             FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
@@ -89,11 +101,8 @@ namespace UniLiveViewer
         /// <param name="volume">0~100</param>
         public void SetSEVolume(float volume)
         {
-            SEVolumeRate = volume * 0.01f;
-            foreach (var audioSource in _seAudioSources)
-            {
-                audioSource.volume = SEVolumeRate * MasterVolumeRate;
-            }
+            _preSEVolumeRate = volume * 0.01f;
+            _seVolumeRate.Value = _preSEVolumeRate * MasterVolumeRate;
 
             FileReadAndWriteUtility.UserProfile.SoundSE = volume;
             FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
@@ -102,8 +111,8 @@ namespace UniLiveViewer
         /// <param name="volume">0~100</param>
         public void SetAmbientVolume(float volume)
         {
-            AmbientVolumeRate = volume * 0.01f;
-            _ambientAudioSources.volume = AmbientVolumeRate * MasterVolumeRate;
+            _preAmbientVolumeRate = volume * 0.01f;
+            _ambientVolumeRate.Value = _preAmbientVolumeRate * MasterVolumeRate;
 
             FileReadAndWriteUtility.UserProfile.SoundAmbient = volume;
             FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
@@ -125,7 +134,6 @@ namespace UniLiveViewer
             GetCurrentAudioSource().PlayOneShot(clip);
         }
 
-        // TODO: ambient
         public void PlayOneShotAmbientAudio()
         {
             var clip = _audioClipSettings.GetSceneAudioDataSet(SceneChangeService.GetSceneType).AmbientSoundAudioClip;

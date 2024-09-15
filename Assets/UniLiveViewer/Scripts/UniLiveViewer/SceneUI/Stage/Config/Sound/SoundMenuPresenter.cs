@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using MessagePipe;
 using System;
 using UniLiveViewer.Timeline;
@@ -31,9 +31,9 @@ namespace UniLiveViewer.Menu.Config.Sound
         {
             _soundMenuService.Initialize
                 (_audioSourceService.MasterVolumeRate * 100,
-                _audioSourceService.BGMVolumeRate * 100,
-                _audioSourceService.SEVolumeRate * 100,
-                _audioSourceService.AmbientVolumeRate * 100,
+                _audioSourceService.BGMVolumeRate.Value * 100,
+                _audioSourceService.SEVolumeRate.Value * 100,
+                _audioSourceService.AmbientVolumeRate.Value * 100,
                 _spectrumConverter.Gain,
                 _audioSourceService.FootStepsVolumeRate.Value * 100);
 

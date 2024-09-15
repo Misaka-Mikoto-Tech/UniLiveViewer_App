@@ -27,6 +27,17 @@ namespace UniLiveViewer
         BookPageTurn,
     }
 
+    public enum AudioHandPsylliumSE
+    {
+        Default,
+        Thunder,
+        Wind,
+        Water,
+        Darkness,
+        Flame,
+        Light
+    }
+
     [CreateAssetMenu(menuName = "MyGame/Audio/AudioClipSettings", fileName = "AudioClipSettings")]
     public class AudioClipSettings : ScriptableObject
     {
@@ -35,6 +46,9 @@ namespace UniLiveViewer
 
         public List<AudioSEDataSet> AudioSEDataSet => _audioSEDataSet;
         [SerializeField] List<AudioSEDataSet> _audioSEDataSet;
+
+        public List<AudioHandPsylliumDataSet> AudioHandPsylliumDataSet => _audioHandPsylliumDataSet;
+        [SerializeField] List<AudioHandPsylliumDataSet> _audioHandPsylliumDataSet;
 
         public SceneAudioDataSet GetSceneAudioDataSet(SceneType sceneType)
             => _sceneAudioDataSet?.FirstOrDefault(x => x.SceneType == sceneType);
@@ -48,6 +62,15 @@ namespace UniLiveViewer
         [SerializeField] AudioClip _audioClip;
         public AudioSE AudioType => _audioType;
         [SerializeField] AudioSE _audioType;
+    }
+
+    [System.Serializable]
+    public class AudioHandPsylliumDataSet
+    {
+        public AudioClip AudioClip => _audioClip;
+        [SerializeField] AudioClip _audioClip;
+        public AudioHandPsylliumSE AudioType => _audioType;
+        [SerializeField] AudioHandPsylliumSE _audioType;
     }
 
     [System.Serializable]

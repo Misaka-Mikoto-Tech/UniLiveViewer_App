@@ -2,7 +2,7 @@
 
 namespace NanaCiel
 {
-    public static class TimelineExpansions
+    public static class TimelineExtension
     {
         /// <summary>
         /// Stopを挟むと情報が残らないのでcache

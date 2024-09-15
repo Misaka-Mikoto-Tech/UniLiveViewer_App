@@ -1,4 +1,5 @@
-﻿using UniLiveViewer.OVRCustom;
+﻿using System.Linq;
+using UniLiveViewer.OVRCustom;
 using UniRx;
 using UnityEngine;
 
@@ -60,30 +61,17 @@ namespace UniLiveViewer
             }
             else
             {
-                var spectrumVisualizer = transform.GetChild(0).GetComponent<Timeline.SpectrumVisualizerBase>();
-                if (spectrumVisualizer == null) return;
+                var itemColorChanger = transform.GetChild(0).GetComponent<IItemColorChanger>();
+                if (itemColorChanger == null) return;
 
                 // ex: tex_sk
                 var textureName = renderInfo[i].data.chooseableTexture[renderInfo[i].data.textureCurrent].name;
                 var parts = textureName.Split('_');
                 var result = parts.Length > 1 ? parts[1] : string.Empty;
-                var color = result switch
-                {
-                    "b" => Color.blue,
-                    "pu" => new Color(0.5f, 0.0f, 1.0f),
-                    "g" => Color.green,
-                    "y" => Color.yellow,
-                    "o" => new Color(1.0f, 0.5f, 0.0f),
-                    "pk" => new Color(1.0f, 0.0f, 0.8f),
-                    "r" => Color.red,
-                    "sk" => Color.cyan,
-                    "w" => Color.white,
-                    _ => Color.white,
-                };
-
+                var colorInfo = result.ToColorInfo();
                 foreach (var shaderName in renderInfo[i].data.targetShaderName)
                 {
-                    spectrumVisualizer.SetColor(shaderName, color);
+                    itemColorChanger.SetColor(shaderName, colorInfo);
                 }
             }
         }
@@ -117,6 +105,17 @@ namespace UniLiveViewer
                     }
                 }
             }
+
+            // MEMO: Linq
+            //var materials = renderInfo
+            //    .SelectMany(info => info._renderers)
+            //    .SelectMany(renderer => renderer.materials)
+            //    .Where(material => material != null);
+            //foreach (var material in materials)
+            //{
+            //    Destroy(material);
+            //}
+
             renderInfo = null;
         }
     }
