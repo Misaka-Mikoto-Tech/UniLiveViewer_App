@@ -62,7 +62,7 @@ namespace UniLiveViewer
                         audioSource.volume = x;
                     }
                 }).AddTo(this);
-            _ambientVolumeRate.Subscribe(x => _bgmAudioSource.volume = x).AddTo(this);
+            _ambientVolumeRate.Subscribe(x => _ambientAudioSources.volume = x).AddTo(this);
 
             _bgmVolumeRate.Value = _preBGMVolumeRate * MasterVolumeRate;
             _seVolumeRate.Value = _preSEVolumeRate * MasterVolumeRate;
@@ -93,7 +93,6 @@ namespace UniLiveViewer
         {
             _preBGMVolumeRate = volume * 0.01f;
             _bgmVolumeRate.Value = _preBGMVolumeRate * MasterVolumeRate;
-
             FileReadAndWriteUtility.UserProfile.SoundBGM = volume;
             FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
         }
@@ -103,7 +102,6 @@ namespace UniLiveViewer
         {
             _preSEVolumeRate = volume * 0.01f;
             _seVolumeRate.Value = _preSEVolumeRate * MasterVolumeRate;
-
             FileReadAndWriteUtility.UserProfile.SoundSE = volume;
             FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
         }
@@ -113,7 +111,6 @@ namespace UniLiveViewer
         {
             _preAmbientVolumeRate = volume * 0.01f;
             _ambientVolumeRate.Value = _preAmbientVolumeRate * MasterVolumeRate;
-
             FileReadAndWriteUtility.UserProfile.SoundAmbient = volume;
             FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
         }
@@ -123,7 +120,6 @@ namespace UniLiveViewer
         {
             _preFootStepsVolumeRate = volume * 0.01f;
             _footStepsVolumeRate.Value = _preFootStepsVolumeRate * MasterVolumeRate;
-
             FileReadAndWriteUtility.UserProfile.SoundFootSteps = volume;
             FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
         }
