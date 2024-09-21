@@ -6,14 +6,14 @@ namespace UniLiveViewer.Menu
 {
     public class VRMMenuLifetimeScope : LifetimeScope
     {
-        [SerializeField] MenuRootAnchor _rootAnchor;
+        [SerializeField] VRMMenuRootAnchor _vrmMenuRootAnchor;
         [SerializeField] ThumbnailAnchor _thumbnailAnchor;
 
         protected override void Configure(IContainerBuilder builder)
         {
-            builder.RegisterComponent(_rootAnchor);
+            builder.RegisterComponent(_vrmMenuRootAnchor);
             builder.RegisterComponent(_thumbnailAnchor);
-            builder.Register<MenuRootService>(Lifetime.Singleton);
+            builder.Register<VRMMenuRootService>(Lifetime.Singleton);
             builder.Register<ThumbnailService>(Lifetime.Singleton);
             builder.RegisterEntryPoint<VRMMenuPresenter>();
         }

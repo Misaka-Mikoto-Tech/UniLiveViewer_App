@@ -17,7 +17,7 @@ namespace UniLiveViewer.Menu
         CancellationTokenSource _cts;
 
         readonly ISubscriber<VRMMenuShowMessage> _menuShowSubscriber;
-        readonly MenuRootService _menuRootService;
+        readonly VRMMenuRootService _vrmMenuRootService;
         readonly ThumbnailService _thumbnailService;
         readonly CharacterPage _characterPage;
         readonly CompositeDisposable _disposables = new();
@@ -25,12 +25,12 @@ namespace UniLiveViewer.Menu
         [Inject]
         public VRMMenuPresenter(
             ISubscriber<VRMMenuShowMessage> menuShowSubscriber,
-            MenuRootService menuRootService,
+            VRMMenuRootService vrmMenuRootService,
             ThumbnailService thumbnailService,
             CharacterPage characterPage)
         {
             _menuShowSubscriber = menuShowSubscriber;
-            _menuRootService = menuRootService;
+            _vrmMenuRootService = vrmMenuRootService;
             _thumbnailService = thumbnailService;
             _characterPage = characterPage;
         }
@@ -43,7 +43,7 @@ namespace UniLiveViewer.Menu
                     _cts?.Cancel();//ページ状態更新と見なす
                     var isEnable = x.PageIndex == -1 ? false : true;
 
-                    _menuRootService.SetEnableRoot(isEnable);
+                    _vrmMenuRootService.SetEnableRoot(isEnable);
                     if (!isEnable) return;
                     if (x.PageIndex == 0)
                     {
@@ -58,7 +58,7 @@ namespace UniLiveViewer.Menu
                     _characterPage.OnClickThumbnail();
                 }).AddTo(_disposables);
             await _thumbnailService.InitializeAsync(cancellation);
-            _menuRootService.SetEnableRoot(false);
+            _vrmMenuRootService.SetEnableRoot(false);
         }
 
         void IDisposable.Dispose()

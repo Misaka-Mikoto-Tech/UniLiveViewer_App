@@ -10,32 +10,32 @@ namespace UniLiveViewer.Stage
     public class MenuRootPresenter : IStartable, IDisposable
     {
         readonly FileAccessManager _fileAccessManager;
-        readonly MenuRootService _menuGripperService;
+        readonly MenuRootService _menuRootService;
         readonly PlayerInputService _playerInputService;
         readonly CompositeDisposable _disposables = new();
 
         [Inject]
         public MenuRootPresenter(
             FileAccessManager fileAccessManager,
-            MenuRootService menuGripperService,
+            MenuRootService menuRootService,
             PlayerInputService playerInputService)
         {
             _fileAccessManager = fileAccessManager;
-            _menuGripperService = menuGripperService;
+            _menuRootService = menuRootService;
             _playerInputService = playerInputService;
         }
 
         void IStartable.Start()
         {
             _fileAccessManager.LoadEndAsObservable
-                .Subscribe(_ => _menuGripperService.OnLoadEnd())
+                .Subscribe(_ => _menuRootService.OnLoadEnd())
                 .AddTo(_disposables);
             _playerInputService.ClickMenuAsObservable()
                 .Where(x => x == PlayerHandType.RHand)
-                .Subscribe(_ => _menuGripperService.OnMenuSwitching())
+                .Subscribe(_ => _menuRootService.OnMenuSwitching())
                 .AddTo(_disposables);
 
-            _menuGripperService.Initialize();
+            _menuRootService.Initialize();
         }
 
         void IDisposable.Dispose()

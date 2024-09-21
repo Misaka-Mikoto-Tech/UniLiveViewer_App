@@ -7,6 +7,7 @@ namespace UniLiveViewer.Menu.SceneSelect
 {
     public class SceneSelectMenuSettings : MonoBehaviour
     {
+        [SerializeField] TextMesh[] _textMaxActor;
         [SerializeField] Button_Switch[] _sceneButton;
 
         public IObservable<SceneType> ChangeSceneAsObservable => _stream;
@@ -18,6 +19,12 @@ namespace UniLiveViewer.Menu.SceneSelect
             {
                 button.isEnable = false;
             }
+
+            _textMaxActor[0].text = SystemInfo.GetMaxFieldActor(SceneType.CANDY_LIVE).ToString();
+            _textMaxActor[1].text = SystemInfo.GetMaxFieldActor(SceneType.KAGURA_LIVE).ToString();
+            _textMaxActor[2].text = SystemInfo.GetMaxFieldActor(SceneType.VIEWER).ToString();
+            _textMaxActor[3].text = SystemInfo.GetMaxFieldActor(SceneType.GYMNASIUM).ToString();
+            _textMaxActor[4].text = SystemInfo.GetMaxFieldActor(SceneType.FANTASY_VILLAGE).ToString();
 
             // Button_Base改修するまでの繋ぎ
             _sceneButton[0].onTrigger += (btn) => _stream.OnNext(SceneType.TITLE);

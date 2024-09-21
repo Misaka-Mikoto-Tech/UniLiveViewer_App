@@ -52,7 +52,6 @@ namespace UniLiveViewer.Menu
         [SerializeField] Button_Base _btnFaceUpdate;
         [SerializeField] Button_Base _btnMouthUpdate;
 
-        
         public IReadOnlyReactiveProperty<int> FBXIndex => _fbxIndex;
         readonly ReactiveProperty<int> _fbxIndex = new();
         public IReadOnlyReactiveProperty<int> VRMIndex => _vrmIndex;
@@ -142,13 +141,6 @@ namespace UniLiveViewer.Menu
 
             _switchReverse.onTrigger += (b) => ChangeReverseAnimation(b);
             _switchReverse.isEnable = false;
-
-            _playableBinderService.BindingToAsObservable
-                .Subscribe(_ =>
-                {
-                    if (!transform.root.gameObject.activeSelf) return;
-                    textMeshs[2].text = $"{_fieldCharaCount}/{SystemInfo.MaxFieldChara}";
-                }).AddTo(this);
 
             _sliderOffset.ValueAsObservable
                 .Subscribe(value =>
@@ -270,6 +262,7 @@ namespace UniLiveViewer.Menu
         public void OnUpdateCharacterCount(int fieldCharaCount)
         {
             _fieldCharaCount = fieldCharaCount;
+            textMeshs[2].text = $"{fieldCharaCount}/{SystemInfo.MaxFieldChara}";
         }
 
         /// <summary>
@@ -419,7 +412,6 @@ namespace UniLiveViewer.Menu
             var actorName = actorEntity?.CharaInfoData.viewName;
             textMeshs[0].text = actorName;
             textMeshs[0].fontSize = actorName.FontSizeMatch(600, 30, 50);
-            textMeshs[2].text = $"{_fieldCharaCount}/{SystemInfo.MaxFieldChara}";
 
             if (actorEntity == null) return;
 
