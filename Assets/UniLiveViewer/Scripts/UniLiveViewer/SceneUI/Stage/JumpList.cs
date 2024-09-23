@@ -54,9 +54,9 @@ namespace UniLiveViewer.Menu
         /// </summary>
         public void BtnInstanceCheck(int needCount)
         {
-            const int MAXLINE = 25;//行数
+            const int MAXLINE = 20;//行数
             const float BETWEEN_ROWS = 3.4f;//列間
-            const float BETWEEN_LINE = 0.22f;//行間
+            const float BETWEEN_LINE = 0.24f;//行間
 
             if (_btnList.Count < needCount)
             {
@@ -66,7 +66,7 @@ namespace UniLiveViewer.Menu
                 for (int i = _btnList.Count; i < needCount; i++)
                 {
                     initX = i / MAXLINE * BETWEEN_ROWS;
-                    initY = 2.2f - (i % MAXLINE * BETWEEN_LINE);
+                    initY = 2.0f - (i % MAXLINE * BETWEEN_LINE);
 
                     btn = Instantiate(Button_BasePrefab);
                     btn.onTrigger += OnClick;

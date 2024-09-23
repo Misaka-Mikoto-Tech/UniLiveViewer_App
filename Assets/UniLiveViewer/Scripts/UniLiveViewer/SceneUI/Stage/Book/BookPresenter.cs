@@ -5,7 +5,7 @@ using VContainer.Unity;
 
 namespace UniLiveViewer.Menu
 {
-    public class BookPresenter : IPostStartable, IDisposable
+    public class BookPresenter : IStartable, IDisposable
     {
         readonly BookService _bookService;
         readonly SystemSettingsService _systemSettingsService;
@@ -18,9 +18,9 @@ namespace UniLiveViewer.Menu
             _systemSettingsService = systemSettingsService;
         }
 
-        void IPostStartable.PostStart()
+        void IStartable.Start()
         {
-            _systemSettingsService.LanguageIndexAsObservable
+            _systemSettingsService.SystemLanguage
                 .Subscribe(_bookService.Initialize)
                 .AddTo(_disposable);
         }

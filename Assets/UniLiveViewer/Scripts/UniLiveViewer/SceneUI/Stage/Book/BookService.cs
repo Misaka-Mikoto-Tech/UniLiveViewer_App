@@ -20,7 +20,7 @@ namespace UniLiveViewer.Menu
             _bookAnchor = bookAnchor;
         }
 
-        public void Initialize(int languageIndex)
+        public void Initialize(SystemLanguage systemLanguage)
         {
             if (_boolObj != null)
             {
@@ -28,12 +28,14 @@ namespace UniLiveViewer.Menu
                 _boolObj = null;
             }
 
-            var prefab = languageIndex switch
+            var prefab = systemLanguage switch
             {
-                0 => _bookSetting.PrefabEN,
-                1 => _bookSetting.PrefabJP,
+                SystemLanguage.English => _bookSetting.PrefabEN,
+                SystemLanguage.Japanese => _bookSetting.PrefabJP,
                 _ => null,
             };
+
+            if (prefab == null) return;
             _boolObj = GameObject.Instantiate(prefab, _bookAnchor.transform);
         }
 

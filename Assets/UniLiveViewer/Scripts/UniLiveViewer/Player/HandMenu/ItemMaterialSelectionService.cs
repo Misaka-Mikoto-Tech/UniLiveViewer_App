@@ -42,7 +42,8 @@ namespace UniLiveViewer.Player.HandMenu
 
         public void Setup()
         {
-            _systemSettingsService.LanguageIndexAsObservable
+            _systemSettingsService.SystemLanguage
+                .Select(x => x.ToResourceIndex())
                 .Subscribe(x => _languageIndex = x);
 
             _handMenu[0] = new UniLiveViewer.HandMenu(

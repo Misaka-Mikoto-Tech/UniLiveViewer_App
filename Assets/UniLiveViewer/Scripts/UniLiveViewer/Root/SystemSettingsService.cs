@@ -1,5 +1,4 @@
 ﻿using Cysharp.Threading.Tasks;
-using System;
 using System.Threading;
 using UniRx;
 using UnityEngine;
@@ -9,8 +8,11 @@ namespace UniLiveViewer
 {
     public class SystemSettingsService
     {
-        public IObservable<int> LanguageIndexAsObservable => _languageIndexStream;
-        readonly Subject<int> _languageIndexStream = new();
+        /// <summary>
+        /// MEMO: Root側で早いのでReactiveしかないskipもNG
+        /// </summary>
+        public IReadOnlyReactiveProperty<SystemLanguage> SystemLanguage => _systemLanguage;
+        readonly ReactiveProperty<SystemLanguage> _systemLanguage = new();
 
         public SystemSettingsService()
         {
@@ -30,7 +32,7 @@ namespace UniLiveViewer
             }
             else
             {
-                _languageIndexStream.OnNext(GetLanguageIndex());
+                _systemLanguage.Value = (SystemLanguage)FileReadAndWriteUtility.UserProfile.LanguageCode;
             }
         }
 
@@ -40,16 +42,11 @@ namespace UniLiveViewer
             var locale = LocalizationSettings.AvailableLocales.GetLocale(result);
             LocalizationSettings.SelectedLocale = locale;
 
-            FileReadAndWriteUtility.UserProfile.LanguageCode = (int)systemLanguage;
+            FileReadAndWriteUtility.UserProfile.LanguageCode = (int)result;
             FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
 
-            _languageIndexStream.OnNext(GetLanguageIndex());
+            _systemLanguage.Value = (SystemLanguage)FileReadAndWriteUtility.UserProfile.LanguageCode;
         }
 
-        int GetLanguageIndex()
-        {
-            var systemLanguage = (SystemLanguage)FileReadAndWriteUtility.UserProfile.LanguageCode;
-            return systemLanguage.ToResourceIndex();
-        }
     }
 }
