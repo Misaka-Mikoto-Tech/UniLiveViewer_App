@@ -113,7 +113,7 @@ namespace UniLiveViewer.Menu
 
         void OnFieldCharacterCount(int i)
         {
-            _characterPage.OnUpdateCharacterCount(i);
+            _characterPage.OnUpdateActorCount();
         }
 
         void OnBindingTo()

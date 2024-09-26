@@ -29,8 +29,6 @@ namespace UniLiveViewer.Menu
         [SerializeField] TextMesh _textMesh;
 
         [SerializeField] PageController _pageController;
-        [SerializeField] Transform _itemMaterialAnchor;
-        [SerializeField] GameObject _itemMaterialPrefab;
         [Header("確認用")]
         [SerializeField] int[] _currentSubPage;
 
