@@ -9,6 +9,7 @@ namespace UniLiveViewer.Stage
     /// </summary>
     public class StageSceneLifetimeScope : LifetimeScope
     {
+        [SerializeField] Light _directionalLight;
         [SerializeField] AudioClipSettings _audioClipSettings;
         [SerializeField] RootAudioSourceService _rootAudioSourceService;
 
@@ -19,6 +20,7 @@ namespace UniLiveViewer.Stage
 
             builder.Register<AnimationAssetManager>(Lifetime.Singleton);
             builder.Register<TextureAssetManager>(Lifetime.Singleton);
+            builder.RegisterComponent(_directionalLight);
 
             builder.RegisterEntryPoint<StageScenePresenter>();
         }

@@ -28,6 +28,10 @@ namespace UniLiveViewer.Menu.Config.Graphics
         {
             _graphicsMenuService.Initialize();
 
+            _graphicsMenuService.LightIntensity
+                .SkipLatestValueOnSubscribe()
+                .Subscribe(_graphicsSettingsService.ChangeLightIntensity)
+                .AddTo(_disposables);
             _graphicsMenuService.AntialiasingMode
                 .SkipLatestValueOnSubscribe()
                 .Subscribe(_graphicsSettingsService.ChangeAntialiasing)

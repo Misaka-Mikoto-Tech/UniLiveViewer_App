@@ -43,6 +43,7 @@ namespace UniLiveViewer.Menu
         [SerializeField] SliderGrabController _sliderOffset;
         [SerializeField] SliderGrabController _sliderHeadLook;
         [SerializeField] SliderGrabController _sliderEyeLook;
+        [SerializeField] TextMesh[] _lookAtText;
 
         [Header("--- VRM用 ---")]
         [SerializeField] Button_Base _btnVRMSetting;
@@ -153,6 +154,8 @@ namespace UniLiveViewer.Menu
             _sliderHeadLook.ValueAsObservable
                 .Subscribe(value =>
                 {
+                    _lookAtText[0].text = $"{value:0.00}";
+
                     var data = _playableBinderService.BindingData[TimelineConstants.PortalIndex];
                     if (data == null) return;
                     //顔の向く量をセット
@@ -162,6 +165,8 @@ namespace UniLiveViewer.Menu
             _sliderEyeLook.ValueAsObservable
                 .Subscribe(value =>
                 {
+                    _lookAtText[1].text = $"{value:0.00}";
+
                     var data = _playableBinderService.BindingData[TimelineConstants.PortalIndex];
                     if (data == null) return;
                     //目の向く量をセット

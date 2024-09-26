@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using VContainer;
@@ -16,12 +16,14 @@ namespace UniLiveViewer.Player
 
         readonly Camera _camera;
         readonly VolumeProfile _volumeProfile;
+        readonly Light _light;
 
         [Inject]
-        public GraphicsSettingsService(Camera camera, VolumeProfile volumeProfile)
+        public GraphicsSettingsService(Camera camera, VolumeProfile volumeProfile, Light light)
         {
             _camera = camera;
             _volumeProfile = volumeProfile;
+            _light = light;
         }
 
         public void Initialize()
@@ -55,6 +57,11 @@ namespace UniLiveViewer.Player
                 _vignette.active = false;
             }
             IfNeededSwitchPostprocessing();
+        }
+
+        public void ChangeLightIntensity(float v)
+        {
+            _light.intensity = v;
         }
 
         public void ChangeAntialiasing(AntialiasingMode mode)

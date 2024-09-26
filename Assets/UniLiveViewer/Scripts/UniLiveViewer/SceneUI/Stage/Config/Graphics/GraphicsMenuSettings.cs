@@ -12,6 +12,9 @@ namespace UniLiveViewer.Menu.Config.Graphics
         public IReadOnlyList<SliderGrabController> GraphicSlider => _graphicSlider;
         [SerializeField] List<SliderGrabController> _graphicSlider;
 
+        public IReadOnlyList<TextMesh> GraphicsText => _graphicsText;
+        [SerializeField] List<TextMesh> _graphicsText;
+
         public SliderGrabController OutlineSlider => _outlineSlider;
         [SerializeField] SliderGrabController _outlineSlider;
 
