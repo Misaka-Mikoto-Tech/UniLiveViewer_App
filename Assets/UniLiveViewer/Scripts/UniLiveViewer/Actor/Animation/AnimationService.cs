@@ -64,6 +64,7 @@ namespace UniLiveViewer.Actor.Animation
             if (_currentMode == CurrentMode.PRESET)
             {
                 _actorEntity.GetVMDPlayer.ClearBaseAndSyncData();
+                _actorEntity.GetAnimator.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);//Animator層が動いているので
                 _actorEntity.GetAnimator.enabled = true;
 
                 // ポータル上のアニメーションバインド
@@ -74,6 +75,8 @@ namespace UniLiveViewer.Actor.Animation
             else if (_currentMode == CurrentMode.CUSTOM)
             {
                 _actorEntity.GetAnimator.enabled = false;
+                _actorEntity.GetAnimator.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);//Animator層が動いているので
+
                 var vmd = _vmdData.TryGetCurrentVMD();
                 var folderPath = PathsInfo.GetFullPath(FolderType.MOTION) + "/";
                 var fileName = _vmdData.GetCurrentName();
