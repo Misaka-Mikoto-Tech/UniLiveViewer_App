@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading;
 using UniLiveViewer.Actor;
 using UniLiveViewer.MessagePipe;
-using UniLiveViewer.Timeline;
 using UniLiveViewer.ValueObject;
 using UnityEngine;
 using VContainer;
@@ -66,10 +65,10 @@ namespace UniLiveViewer.Menu
         }
 
         public string[] FbxViewNames =>
-                _actorRegisterService.RegisterDataFBX.Select(x => x.VRMLoadData.FileName).ToArray();
+                _actorRegisterService.RegisterDataFBX.Select(x => x.FileName).ToArray();
 
         public string[] VRMViewNames =>
-                _actorRegisterService.RegisterDataVRM.Select(x => x.VRMLoadData.FileName).ToArray();
+                _actorRegisterService.RegisterDataVRM.Select(x => x.FileName).ToArray();
 
         public IActorEntity EditorOnly_CurrentActorService(InstanceId instanceId)
         {
@@ -94,18 +93,17 @@ namespace UniLiveViewer.Menu
 
         public void FastRegisterVRM()
         {
-            var dummy = new VRMLoadData(MenuConstants.LoadVRM);
-            _actorRegisterService.RegisterVRM(dummy);
+            _actorRegisterService.RegisterVRM(MenuConstants.LoadVRM);
             if (_actorRegisterService.TryGetRegisterDataVRM(0, out var registerData))
             {
                 _vrmList.Add(new ActorData(registerData, null));
             }
         }
 
-        public void RegisterVRM(VRMLoadData data)
+        public void RegisterVRM(string fileName)
         {
-            _actorRegisterService.RegisterVRM(data);
-            _vrmList.Add(null);
+            _actorRegisterService.RegisterVRM(fileName);
+            _vrmList.Add(null);//空で枠を確保しておく必要がある、Active時に評価
         }
 
         public void SendAllActorDisableMessage()
@@ -174,7 +172,6 @@ namespace UniLiveViewer.Menu
                     Debug.LogWarning("indexどこかでズレた疑惑（ここ来たらおかしい）");
                     return null;
                 }
-
                 var actor = await _actorEntityFactory.GenerateVRMAsync(registerData, cancellation);
                 _vrmList[index] = new ActorData(registerData, actor);
                 _currentInstaceID = _vrmList[index].GetInstanceId();

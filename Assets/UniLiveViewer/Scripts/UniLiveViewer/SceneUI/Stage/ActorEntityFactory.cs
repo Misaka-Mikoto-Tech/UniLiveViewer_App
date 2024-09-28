@@ -36,7 +36,7 @@ namespace UniLiveViewer.Menu
             if (_setting.FBXActorLifetimeScopePrefab.Count <= presetIndex) return null;
             var actorLifetimeScope = _setting.FBXActorLifetimeScopePrefab[presetIndex];
             var instanceID = new InstanceId(_instanceId);
-            var installer = new ActorInstaller(data.Id, data.VRMLoadData, instanceID);
+            var installer = new ActorInstaller(data, instanceID);
 
             using (LifetimeScope.Enqueue(installer))
             {
@@ -54,11 +54,11 @@ namespace UniLiveViewer.Menu
         public async UniTask<ActorLifetimeScope> GenerateVRMAsync(RegisterData data, CancellationToken cancellation)
         {
             var instanceID = new InstanceId(_instanceId);
-            var installer = new ActorInstaller(data.Id, data.VRMLoadData, instanceID);
+            var installer = new ActorInstaller(data, instanceID);
 
             using (LifetimeScope.Enqueue(installer))
             {
-                var prefab = FileReadAndWriteUtility.UserProfile.IsVRM10 ? _setting.Vrm10ActorLifetimeScopePrefab : _setting.VrmActorLifetimeScopePrefab;
+                var prefab = data.LoadVrmAsMode10 ? _setting.Vrm10ActorLifetimeScopePrefab : _setting.VrmActorLifetimeScopePrefab;
                 var instance = GameObject.Instantiate(prefab, InitPos, Quaternion.identity);
                 await instance.BuildAsync(cancellation);
                 var option = instance.CreateChildFromPrefab(_setting.OptionLifetimeScope);

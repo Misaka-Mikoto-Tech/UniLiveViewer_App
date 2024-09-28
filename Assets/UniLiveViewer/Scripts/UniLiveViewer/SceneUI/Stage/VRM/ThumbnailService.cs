@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using NanaCiel;
 using System;
 using System.Collections.Generic;
@@ -72,13 +72,13 @@ namespace UniLiveViewer.Menu
                     });
 
                     // TODO: 整理する
-                    _buttons[index].onTrigger += (b) =>
+                    _buttons[index].onTrigger += (btn) =>
                     {
                         //重複クリックできないようにボタンを無効化
                         SetEnableRoot(false);
                         _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
-                        _actorEntityManager.RegisterVRM(new VRMLoadData(b.name));
-                        _clickStream.OnNext(b);
+                        _actorEntityManager.RegisterVRM(btn.name);
+                        _clickStream.OnNext(btn);
                     };
                 }
                 await UniTask.Yield(PlayerLoopTiming.Update, cancellation);

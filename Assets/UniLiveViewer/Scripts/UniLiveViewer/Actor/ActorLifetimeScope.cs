@@ -5,8 +5,8 @@ using UniLiveViewer.Actor.AttachPoint;
 using UniLiveViewer.Actor.Expression;
 using UniLiveViewer.Actor.LookAt;
 using UniLiveViewer.Actor.SpringBone;
+using UniLiveViewer.Menu;
 using UniLiveViewer.OVRCustom;
-using UniLiveViewer.Timeline;
 using UniLiveViewer.ValueObject;
 using UnityEngine;
 using VContainer;
@@ -21,11 +21,11 @@ namespace UniLiveViewer.Actor
     public class ActorInstaller : IInstaller
     {
         ActorId _actorId;
-        VRMLoadData _data;
+        RegisterData _data;
         InstanceId _instanceId;
-        public ActorInstaller(ActorId actorId, VRMLoadData data, InstanceId instanceId)
+        public ActorInstaller(RegisterData data, InstanceId instanceId)
         {
-            _actorId = actorId;
+            _actorId = data.Id;
             _data = data;
             _instanceId = instanceId;
         }

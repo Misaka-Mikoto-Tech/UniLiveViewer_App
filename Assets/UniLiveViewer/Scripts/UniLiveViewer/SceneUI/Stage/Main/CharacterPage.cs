@@ -49,8 +49,8 @@ namespace UniLiveViewer.Menu
         [SerializeField] Button_Base _btnVRMSetting;
         [SerializeField] Button_Base _btnVRMDelete;
         [SerializeField] Button_Base _btnVRM10Mode;//0.xと1.0切り替え
-        [SerializeField] Button_Base _btnFaceUpdate;
-        [SerializeField] Button_Base _btnMouthUpdate;
+        [SerializeField] Button_Base _btnFacialActive;
+        [SerializeField] Button_Base _btnLipSyncActive;
 
         public IReadOnlyReactiveProperty<int> FBXIndex => _fbxIndex;
         readonly ReactiveProperty<int> _fbxIndex = new();
@@ -118,8 +118,8 @@ namespace UniLiveViewer.Menu
             }
 
             //その他
-            for (int i = 0; i < _btnChara.Length; i++) _btnChara[i].onTrigger += MoveIndexActor;
-            for (int i = 0; i < _btnAnime.Length; i++) _btnAnime[i].onTrigger += MoveIndexAnimation;
+            for (int i = 0; i < _btnChara.Length; i++) _btnChara[i].onTrigger += OnMoveIndexActor;
+            for (int i = 0; i < _btnAnime.Length; i++) _btnAnime[i].onTrigger += OnMoveIndexAnimation;
 
             for (int i = 0; i < _btnOffset.Length; i++)
             {
@@ -137,7 +137,7 @@ namespace UniLiveViewer.Menu
                 _switchAnime[i].onTrigger += OnClickSwitchAnime;
             }
 
-            _switchReverse.onTrigger += (b) => ChangeReverseAnimation(b);
+            _switchReverse.onTrigger += (b) => OnChangeReverseAnimation(b);
             _switchReverse.isEnable = false;
 
             _sliderOffset.ValueAsObservable
@@ -174,11 +174,11 @@ namespace UniLiveViewer.Menu
                     lookAtAllocator.SetEyeWeight(value);
                 }).AddTo(this);
             //_btnVRMSetting.onTrigger += VRMSetting;
-            _btnVRMDelete.onTrigger += DeleteModel;
-            _btnVRM10Mode.onTrigger += ChangeVRMMode;
-            _btnDeleteAll.onTrigger += DeleteAll;
-            _btnFaceUpdate.onTrigger += Switch_Mouth;
-            _btnMouthUpdate.onTrigger += Switch_Mouth;
+            _btnVRMDelete.onTrigger += OnClickVRMDelete;
+            _btnVRM10Mode.onTrigger += OnClickVRMMode;
+            _btnDeleteAll.onTrigger += OnClickDeleteAllActors;
+            _btnFacialActive.onTrigger += OnClickFacialExpression;
+            _btnLipSyncActive.onTrigger += OnClickFacialExpression;
 
             _btnVRM10Mode.isEnable = FileReadAndWriteUtility.UserProfile.IsVRM10;
 
@@ -324,7 +324,7 @@ namespace UniLiveViewer.Menu
             EvaluateAnimationIndex(0);
         }
 
-        void MoveIndexActor(Button_Base btn)
+        void OnMoveIndexActor(Button_Base btn)
         {
             for (int i = 0; i < _btnChara.Length; i++)
             {
@@ -335,7 +335,7 @@ namespace UniLiveViewer.Menu
             }
         }
 
-        void MoveIndexAnimation(Button_Base btn)
+        void OnMoveIndexAnimation(Button_Base btn)
         {
             for (int i = 0; i < _btnAnime.Length; i++)
             {
@@ -435,8 +435,8 @@ namespace UniLiveViewer.Menu
             else
             {
                 if (!_vrmOptionAnchor.gameObject.activeSelf) _vrmOptionAnchor.gameObject.SetActive(true);
-                _btnFaceUpdate.isEnable = true;
-                _btnMouthUpdate.isEnable = true;
+                _btnFacialActive.isEnable = true;
+                _btnLipSyncActive.isEnable = true;
             }
         }
 
@@ -520,7 +520,7 @@ namespace UniLiveViewer.Menu
             FileReadAndWriteUtility.SaveMotionOffset();
         }
 
-        void ChangeReverseAnimation(Button_Base btn)
+        void OnChangeReverseAnimation(Button_Base btn)
         {
             if (_animationMode != CurrentMode.PRESET) return;
 
@@ -549,8 +549,11 @@ namespace UniLiveViewer.Menu
         /// <summary>
         /// VRMキャラを削除
         /// </summary>
-        void DeleteModel(Button_Base btn)
+        void OnClickVRMDelete(Button_Base btn)
         {
+            //サムネページの時は無視
+            if (_vrmIndex.Value == 0) return;
+
             _actorEntityManagerService.DeleteVRM(_vrmIndex.Value);
             EvaluateActorIndex(-1);
 
@@ -561,7 +564,7 @@ namespace UniLiveViewer.Menu
             });
         }
 
-        void ChangeVRMMode(Button_Base btn)
+        void OnClickVRMMode(Button_Base btn)
         {
             FileReadAndWriteUtility.UserProfile.IsVRM10 = btn.isEnable;
             FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
@@ -570,7 +573,7 @@ namespace UniLiveViewer.Menu
         /// <summary>
         /// フィールド一掃
         /// </summary>
-        void DeleteAll(Button_Base btn)
+        void OnClickDeleteAllActors(Button_Base btn)
         {
             var message = new AllActorOperationMessage(ActorState.FIELD, ActorCommand.DELETE);
             _allPublisher.Publish(message);
@@ -578,22 +581,19 @@ namespace UniLiveViewer.Menu
             _audioSourceService.PlayOneShot(AudioSE.ObjectDelete);
         }
 
-        /// <summary>
-        /// 口パクボタン押下
-        /// </summary>
-        void Switch_Mouth(Button_Base btn)
+        void OnClickFacialExpression(Button_Base btn)
         {
-            if (btn == _btnFaceUpdate)
+            if (btn == _btnFacialActive)
             {
                 if (!_actorEntityManagerService.TryGetCurrentInstaceID(out var instanceId)) return;
-                var command = _btnFaceUpdate.isEnable ? ActorCommand.FACILSYNC_ENEBLE : ActorCommand.FACILSYNC_DISABLE;
+                var command = _btnFacialActive.isEnable ? ActorCommand.FACILSYNC_ENEBLE : ActorCommand.FACILSYNC_DISABLE;
                 var message = new ActorOperationMessage(instanceId, command);
                 _publisher.Publish(message);
             }
-            else if (btn == _btnMouthUpdate)
+            else if (btn == _btnLipSyncActive)
             {
                 if (!_actorEntityManagerService.TryGetCurrentInstaceID(out var instanceId)) return;
-                var command = _btnMouthUpdate.isEnable ? ActorCommand.LIPSYNC_ENEBLE : ActorCommand.LIPSYNC_DISABLE;
+                var command = _btnLipSyncActive.isEnable ? ActorCommand.LIPSYNC_ENEBLE : ActorCommand.LIPSYNC_DISABLE;
                 var message = new ActorOperationMessage(instanceId, command);
                 _publisher.Publish(message);
             }

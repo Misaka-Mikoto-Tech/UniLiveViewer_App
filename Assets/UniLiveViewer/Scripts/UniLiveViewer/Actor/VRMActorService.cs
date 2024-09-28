@@ -2,12 +2,12 @@
 using MessagePipe;
 using NanaCiel;
 using System;
-using System.Linq;
 using System.Threading;
 using UniGLTF;
 using UniLiveViewer.Actor.AttachPoint;
 using UniLiveViewer.Actor.Expression;
 using UniLiveViewer.Actor.LookAt;
+using UniLiveViewer.Menu;
 using UniLiveViewer.Timeline;
 using UniRx;
 using UnityEngine;
@@ -52,7 +52,7 @@ namespace UniLiveViewer.Actor
         readonly VRMService _vrmService;
         readonly CharaInfoData _charaInfoData;
         readonly AttachPointService _attachPointService;
-        readonly VRMLoadData _data;
+        readonly RegisterData _data;
         readonly ILipSync _lipSync;
         readonly IFacialSync _faceSync;
         readonly NormalizedBoneGenerator _normalizedBoneGenerator;
@@ -66,7 +66,7 @@ namespace UniLiveViewer.Actor
             LifetimeScope lifetimeScope,
             VRMService vrmService,
             CharaInfoData charaInfoData,
-            VRMLoadData data,
+            RegisterData data,
             ILipSync lipSync,
             IFacialSync facialSync,
             NormalizedBoneGenerator normalizedBoneGenerator,
@@ -105,7 +105,7 @@ namespace UniLiveViewer.Actor
         {
             try
             {
-                if (FileReadAndWriteUtility.UserProfile.IsVRM10)
+                if (_data.LoadVrmAsMode10)
                 {
                     var instance = await _vrmService.Load10Async(_data.FullPath, cancellation);//1.0
                     await SetupInternalAsync(instance, cancellation);

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using UniLiveViewer.Actor;
-using UniLiveViewer.Timeline;
 using UniLiveViewer.ValueObject;
 
 namespace UniLiveViewer.Menu
@@ -23,12 +22,10 @@ namespace UniLiveViewer.Menu
         /// <summary>
         /// 登録のみ、ActorIdが確定
         /// </summary>
-        /// <returns></returns>
-        public void RegisterFBX(string name)
+        public void RegisterFBX(string fileName)
         {
             var actorId = new ActorId(ActorType.FBX, _indexFBX);
-            var dummy = new VRMLoadData(name);//これ辞めたい
-            _registerDataFBX.Add(new RegisterData(actorId, dummy));
+            _registerDataFBX.Add(new RegisterData(actorId, fileName));
             _indexFBX++;
         }
 
@@ -47,12 +44,11 @@ namespace UniLiveViewer.Menu
         /// <summary>
         /// 登録のみ、ActorIdが確定
         /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        public void RegisterVRM(VRMLoadData data)
+        public void RegisterVRM(string fileName)
         {
             var actorId = new ActorId(ActorType.VRM, _indexVRM);
-            _registerDataVRM.Add(new RegisterData(actorId, data));
+            var loadVrmAsMode10 = FileReadAndWriteUtility.UserProfile.IsVRM10;
+            _registerDataVRM.Add(new RegisterData(actorId, fileName, loadVrmAsMode10));
             _indexVRM++;
         }
 
@@ -72,18 +68,6 @@ namespace UniLiveViewer.Menu
         {
             _registerDataVRM[index] = null;
             _registerDataVRM.RemoveAt(index);
-        }
-    }
-
-    public class RegisterData
-    {
-        public ActorId Id { get; }
-        public VRMLoadData VRMLoadData { get; }
-
-        public RegisterData(ActorId id, VRMLoadData vrmLoadData)
-        {
-            Id = id;
-            VRMLoadData = vrmLoadData;
         }
     }
 }

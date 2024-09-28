@@ -24,7 +24,6 @@ namespace UniLiveViewer.Timeline
         protected override void Configure(IContainerBuilder builder)
         {
             var options = builder.RegisterMessagePipe();
-            builder.RegisterMessageBroker<VRMLoadData>(options);
             builder.RegisterMessageBroker<VRMLoadResultData>(options);
             builder.RegisterMessageBroker<AllActorOperationMessage>(options);
             builder.RegisterMessageBroker<ActorOperationMessage>(options);
