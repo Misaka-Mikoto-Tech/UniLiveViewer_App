@@ -134,6 +134,19 @@ namespace UniLiveViewer.Actor
             go.name = instance.Vrm.Meta.Name;
             go.layer = Constants.LayerNoGrabObject;//オートカメラ識別にも利用
 
+            // 0.XはmatConverter内で行っているが1.0はないのでここで
+            var skinnedMeshRenderers = go.GetComponentsInChildren<SkinnedMeshRenderer>();
+            foreach (var mesh in skinnedMeshRenderers)
+            {
+                if (mesh.transform.name.Contains("eye", StringComparison.OrdinalIgnoreCase)
+                    || mesh.transform.name.Contains("face", StringComparison.OrdinalIgnoreCase))
+                {
+                    //目や顔にアウトラインは残念な感じになりやすいので
+                    mesh.gameObject.layer = Constants.LayerNoUnRendererFeature;
+                }
+                else mesh.gameObject.layer = go.layer;
+            }
+
             // 表情系
             var runtimeExpression = instance.Runtime.Expression;
             _lipSync.Setup(instance.transform, expression: runtimeExpression);
