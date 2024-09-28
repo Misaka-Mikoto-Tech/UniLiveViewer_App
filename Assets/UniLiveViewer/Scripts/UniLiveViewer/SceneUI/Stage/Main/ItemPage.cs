@@ -11,7 +11,7 @@ namespace UniLiveViewer.Menu
         const int SUBPAGE_ITEMS_ROW = 2;
         const int SUBPAGE_ITEMS_COL = 3;
         int SUBPAGE_ITEMS_MAX = SUBPAGE_ITEMS_ROW * SUBPAGE_ITEMS_COL;
-        static readonly Vector2[] itemOffsetPos = {
+        static readonly Vector2[] _itemOffsetPos = {
             new Vector2(-0.12f, 0.08f), new Vector2(0.08f, 0.08f), new Vector2(0.28f, 0.08f),
             new Vector2(-0.12f,-0.10f), new Vector2(0.08f,-0.10f),new Vector2(0.28f,-0.10f),
         };
@@ -173,10 +173,10 @@ namespace UniLiveViewer.Menu
 
                 var instance = Instantiate(currentItemPrefabs.ItemPrefab[itemIndex]).transform;
                 instance.name = itemName;
+                var initPos = instance.localPosition;
                 instance.parent = _pageController.GetCurrentPageAnchor();
-                instance.localPosition = new Vector3(itemOffsetPos[i].x, itemOffsetPos[i].y, 0);
+                instance.localPosition = new Vector3(_itemOffsetPos[i].x, _itemOffsetPos[i].y, 0) + initPos;
                 instance.localRotation = Quaternion.identity * reverseQuaternion;
-                instance.localScale *= 0.5f;
             }
         }
 
