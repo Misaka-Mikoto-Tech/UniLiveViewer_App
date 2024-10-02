@@ -37,7 +37,7 @@ namespace UniLiveViewer
             }
             _vmdList.Clear();
 
-            var folderPath = PathsInfo.GetFullPath(FolderType.MOTION) + "/";
+            var folderPath = PathsInfo.GetFullPath(FolderType.Motion) + "/";
             var names = Directory.GetFiles(folderPath, "*.vmd", SearchOption.TopDirectoryOnly);
 
             for (int i = 0; i < names.Length; i++)
@@ -67,7 +67,7 @@ namespace UniLiveViewer
             }
             _vmdSyncList.Clear();
 
-            var folderPath = PathsInfo.GetFullPath_LipSync() + "/";
+            var folderPath = PathsInfo.GetFacialSyncFolderPath() + "/";
             var names = Directory.GetFiles(folderPath, "*.vmd", SearchOption.TopDirectoryOnly);
             _vmdSyncList.Add(TimelineConstants.LIPSYNC_NONAME);//0番は必ず空枠
 

@@ -5,20 +5,14 @@ namespace UniLiveViewer
 {
     public class PathsInfo
     {
-        static string folderPath_Persistent = UnityEngine.Application.persistentDataPath;
-        //static string folderPath_Persistent = UnityEngine.Application.temporaryCachePath;
+        const string ThumbnailsCacheFolderName = "Cache";
+        const string FacialSyncFolderName = "FacialSync";
 
-        //個別
-        static string[] folderName = { "Chara", "Motion", "BGM", "Setting" };
-        const string cachePath = "Cache";
-        const string lipSyncPath = "Lip-sync";
-        
-        public static int folder_length = folderName.Length;
-
-        const string readme_ja = "readme_ja.txt";
-        const string readme_en = "readme_en.txt";
-        const string defect = "不具合・Defect.txt";
-        const string json = "System.json";
+        const string ReadmeFolderName = "readme.txt";
+        const string ReadmeJAFileName = "readme_ja.txt";
+        const string ReadmeENFileName = "readme_en.txt";
+        const string DefectFileName = "不具合・Defect.txt";
+        const string JsonFileName = "System.json";
 
         public static string AppFolderPath;
         public static string DownloadFolderPath;
@@ -34,45 +28,33 @@ namespace UniLiveViewer
 #endif
         }
 
+        public static string GetCharaFolderPath()
+            => Path.Combine(AppFolderPath + "/", "Chara");
         public static string GetFullPath(FolderType type)
-        {
-            return Path.Combine(AppFolderPath + "/", folderName[(int)type]);
-        }
+            => Path.Combine(AppFolderPath + "/", type.AsString());
+        public static string GetThumbnailsFolderPath()
+            => Path.Combine(AppFolderPath + "/", FolderType.Actor.AsString() + "/", ThumbnailsCacheFolderName);
+        public static string GetFacialSyncFolderPath()
+            => Path.Combine(AppFolderPath + "/", FolderType.Motion.AsString() + "/", FacialSyncFolderName);
 
-        public static string GetFullPath_ThumbnailCache()
-        {
-            return Path.Combine(AppFolderPath + "/", folderName[(int)FolderType.CHARA] + "/", cachePath);
-        }
+        public static string GetDownloadFolderPath() => DownloadFolderPath;
+        public static string GetReadmeFolderPath()
+            => Path.Combine(AppFolderPath + "/", ReadmeFolderName);
 
-        public static string GetFullPath_LipSync()
+        public static string GetReadmeFolderPath(SystemLanguage systemLanguage)
         {
-            return Path.Combine(AppFolderPath + "/", folderName[(int)FolderType.MOTION] + "/", lipSyncPath);
-        }
-
-        public static string GetFullPath_Download()
-        {
-            return DownloadFolderPath;
-        }
-
-        public static string GetFullPath_README(SystemLanguage systemLanguage)
-        {
-            var languageIndex = systemLanguage.ToResourceIndex();
-            return languageIndex switch
+            return systemLanguage.ToResourceIndex() switch
             {
-                0 => Path.Combine(AppFolderPath + "/", readme_en),
-                1 => Path.Combine(AppFolderPath + "/", readme_ja),
+                0 => Path.Combine(AppFolderPath + "/", ReadmeENFileName),
+                1 => Path.Combine(AppFolderPath + "/", ReadmeJAFileName),
                 _ => "",
             };
         }
 
-        public static string GetFullPath_DEFECT()
-        {
-            return Path.Combine(AppFolderPath + "/", defect);
-        }
-
-        public static string GetFullPath_JSON()
-        {
-            return Path.Combine(folderPath_Persistent + "/", json);
-        }
+        public static string GetDefectFolderPath()
+            => Path.Combine(AppFolderPath + "/", DefectFileName);
+        public static string GetJSONFolderPath()
+            => Path.Combine(Application.persistentDataPath + "/", JsonFileName);
+        //Application.temporaryCachePath
     }
 }

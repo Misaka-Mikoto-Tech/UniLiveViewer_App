@@ -24,7 +24,7 @@ namespace UniLiveViewer.Menu
         {
             Id = id;
             FileName = fileName;
-            FullPath = $"{PathsInfo.GetFullPath(FolderType.CHARA)}/{fileName}"; ;
+            FullPath = $"{PathsInfo.GetFullPath(FolderType.Actor)}/{fileName}"; ;
             LoadVrmAsMode10 = loadVrmAsMode10;
         }
     }

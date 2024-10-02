@@ -29,7 +29,7 @@ namespace UniLiveViewer
         /// </summary>
         public async UniTask CacheThumbnails(CancellationToken cancellation)
         {
-            var charaFolderPath = PathsInfo.GetFullPath(FolderType.CHARA) + "/";
+            var charaFolderPath = PathsInfo.GetFullPath(FolderType.Actor) + "/";
 
             Texture2D texture = null;
             Sprite spr = null;
@@ -71,7 +71,7 @@ namespace UniLiveViewer
                     texture = TextureFormatter.Resize(texture);
                     //PNG保存
                     var binary = texture.EncodeToPNG();
-                    var path = Path.Combine(PathsInfo.GetFullPath_ThumbnailCache() + "/", $"{rawData[i]}.png");
+                    var path = Path.Combine(PathsInfo.GetThumbnailsFolderPath() + "/", $"{rawData[i]}.png");
                     File.WriteAllBytes(path, binary);
 #elif UNITY_ANDROID
                     // NOTE: この処理Quest1キツイ
@@ -129,7 +129,7 @@ namespace UniLiveViewer
 
             try
             {
-                string charaFolderPath = PathsInfo.GetFullPath(FolderType.CHARA) + "/";
+                string charaFolderPath = PathsInfo.GetFullPath(FolderType.Actor) + "/";
                 //ファイルコピー
                 for (int i = 0; i < rawData.Length; i++)
                 {

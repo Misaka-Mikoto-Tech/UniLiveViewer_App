@@ -33,7 +33,7 @@ namespace UniLiveViewer.Player
 
         void IStartable.Start()
         {
-            _fileAccessManager.LoadEndAsObservable
+            _fileAccessManager.EndLoadingAsObservable
                 .Subscribe(_ => _isTick = true)
                 .AddTo(_disposables);
 

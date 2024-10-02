@@ -39,7 +39,7 @@ namespace UniLiveViewer.Stage
 
         async UniTask IAsyncStartable.StartAsync(CancellationToken cancellation)
         {
-            await _fileAccessManager.PreparationStart(cancellation).OnError(OnFolderError);
+            await _fileAccessManager.PreparationStartAsync(cancellation).OnError(OnFolderError);
             _animationAssetManager.Setup();
             await _textureAssetManager.CacheThumbnails(cancellation).OnError(OnThumbnailsError);
             _fileAccessManager.PreparationEnd();

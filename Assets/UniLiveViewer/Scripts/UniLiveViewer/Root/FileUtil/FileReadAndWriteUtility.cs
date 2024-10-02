@@ -8,8 +8,8 @@ namespace UniLiveViewer
     // TODO: いつか作り直す
     public static class FileReadAndWriteUtility
     {
-        static string PathOffset = PathsInfo.GetFullPath(FolderType.SETTING) + "/" + "MotionOffset.txt";
-        static string PathPair = PathsInfo.GetFullPath(FolderType.SETTING) + "/" + "MotionFacialPair.txt";
+        static string PathOffset = PathsInfo.GetFullPath(FolderType.Settings) + "/" + "MotionOffset.txt";
+        static string PathPair = PathsInfo.GetFullPath(FolderType.Settings) + "/" + "MotionFacialPair.txt";
 
         /// <summary>
         /// モーションファイル名とoffset値
@@ -37,7 +37,7 @@ namespace UniLiveViewer
         /// </summary>
         static UserProfile LoadOrCreateJson()
         {
-            var path = PathsInfo.GetFullPath_JSON();
+            var path = PathsInfo.GetJSONFolderPath();
             if (File.Exists(path))
             {
                 try
@@ -63,7 +63,7 @@ namespace UniLiveViewer
         public static void WriteJson(UserProfile data)
         {
             //Json形式に変換
-            var path = PathsInfo.GetFullPath_JSON();
+            var path = PathsInfo.GetJSONFolderPath();
             try
             {
                 var jsonstr = JsonUtility.ToJson(data, true);

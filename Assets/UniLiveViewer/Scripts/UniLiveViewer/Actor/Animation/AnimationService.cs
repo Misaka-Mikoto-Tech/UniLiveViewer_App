@@ -78,7 +78,7 @@ namespace UniLiveViewer.Actor.Animation
                 _actorEntity.GetAnimator.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);//Animator層が動いているので
 
                 var vmd = _vmdData.TryGetCurrentVMD();
-                var folderPath = PathsInfo.GetFullPath(FolderType.MOTION) + "/";
+                var folderPath = PathsInfo.GetFullPath(FolderType.Motion) + "/";
                 var fileName = _vmdData.GetCurrentName();
                 await PlayVMDAsync(vmd, folderPath, fileName, true, cancellation);
                 await TrySetSyncVMDAsync(cancellation);
@@ -145,7 +145,7 @@ namespace UniLiveViewer.Actor.Animation
             }
             else
             {
-                var folderPath = PathsInfo.GetFullPath_LipSync() + "/";
+                var folderPath = PathsInfo.GetFacialSyncFolderPath() + "/";
                 var fullPath = folderPath + syncFileName;
                 if (!File.Exists(fullPath))
                 {

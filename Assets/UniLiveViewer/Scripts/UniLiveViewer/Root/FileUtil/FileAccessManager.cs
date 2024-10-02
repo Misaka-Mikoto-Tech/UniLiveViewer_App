@@ -12,24 +12,23 @@ namespace UniLiveViewer
     /// </summary>
     public class FileAccessManager
     {
-        public bool isSuccess { get; private set; } = false;
+        public bool IsSuccess { get; private set; } = false;
 
-        Subject<Unit> _onLoadStart = new Subject<Unit>();
-        public IObservable<Unit> LoadStartAsObservable => _onLoadStart;
-        Subject<Unit> _onLoadEnd = new Subject<Unit>();
-        public IObservable<Unit> LoadEndAsObservable => _onLoadEnd;
+        public IObservable<Unit> StartLoadingAsObservable => _onStartLoadingStream;
+        readonly Subject<Unit> _onStartLoadingStream = new ();
 
+        public IObservable<Unit> EndLoadingAsObservable => _onEndLoadingStream;
+        readonly Subject<Unit> _onEndLoadingStream = new ();
+        
         /// <summary>
         /// 準備開始(シーン冒頭に呼ばれる)
         /// </summary>
-        /// <param name="cancellation"></param>
-        /// <returns></returns>
-        public async UniTask PreparationStart(CancellationToken cancellation)
+        public async UniTask PreparationStartAsync(CancellationToken cancel)
         {
-            _onLoadStart?.OnNext(Unit.Default);
+            _onStartLoadingStream?.OnNext(Unit.Default);
 
             TryCreateCustomFolder();
-            await TryCreateReadmeFile(cancellation);
+            await TryCreateReadmeFileAsync(cancel);
         }
 
         /// <summary>
@@ -37,8 +36,8 @@ namespace UniLiveViewer
         /// </summary>
         public void PreparationEnd()
         {
-            isSuccess = true;
-            _onLoadEnd?.OnNext(Unit.Default);
+            IsSuccess = true;
+            _onEndLoadingStream?.OnNext(Unit.Default);
         }
 
         /// <summary>
@@ -46,22 +45,15 @@ namespace UniLiveViewer
         /// </summary>
         void TryCreateCustomFolder()
         {
-            var fullPath = (string)null;
             try
             {
-                //無ければ各種フォルダ生成
-                for (int i = 0; i < PathsInfo.folder_length; i++)
-                {
-                    fullPath = PathsInfo.GetFullPath((FolderType)i) + "/";
-                    CreateFolder(fullPath);
-                }
-                //キャッシュフォルダ
-                fullPath = PathsInfo.GetFullPath_ThumbnailCache() + "/";
-                CreateFolder(fullPath);
-
-                //リップシンクフォルダ
-                fullPath = PathsInfo.GetFullPath_LipSync() + "/";
-                CreateFolder(fullPath);
+                var isExistsActor = TryRenameOldFolder();
+                if (!isExistsActor) CreateFolder(FolderType.Actor);
+                CreateFolder(FolderType.Motion);
+                CreateFolder(FolderType.BGM);
+                CreateFolder(FolderType.Settings);
+                CreateFolder($"{PathsInfo.GetThumbnailsFolderPath()}/");
+                CreateFolder($"{PathsInfo.GetFacialSyncFolderPath()}/");
             }
             catch
             {
@@ -70,9 +62,42 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// フォルダ生成
+        /// Chara→Actorに変更しちゃう
         /// </summary>
-        /// <param name="fullPath"></param>
+        bool TryRenameOldFolder()
+        {
+            var oldFolderPath = PathsInfo.GetCharaFolderPath() + "/";
+            var newFolderPath = PathsInfo.GetFullPath(FolderType.Actor) + "/";
+            if (Directory.Exists(oldFolderPath))
+            {
+                // 新しいフォルダが存在しない場合、リネームを実行
+                if (!Directory.Exists(newFolderPath))
+                {
+                    try
+                    {
+                        Directory.Move(oldFolderPath, newFolderPath);
+                        Debug.Log("フォルダをCharaからActorにリネームしました。");
+                    }
+                    catch (IOException ex)
+                    {
+                        Debug.LogError($"フォルダのリネームに失敗しました: {ex.Message}");
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("新しいフォルダ名Actorが既に存在します。");
+                }
+                return true;
+            }
+            return false;
+        }
+
+        void CreateFolder(FolderType folderType)
+        {
+            var fullPath = PathsInfo.GetFullPath(folderType) + "/";
+            CreateFolder(fullPath);
+        }
+
         void CreateFolder(string fullPath)
         {
             try
@@ -96,14 +121,14 @@ namespace UniLiveViewer
         /// デフォルトファイル作成
         /// リードミー
         /// </summary>
-        /// <returns></returns>
-        async UniTask TryCreateReadmeFile(CancellationToken cancellation)
+        async UniTask TryCreateReadmeFileAsync(CancellationToken cancel)
         {
             try
             {
-                await ResourcesLoadText("readme_ja", PathsInfo.GetFullPath_README(SystemLanguage.English), cancellation);
-                await ResourcesLoadText("readme_en", PathsInfo.GetFullPath_README(SystemLanguage.Japanese), cancellation);
-                DeleteFile(PathsInfo.GetFullPath_DEFECT());
+                await ResourcesLoadTextAsync("readme", PathsInfo.GetReadmeFolderPath(), cancel);
+                DeleteFile(PathsInfo.GetReadmeFolderPath(SystemLanguage.English));
+                DeleteFile(PathsInfo.GetReadmeFolderPath(SystemLanguage.Japanese));
+                DeleteFile(PathsInfo.GetDefectFolderPath());
             }
             catch
             {
@@ -113,10 +138,10 @@ namespace UniLiveViewer
         }
 
         //TODO:わざわざ書き込む必要ないし解放必要では
-        async UniTask ResourcesLoadText(string fileName, string path, CancellationToken cancellation)
+        async UniTask ResourcesLoadTextAsync(string fileName, string path, CancellationToken cancel)
         {
             var resourceFile = (TextAsset)await Resources.LoadAsync<TextAsset>(fileName);
-            using (StreamWriter writer = new StreamWriter(path, false, System.Text.Encoding.UTF8))
+            using (var writer = new StreamWriter(path, false, System.Text.Encoding.UTF8))
             {
                 writer.Write(resourceFile.text);
             }

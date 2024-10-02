@@ -27,7 +27,7 @@ namespace UniLiveViewer.Stage
 
         void IStartable.Start()
         {
-            _fileAccessManager.LoadEndAsObservable
+            _fileAccessManager.EndLoadingAsObservable
                 .Subscribe(_ => _menuRootService.OnLoadEnd())
                 .AddTo(_disposables);
             _playerInputService.ClickMenuAsObservable()

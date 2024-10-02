@@ -24,7 +24,7 @@ namespace UniLiveViewer.Stage
 
         void IStartable.Start()
         {
-            _fileAccessManager.LoadEndAsObservable
+            _fileAccessManager.EndLoadingAsObservable
                 .Subscribe(_ => _blackoutCurtain.Ending().Forget())
                 .AddTo(_disposables);
         }

@@ -78,10 +78,10 @@ namespace UniLiveViewer.Menu
             switch (currentPage)
             {
                 case 0:
-                    if (!_fileManager.isSuccess) return;
+                    if (!_fileManager.IsSuccess) return;
                     //フォルダパスの表示を更新
-                    _textDirectory[0].text = $"({PathsInfo.GetFullPath(FolderType.CHARA)}/)";
-                    _textDirectory[1].text = $"/Download...[{_fileManager.CountVRM(PathsInfo.GetFullPath_Download() + "/")} VRMs]";
+                    _textDirectory[0].text = $"({PathsInfo.GetFullPath(FolderType.Actor)}/)";
+                    _textDirectory[1].text = $"/Download...[{_fileManager.CountVRM(PathsInfo.GetDownloadFolderPath() + "/")} VRMs]";
                     break;
                 case 1:
                     //prefabEditor.Init();
