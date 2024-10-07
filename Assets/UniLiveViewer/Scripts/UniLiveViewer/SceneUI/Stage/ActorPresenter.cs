@@ -1,10 +1,11 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using MessagePipe;
 using System;
 using System.Threading;
 using UniLiveViewer.MessagePipe;
 using UniLiveViewer.Timeline;
 using UniRx;
+using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
@@ -21,10 +22,7 @@ namespace UniLiveViewer.Menu
         CurrentMode _animationCurrentMode = CurrentMode.PRESET;
         bool _isReverse;
         int _clipIndex = 0;
-        /// <summary>
-        /// TODO: 未対応、Func<Task>試行したけど制御キツイ
-        /// </summary>
-        bool _isVRMLoading;
+
 
         readonly ISubscriber<VRMLoadResultData> _vrmLoadSubscriber;
         readonly IPublisher<VRMMenuShowMessage> _publisher;
@@ -65,9 +63,9 @@ namespace UniLiveViewer.Menu
         async UniTask IAsyncStartable.StartAsync(CancellationToken cancellation)
         {
             _vrmLoadSubscriber
-                .Subscribe(_ =>
+                .Subscribe(vrmResultData =>
                 {
-                    _isVRMLoading = false;
+                    _characterPage.OnLoadedVRM(vrmResultData);
                 }).AddTo(_disposables);
 
             // 購読より先に

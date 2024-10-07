@@ -10,10 +10,14 @@ using VContainer;
 
 namespace UniLiveViewer.Menu
 {
+    /// <summary>
+    /// TODO: いつか整理する
+    /// </summary>
     public class CharacterPage : MonoBehaviour
     {
         [SerializeField] Stage.LoadAnimation _loadingAnimation;
         [SerializeField] TextMesh _pleasePushText;
+        [SerializeField] TextMesh _vrmLoadFailureText;
         [SerializeField] TextMesh _actorMaxText;
 
         MenuManager _menuManager;
@@ -66,6 +70,9 @@ namespace UniLiveViewer.Menu
         public IReadOnlyReactiveProperty<int> VMDIndex => _vmdIndex;
         readonly ReactiveProperty<int> _vmdIndex = new();
         CurrentMode _animationMode = CurrentMode.PRESET;
+
+        /// <summary> 操作受付可能か </summary>
+        bool _interactable;
 
         PlayableBinderService _playableBinderService;
         PresetResourceData _presetResourceData;
@@ -199,6 +206,23 @@ namespace UniLiveViewer.Menu
 
             if (_vmdAnchor.gameObject.activeSelf) _vmdAnchor.gameObject.SetActive(false);
             if (_vrmOptionAnchor.gameObject.activeSelf) _vrmOptionAnchor.gameObject.SetActive(false);
+
+            _interactable = true;
+        }
+
+        // 待ち中にタブ押下はカバーできていないが許容
+        public async void OnLoadedVRM(VRMLoadResultData vrm)
+        {
+            if (vrm.Value != null) return;
+
+            // ロード失敗時は削除(ex:0.xモデルを1.0モードでロード)
+            _loadingAnimation.gameObject.SetActive(false);
+            _vrmLoadFailureText.gameObject.SetActive(true);
+
+            _interactable = false;
+            await UniTask.Delay(3000);
+            _interactable = true;
+            OnClickVRMDelete(null);
         }
 
         public void OnJumpSelect((JumpList.TARGET, int) select)
@@ -271,6 +295,8 @@ namespace UniLiveViewer.Menu
         /// <param name="btn"></param>
         void OpenJumplist(Button_Base btn)
         {
+            if (_interactable == false) return;
+
             if (!_menuManager.jumpList.gameObject.activeSelf) _menuManager.jumpList.gameObject.SetActive(true);
 
             if (btn == _btnJumpList[0])
@@ -290,6 +316,8 @@ namespace UniLiveViewer.Menu
 
         void OnClickSwitchChara(Button_Base btn)
         {
+            if (_interactable == false) return;
+
             if (_switchChara[0] == btn)
             {
                 _currentActorMode = CurrentMode.PRESET;
@@ -308,6 +336,8 @@ namespace UniLiveViewer.Menu
 
         void OnClickSwitchAnime(Button_Base btn)
         {
+            if (_interactable == false) return;
+
             if (_switchAnime[0] == btn)
             {
                 _animationMode = CurrentMode.PRESET;
@@ -326,6 +356,8 @@ namespace UniLiveViewer.Menu
 
         void OnMoveIndexActor(Button_Base btn)
         {
+            if (_interactable == false) return;
+
             for (int i = 0; i < _btnChara.Length; i++)
             {
                 if (_btnChara[i] != btn) continue;
@@ -337,6 +369,8 @@ namespace UniLiveViewer.Menu
 
         void OnMoveIndexAnimation(Button_Base btn)
         {
+            if (_interactable == false) return;
+
             for (int i = 0; i < _btnAnime.Length; i++)
             {
                 if (_btnAnime[i] != btn) continue;
@@ -368,6 +402,7 @@ namespace UniLiveViewer.Menu
         void EvaluateActorIndex(int moveIndex)
         {
             _pleasePushText.gameObject.SetActive(false);//非表示で初期化しておく
+            _vrmLoadFailureText.gameObject.SetActive(false);//非表示で初期化しておく
             _actorMaxText.gameObject.SetActive(false);
 
             if (SystemInfo.MaxFieldChara <= _playableBinderService.StageActorCount.Value)
@@ -502,6 +537,8 @@ namespace UniLiveViewer.Menu
 
         void OnClickVMDOffset(Button_Base btn)
         {
+            if (_interactable == false) return;
+
             for (int i = 0; i < 2; i++)
             {
                 //押されたボタンの判別
@@ -522,6 +559,8 @@ namespace UniLiveViewer.Menu
 
         void OnChangeReverseAnimation(Button_Base btn)
         {
+            if (_interactable == false) return;
+
             if (_animationMode != CurrentMode.PRESET) return;
 
             _isReverse.Value = _switchReverse.isEnable;
@@ -551,6 +590,8 @@ namespace UniLiveViewer.Menu
         /// </summary>
         void OnClickVRMDelete(Button_Base btn)
         {
+            if (_interactable == false) return;
+
             //サムネページの時は無視
             if (_vrmIndex.Value == 0) return;
 
@@ -568,6 +609,7 @@ namespace UniLiveViewer.Menu
         {
             FileReadAndWriteUtility.UserProfile.IsVRM10 = btn.isEnable;
             FileReadAndWriteUtility.WriteJson(FileReadAndWriteUtility.UserProfile);
+            _audioSourceService.PlayOneShot(AudioSE.ButtonClick);
         }
 
         /// <summary>
@@ -575,6 +617,8 @@ namespace UniLiveViewer.Menu
         /// </summary>
         void OnClickDeleteAllActors(Button_Base btn)
         {
+            if (_interactable == false) return;
+
             var message = new AllActorOperationMessage(ActorState.FIELD, ActorCommand.DELETE);
             _allPublisher.Publish(message);
 
@@ -583,6 +627,8 @@ namespace UniLiveViewer.Menu
 
         void OnClickFacialExpression(Button_Base btn)
         {
+            if (_interactable == false) return;
+
             if (btn == _btnFacialActive)
             {
                 if (!_actorEntityManagerService.TryGetCurrentInstaceID(out var instanceId)) return;
@@ -602,6 +648,8 @@ namespace UniLiveViewer.Menu
 
         void DebugInput()
         {
+            if (_interactable == false) return;
+
             if (Input.GetKeyDown(KeyCode.I)) EvaluateActorIndex(1);
             else if (Input.GetKeyDown(KeyCode.U)) EvaluateActorIndex(-1);
             else if (Input.GetKeyDown(KeyCode.K)) EvaluateAnimationIndex(1);

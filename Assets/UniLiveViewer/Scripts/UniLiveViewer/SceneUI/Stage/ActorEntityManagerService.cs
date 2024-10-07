@@ -206,8 +206,12 @@ namespace UniLiveViewer.Menu
         public void DeleteVRM(int index)
         {
             _actorRegisterService.RemoveVRM(index);
-            _vrmList[index].Dispose();
-            _vrmList[index] = null;
+            
+            if(_vrmList[index] != null)
+            {
+                _vrmList[index].Dispose();
+                _vrmList[index] = null;
+            }
             _vrmList.RemoveAt(index);
             _currentInstaceID = null;
         }
