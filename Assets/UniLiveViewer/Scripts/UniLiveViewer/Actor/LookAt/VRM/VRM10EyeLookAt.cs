@@ -5,18 +5,14 @@ using static UniVRM10.VRM10ObjectLookAt;
 
 namespace UniLiveViewer.Actor.LookAt.VRM
 {
-    /// <summary>
-    /// TODO: 現状目は常時ONになってしまう
-    /// </summary>
     public class VRM10EyeLookAt : IEyeLookAt
     {
-        /// <summary>
-        /// 顔ベース
-        /// </summary>
+        /// <summary> 顔ベース </summary>
         const float SearchAngle_Eye = 40;
+        /// <summary> 標準だと物足りない人用に調整幅持たせる </summary>
+        const float Magnification = 1.5f;
 
         Vrm10Instance _instance;
-
         float _inputWeight = 0.0f;
         Transform _lookTarget;
         /// <summary>
@@ -26,7 +22,6 @@ namespace UniLiveViewer.Actor.LookAt.VRM
         float _eyeLeap = 0.0f;
         readonly CharaInfoData _charaInfoData;
         readonly NormalizedBoneGenerator _test;
-
 
         public VRM10EyeLookAt(
             CharaInfoData charaInfoData,
@@ -39,7 +34,8 @@ namespace UniLiveViewer.Actor.LookAt.VRM
         public void Setup(Transform lookTarget, Vrm10Instance vrm10Instance)
         {
             _lookTarget = lookTarget;
-            vrm10Instance.LookAtTargetType = LookAtTargetTypes.SpecifiedTransform;
+            //vrm10Instance.LookAtTargetType = LookAtTargetTypes.SpecifiedTransform;//調整できないモード
+            vrm10Instance.LookAtTargetType = LookAtTargetTypes.YawPitchValue;
             vrm10Instance.LookAtTarget = lookTarget;
             _instance = vrm10Instance;
             _charaInfoData.ExpressionType = ExpressionType.VRM10;
@@ -49,15 +45,6 @@ namespace UniLiveViewer.Actor.LookAt.VRM
         void IEyeLookAt.SetEnable(bool isEnable)
         {
             _isLookAt = isEnable;
-
-            if (isEnable)
-            {
-                _instance.LookAtTargetType = LookAtTargetTypes.SpecifiedTransform;
-            }
-            else
-            {
-                _instance.LookAtTargetType = LookAtTargetTypes.YawPitchValue;
-            }
         }
 
         void IEyeLookAt.SetWeight(float weight)
@@ -68,14 +55,14 @@ namespace UniLiveViewer.Actor.LookAt.VRM
         void IEyeLookAt.OnLateTick()
         {
             if (_isLookAt == false) return;
+            UpdateBaseEye();
 
-            //UpdateBaseEye();
+            var v = _test.VirtualEye.InverseTransformPoint(_lookTarget.position).normalized;
+            var yaw = v.x * 180;
+            var pitch = v.y * 90;
+            _instance.Runtime.LookAt.SetYawPitchManually(yaw * _eyeLeap * Magnification, pitch * _eyeLeap * Magnification);
         }
 
-        /// <summary>
-        /// TODO: 補間ロジックはLookAt側ではなくtarget側にしようかな...YawPitchValueでやるのはめんど
-        /// >NormalizedBoneGenerator？
-        /// </summary>
         void UpdateBaseEye()
         {
             if (0.0f < _inputWeight)
@@ -88,7 +75,10 @@ namespace UniLiveViewer.Actor.LookAt.VRM
                 else _eyeLeap -= Time.deltaTime * 2.0f;
                 _eyeLeap = Mathf.Clamp(_eyeLeap, 0.0f, _inputWeight);
             }
-            else _eyeLeap = 0;//初期化
+            else
+            {
+                _eyeLeap = 0;//初期化
+            }
         }
 
         void IEyeLookAt.Reset()
