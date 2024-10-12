@@ -7,13 +7,15 @@ using VContainer;
 using VContainer.Unity;
 using UniRx;
 
-[RequireComponent(typeof(AudioSource))]
+// MEMO: 選べるようにしないと邪魔なので音中止
+//[RequireComponent(typeof(AudioSource))]
 public class HandPsyllium : MonoBehaviour, IItemColorChanger
 {
     [SerializeField] Material _material;
     Material _materialInstance;
 
     [SerializeField] TrailRenderer _trailRenderer;
+    [SerializeField] MeshRenderer _meshRenderer;
 
     [SerializeField] float _shakeThreshold = 0.1f;  // 揺れを検知するための閾値
     [SerializeField] float _coolTime = 0.25f;
@@ -23,23 +25,21 @@ public class HandPsyllium : MonoBehaviour, IItemColorChanger
 
     AudioHandPsylliumSE _currentAudioHandPsylliumSE;
     RootAudioSourceService _rootAudioSourceService;
-    AudioSource _audioSource;
+    //AudioSource _audioSource;
     List<AudioHandPsylliumDataSet> _audioClipSettings;
     
     void Start()
     {
-        var lifetimeScope = LifetimeScope.Find<StageSceneLifetimeScope>();
-        _rootAudioSourceService = lifetimeScope.Container.Resolve<RootAudioSourceService>();
-        _audioClipSettings = lifetimeScope.Container.Resolve<AudioClipSettings>().AudioHandPsylliumDataSet;
-        _audioSource = GetComponent<AudioSource>();
+        //var lifetimeScope = LifetimeScope.Find<StageSceneLifetimeScope>();
+        //_rootAudioSourceService = lifetimeScope.Container.Resolve<RootAudioSourceService>();
+        //_audioClipSettings = lifetimeScope.Container.Resolve<AudioClipSettings>().AudioHandPsylliumDataSet;
+        //_audioSource = GetComponent<AudioSource>();
 
-        _rootAudioSourceService.SEVolumeRate
-            .Subscribe(x => _audioSource.volume = x).AddTo(this);
+        //_rootAudioSourceService.SEVolumeRate
+        //    .Subscribe(x => _audioSource.volume = x).AddTo(this);
 
         _materialInstance = Instantiate(_material);
-        GetComponent<MeshRenderer>().material = _materialInstance;
-
-        _trailRenderer.material = _materialInstance;
+        _meshRenderer.material = _materialInstance;
         _timer = _coolTime;
     }
 
@@ -47,22 +47,23 @@ public class HandPsyllium : MonoBehaviour, IItemColorChanger
     {
         var color = colorInfo.ToColor();
         _materialInstance.SetColor(shaderName, color);
+        _trailRenderer.material.SetColor("_EmissionColor", color);
 
         // イベント回すのもアレなので単一破る
-        _currentAudioHandPsylliumSE = colorInfo switch
-        {
-            ColorInfo.Yellow => AudioHandPsylliumSE.Thunder,
-            ColorInfo.YellowGreen => AudioHandPsylliumSE.Wind,
-            ColorInfo.Green => AudioHandPsylliumSE.Wind,
-            ColorInfo.SkyBlue => AudioHandPsylliumSE.Water,
-            ColorInfo.Blue => AudioHandPsylliumSE.Water,
-            ColorInfo.Purple => AudioHandPsylliumSE.Darkness,
-            ColorInfo.Red => AudioHandPsylliumSE.Flame,
-            _ => AudioHandPsylliumSE.Default,
-        };
+        //_currentAudioHandPsylliumSE = colorInfo switch
+        //{
+        //    ColorInfo.Yellow => AudioHandPsylliumSE.Thunder,
+        //    ColorInfo.YellowGreen => AudioHandPsylliumSE.Wind,
+        //    ColorInfo.Green => AudioHandPsylliumSE.Wind,
+        //    ColorInfo.SkyBlue => AudioHandPsylliumSE.Water,
+        //    ColorInfo.Blue => AudioHandPsylliumSE.Water,
+        //    ColorInfo.Purple => AudioHandPsylliumSE.Darkness,
+        //    ColorInfo.Red => AudioHandPsylliumSE.Flame,
+        //    _ => AudioHandPsylliumSE.Default,
+        //};
     }
 
-    void Update()
+    /*void Update()
     {
         SoundProcess();
         _lastPosition = transform.position;
@@ -94,5 +95,5 @@ public class HandPsyllium : MonoBehaviour, IItemColorChanger
                 _timer = _coolTime;
             }
         }
-    }
+    }*/
 }

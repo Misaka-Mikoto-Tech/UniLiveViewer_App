@@ -18,6 +18,7 @@ namespace UniLiveViewer
         ActorGrab,
         ActorRelease,
         ActorRotation,
+        ActorSummon,
         SpotlightSwitch,
         SceneTransition,
 
