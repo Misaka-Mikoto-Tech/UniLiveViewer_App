@@ -69,19 +69,15 @@ namespace UniLiveViewer
                     _thumbnails.Add(rawData[i], spr);
 #if UNITY_EDITOR
                     texture = TextureFormatter.Resize(texture);
+#elif UNITY_ANDROID
+                    // NOTE: この処理Quest1キツイ
+                    //texture = TextureFormatter.Resize(texture);
+#endif
                     //PNG保存
                     var binary = texture.EncodeToPNG();
                     var path = Path.Combine(PathsInfo.GetThumbnailsFolderPath() + "/", $"{rawData[i]}.png");
                     File.WriteAllBytes(path, binary);
-#elif UNITY_ANDROID
-                    // NOTE: この処理Quest1キツイ
-                    //texture = TextureFormatter.Resize(texture);
 
-                    //PNG保存
-                    var binary = texture.EncodeToPNG();
-                    var path = Path.Combine(PathsInfo.GetFullPath_ThumbnailCache() + "/", $"{rawData[i]}.png");
-                    File.WriteAllBytes(path, binary);
-#endif
                 }
                 catch (System.OperationCanceledException)
                 {

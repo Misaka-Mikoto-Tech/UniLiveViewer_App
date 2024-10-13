@@ -150,8 +150,7 @@ namespace UniLiveViewer.Menu
                 _actionParentButton[0] = GameObject.FindGameObjectWithTag("MainLight").transform;
             }
 
-            //値の更新
-            _fogSlider.Value = 0.03f;
+            _fogSlider.Value = 0.02f;
         }
 
         async UniTaskVoid Init()

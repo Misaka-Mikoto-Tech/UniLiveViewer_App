@@ -44,6 +44,8 @@ namespace UniLiveViewer.Actor
             _normalizedBoneGenerator = normalizedBoneGenerator;
             _lookAtService = lookAtAllocator;
 
+            _animator.applyRootMotion = true;// MEMO: trueの方がペアダンス若干いい気がする
+
             _boneMap = Enum.GetValues(typeof(HumanBodyBones))
                 .Cast<HumanBodyBones>()
                 .Where(b => b != HumanBodyBones.LastBone)

@@ -95,7 +95,7 @@ namespace UniLiveViewer.Menu.Config.Graphics
             _settings.GraphicSlider[1].Value = _bloomThreshold.Value;
             _settings.GraphicSlider[2].Value = _bloomIntensity.Value;
             _settings.GraphicSlider[3].Value = _bloomColor.Value;
-            _settings.OutlineSlider.Value = 0;
+            _settings.OutlineSlider.Value = 0.3f;
             _settings.OutlineMat.SetFloat(Edge, _settings.OutlineSlider.Value);
         }
 
