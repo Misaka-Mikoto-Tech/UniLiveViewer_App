@@ -1,7 +1,9 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
+using MessagePipe;
 using System;
 using System.Threading;
 using UniLiveViewer.SceneLoader;
+using UniLiveViewer.Stage.Title;
 using UniRx;
 using VContainer;
 using VContainer.Unity;
@@ -14,16 +16,19 @@ namespace UniLiveViewer.SceneUI.Title
         readonly SceneChangeService _sceneChangeService;
         readonly TitleMenuSettings _titleMenuSettings;
         readonly CompositeDisposable _disposable = new();
+        readonly IPublisher<SceneTransitionMessage> _sceneTransitionPublisher;
 
         [Inject]
         public TitleMenuPresenter(
             TitleMenuService titleMenuService,
             TitleMenuSettings titleMenuSettings,
-            SceneChangeService sceneChangeService)
+            SceneChangeService sceneChangeService,
+            IPublisher<SceneTransitionMessage> sceneTransitionPublisher)
         {
             _titleMenuService = titleMenuService;
             _titleMenuSettings = titleMenuSettings;
             _sceneChangeService = sceneChangeService;
+            _sceneTransitionPublisher = sceneTransitionPublisher;
         }
 
         void IInitializable.Initialize()
@@ -34,7 +39,11 @@ namespace UniLiveViewer.SceneUI.Title
         async UniTask IAsyncStartable.StartAsync(CancellationToken cancellation)
         {
             _titleMenuSettings.MainMenuButton[0].onClick.AsObservable()
-                .Subscribe(async _ => await _titleMenuService.LoadScenesAutoAsync(cancellation))
+                .Subscribe(async _ =>
+                {
+                    _sceneTransitionPublisher.Publish(new SceneTransitionMessage());
+                    await _titleMenuService.LoadScenesAutoAsync(cancellation);
+                })
                 .AddTo(_disposable);
             _titleMenuSettings.MainMenuButton[1].onClick.AsObservable()
                 .Subscribe(_ => _titleMenuService.OpenLicense(true))
@@ -46,8 +55,7 @@ namespace UniLiveViewer.SceneUI.Title
                 .Subscribe(_ => _titleMenuService.OpenLicense(false))
                 .AddTo(_disposable);
 
-            _titleMenuService.Start();
-
+            _titleMenuService.StartAsync(cancellation).Forget();
             await UniTask.CompletedTask;
         }
 
