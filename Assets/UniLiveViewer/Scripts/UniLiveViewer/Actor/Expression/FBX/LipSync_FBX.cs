@@ -8,7 +8,7 @@ namespace UniLiveViewer.Actor.Expression
     public class LipSync_FBX : MonoBehaviour, ILipSync
     {
         [SerializeField] SkinnedMeshRenderer _skinMesh;
-        [SerializeField] AnimationCurve _weightCurve;
+        AnimationCurve _gainCurve;
         const int BLENDSHAPE_WEIGHT = 100;
 
         [SerializeField] BindInfo[] _bindInfo;
@@ -37,7 +37,7 @@ namespace UniLiveViewer.Actor.Expression
             }
 
             //TODO: また見直す
-            foreach (var info in _bindInfo) 
+            foreach (var info in _bindInfo)
             {
                 switch (info.lipType)
                 {
@@ -67,6 +67,11 @@ namespace UniLiveViewer.Actor.Expression
             if (blendShape != null || expression != null) return;
             transform.SetParent(parent);
             transform.name = ActorConstants.LipSyncController;
+        }
+
+        void ILipSync.SetGainCurve(AnimationCurve gainCurve)
+        {
+            _gainCurve = gainCurve;
         }
 
         void ILipSync.Morph()
@@ -108,7 +113,7 @@ namespace UniLiveViewer.Actor.Expression
 
         float GetWeight(Transform tr)
         {
-            return _weightCurve.Evaluate(tr.localPosition.z);
+            return _gainCurve.Evaluate(tr.localPosition.z);
         }
     }
 }

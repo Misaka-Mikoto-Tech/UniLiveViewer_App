@@ -11,16 +11,53 @@ namespace UniLiveViewer
             VMD,
         }
 
-        public bool isReverse = false;
-        public string strBeforeName;
-        public string viewName;
-        public float motionOffsetTime = 0;//現状FBXだけ、VMDはtxtを参照している
-        public FORMATTYPE formatType = FORMATTYPE.FBX;
-        public AnimationClip baseDanceClip;
-        public AnimationClip baseDanceClip_reverse;
-        public AnimationClip overrideClip_hand;
-        public AnimationClip overrideClip_reverseHand;
-        public AnimationClip overrideClip_face;
-        public AnimationClip overrideClip_lip;
+        public void Setup(float offsetTime,
+            AnimationClip baseDanceClip, AnimationClip reversedBaseDanceClip,
+            AnimationClip overrideHandClip, AnimationClip reversedOverrideHandClip,
+            AnimationClip overridefacialSyncClip, AnimationClip overrideLipSyncClip)
+        {
+            _offsetTime = offsetTime;
+            _baseDanceClip = baseDanceClip;
+            _reversedBaseDanceClip = reversedBaseDanceClip;
+            _overrideHandClip = overrideHandClip;
+            _reversedOverrideHandClip = reversedOverrideHandClip;
+            _overridefacialSyncClip = overridefacialSyncClip;
+            _overrideLipSyncClip = overrideLipSyncClip;
+        }
+
+        public bool IsReverse = false;
+
+        [SerializeField] string _beforeName;
+
+        public string ViewName => _viewName;
+        [SerializeField] string _viewName;
+
+        public float OffsetTime => _offsetTime;
+        [SerializeField] float _offsetTime = 0;//現状FBXだけ、VMDはtxtを参照している
+
+        [SerializeField] FORMATTYPE _formatType;
+
+        public AnimationClip BaseDanceClip => _baseDanceClip;
+        [SerializeField] AnimationClip _baseDanceClip;
+
+        public AnimationClip ReversedBaseDanceClip => _reversedBaseDanceClip;
+        [SerializeField] AnimationClip _reversedBaseDanceClip;
+
+        public AnimationClip OverrideHandClip => _overrideHandClip;
+        [SerializeField] AnimationClip _overrideHandClip;
+
+        public AnimationClip ReversedOverrideHandClip => _reversedOverrideHandClip;
+        [SerializeField] AnimationClip _reversedOverrideHandClip;
+
+        public AnimationClip OverridefacialSyncClip => _overridefacialSyncClip;
+        [SerializeField] AnimationClip _overridefacialSyncClip;
+
+        public AnimationClip OverrideLipSyncClip => _overrideLipSyncClip;
+        [SerializeField] AnimationClip _overrideLipSyncClip;
+
+        public AnimationCurve FacialSyncGainCurve => _facialSyncGainCurve;
+        [SerializeField] AnimationCurve _facialSyncGainCurve;
+        public AnimationCurve LipSyncGainCurve => _lipSyncGainCurve;
+        [SerializeField] AnimationCurve _lipSyncGainCurve;
     }
 }

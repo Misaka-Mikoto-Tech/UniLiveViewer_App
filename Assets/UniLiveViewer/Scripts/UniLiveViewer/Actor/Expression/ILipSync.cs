@@ -10,6 +10,8 @@ namespace UniLiveViewer.Actor.Expression
         //TODO: 抽象化できてない
         void Setup(Transform parent, VRMBlendShapeProxy blendShape = null, Vrm10RuntimeExpression expression = null);
 
+        void SetGainCurve(AnimationCurve gainCurve);
+
         string[] GetKeyArray();
 
         /// <summary>

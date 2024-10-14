@@ -19,6 +19,7 @@ namespace UniLiveViewer.Actor.Animation
         readonly ExpressionService _expressionService;
         readonly IActorEntity _actorEntity;
         readonly ISubscriber<ActorAnimationMessage> _subscriber;
+        readonly PresetResourceData _presetResourceData;
         readonly CompositeDisposable _disposables = new();
 
         [Inject]
@@ -28,7 +29,8 @@ namespace UniLiveViewer.Actor.Animation
             AnimationService animationService,
             ExpressionService expressionService,
             IActorEntity actorEntity,
-            ISubscriber<ActorAnimationMessage> subscriber)
+            ISubscriber<ActorAnimationMessage> subscriber,
+            PresetResourceData presetResourceData)
         {
             _instanceId = instanceId;
             _allSubscriber = allSubscriber;
@@ -36,6 +38,7 @@ namespace UniLiveViewer.Actor.Animation
             _expressionService = expressionService;
             _actorEntity = actorEntity;
             _subscriber = subscriber;
+            _presetResourceData = presetResourceData;
         }
 
         UniTask IAsyncStartable.StartAsync(CancellationToken cancellation)
@@ -52,8 +55,18 @@ namespace UniLiveViewer.Actor.Animation
                 {
                     if (_instanceId != x.InstanceId) return;
                     await _animationService.SetAnimationAsync(x.Mode, x.AnimationIndex, x.IsReverse, cancellation);
-                    _expressionService.MorphReset();
-                    _expressionService.OnChangeMode(x.Mode);
+
+                    DanceInfoData danceInfoData = null;
+                    if (x.Mode == Menu.CurrentMode.PRESET)
+                    {
+                        danceInfoData = _presetResourceData.DanceInfoData[x.AnimationIndex];
+                    }
+                    else if (x.Mode == Menu.CurrentMode.CUSTOM)
+                    {
+                        danceInfoData = _presetResourceData.VMDDanceInfoData;
+                    }
+                    _expressionService.OnChangeAnimation(x.Mode, danceInfoData);
+
                 }).AddTo(_disposables);
 
             _allSubscriber

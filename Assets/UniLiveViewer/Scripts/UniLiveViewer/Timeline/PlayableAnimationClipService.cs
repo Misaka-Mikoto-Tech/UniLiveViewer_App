@@ -1,4 +1,4 @@
-using NanaCiel;
+﻿using NanaCiel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -134,10 +134,10 @@ namespace UniLiveViewer.Timeline
         void SetupBaseAnimationClip(AnimationTrack animationTrack, DanceInfoData danceInfoData, Vector3 initPos, Vector3 initEulerAngles)
         {
             var baseDanceClip = GetTimelineClip(animationTrack, MAINCLIP);
-            baseDanceClip.start = MotionClipStartTime + danceInfoData.motionOffsetTime;
+            baseDanceClip.start = MotionClipStartTime + danceInfoData.OffsetTime;
             var animationPlayableAsset = baseDanceClip.asset as AnimationPlayableAsset;
-            animationPlayableAsset.clip = danceInfoData.isReverse ?
-                danceInfoData.baseDanceClip_reverse : danceInfoData.baseDanceClip;
+            animationPlayableAsset.clip = danceInfoData.IsReverse ?
+                danceInfoData.ReversedBaseDanceClip : danceInfoData.BaseDanceClip;
 
             animationPlayableAsset.position = initPos;
             animationPlayableAsset.rotation = Quaternion.Euler(initEulerAngles);
@@ -205,31 +205,31 @@ namespace UniLiveViewer.Timeline
             {
                 case SUBTRACK0:
                     var leftHandClip = GetTimelineClip(subAnimationTrack, SUBCLIP0);
-                    leftHandClip.start = MotionClipStartTime + danceInfoData.motionOffsetTime;
+                    leftHandClip.start = MotionClipStartTime + danceInfoData.OffsetTime;
                     {
                         var animationPlayableAsset = leftHandClip.asset as AnimationPlayableAsset;
-                        animationPlayableAsset.clip = danceInfoData.isReverse ?
-                            danceInfoData.overrideClip_reverseHand : danceInfoData.overrideClip_hand;
+                        animationPlayableAsset.clip = danceInfoData.IsReverse ?
+                            danceInfoData.ReversedOverrideHandClip : danceInfoData.OverrideHandClip;
                     }
                     break;
                 case SUBTRACK1:
                     var rightHandClip = GetTimelineClip(subAnimationTrack, SUBCLIP1);
-                    rightHandClip.start = MotionClipStartTime + danceInfoData.motionOffsetTime;
+                    rightHandClip.start = MotionClipStartTime + danceInfoData.OffsetTime;
                     {
                         var animationPlayableAsset = rightHandClip.asset as AnimationPlayableAsset;
-                        animationPlayableAsset.clip = danceInfoData.isReverse ?
-                            danceInfoData.overrideClip_reverseHand : danceInfoData.overrideClip_hand;
+                        animationPlayableAsset.clip = danceInfoData.IsReverse ?
+                            danceInfoData.ReversedOverrideHandClip : danceInfoData.OverrideHandClip;
                     }
                     break;
                 case SUBTRACK2:
                     var faceClip = GetTimelineClip(subAnimationTrack, SUBCLIP2);
-                    (faceClip.asset as AnimationPlayableAsset).clip = danceInfoData.overrideClip_face;
-                    faceClip.start = MotionClipStartTime + danceInfoData.motionOffsetTime;
+                    (faceClip.asset as AnimationPlayableAsset).clip = danceInfoData.OverridefacialSyncClip;
+                    faceClip.start = MotionClipStartTime + danceInfoData.OffsetTime;
                     break;
                 case SUBTRACK3:
                     var lipClip = GetTimelineClip(subAnimationTrack, SUBCLIP3);
-                    (lipClip.asset as AnimationPlayableAsset).clip = danceInfoData.overrideClip_lip;
-                    lipClip.start = MotionClipStartTime + danceInfoData.motionOffsetTime;
+                    (lipClip.asset as AnimationPlayableAsset).clip = danceInfoData.OverrideLipSyncClip;
+                    lipClip.start = MotionClipStartTime + danceInfoData.OffsetTime;
                     break;
             }
         }
@@ -297,10 +297,19 @@ namespace UniLiveViewer.Timeline
                 return false;
             }
 
-            var baseDanceClip = GetTimelineClip(animationTrack, MAINCLIP);
-            var animationPlayableAsset = baseDanceClip.asset as AnimationPlayableAsset;
-            danceInfoData.baseDanceClip = animationPlayableAsset.clip;
-            danceInfoData.motionOffsetTime = (float)(baseDanceClip.start - MotionClipStartTime);
+            float offsetTime;
+            AnimationClip baseDanceClip = null;
+            AnimationClip reversedBaseDanceClip = null;
+            AnimationClip overrideHandClip = null;
+            AnimationClip reversedOverrideHandClip = null;
+            AnimationClip overridefacialSyncClip = null;
+            AnimationClip overrideLipSyncClip = null;
+
+            var baseDanceTimelineClip = GetTimelineClip(animationTrack, MAINCLIP);
+            var animationPlayableAsset = baseDanceTimelineClip.asset as AnimationPlayableAsset;
+            baseDanceClip = animationPlayableAsset.clip;
+            reversedBaseDanceClip = animationPlayableAsset.clip;//生成後は切り替わらないが、空だと困りそうなので同じ割り当て
+            offsetTime = (float)(baseDanceTimelineClip.start - MotionClipStartTime);
 
             var subAnimationTracks = animationTrack.GetChildTracks().OfType<AnimationTrack>();
             foreach (var subTrack in subAnimationTracks)
@@ -309,24 +318,28 @@ namespace UniLiveViewer.Timeline
                 {
                     case SUBTRACK0:
                         var leftHandClip = GetTimelineClip(subTrack, SUBCLIP0);
-                        danceInfoData.overrideClip_hand = (leftHandClip.asset as AnimationPlayableAsset).clip;
-                        danceInfoData.overrideClip_reverseHand = danceInfoData.overrideClip_hand;//reverseかどうか特定できないので..
+                        overrideHandClip = (leftHandClip.asset as AnimationPlayableAsset).clip;
+                        reversedOverrideHandClip = danceInfoData.OverrideHandClip;//reverseか特定できないので
                         break;
                     case SUBTRACK1:
                         var rightHandClip = GetTimelineClip(subTrack, SUBCLIP1);
-                        danceInfoData.overrideClip_hand = (rightHandClip.asset as AnimationPlayableAsset).clip;
-                        danceInfoData.overrideClip_reverseHand = danceInfoData.overrideClip_hand;//reverseかどうか特定できないので..
+                        overrideHandClip = (rightHandClip.asset as AnimationPlayableAsset).clip;
+                        reversedOverrideHandClip = danceInfoData.OverrideHandClip;//reverseか特定できないので
                         break;
                     case SUBTRACK2:
                         var FaceClip = GetTimelineClip(subTrack, SUBCLIP2);
-                        danceInfoData.overrideClip_face = (FaceClip.asset as AnimationPlayableAsset).clip;
+                        overridefacialSyncClip = (FaceClip.asset as AnimationPlayableAsset).clip;
                         break;
                     case SUBTRACK3:
                         var lipClip = GetTimelineClip(subTrack, SUBCLIP3);
-                        danceInfoData.overrideClip_lip = (lipClip.asset as AnimationPlayableAsset).clip;
+                        overrideLipSyncClip = (lipClip.asset as AnimationPlayableAsset).clip;
                         break;
                 }
             }
+
+            danceInfoData.Setup(offsetTime, baseDanceClip, reversedBaseDanceClip,
+                overrideHandClip, reversedOverrideHandClip, overridefacialSyncClip, overrideLipSyncClip);
+
             return true;
         }
 
@@ -334,7 +347,6 @@ namespace UniLiveViewer.Timeline
         /// 指定キャラの手の状態を切り替える
         /// 
         /// TODO: Handキャッシュどうする
-        /// 
         /// </summary>
         /// <param name="isGrabHand">握り状態にするか</param>
         public void SetHandAnimation(InstanceId instanceId, HumanBodyBones humanBodyBones, bool isGrabHand)
@@ -412,8 +424,8 @@ namespace UniLiveViewer.Timeline
         void SetOriginalHandAnimation(AnimationTrack subAnimationTrack, string clipTrackName, DanceInfoData originalDanceInfoData)
         {
             var handClip = GetTimelineClip(subAnimationTrack, clipTrackName);
-            (handClip.asset as AnimationPlayableAsset).clip = originalDanceInfoData.isReverse ?
-                originalDanceInfoData.overrideClip_reverseHand : originalDanceInfoData.overrideClip_hand;
+            (handClip.asset as AnimationPlayableAsset).clip = originalDanceInfoData.IsReverse ?
+                originalDanceInfoData.ReversedOverrideHandClip : originalDanceInfoData.OverrideHandClip;
         }
 
         //void InternalSwitchHandType(AnimationTrack subAnimationTrack, string clipTrackName, bool isGrabHand, AnimationClip animationClip)

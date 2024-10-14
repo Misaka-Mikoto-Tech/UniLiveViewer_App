@@ -6,7 +6,7 @@ namespace UniLiveViewer.Actor.Expression
 {
     public class FacialSync_FBX : MonoBehaviour, IFacialSync
     {
-        [SerializeField] AnimationCurve _weightCurve;
+        AnimationCurve _gainCurve;
         [SerializeField] SkinBindInfo[] _skinBindInfo;
         const int BLENDSHAPE_WEIGHT = 100;
 
@@ -59,6 +59,11 @@ namespace UniLiveViewer.Actor.Expression
             if (blendShape != null) return;
             transform.SetParent(parent);
             transform.name = ActorConstants.FaceSyncController;
+        }
+
+        void IFacialSync.SetGainCurve(AnimationCurve gainCurve)
+        {
+            _gainCurve = gainCurve;
         }
 
         /// <summary>
@@ -137,7 +142,7 @@ namespace UniLiveViewer.Actor.Expression
 
         float GetWeight(Transform tr)
         {
-            return _weightCurve.Evaluate(tr.localPosition.z);
+            return _gainCurve.Evaluate(tr.localPosition.z);
         }
     }
 }

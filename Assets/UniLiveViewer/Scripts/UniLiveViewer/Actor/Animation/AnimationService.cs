@@ -69,7 +69,7 @@ namespace UniLiveViewer.Actor.Animation
 
                 // ポータル上のアニメーションバインド
                 var data = _presetResourceData.DanceInfoData[index];
-                data.isReverse = isReverse;
+                data.IsReverse = isReverse;
                 _playableAnimationClipService.BindingNewClips(data);
             }
             else if (_currentMode == CurrentMode.CUSTOM)

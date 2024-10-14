@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using UnityEngine;
-using VRM;
 using System.Linq;
+using UnityEngine;
 using UniVRM10;
+using VRM;
 
 namespace UniLiveViewer.Actor.Expression
 {
@@ -10,7 +10,7 @@ namespace UniLiveViewer.Actor.Expression
     {
         public VRMBlendShapeProxy BlendShapeProxy => _blendShapeProxy;
         [SerializeField] VRMBlendShapeProxy _blendShapeProxy;
-        [SerializeField] AnimationCurve _weightCurve;
+        AnimationCurve _gainCurve;
 
         [Header("<keyName不要>")]
         [SerializeField] BindInfo[] _bindInfo;
@@ -42,6 +42,11 @@ namespace UniLiveViewer.Actor.Expression
             _blendShapeProxy = blendShape;
             transform.SetParent(parent);
             transform.name = ActorConstants.LipSyncController;
+        }
+
+        void ILipSync.SetGainCurve(AnimationCurve gainCurve)
+        {
+            _gainCurve = gainCurve;
         }
 
         void ILipSync.Morph()
@@ -89,7 +94,7 @@ namespace UniLiveViewer.Actor.Expression
 
         float GetWeight(Transform tr)
         {
-            return _weightCurve.Evaluate(tr.localPosition.z);
+            return _gainCurve.Evaluate(tr.localPosition.z);
         }
     }
 }

@@ -508,7 +508,7 @@ namespace UniLiveViewer.Menu
             if (_animationMode == CurrentMode.PRESET)
             {
                 var data = _presetResourceData.DanceInfoData[_clipIndex.Value];
-                var baseMotionName = _isReverse.Value ? data.viewName + " R" : data.viewName;
+                var baseMotionName = _isReverse.Value ? data.ViewName + " R" : data.ViewName;
 
                 _textMeshs[1].text = baseMotionName;
                 _textMeshs[1].fontSize = baseMotionName.FontSizeMatch(600, 30, 50);

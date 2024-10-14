@@ -25,17 +25,6 @@ namespace UniLiveViewer.Actor.Expression
             _facialSync = facialSync;
         }
 
-        /// <summary>
-        /// VMD再生走ってから呼ぶこと
-        /// </summary>
-        /// <param name="mode"></param>
-        public void OnChangeMode(CurrentMode mode)
-        {
-            _animationMode = mode;
-            OnChangeFacialSync(_canFacialSync);
-            OnChangeLipSync(_canLipSync);
-        }
-
         public void OnChangeFacialSync(bool isEnable)
         {
             _canFacialSync = isEnable;
@@ -64,10 +53,28 @@ namespace UniLiveViewer.Actor.Expression
             _lipSync.MorphReset();
         }
 
+        /// <summary>
+        /// VMD再生走ってから呼ぶこと
+        /// </summary>
+        public void OnChangeAnimation(CurrentMode mode, DanceInfoData danceInfoData)
+        {
+            MorphReset();
+            _facialSync.SetGainCurve(danceInfoData.FacialSyncGainCurve);
+            _lipSync.SetGainCurve(danceInfoData.LipSyncGainCurve);
+            OnChangeMode(mode);
+        }
+
         public void MorphReset()
         {
             _facialSync.MorphReset();
             _lipSync.MorphReset();
+        }
+
+        void OnChangeMode(CurrentMode mode)
+        {
+            _animationMode = mode;
+            OnChangeFacialSync(_canFacialSync);
+            OnChangeLipSync(_canLipSync);
         }
 
         public void OnLateTick()

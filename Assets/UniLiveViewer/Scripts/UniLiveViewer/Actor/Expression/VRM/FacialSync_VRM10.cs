@@ -10,7 +10,8 @@ namespace UniLiveViewer.Actor.Expression
     {
         public Vrm10RuntimeExpression RuntimeExpression => _runtimeExpression;
         [SerializeField] Vrm10RuntimeExpression _runtimeExpression;
-        [SerializeField] AnimationCurve _weightCurve;
+        AnimationCurve _gainCurve;
+        readonly Dictionary<ExpressionKey, float> _map = new();
 
         [Header("<keyName不要>")]
         [SerializeField] SkinBindInfo[] _skinBindInfo;
@@ -47,7 +48,11 @@ namespace UniLiveViewer.Actor.Expression
             transform.name = ActorConstants.FaceSyncController;
         }
 
-        Dictionary<ExpressionKey, float> _map = new();
+        void IFacialSync.SetGainCurve(AnimationCurve gainCurve)
+        {
+            _gainCurve = gainCurve;
+        }
+
         void IFacialSync.Morph()
         {
             if (_runtimeExpression == null) return;
@@ -84,7 +89,6 @@ namespace UniLiveViewer.Actor.Expression
             _runtimeExpression.SetWeightsNonAlloc(_map);
         }
 
-
         /// <summary>
         /// モーフのバインド情報を返す
         /// </summary>
@@ -95,7 +99,7 @@ namespace UniLiveViewer.Actor.Expression
 
         float GetWeight(Transform tr)
         {
-            return _weightCurve.Evaluate(tr.localPosition.z);
+            return _gainCurve.Evaluate(tr.localPosition.z);
         }
     }
 }

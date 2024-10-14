@@ -10,7 +10,8 @@ namespace UniLiveViewer.Actor.Expression
     {
         public Vrm10RuntimeExpression RuntimeExpression => _runtimeExpression;
         [SerializeField] Vrm10RuntimeExpression _runtimeExpression;
-        [SerializeField] AnimationCurve _weightCurve;
+        AnimationCurve _gainCurve;
+        readonly Dictionary<ExpressionKey, float> _map = new();
 
         [Header("<keyName不要>")]
         [SerializeField] BindInfo[] _bindInfo;
@@ -44,7 +45,11 @@ namespace UniLiveViewer.Actor.Expression
             transform.name = ActorConstants.LipSyncController;
         }
 
-        Dictionary<ExpressionKey, float> _map = new();
+        void ILipSync.SetGainCurve(AnimationCurve gainCurve)
+        {
+            _gainCurve = gainCurve;
+        }
+
         void ILipSync.Morph()
         {
             if (_runtimeExpression == null) return;
@@ -53,6 +58,7 @@ namespace UniLiveViewer.Actor.Expression
             var w = 0.0f;
             foreach (var info in _bindInfo)
             {
+                // TODO: 問題の場所
                 w = total * GetWeight(info.node);
                 var preset = _presetMap[info.lipType];
                 _map[ExpressionKey.CreateFromPreset(preset)] = w;
@@ -91,7 +97,7 @@ namespace UniLiveViewer.Actor.Expression
 
         float GetWeight(Transform tr)
         {
-            return _weightCurve.Evaluate(tr.localPosition.z);
+            return _gainCurve.Evaluate(tr.localPosition.z);
         }
     }
 }

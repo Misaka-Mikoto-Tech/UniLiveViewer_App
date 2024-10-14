@@ -10,31 +10,31 @@ namespace UniLiveViewer.Actor.Expression
     {
         public VRMBlendShapeProxy BlendShapeProxy => _blendShapeProxy;
         [SerializeField] VRMBlendShapeProxy _blendShapeProxy;
-        [SerializeField] AnimationCurve _weightCurve;
+        AnimationCurve _gainCurve;
 
         [Header("<keyName不要>")]
         [SerializeField] SkinBindInfo[] _skinBindInfo;
-        
-        readonly Dictionary<FACIALTYPE, BlendShapePreset> _presetMap = new ()
+
+        readonly Dictionary<FACIALTYPE, BlendShapePreset> _presetMap = new()
         {
-            {FACIALTYPE.BLINK,BlendShapePreset.Blink},
-            {FACIALTYPE.JOY,BlendShapePreset.Joy},
-            {FACIALTYPE.ANGRY,BlendShapePreset.Angry},
-            {FACIALTYPE.SORROW,BlendShapePreset.Sorrow},
-            {FACIALTYPE.SUP,BlendShapePreset.Neutral},
-            {FACIALTYPE.FUN,BlendShapePreset.Fun}
+            { FACIALTYPE.BLINK, BlendShapePreset.Blink },
+            { FACIALTYPE.JOY, BlendShapePreset.Joy },
+            { FACIALTYPE.ANGRY, BlendShapePreset.Angry },
+            { FACIALTYPE.SORROW, BlendShapePreset.Sorrow },
+            { FACIALTYPE.SUP, BlendShapePreset.Neutral },
+            { FACIALTYPE.FUN, BlendShapePreset.Fun }
         };
 
         string[] IFacialSync.GetKeyArray() => _customMap.Keys?.ToArray();
         public IReadOnlyDictionary<string, BlendShapePreset> CustomMap => _customMap;
-        readonly Dictionary<string, BlendShapePreset> _customMap = new ()
+        readonly Dictionary<string, BlendShapePreset> _customMap = new()
         {
-             //{ "ウィンク" ,FacialSyncController.FACIALTYPE.BLINK },    
-            { "まばたき" ,BlendShapePreset.Blink },
-            { "笑い" ,BlendShapePreset.Joy },
-            { "怒り" ,BlendShapePreset.Angry },
-            { "困る" ,BlendShapePreset.Sorrow },
-            { "にやり" ,BlendShapePreset.Fun },
+            //{ "ウィンク" ,FacialSyncController.FACIALTYPE.BLINK },    
+            { "まばたき", BlendShapePreset.Blink },
+            { "笑い", BlendShapePreset.Joy },
+            { "怒り", BlendShapePreset.Angry },
+            { "困る", BlendShapePreset.Sorrow },
+            { "にやり", BlendShapePreset.Fun },
         };
 
 
@@ -46,6 +46,11 @@ namespace UniLiveViewer.Actor.Expression
             _blendShapeProxy = blendShape;
             transform.SetParent(parent);
             transform.name = ActorConstants.FaceSyncController;
+        }
+
+        void IFacialSync.SetGainCurve(AnimationCurve gainCurve)
+        {
+            _gainCurve = gainCurve;
         }
 
         void IFacialSync.Morph()
@@ -82,7 +87,6 @@ namespace UniLiveViewer.Actor.Expression
             }
         }
 
-
         /// <summary>
         /// モーフのバインド情報を返す
         /// </summary>
@@ -93,7 +97,7 @@ namespace UniLiveViewer.Actor.Expression
 
         float GetWeight(Transform tr)
         {
-            return _weightCurve.Evaluate(tr.localPosition.z);
+            return _gainCurve.Evaluate(tr.localPosition.z);
         }
     }
 }

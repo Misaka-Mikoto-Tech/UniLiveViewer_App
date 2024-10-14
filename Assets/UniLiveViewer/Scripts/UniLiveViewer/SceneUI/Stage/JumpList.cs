@@ -120,7 +120,7 @@ namespace UniLiveViewer.Menu
         public void SetAnimeData(bool isPreset)
         {
             var danceInfoData = isPreset
-                ? _presetResourceData.DanceInfoData.Select(x => x.viewName).ToList() : _animationAssetManager.VmdList;
+                ? _presetResourceData.DanceInfoData.Select(x => x.ViewName).ToList() : _animationAssetManager.VmdList;
 
             //必要ならボタンを生成
             BtnInstanceCheck(danceInfoData.Count);
