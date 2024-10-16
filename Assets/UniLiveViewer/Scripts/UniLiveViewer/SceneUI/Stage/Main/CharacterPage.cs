@@ -520,6 +520,14 @@ namespace UniLiveViewer.Menu
             }
             else if (_animationMode == CurrentMode.CUSTOM)
             {
+                if(_animationAssetManager.VmdList == null ||  _animationAssetManager.VmdList.Count <= 0)
+                {
+                    var noneMessage = TimelineConstants.NoCustomDanceMessage;
+                    _textMeshs[1].text = noneMessage;
+                    _textMeshs[1].fontSize = noneMessage.FontSizeMatch(600, 30, 50);
+                    return;
+                }
+
                 var baseMotionName = _animationAssetManager.VmdList[_vmdIndex.Value];
                 _textMeshs[1].text = baseMotionName;
                 _textMeshs[1].fontSize = baseMotionName.FontSizeMatch(600, 30, 50);
@@ -529,7 +537,7 @@ namespace UniLiveViewer.Menu
                 _textMeshs[3].text = $"{_sliderOffset.Value:0000}";
                 if (!_vmdAnchor.gameObject.activeSelf) _vmdAnchor.gameObject.SetActive(true);
                 var syncFileName = FileReadAndWriteUtility.TryGetSyncFileName(baseMotionName);
-                if (syncFileName == null) syncFileName = TimelineConstants.LIPSYNC_NONAME;
+                if (string.IsNullOrEmpty(syncFileName)) syncFileName = TimelineConstants.NoCustomFacialSyncMessage;
                 _textMeshs[4].text = syncFileName;
                 _textMeshs[4].fontSize = syncFileName.FontSizeMatch(600, 25, 40);
             }

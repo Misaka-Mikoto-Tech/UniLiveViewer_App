@@ -6,10 +6,10 @@ namespace UniLiveViewer.Actor.Expression
 {
     public class FacialSync_FBX : MonoBehaviour, IFacialSync
     {
-        AnimationCurve _gainCurve;
-        [SerializeField] SkinBindInfo[] _skinBindInfo;
         const int BLENDSHAPE_WEIGHT = 100;
-
+        [SerializeField] SkinBindInfo[] _skinBindInfo;
+        AnimationCurve _gainCurve = new();// 最初の一体のみ初期化必須
+        
         string[] IFacialSync.GetKeyArray() => _customMap.Keys?.ToArray();
         public IReadOnlyDictionary<string, FACIALTYPE> CustomMap => _customMap;
         Dictionary<string, FACIALTYPE> _customMap = new()

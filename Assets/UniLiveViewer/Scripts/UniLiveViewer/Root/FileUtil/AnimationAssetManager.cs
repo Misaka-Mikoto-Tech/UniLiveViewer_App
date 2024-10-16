@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using UniLiveViewer.Timeline;
 using UnityEngine;
@@ -69,7 +69,7 @@ namespace UniLiveViewer
 
             var folderPath = PathsInfo.GetFacialSyncFolderPath() + "/";
             var names = Directory.GetFiles(folderPath, "*.vmd", SearchOption.TopDirectoryOnly);
-            _vmdSyncList.Add(TimelineConstants.LIPSYNC_NONAME);//0番は必ず空枠
+            _vmdSyncList.Add(TimelineConstants.NoCustomFacialSyncMessage);//0番は必ず空枠
 
             for (int i = 0; i < names.Length; i++)
             {

@@ -133,8 +133,8 @@ namespace UniLiveViewer.Actor.LookAt
 
         public void OnLateTick()
         {
-            _headLookAt.OnLateTick();
-            _eyeLookAt.OnLateTick();
+            _headLookAt?.OnLateTick();
+            _eyeLookAt?.OnLateTick();
         }
     }
 }

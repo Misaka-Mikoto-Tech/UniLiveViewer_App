@@ -36,6 +36,10 @@ namespace UniLiveViewer.Timeline
 
         public VMD TryGetCurrentVMD()
         {
+            if (_animationAssetManager.VmdList == null || _animationAssetManager.VmdList.Count <= 0)
+            {
+                return null;
+            }
             var viewName = _animationAssetManager.VmdList[_currentIndex];
             if (_loadedMap.ContainsKey(viewName)) return _loadedMap[viewName];
             return null;
@@ -47,6 +51,10 @@ namespace UniLiveViewer.Timeline
         /// <returns></returns>
         public string GetCurrentName()
         {
+            if (_animationAssetManager == null || _animationAssetManager.VmdList.Count <= 0)
+            {
+                return string.Empty;
+            }
             return _animationAssetManager.VmdList[_currentIndex];
         }
 

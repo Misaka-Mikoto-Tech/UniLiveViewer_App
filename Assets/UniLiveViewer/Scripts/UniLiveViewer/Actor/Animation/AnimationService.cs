@@ -77,12 +77,14 @@ namespace UniLiveViewer.Actor.Animation
                 _actorEntity.GetAnimator.enabled = false;
                 _actorEntity.GetAnimator.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);//Animator層が動いているので
 
-                var vmd = _vmdData.TryGetCurrentVMD();
+                var existingVMD = _vmdData.TryGetCurrentVMD();
                 var folderPath = PathsInfo.GetFullPath(FolderType.Motion) + "/";
                 var fileName = _vmdData.GetCurrentName();
-                await PlayVMDAsync(vmd, folderPath, fileName, true, cancellation);
-                await TrySetSyncVMDAsync(cancellation);
-
+                if (!string.IsNullOrEmpty(fileName))
+                {
+                    await PlayVMDAsync(existingVMD, folderPath, fileName, true, cancellation);
+                    await TrySetSyncVMDAsync(cancellation);
+                }
                 // 空データで実質nullバインドする
                 var data = _presetResourceData.VMDDanceInfoData;
                 _playableAnimationClipService.BindingNewClips(data);
@@ -93,19 +95,19 @@ namespace UniLiveViewer.Actor.Animation
         /// VMDを再生する
         /// TODO: いつかちゃんとする
         /// </summary>
-        /// <param name="vmd"></param>
+        /// <param name="existingVMD"></param>
         /// <param name="folderPath"></param>
         /// <param name="fileName"></param>
         /// <param name="isBaseMotion"></param>
         /// <param name="cancellation"></param>
         /// <returns></returns>
-        async UniTask PlayVMDAsync(VMD vmd, string folderPath, string fileName, bool isBaseMotion, CancellationToken cancellation)
+        async UniTask PlayVMDAsync(VMD existingVMD, string folderPath, string fileName, bool isBaseMotion, CancellationToken cancellation)
         {
             var isSmoothVMD = FileReadAndWriteUtility.UserProfile.IsSmoothVMD;
             var boneAmplifier = FileReadAndWriteUtility.UserProfile.VMDScale;
 
             //新規
-            if (vmd == null)
+            if (existingVMD == null)
             {
                 var info = new VMDSetupInfo(null, folderPath, fileName, boneAmplifier, isSmoothVMD);
                 VMD newVMD = null;
@@ -122,7 +124,7 @@ namespace UniLiveViewer.Actor.Animation
             //既存は使いまわす
             else
             {
-                var info = new VMDSetupInfo(vmd, folderPath, fileName, boneAmplifier, isSmoothVMD);
+                var info = new VMDSetupInfo(existingVMD, folderPath, fileName, boneAmplifier, isSmoothVMD);
                 if (isBaseMotion)
                 {
                     await _actorEntity.GetVMDPlayer.SetupBaseMotion(info, cancellation);
@@ -139,7 +141,7 @@ namespace UniLiveViewer.Actor.Animation
             if (_currentMode != CurrentMode.CUSTOM) return;
             if (!_vmdData.TryGetCurrentSyncName(out string syncFileName)) return;
 
-            if (syncFileName == TimelineConstants.LIPSYNC_NONAME)
+            if (syncFileName == TimelineConstants.NoCustomFacialSyncMessage)
             {
                 _actorEntity.GetVMDPlayer.ClearSyncData();
             }

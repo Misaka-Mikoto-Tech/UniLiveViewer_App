@@ -7,12 +7,11 @@ namespace UniLiveViewer.Actor.Expression
 {
     public class LipSync_FBX : MonoBehaviour, ILipSync
     {
-        [SerializeField] SkinnedMeshRenderer _skinMesh;
-        AnimationCurve _gainCurve;
         const int BLENDSHAPE_WEIGHT = 100;
+        [SerializeField] SkinnedMeshRenderer _skinMesh;
+        AnimationCurve _gainCurve = new ();// 最初の一体のみ初期化必須
 
         [SerializeField] BindInfo[] _bindInfo;
-
         string[] ILipSync.GetKeyArray() => _customMap.Keys?.ToArray();
         Dictionary<string, int> _customMap = new()
         {

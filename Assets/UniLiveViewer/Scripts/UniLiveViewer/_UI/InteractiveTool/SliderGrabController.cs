@@ -182,6 +182,8 @@ namespace UniLiveViewer
 
         void Update()
         {
+            if (maxValuel <= 0) return;
+
             if (_isGrabbed) UpdateByPlayerGrab();
             UpdateSliderPosition();
         }

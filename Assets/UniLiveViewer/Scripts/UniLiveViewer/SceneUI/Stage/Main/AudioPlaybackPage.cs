@@ -241,6 +241,7 @@ namespace UniLiveViewer.Menu
         async UniTask ChangeAudioAsync(int moveIndex, CancellationToken cancellation)
         {
             var clipName = await _playableMusicService.NextAudioClip(_isPresetAudio, moveIndex, cancellation);
+            if (string.IsNullOrEmpty(clipName)) clipName = TimelineConstants.NoCustomBGMMessage;
             await ChangeAuidoInternalAsync(clipName, cancellation);
         }
 
@@ -251,6 +252,7 @@ namespace UniLiveViewer.Menu
         {
             _isPresetAudio = isPreset;
             var clipName = await _playableMusicService.NextAudioClip(isPreset, moveIndex, cancellation);
+            if (string.IsNullOrEmpty(clipName)) clipName = TimelineConstants.NoCustomBGMMessage;
             await ChangeAuidoInternalAsync(clipName, cancellation);
         }
 
