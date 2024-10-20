@@ -29,8 +29,7 @@ namespace UniLiveViewer.SceneUI.Title
         public async UniTask StartAsync(CancellationToken cancellation)
         {
             _titleMenuSettings.UiRoot.gameObject.SetActive(true);
-            _titleMenuSettings.MainMenuCanvas.gameObject.SetActive(true);
-            _titleMenuSettings.LicenseCanvas.gameObject.SetActive(false);
+            OpenMainMenu();
             var group = _titleMenuSettings.MainMenuCanvas.GetComponent<CanvasGroup>();
             SetCanvasGroup(group, true);
             await UniTask.Delay(12000, cancellationToken: cancellation);
@@ -70,25 +69,41 @@ namespace UniLiveViewer.SceneUI.Title
         public async UniTask LoadScenesAutoAsync(CancellationToken cancellation)
         {
             _titleMenuSettings.UiRoot.gameObject.SetActive(false);
-            await UniTask.Delay(2000, cancellationToken: cancellation);
+            await UniTask.Delay(2500, cancellationToken: cancellation);//Animation分
+
             _titleSceneSettings.OvrScreenFade.FadeOut();//デフォ2秒設定
-            //TODO: 音フェードアウト
             await UniTask.Delay(2000, cancellationToken: cancellation);
+
             await _sceneChangeService.ChangePreviousScene(cancellation);
         }
 
-        public void OpenLicense(bool isOpen)
+        public void OpenMainMenu()
         {
-            _titleMenuSettings.MainMenuCanvas.gameObject.SetActive(!isOpen);
-            _titleMenuSettings.LicenseCanvas.gameObject.SetActive(isOpen);
+            _titleMenuSettings.MainMenuCanvas.gameObject.SetActive(true);
+            _titleMenuSettings.CustomLiveCanvas.gameObject.SetActive(false);
+            _titleMenuSettings.LicenseCanvas.gameObject.SetActive(false);
+        }
+
+        public void OpenCustomLive()
+        {
+            _titleMenuSettings.MainMenuCanvas.gameObject.SetActive(false);
+            _titleMenuSettings.CustomLiveCanvas.gameObject.SetActive(true);
+            _titleMenuSettings.LicenseCanvas.gameObject.SetActive(false);
+        }
+
+        public void OpenLicense()
+        {
+            _titleMenuSettings.MainMenuCanvas.gameObject.SetActive(false);
+            _titleMenuSettings.CustomLiveCanvas.gameObject.SetActive(false);
+            _titleMenuSettings.LicenseCanvas.gameObject.SetActive(true);
         }
 
         public async UniTask QuitAppAsync(CancellationToken cancellation)
         {
             _titleMenuSettings.UiRoot.gameObject.SetActive(false);
+
             _titleSceneSettings.OvrScreenFade.FadeOut();//デフォ2秒設定
-            //TODO: 音フェードアウト
-            await UniTask.Delay(2000, cancellationToken: cancellation);
+            await UniTask.Delay(3000, cancellationToken: cancellation);
 
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;

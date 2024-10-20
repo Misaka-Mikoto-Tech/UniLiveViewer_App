@@ -25,6 +25,7 @@ namespace UniLiveViewer
 #elif UNITY_ANDROID
             AppFolderPath = "/storage/emulated/0/UniLiveViewer";
             DownloadFolderPath = "/storage/emulated/0/Download";
+            //AppFolderPath = $"{Application.persistentDataPath}/Custom";
 #endif
         }
 

@@ -1,11 +1,11 @@
 ﻿using Cysharp.Threading.Tasks;
 using MessagePipe;
+using NanaCiel;
 using System;
 using System.Threading;
 using UniRx;
 using VContainer;
 using VContainer.Unity;
-using NanaCiel;
 
 namespace UniLiveViewer.Menu
 {
@@ -16,22 +16,37 @@ namespace UniLiveViewer.Menu
         /// </summary>
         CancellationTokenSource _cts;
 
+        readonly IPublisher<VRMMenuShowMessage> _publisher;
         readonly ISubscriber<VRMMenuShowMessage> _menuShowSubscriber;
+        readonly VRMSwitchController _vrmSwitchController;
         readonly VRMMenuRootService _vrmMenuRootService;
         readonly ThumbnailService _thumbnailService;
         readonly CharacterPage _characterPage;
+        readonly FileAccessManager _fileAccessManager;
+        readonly RootAudioSourceService _rootAudioSourceService;
+        readonly TextureAssetManager _textureAssetManager;
         readonly CompositeDisposable _disposables = new();
 
         [Inject]
         public VRMMenuPresenter(
+            IPublisher<VRMMenuShowMessage> publisher,
             ISubscriber<VRMMenuShowMessage> menuShowSubscriber,
+            VRMSwitchController vrmSwitchController,
             VRMMenuRootService vrmMenuRootService,
             ThumbnailService thumbnailService,
+            FileAccessManager fileAccessManager,
+            RootAudioSourceService rootAudioSourceService,
+            TextureAssetManager textureAssetManager,
             CharacterPage characterPage)
         {
+            _publisher = publisher;
             _menuShowSubscriber = menuShowSubscriber;
+            _vrmSwitchController = vrmSwitchController;
             _vrmMenuRootService = vrmMenuRootService;
             _thumbnailService = thumbnailService;
+            _fileAccessManager = fileAccessManager;
+            _rootAudioSourceService = rootAudioSourceService;
+            _textureAssetManager = textureAssetManager;
             _characterPage = characterPage;
         }
 
@@ -44,6 +59,7 @@ namespace UniLiveViewer.Menu
                     var isEnable = x.PageIndex == -1 ? false : true;
 
                     _vrmMenuRootService.SetEnableRoot(isEnable);
+                    if (isEnable) _vrmSwitchController.InitPage(0);
                     if (!isEnable) return;
                     if (x.PageIndex == 0)
                     {
@@ -57,6 +73,7 @@ namespace UniLiveViewer.Menu
                 {
                     _characterPage.OnClickThumbnail();
                 }).AddTo(_disposables);
+            await _vrmSwitchController.InitializeAsync(_fileAccessManager, _rootAudioSourceService, _textureAssetManager, _publisher, cancellation);
             await _thumbnailService.InitializeAsync(cancellation);
             _vrmMenuRootService.SetEnableRoot(false);
         }

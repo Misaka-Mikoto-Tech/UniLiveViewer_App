@@ -22,6 +22,8 @@ namespace UniLiveViewer
         /// </summary>
         public void Setup()
         {
+            if (!RootSystemSettings._isUsedCustomFolders) return;
+
             UpdateMotionList();
             UpdateSyncMotionList();
         }

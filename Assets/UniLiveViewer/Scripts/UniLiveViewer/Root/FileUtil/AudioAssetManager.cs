@@ -47,6 +47,7 @@ namespace UniLiveViewer
         async void Start()
         {
             if (SceneManager.GetActiveScene().name == "TitleScene") return;
+            if (!RootSystemSettings._isUsedCustomFolders) return;
 
             // NOTE: 負荷分散で遅延させておく
             await UniTask.Delay(1000);

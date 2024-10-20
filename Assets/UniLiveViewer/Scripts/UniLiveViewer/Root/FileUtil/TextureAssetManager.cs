@@ -114,9 +114,8 @@ namespace UniLiveViewer
         }
 
         /// <summary>
-        /// VRMファイルをコピー(download→Chara)
+        /// VRMファイルをコピー(download→Actor)
         /// </summary>
-        /// <param name="pathMy"></param>
         /// <returns></returns>
         public async UniTask CopyVRMtoCharaFolder(string folderPath, CancellationToken cancellation)
         {

@@ -1,4 +1,4 @@
-﻿using MessagePipe;
+using MessagePipe;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
@@ -19,14 +19,11 @@ namespace UniLiveViewer.Menu
 
         [Header("その他")]
         [SerializeField] JumpList _jumpList;
-        [SerializeField] VRMSwitchController _vrmSwitchController;
 
         protected override void Configure(IContainerBuilder builder)
         {
             var options = builder.RegisterMessagePipe();
             builder.RegisterMessageBroker<VRMMenuShowMessage>(options);
-
-            builder.RegisterComponent(_vrmSwitchController);
 
             ActorPageConfigure(builder);
 

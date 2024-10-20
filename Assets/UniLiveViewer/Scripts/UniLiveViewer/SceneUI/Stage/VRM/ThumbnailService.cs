@@ -44,6 +44,8 @@ namespace UniLiveViewer.Menu
 
         public async UniTask InitializeAsync(CancellationToken cancellation)
         {
+            if (!RootSystemSettings._isUsedCustomFolders) return;
+
             _btnPrefab = Resources.Load<Button_Base>("Prefabs/Button/btnVRM");
             CreateButtonAsync(cancellation).Forget();
             await UniTask.CompletedTask;
@@ -54,6 +56,8 @@ namespace UniLiveViewer.Menu
         /// </summary>
         async UniTask<Button_Base[]> CreateButtonAsync(CancellationToken cancellation)
         {
+            if (!RootSystemSettings._isUsedCustomFolders) return null;
+
             var index = 0;
             for (int i = 0; i < 4; i++)
             {
@@ -91,6 +95,8 @@ namespace UniLiveViewer.Menu
         /// </summary>
         public async UniTask BeginAsync(CancellationToken cancellation)
         {
+            if (!RootSystemSettings._isUsedCustomFolders) return;
+
             SetEnableRoot(true);
 
             //一旦全部非表示

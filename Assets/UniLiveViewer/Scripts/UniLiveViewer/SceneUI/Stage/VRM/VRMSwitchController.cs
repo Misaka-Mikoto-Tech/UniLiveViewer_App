@@ -1,6 +1,8 @@
 ﻿using Cysharp.Threading.Tasks;
+using MessagePipe;
 using System.Threading;
 using UniLiveViewer.Actor;
+using UniLiveViewer.MessagePipe;
 using UniLiveViewer.Stage;
 using UnityEngine;
 
@@ -9,7 +11,7 @@ namespace UniLiveViewer.Menu
     /// <summary>
     /// VRMサムネメニュー画面
     /// 
-    /// TODO: 使ってないので一部引っ越して削除する
+    /// TODO: ほぼ機能ないが今度作り直す
     /// </summary>
     public class VRMSwitchController : MonoBehaviour
     {
@@ -32,24 +34,24 @@ namespace UniLiveViewer.Menu
 
         //ファイルアクセスとサムネの管理
         FileAccessManager _fileManager;
-
         RootAudioSourceService _audioSourceService;
+        TextureAssetManager _textureAssetManager;
+        IPublisher<VRMMenuShowMessage> _publisher;
 
         public async UniTask InitializeAsync(
             FileAccessManager fileAccessManager,
             RootAudioSourceService audioSourceService,
+            TextureAssetManager textureAssetManager,
+            IPublisher<VRMMenuShowMessage> publisher,
             CancellationToken cancellation)
         {
             _fileManager = fileAccessManager;
             _audioSourceService = audioSourceService;
-
-            //_addCharacterStream = new Subject<CharaController>();
-            //_addPrefabStream = new Subject<CharaController>();
-            //_pageStream = new Subject<int>();
-
+            _textureAssetManager = textureAssetManager;
+            _publisher = publisher;
             //コールバック登録・・・2ページ目
-            _btnApply.onTrigger += (btn) => PrefabApply(btn, cancellation).Forget();
-            _prefabEditor.onCurrentUpdate += () => { _audioSourceService.PlayOneShot(AudioSE.ButtonClick); };
+            //_btnApply.onTrigger += (btn) => PrefabApply(btn, cancellation).Forget();
+            //_prefabEditor.onCurrentUpdate += () => { _audioSourceService.PlayOneShot(AudioSE.ButtonClick); };
 
             await UniTask.CompletedTask;
         }
@@ -78,7 +80,6 @@ namespace UniLiveViewer.Menu
             switch (currentPage)
             {
                 case 0:
-                    if (!_fileManager.IsSuccess) return;
                     //フォルダパスの表示を更新
                     _textDirectory[0].text = $"({PathsInfo.GetFullPath(FolderType.Actor)}/)";
                     _textDirectory[1].text = $"/Download...[{_fileManager.CountVRM(PathsInfo.GetDownloadFolderPath() + "/")} VRMs]";
@@ -173,20 +174,18 @@ namespace UniLiveViewer.Menu
         /// <summary>
         /// ダウンロードフォルダからVRMをコピーしてくる
         /// </summary>
-        //public async void OnClick_VRMCopy()
-        //{
-        //    cancellation.ThrowIfCancellationRequested();
-        //    try
-        //    {
-        //        await _textureAssetManager.CopyVRMtoCharaFolder(PathsInfo.GetFullPath_Download() + "/", cancellation);
-        //        cancellation.ThrowIfCancellationRequested();
-
-        //        InitPage(0);//開き直して反映
-        //    }
-        //    catch
-        //    {
-        //        _textDirectory[1].text = "VRM Copy Error...";
-        //    }
-        //}
+        public async void OnClick_VRMCopy()
+        {
+            var cancel = this.GetCancellationTokenOnDestroy();
+            try
+            {
+                await _textureAssetManager.CopyVRMtoCharaFolder(PathsInfo.GetDownloadFolderPath() + "/", cancel);
+                _publisher.Publish(new VRMMenuShowMessage(0));
+            }
+            catch
+            {
+                _textDirectory[1].text = "VRM Copy Error...";
+            }
+        }
     }
 }

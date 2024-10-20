@@ -12,11 +12,6 @@ namespace UniLiveViewer
     /// </summary>
     public class FileAccessManager
     {
-        public bool IsSuccess { get; private set; } = false;
-
-        public IObservable<Unit> StartLoadingAsObservable => _onStartLoadingStream;
-        readonly Subject<Unit> _onStartLoadingStream = new ();
-
         public IObservable<Unit> EndLoadingAsObservable => _onEndLoadingStream;
         readonly Subject<Unit> _onEndLoadingStream = new ();
         
@@ -25,7 +20,8 @@ namespace UniLiveViewer
         /// </summary>
         public async UniTask PreparationStartAsync(CancellationToken cancel)
         {
-            _onStartLoadingStream?.OnNext(Unit.Default);
+            RootSystemSettings._isUsedCustomFolders = GrantStoragePermission.UserHasManageExternalStoragePermission();
+            if (!RootSystemSettings._isUsedCustomFolders) return;
 
             TryCreateCustomFolder();
             await TryCreateReadmeFileAsync(cancel);
@@ -36,7 +32,6 @@ namespace UniLiveViewer
         /// </summary>
         public void PreparationEnd()
         {
-            IsSuccess = true;
             _onEndLoadingStream?.OnNext(Unit.Default);
         }
 

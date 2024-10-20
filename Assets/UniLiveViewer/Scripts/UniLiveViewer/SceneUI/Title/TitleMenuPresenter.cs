@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using MessagePipe;
 using System;
 using System.Threading;
@@ -15,8 +15,8 @@ namespace UniLiveViewer.SceneUI.Title
         readonly TitleMenuService _titleMenuService;
         readonly SceneChangeService _sceneChangeService;
         readonly TitleMenuSettings _titleMenuSettings;
-        readonly CompositeDisposable _disposable = new();
         readonly IPublisher<SceneTransitionMessage> _sceneTransitionPublisher;
+        readonly CompositeDisposable _disposable = new();
 
         [Inject]
         public TitleMenuPresenter(
@@ -46,13 +46,47 @@ namespace UniLiveViewer.SceneUI.Title
                 })
                 .AddTo(_disposable);
             _titleMenuSettings.MainMenuButton[1].onClick.AsObservable()
-                .Subscribe(_ => _titleMenuService.OpenLicense(true))
+                .Subscribe(async _ =>
+                {
+                    _titleMenuService.OpenCustomLive();
+                })
                 .AddTo(_disposable);
             _titleMenuSettings.MainMenuButton[2].onClick.AsObservable()
-                .Subscribe(async _ => await _titleMenuService.QuitAppAsync(cancellation))
+                .Subscribe(_ => _titleMenuService.OpenLicense())
                 .AddTo(_disposable);
             _titleMenuSettings.MainMenuButton[3].onClick.AsObservable()
-                .Subscribe(_ => _titleMenuService.OpenLicense(false))
+                .Subscribe(async _ =>
+                {
+                    _sceneTransitionPublisher.Publish(new SceneTransitionMessage());
+                    await _titleMenuService.QuitAppAsync(cancellation);
+                })
+                .AddTo(_disposable);
+
+
+            _titleMenuSettings.CustomLiveButton[0].onClick.AsObservable()
+                .Subscribe(_ =>
+                {
+                    _titleMenuService.OpenMainMenu();
+                })
+                .AddTo(_disposable);
+            _titleMenuSettings.CustomLiveButton[1].onClick.AsObservable()
+                .Subscribe(_ =>
+                {
+                    // TODO: ドキュメント公開したら
+                    //Application.OpenURL("");
+                })
+                .AddTo(_disposable);
+            _titleMenuSettings.CustomLiveButton[2].onClick.AsObservable()
+                .Subscribe(_ =>
+                {
+                    var grantStoragePermission = new GrantStoragePermission();
+                    grantStoragePermission.TryGranting();
+                })
+                .AddTo(_disposable);
+
+
+            _titleMenuSettings.LicenseButton[0].onClick.AsObservable()
+                .Subscribe(_ => _titleMenuService.OpenMainMenu())
                 .AddTo(_disposable);
 
             _titleMenuService.StartAsync(cancellation).Forget();
