@@ -12,5 +12,8 @@ namespace UniLiveViewer.Stage.Title
 
         public OVRScreenFade OvrScreenFade => _ovrScreenFade;
         [SerializeField] OVRScreenFade _ovrScreenFade;
+
+        public GameObject ScalingEffect => _scalingEffect;
+        [SerializeField] GameObject _scalingEffect;
     }
 }

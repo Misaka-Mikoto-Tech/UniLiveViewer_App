@@ -22,7 +22,7 @@ namespace UniLiveViewer.Stage.Title.Actor
         public async UniTask OnSceneTransitionAsync(CancellationToken cancellation)
         {
             _animator.SetTrigger("SceneTransitionTrigger");
-
+            _isIK = true;
             await UniTask.Delay(2000, cancellationToken: cancellation);
             _isIK = false;
         }
