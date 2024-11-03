@@ -5,6 +5,7 @@ using System.Threading;
 using UniLiveViewer.SceneLoader;
 using UniLiveViewer.Stage.Title;
 using UniRx;
+using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
@@ -72,8 +73,8 @@ namespace UniLiveViewer.SceneUI.Title
             _titleMenuSettings.CustomLiveButton[1].onClick.AsObservable()
                 .Subscribe(_ =>
                 {
-                    // TODO: ドキュメント公開したら
-                    //Application.OpenURL("");
+                    var url = "https://hallowed-poison-97e.notion.site/Advanced-play-e095c8bf209e4ae2adc9446c556a2213";
+                    Application.OpenURL(url);
                 })
                 .AddTo(_disposable);
             _titleMenuSettings.CustomLiveButton[2].onClick.AsObservable()
