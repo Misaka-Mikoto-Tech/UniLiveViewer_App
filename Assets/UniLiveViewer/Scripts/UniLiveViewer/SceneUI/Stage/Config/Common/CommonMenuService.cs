@@ -62,12 +62,22 @@ namespace UniLiveViewer.Menu.Config.Common
         /// </summary>
         public void OnUpdateFixedFoveated(float value)
         {
+            //NOTE: 公式制限や不具合など変数多すぎて解決困難、一旦無効化
+            /*
 #if UNITY_EDITOR
+            OVRPlugin.useDynamicFixedFoveatedRendering = false;
             _settings.FixedFoveatedText.text = $"noQuest:{value}";
 #elif UNITY_ANDROID
-            OVRManager.fixedFoveatedRenderingLevel = (OVRManager.FixedFoveatedRenderingLevel)value;
-            _settings.FixedFoveatedText.text = System.Enum.GetName(typeof(OVRManager.FixedFoveatedRenderingLevel),OVRManager.fixedFoveatedRenderingLevel);
+            //OVRPlugin.useDynamicFixedFoveatedRendering = 0 < value;
+            //OVRPlugin.fixedFoveatedRenderingLevel = (OVRPlugin.FixedFoveatedRenderingLevel)value;
+            OVRPlugin.useDynamicFixedFoveatedRendering = true;
+            OVRPlugin.fixedFoveatedRenderingLevel = OVRPlugin.FixedFoveatedRenderingLevel.High;
+            _settings.FixedFoveatedText.text = System.Enum.GetName(typeof(OVRPlugin.FixedFoveatedRenderingLevel), value);
+
+            OVRManager.useDynamicFixedFoveatedRendering = true;
+            OVRManager.fixedFoveatedRenderingLevel = OVRManager.FixedFoveatedRenderingLevel.High;
 #endif
+            */
         }
     }
 }

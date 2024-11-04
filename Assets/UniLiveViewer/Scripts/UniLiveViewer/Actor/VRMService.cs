@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using System;
 using System.IO;
 using System.Threading;
@@ -20,7 +20,6 @@ namespace UniLiveViewer.Actor
         /// 簡易版APIでロード
         /// VRM1.0だとさらに完結に
         /// </summary>
-        /// <param name="path"></param>
         public async UniTask<RuntimeGltfInstance> LoadAsync(string path, CancellationToken cancellation)
         {
             try

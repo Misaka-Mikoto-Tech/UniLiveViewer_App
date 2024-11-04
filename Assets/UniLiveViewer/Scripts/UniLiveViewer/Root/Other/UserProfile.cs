@@ -1,4 +1,4 @@
-using UnityEngine.Rendering.Universal;
+﻿using UnityEngine.Rendering.Universal;
 
 namespace UniLiveViewer
 {
@@ -8,7 +8,7 @@ namespace UniLiveViewer
         public int LastSceneSceneTypeNo = 1;//SceneLoader.SceneType.CANDY_LIVE
         public float InitCharaSize = 1.15f;
         public float CharaShadow = 1.25f;
-        public int CharaShadowType = 1;
+        public int CharaShadowType = 7;
         public bool IsSmoothVMD = false;
         public bool IsVRM10 = true;
         public float VMDScale = 0.750f;
@@ -16,18 +16,18 @@ namespace UniLiveViewer
         //public bool StepSE = true;//廃止
 
         public int Antialiasing = (int)AntialiasingMode.None;
-        public bool IsBloom = false;
-        public float BloomThreshold = 0.5f;
-        public float BloomIntensity = 1.0f;
+        public bool IsBloom = true;
+        public float BloomThreshold = 0.95f;
+        public float BloomIntensity = 5.0f;
         public bool IsDepthOfField = false;
-        public bool IsTonemapping = false;
+        public bool IsTonemapping = true;
 
         public float SoundMaster = 100;
         public float SoundBGM = 100;
         public float SoundSE = 100;
         public float SoundAmbient = 100;
         public float SoundFootSteps = 100;
-        public float SoundSpectrumGain = 20;
+        public float SoundSpectrumGain = 10;
 
         public bool scene_crs_particle = true;
         public bool scene_crs_laser = true;

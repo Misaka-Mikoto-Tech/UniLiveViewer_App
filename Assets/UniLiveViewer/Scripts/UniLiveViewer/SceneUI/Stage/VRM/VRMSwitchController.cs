@@ -81,7 +81,7 @@ namespace UniLiveViewer.Menu
             {
                 case 0:
                     //フォルダパスの表示を更新
-                    _textDirectory[0].text = $"({PathsInfo.GetFullPath(FolderType.Actor)}/)";
+                    //_textDirectory[0].text = $"({PathsInfo.GetFullPath(FolderType.Actor)}/)"; //不要
                     _textDirectory[1].text = $"/Download...[{_fileManager.CountVRM(PathsInfo.GetDownloadFolderPath() + "/")} VRMs]";
                     break;
                 case 1:
