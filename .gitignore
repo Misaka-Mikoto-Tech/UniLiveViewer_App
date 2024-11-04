@@ -90,8 +90,14 @@ Thumbs.db
 [Aa]ssets/[Pp]lugins/[Uu]niTask
 [Aa]ssets/[Pp]lugins/[Uu]niTask.meta
 
-[Aa]ssets/[Gg]itIgnoreAssets/
-[Aa]ssets/[Gg]itIgnoreAssets.meta
+[Aa]ssets/[Pp]lugins/[Uu]niRx
+[Aa]ssets/[Pp]lugins/[Uu]niRx.meta
+
+[Aa]ssets/_Test/
+[Aa]ssets/_Test.meta
+
+[Aa]ssets/[Ee]xternalAssets/
+[Aa]ssets/[Ee]xternalAssets.meta
 
 [Aa]ssets/[Uu]niLiveViewer/_GitIgnore/
 [Aa]ssets/[Uu]niLiveViewer/_GitIgnore.meta

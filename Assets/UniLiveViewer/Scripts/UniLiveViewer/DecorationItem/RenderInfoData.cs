@@ -10,5 +10,6 @@ namespace UniLiveViewer
         public string[] partsName = new string[2] { "全体","All" };
         public Texture[] chooseableTexture;
         public int textureCurrent = 0;
+        public bool convertToColor = false;//TODO: SpectrumVisualizer用、後で作り直す
     }
 }

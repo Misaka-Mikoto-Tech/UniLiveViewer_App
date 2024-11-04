@@ -1,53 +1,99 @@
-﻿using System.Collections.Generic;
+﻿using System.Linq;
+using UniLiveViewer.OVRCustom;
+using UniRx;
 using UnityEngine;
 
 namespace UniLiveViewer
 {
+    /// <summary>
+    /// TOOD: 完全に作り直す
+    /// </summary>
     public class DecorationItemInfo : MonoBehaviour
     {
+        // TODO: ローカライズUnity標準にする
         public string[] ItemName => itemName;
-        public RenderInfo[] RenderInfo => renderInfo;
+        [SerializeField] string[] itemName = new string[2] { "アイテム名", "ItemName" };
 
-        [SerializeField] private string[] itemName = new string[2] { "アイテム名","ItemName" };
-        [SerializeField] private string[] flavorText = new string[2] { "何の変哲もないアイテム", "Unremarkable item" };//未使用
-        [SerializeField] private RenderInfo[] renderInfo = new RenderInfo[0];
-        private OVRGrabbable_Custom ovrGrab;
-        public bool isAttached;
+        public RenderInfo[] RenderInfo => renderInfo;
+        [SerializeField] RenderInfo[] renderInfo = new RenderInfo[0];
+
+        [SerializeField] string[] flavorText = new string[2] { "何の変哲もないアイテム", "Unremarkable item" };//未使用
+        OVRGrabbableCustom _ovrGrabbableCustom;
+
+        MeshRenderer _meshRenderer;
+        bool _isAttached;
+
+
+        void Awake()
+        {
+            _ovrGrabbableCustom = GetComponent<OVRGrabbableCustom>();
+            _meshRenderer = transform.GetComponent<MeshRenderer>();
+
+            _ovrGrabbableCustom.GrabBeginAsObservable
+                .Subscribe(x => OnGrabbed(x.transform)).AddTo(this);
+            void OnGrabbed(Transform parent)
+            {
+                transform.parent = parent;
+                _meshRenderer.enabled = true;
+                _isAttached = false;
+            }
+        }
 
         /// <summary>
         /// 指定テクスチャに変更
         /// </summary>
-        public void SetTexture(int renderInfoIndex,int textureCurrent)
+        public void SetTexture(int userSelectIndex)
         {
-            int i = renderInfoIndex;
+            int i = 0;//現状は0しかないので固定
             int matIndex = renderInfo[i].data.materialIndex;
-            renderInfo[i].data.textureCurrent = textureCurrent;
+            renderInfo[i].data.textureCurrent = userSelectIndex;
 
-            foreach (var renderer in renderInfo[i]._renderers)
+            if (!renderInfo[i].data.convertToColor)
             {
-                foreach (var shaderName in renderInfo[i].data.targetShaderName )
+                foreach (var renderer in renderInfo[i]._renderers)
                 {
-                    renderer.materials[matIndex].SetTexture(
-                        shaderName, 
-                        renderInfo[i].data.chooseableTexture[renderInfo[i].data.textureCurrent]);
+                    foreach (var shaderName in renderInfo[i].data.targetShaderName)
+                    {
+                        renderer.materials[matIndex].SetTexture(
+                            shaderName,
+                            renderInfo[i].data.chooseableTexture[renderInfo[i].data.textureCurrent]);
+                    }
+                }
+            }
+            else
+            {
+                var itemColorChanger = transform.GetChild(0).GetComponent<IItemColorChanger>();
+                if (itemColorChanger == null) return;
+
+                // ex: tex_sk
+                var textureName = renderInfo[i].data.chooseableTexture[renderInfo[i].data.textureCurrent].name;
+                var parts = textureName.Split('_');
+                var result = parts.Length > 1 ? parts[1] : string.Empty;
+                var colorInfo = result.ToColorInfo();
+                foreach (var shaderName in renderInfo[i].data.targetShaderName)
+                {
+                    itemColorChanger.SetColor(shaderName, colorInfo);
                 }
             }
         }
 
+        /// <summary>
+        /// TODO: これをここでやってるのもそもそも変だがLS化しないと厳しい
+        /// </summary>
         public bool TryAttachment()
         {
-            if (!ovrGrab) ovrGrab = GetComponent<OVRGrabbable_Custom>();
-            if(!ovrGrab || !ovrGrab.hitCollider) return false;
+            var collider = _ovrGrabbableCustom.HitCollider;
+            if (!collider) return false;
             //アタッチする
-            ovrGrab.transform.parent = ovrGrab.hitCollider.transform;
-            transform.GetComponent<MeshRenderer>().enabled = false;
-            isAttached = true;
+            _ovrGrabbableCustom.transform.parent = collider.transform;
+            _meshRenderer.enabled = false;
+            _isAttached = true;
             return true;
         }
 
-        private void OnDestroy()
+        void OnDestroy()
         {
-            if (isAttached) return;
+            if (_isAttached) return;
 
             for (int i = 0; i < renderInfo.Length; i++)
             {
@@ -60,6 +106,17 @@ namespace UniLiveViewer
                     }
                 }
             }
+
+            // MEMO: Linq
+            //var materials = renderInfo
+            //    .SelectMany(info => info._renderers)
+            //    .SelectMany(renderer => renderer.materials)
+            //    .Where(material => material != null);
+            //foreach (var material in materials)
+            //{
+            //    Destroy(material);
+            //}
+
             renderInfo = null;
         }
     }

@@ -29,6 +29,7 @@ namespace NanaCiel
         //フォントサイズをいい感じに調整
         public static int FontSizeMatch(this string str, int coeffic, int min, int max)
         {
+            if (string.IsNullOrEmpty(str) || str is "") return 0;
             int result = coeffic / str.Length;
             result = Mathf.Clamp(result, min, max);
             return result;
@@ -57,6 +58,17 @@ namespace NanaCiel
         public static R Let<T, R>(this T self, System.Func<T,R> action)
         {
             return action(self);
+        }
+
+        /// <summary>
+        /// TryGetComponentじゃ複数取れないので
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="anchor"></param>
+        /// <returns></returns>
+        public static T[] TryGetComponents<T>(Transform transform) where T : Component
+        {
+            return transform.GetComponents<T>() ?? new T[0];
         }
     }
 

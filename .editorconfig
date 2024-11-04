@@ -1,0 +1,9 @@
+# Top-most EditorConfig file
+root = true
+
+# 文字コード設定（latin1/utf-8/utf-8-bom/utf-16be/utf-16le/...）
+[*.cs]
+charset = utf-8
+
+# 改行コード設定（lf/cr/crlf）
+end_of_line = crlf
